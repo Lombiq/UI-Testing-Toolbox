@@ -2,7 +2,7 @@
 
 
 
-1. Reference `Lombiq.Tests.UI`. You'll need to add the package corresponding to the browser's driver you want to use to the test project too (despite it being added to `Lombiq.Tests.UI` too, it won't be copied over).
+1. Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
 2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. Most possibly this is not what you want; instead, you'd create recorded tests like `CommercialEntityTests` in Finitive. So create a class like that with the basics of a test method, but no commands yet.
 3. Launch the app and go to a page where the next click would lead to the first page of the tested feature. This is most possibly the homepage or the dashboard, both of which you can easily reach with helpers in the test.
 4. Open Selenium IDE, create a new project (it doesn't matter, we won't use it) and inside it create a new test case (again, doesn't matter).
