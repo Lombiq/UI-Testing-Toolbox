@@ -4,7 +4,7 @@
 
 ## About
 
-Web UI testing toolbox for Orchard Core applications. Everything you need to do UI testing for an Orchard app is here.
+Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing for an Orchard app is here.
 
 
 ## Table of contents
