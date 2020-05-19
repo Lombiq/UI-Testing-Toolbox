@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <!-- With these the driver exe files will be copied to all projects referencing this project. Otherwise all child
+    projects would need to add the packages too. -->
+    <PublishChromeDriver>true</PublishChromeDriver>
+    <PublishGeckoDriver>true</PublishGeckoDriver>
+    <PublishIEDriver>true</PublishIEDriver>
+    <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
+</PropertyGroup>
+
+  <ItemGroup>
+    <Content Include=".config\dotnet-tools.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Atata" Version="1.5.0" />
+    <PackageReference Include="Atata.Bootstrap" Version="1.0.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="1.3.0" />
+    <PackageReference Include="CliWrap" Version="3.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="81.0.4044.6900" />
+    <PackageReference Include="Selenium.WebDriver.GeckoDriver" Version="0.26.0.1" />
+    <PackageReference Include="Selenium.WebDriver.IEDriver" Version="3.150.1" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="81.0.410" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lombiq.Tests\Lombiq.Tests.csproj" />
+  </ItemGroup>
+
+</Project>
