@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -8,8 +8,14 @@
     <PublishGeckoDriver>true</PublishGeckoDriver>
     <PublishIEDriver>true</PublishIEDriver>
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
-</PropertyGroup>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove=".git" />
+    <None Remove=".gitignore" />
+    <None Remove=".gitattributes" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Content Include=".config\dotnet-tools.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
