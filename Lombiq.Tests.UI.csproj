@@ -1,8 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
     <!-- With these the driver exe files will be copied to all projects referencing this project. Otherwise all child
     projects would need to add the packages too. -->
     <PublishChromeDriver>true</PublishChromeDriver>
@@ -11,12 +12,6 @@
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove=".git" />
-    <None Remove=".gitignore" />
-    <None Remove=".gitattributes" />
-  </ItemGroup>
-  
   <ItemGroup>
     <Content Include=".config\dotnet-tools.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
