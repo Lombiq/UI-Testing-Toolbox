@@ -15,12 +15,15 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static void GoToRelativeUrl(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true)
         {
-            var uri = new Uri(context.Scope.BaseUri, relativeUrl);
+            var uri = context.GetAbsoluteUri(relativeUrl);
 
             if (onlyIfNotAlreadyThere && new Uri(context.Driver.Url) == uri) return;
 
             context.Driver.Navigate().GoToUrl(uri);
         }
+
+        public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
+            new Uri(context.Scope.BaseUri, relativeUrl);
 
         public static T GoToPage<T>(this UITestContext context) where T : PageObject<T>
         {
