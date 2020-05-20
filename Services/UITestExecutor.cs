@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium.Remote;
@@ -38,20 +37,15 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
-            var useSetupSnapshot = configuration.SetupOperation != null;
+            configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = configuration.SetupSnapshotPath;
+            var runSetupOperation = configuration.SetupOperation != null;
 
-            if (useSetupSnapshot)
+            if (runSetupOperation)
             {
-                var snapshotPath = string.IsNullOrEmpty(configuration.SetupSnapshotPath) ?
-                            Snapshots.DefaultSetupSnapshotPath :
-                            configuration.SetupSnapshotPath;
-
                 lock (_setupSnapshotManangerLock)
                 {
-                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(snapshotPath);
+                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(configuration.SetupSnapshotPath);
                 }
-
-                configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = snapshotPath;
             }
 
             configuration.AtataConfiguration.TestName = testManifest.Name;
@@ -107,7 +101,7 @@ namespace Lombiq.Tests.UI.Services
                         return new UITestContext(applicationInstance, atataScope, smtpContext);
                     }
 
-                    if (useSetupSnapshot)
+                    if (runSetupOperation)
                     {
                         var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNew(async () =>
                         {

@@ -36,7 +36,6 @@ namespace Lombiq.Tests.UI.Services
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
-        private string _webRootPath;
         private Command _command;
         private CancellationTokenSource _cancellationTokenSource;
         private int _port;
@@ -67,16 +66,16 @@ namespace Lombiq.Tests.UI.Services
 
             CreateContentRootFolder();
 
-            _webRootPath = Path.Combine(_contentRootPath, "wwwroot");
-
             if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
             {
                 FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, true);
             }
             else
             {
-                Directory.CreateDirectory(_webRootPath);
-                await CopyConfigFilesToContentRootFolder();
+                // Copying the config files from the assembly path, i.e. the build output path so only those are
+                // included that actually matter.
+                OrchardCoreDirectoryHelper
+                    .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
             _command = Cli.Wrap("dotnet.exe")
@@ -86,7 +85,7 @@ namespace Lombiq.Tests.UI.Services
                         .Add(_configuration.AppAssemblyPath)
                         .Add("--urls").Add(url)
                         .Add("--contentRoot").Add(_contentRootPath)
-                        .Add("--webroot=").Add(_webRootPath)
+                        .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
                     if (_configuration.BeforeAppStart != null)
@@ -140,27 +139,11 @@ namespace Lombiq.Tests.UI.Services
             DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath);
         }
 
+
         private void CreateContentRootFolder()
         {
             _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
             Directory.CreateDirectory(_contentRootPath);
-        }
-
-        private Task CopyConfigFilesToContentRootFolder()
-        {
-            var assemblyDirectory = Path.GetDirectoryName(_configuration.AppAssemblyPath);
-
-            var copyTasks = Directory
-                .EnumerateFiles(assemblyDirectory)
-                .Where(filePath => filePath.EndsWith(".config") || filePath.EndsWith(".json"))
-                .Select(async filePath =>
-                {
-                    using var source = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
-                    using var destination = File.Create(Path.Combine(_contentRootPath, Path.GetFileName(filePath)));
-                    await source.CopyToAsync(destination);
-                });
-
-            return Task.WhenAll(copyTasks);
         }
 
         private async Task StartOrchardApp()
