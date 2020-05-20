@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
@@ -28,7 +29,7 @@ namespace Lombiq.Tests.UI.Services
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
         public Func<UITestContext, Uri> SetupOperation { get; set; }
-        public string SetupSnapshotPath { get; set; }
+        public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
         public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new UITestExecutorFailureDumpConfiguration();
         public bool UseSmtpService { get; set; }
         public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new SmtpServiceConfiguration();
