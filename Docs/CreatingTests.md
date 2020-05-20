@@ -28,7 +28,7 @@
 
 Note:
 
-- By default any non-warning entry in the Orchard log, any warning or error in the browser log, and any non-successful HTTP response will fail a test.
+- By default any non-warning entry in the Orchard log and any warning or error in the browser log will fail a test.
 - Individual driver operations are retried with a timeout, and failing tests are also retried. While you're developing a test this might not be what you want but rather for the tests to fail as quickly as possible. For this, lower the timeout values in and the try count, see [Configuration](Configuration.md).
 - UI tests can be quite computationally demanding since your machine is hammering multiple concurrently running Orchard apps via separate browser processes while also serving them, and on top of this potentially also fetching resources from CDNs and other external services. To prevent tests failing locally simply because the machine is overwhelmed and they time out (or just taking more time than if the resources weren't completely saturated) the number of parallel tests is usually capped at a generally safe level in an xUnit config file in the root of the test project (_xunit.runner.json_). If your PC can handle it then feel free to increase the limit for the duration of local testing (but don't commit these changes).
 - E-mails can be sent out to a local SMTP server and the received e-mails checked too, fully automated. Note that this also needs support from the web project since the SMTP port needs to be configured on the fly.
