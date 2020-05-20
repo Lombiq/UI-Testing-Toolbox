@@ -3,7 +3,7 @@
 
 
 1. Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
-2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. For simpler cases we create recorded tests, however. So create a class for this with the basics of a test method, but no commands yet.
+2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. You can then do Atata testing as usual by starting with `context.GoToPage<TPage>();`. For simpler cases, however, we create recorded tests. The rest of this guide shows how to create such recorded tests. So create a class for this with the basics of a test method, but no commands yet.
 3. Launch the app and go to a page where the next click would lead to the first page of the tested feature. This is most possibly the homepage or the dashboard, both of which you can easily reach with helpers in the test.
 4. Open Selenium IDE, create a new project (it doesn't matter, we won't use it) and inside it create a new test case (again, doesn't matter).
 5. Start recording. Now everything you do will be recorded as commands in Selenium IDE. Sometimes it messes up the order but don't worry, you can reorder commands freely.
