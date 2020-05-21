@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium.Remote;
-using Shouldly;
 using System;
 using System.IO;
 using System.Linq;
@@ -125,7 +124,7 @@ namespace Lombiq.Tests.UI.Services
                     {
                         if (configuration.AssertAppLogs != null) await configuration.AssertAppLogs(context.Application);
                     }
-                    catch (ShouldAssertException)
+                    catch (Exception)
                     {
                         testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
                         testOutputHelper.WriteLine(await context.Application.GetLogOutput());
@@ -137,7 +136,7 @@ namespace Lombiq.Tests.UI.Services
                     {
                         configuration.AssertBrowserLog?.Invoke(await GetBrowserLog(context.Scope.Driver));
                     }
-                    catch (ShouldAssertException)
+                    catch (Exception)
                     {
                         testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
                         testOutputHelper.WriteLine((await GetBrowserLog(context.Scope.Driver)).ToFormattedString());
