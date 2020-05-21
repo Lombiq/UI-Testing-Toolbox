@@ -1,6 +1,8 @@
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium.Remote;
+using Selenium.Axe;
 using System;
 using System.IO;
 using System.Linq;
@@ -97,7 +99,7 @@ namespace Lombiq.Tests.UI.Services
                             uri,
                             configuration);
 
-                        return new UITestContext(applicationInstance, atataScope, smtpContext);
+                        return new UITestContext(configuration, applicationInstance, atataScope, smtpContext);
                     }
 
                     if (runSetupOperation)
@@ -177,6 +179,14 @@ namespace Lombiq.Tests.UI.Services
                         await File.WriteAllLinesAsync(
                             Path.Combine(dumpContainerPath, "BrowserLog.log"),
                             (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
+                    }
+
+                    if (ex is AccessibilityAssertionException accessibilityAssertionException
+                        && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+                    {
+                        context.Driver.CreateAxeHtmlReport(
+                            accessibilityAssertionException.AxeResult,
+                            Path.Combine(dumpContainerPath, "AccessibilityReport.html"));
                     }
 
                     if (tryCount == configuration.MaxTryCount)

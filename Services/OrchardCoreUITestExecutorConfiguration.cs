@@ -33,6 +33,7 @@ namespace Lombiq.Tests.UI.Services
         public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new UITestExecutorFailureDumpConfiguration();
         public bool UseSmtpService { get; set; }
         public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new SmtpServiceConfiguration();
+        public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new AccessibilityCheckingConfiguration();
 
 
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmpty();
