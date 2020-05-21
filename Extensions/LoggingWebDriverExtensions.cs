@@ -61,8 +61,9 @@ namespace Lombiq.Tests.UI.Extensions
         private static readonly HttpClient _httpClient = new HttpClient();
 
         /// <summary>
-        /// Retrieves the console logs from the browser. NOTE that once you call this the log will be emptied and only
-        /// subsequent entries will be included in it. Supports Chrome only.
+        /// Retrieves the console logs from the browser. This log will contain all the log messages since the start of
+        /// the session, not just the ones for the current page. NOTE that once you call this the log will be emptied
+        /// and only subsequent entries will be included in it. Supports Chrome only.
         /// </summary>
         /// <remarks>
         /// Code taken from https://stackoverflow.com/a/60436652/220230 and modified.The emptying behavior is not
