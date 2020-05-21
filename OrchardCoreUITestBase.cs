@@ -55,7 +55,7 @@ namespace Lombiq.Tests.UI
         /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data 
         /// folder.
         /// </summary>
-        protected Task ExecuteTestFromExistingDB(
+        protected virtual Task ExecuteTestFromExistingDB(
             Action<UITestContext> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null)
