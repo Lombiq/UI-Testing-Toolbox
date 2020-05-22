@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
 using Selenium.Axe;
 using System;
@@ -39,7 +39,8 @@ namespace Lombiq.Tests.UI.Extensions
             }
             catch (Exception ex)
             {
-                throw new AccessibilityAssertionException(axeResult, ex);
+                throw new AccessibilityAssertionException(
+                    axeResult, context.Configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure, ex);
             }
         }
 

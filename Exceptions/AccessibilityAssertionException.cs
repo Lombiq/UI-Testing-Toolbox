@@ -1,4 +1,4 @@
-﻿using Selenium.Axe;
+using Selenium.Axe;
 using System;
 
 namespace Lombiq.Tests.UI.Exceptions
@@ -8,10 +8,10 @@ namespace Lombiq.Tests.UI.Exceptions
         public AxeResult AxeResult { get; }
 
 
-        public AccessibilityAssertionException(AxeResult axeResult, Exception innerException)
-            : base("Asserting the accessibility analysis result failed.", innerException)
-        {
+        public AccessibilityAssertionException(AxeResult axeResult, bool createReportOnFailure, Exception innerException)
+            : base(
+                "Asserting the accessibility analysis result failed." + (createReportOnFailure ? " Check the accessibility report for details." : string.Empty),
+                innerException) =>
             AxeResult = axeResult;
-        }
     }
 }
