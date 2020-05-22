@@ -191,7 +191,8 @@ namespace Lombiq.Tests.UI.Services
 
                     if (tryCount == configuration.MaxTryCount)
                     {
-                        testOutputHelper.WriteLine($"The test was attempted {tryCount} times and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder.");
+                        var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
+                        testOutputHelper.WriteLine($"The test was attempted {tryCount} times and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
