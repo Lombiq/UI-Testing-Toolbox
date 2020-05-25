@@ -1,8 +1,8 @@
+using System;
 using Atata;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -29,6 +29,14 @@ namespace Lombiq.Tests.UI.Extensions
         {
             AtataContext.Current = context.Scope.AtataContext;
             return Go.To<T>();
+        }
+
+        public static T GoToPage<T>(this UITestContext context, string relativeUrl) where T : PageObject<T>
+        {
+            var uri = context.GetAbsoluteUri(relativeUrl);
+
+            AtataContext.Current = context.Scope.AtataContext;
+            return Go.To<T>(url: uri.ToString());
         }
 
         public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
