@@ -21,8 +21,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// </param>
         public static void AssertAccessibility(
             this UITestContext context,
-            Action<AxeResult> assertAxeResult = null,
-            Action<AxeBuilder> axeBuilderConfigurator = null)
+            Action<AxeBuilder> axeBuilderConfigurator = null,
+            Action<AxeResult> assertAxeResult = null)
         {
             var axeResult = context.AnalyzeAccessibility(axeBuilderConfigurator);
 
