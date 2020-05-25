@@ -12,6 +12,8 @@ namespace Lombiq.Tests.UI
     {
         private readonly static object _snapshotCopyLock = new object();
 
+        private static bool _appFolderCreated;
+
         protected readonly ITestOutputHelper _testOutputHelper;
 
         protected abstract string AppAssemblyPath { get; }
@@ -64,11 +66,16 @@ namespace Lombiq.Tests.UI
 
             lock (_snapshotCopyLock)
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(appFolder);
+                if (!_appFolderCreated)
+                {
+                    DirectoryHelper.SafelyDeleteDirectoryIfExists(appFolder);
 
-                OrchardCoreDirectoryHelper.CopyAppFolder(
-                    OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
-                    appFolder);
+                    OrchardCoreDirectoryHelper.CopyAppFolder(
+                        OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
+                        appFolder);
+
+                    _appFolderCreated = true;
+                }
             }
 
             return ExecuteTest(
