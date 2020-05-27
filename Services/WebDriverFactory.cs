@@ -10,35 +10,38 @@ namespace Lombiq.Tests.UI.Services
 {
     public static class WebDriverFactory
     {
-        public static ChromeDriver CreateChromeDriver(TimeSpan pageLoadTimeout)
-        {
-            var options = new ChromeOptions().SetCommonOptions();
+        public static ChromeDriver CreateChromeDriver(TimeSpan pageLoadTimeout) =>
+            WrapIntoException(() =>
+            {
+                var options = new ChromeOptions().SetCommonOptions();
 
-            // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
-            // during parallel execution: https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
-            // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
-            // with trusted code (i.e. our own).
-            options.AddArgument("no-sandbox");
+                // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
+                // during parallel execution: https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
+                // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
+                // with trusted code (i.e. our own).
+                options.AddArgument("no-sandbox");
 
-            return new ChromeDriver(".", options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
-        }
+                return new ChromeDriver(".", options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            });
 
         public static EdgeDriver CreateEdgeDriver(TimeSpan pageLoadTimeout) =>
-            new EdgeDriver(
-                EdgeDriverService.CreateDefaultService(".", "msedgedriver.exe"),
-                new EdgeOptions().SetCommonOptions())
-            .SetCommonTimeouts(pageLoadTimeout);
+            WrapIntoException(() =>
+                new EdgeDriver(
+                    EdgeDriverService.CreateDefaultService(".", "msedgedriver.exe"),
+                    new EdgeOptions().SetCommonOptions())
+                .SetCommonTimeouts(pageLoadTimeout));
 
         public static FirefoxDriver CreateFirefoxDriver(TimeSpan pageLoadTimeout) =>
-            new FirefoxDriver(".", new FirefoxOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout);
+            WrapIntoException(() => new FirefoxDriver(".", new FirefoxOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout));
 
-        public static InternetExplorerDriver CreateInternetExplorerDriver(TimeSpan pageLoadTimeout)
-        {
-            var options = new InternetExplorerOptions().SetCommonOptions();
-            // IE doesn't support this.
-            options.AcceptInsecureCertificates = false;
-            return new InternetExplorerDriver(".", options).SetCommonTimeouts(pageLoadTimeout);
-        }
+        public static InternetExplorerDriver CreateInternetExplorerDriver(TimeSpan pageLoadTimeout) =>
+            WrapIntoException(() =>
+            {
+                var options = new InternetExplorerOptions().SetCommonOptions();
+                // IE doesn't support this.
+                options.AcceptInsecureCertificates = false;
+                return new InternetExplorerDriver(".", options).SetCommonTimeouts(pageLoadTimeout);
+            });
 
 
         private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions) where TDriverOptions : DriverOptions
@@ -58,6 +61,20 @@ namespace Lombiq.Tests.UI.Services
             // Default is 5 minutes. 
             timeouts.PageLoad = pageLoadTimeout;
             return driver;
+        }
+
+        private static TDriver WrapIntoException<TDriver>(Func<TDriver> driverFactory) where TDriver : RemoteWebDriver
+        {
+            try
+            {
+                return driverFactory();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    $"Creating the web driver failed with the message \"{ex.Message}\". Note that this can mean that there is a leftover web driver process that you have to kill manually.",
+                    ex);
+            }
         }
     }
 }
