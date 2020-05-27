@@ -33,11 +33,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="Selenium.Axe" Version="1.5.1" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3900" />
-    <PackageReference Include="Selenium.WebDriver.GeckoDriver" Version="0.26.0.1" />
-    <PackageReference Include="Selenium.WebDriver.IEDriver" Version="3.150.1" />
-    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="81.0.410" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
+    <PackageReference Include="WebDriverManager" Version="2.9.1" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
