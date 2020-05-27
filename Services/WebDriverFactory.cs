@@ -6,9 +6,11 @@ using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
+using WebDriverManager.Helpers;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -33,8 +35,22 @@ namespace Lombiq.Tests.UI.Services
 
         public static EdgeDriver CreateEdgeDriver(TimeSpan pageLoadTimeout) =>
             CreateDriver(
-                () => new EdgeDriver(new EdgeOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout),
-                new EdgeConfig());
+                () =>
+                {
+                    // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
+                    var config = new StaticVersionEdgeConfig();
+                    var architecture = ArchitectureHelper.GetArchitecture();
+                    // Using a hard-coded version for now to use the latest released one instead of canary that would
+                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74 
+                    var version = config.GetLatestVersion();
+                    var url = UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
+                    var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+
+                    return new EdgeDriver(
+                        EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
+                        new EdgeOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout);
+                },
+                new StaticVersionEdgeConfig());
 
         public static FirefoxDriver CreateFirefoxDriver(TimeSpan pageLoadTimeout) =>
             CreateDriver(
@@ -79,6 +95,8 @@ namespace Lombiq.Tests.UI.Services
                 // The Lazy<T> trick taken from: https://stackoverflow.com/a/31637510/220230
                 _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
                 {
+                    // Note that this will set up the latest version of the driver, there is no matchin on the browser
+                    // version yet: https://github.com/rosolko/WebDriverManager.Net/issues/73
                     new DriverManager().SetUpDriver(driverConfig);
                     return true;
                 })).Value;
@@ -91,6 +109,12 @@ namespace Lombiq.Tests.UI.Services
                     $"Creating the web driver failed with the message \"{ex.Message}\". Note that this can mean that there is a leftover web driver process that you have to kill manually.",
                     ex);
             }
+        }
+
+
+        private class StaticVersionEdgeConfig : EdgeConfig
+        {
+            public override string GetLatestVersion() => "83.0.478.37";
         }
     }
 }
