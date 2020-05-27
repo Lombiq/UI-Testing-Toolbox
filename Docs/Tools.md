@@ -3,7 +3,7 @@
 
 
 - The testing framework we use is [Selenium](https://www.selenium.dev/), extended with [Atata](https://atata.io/).
-- Chrome needs to be installed on your machine. If you also want to test other browsers then:
+- Chrome needs to be installed on your machine, the latest version. If you also want to test other browsers then install the latest version of each of them:
   - For Edge only the new Chromium-based Edge is supported that you can download from [here](https://www.microsoft.com/en-us/edge).
   - For Firefox it needs to be installed too.
   - For IE you'll need to do [some manual configuration](https://github.com/SeleniumHQ/selenium/wiki/InternetExplorerDriver#required-configuration) in the browser.
