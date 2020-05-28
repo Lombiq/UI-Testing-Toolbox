@@ -1,17 +1,19 @@
-using Lombiq.Tests.UI.Services;
+using Atata;
 using System;
-using System.Threading;
 
 namespace Lombiq.Tests.UI.Helpers
 {
     public static class ReliabilityHelper
     {
-        public static void DoWithRetries(Func<bool> process, TimeSpan? timeout = null)
+        public static void DoWithRetries(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null)
         {
-            if (timeout == null) timeout = TimeoutConfiguration.Default.RetryTimeout;
+            var wait = new SafeWait<object>(new object());
 
-            // Did I ever tell you what the definition of insanity is?
-            SpinWait.SpinUntil(process, timeout.Value);
+            // If no values are supplied then the defaults specified in AtataFactory will be used.
+            if (timeout != null) wait.Timeout = timeout.Value;
+            if (interval != null) wait.PollingInterval = interval.Value;
+
+            wait.Until(_ => process());
         }
     }
 }

@@ -14,14 +14,14 @@ Certain test execution parameters can be configured externally too, the ones ret
 - Environment variables: Their names should be prefixed with `Lombiq.Tests.UI.`. Keep in mind that you can set these just for the current session too.
 - Key-value pairs in a *TestConfiguration.json* file. Keys here don't need to be prefixed (since they're not in a global namespace). Configuration here will take precedence. Note that this file needs to be in the folder where the UI tests execute. By default this is the build output folder of the given test project, i.e. where the projects's DLL is generated.
 
-Here's a full *TestConfiguration.json* file example: 
+Here's a full *TestConfiguration.json* file example, something appropriate during development when you have a fast machine (probably faster then the one used to execute these tests) and want tests to fail fast instead of being reliable:
 
 ```
 {
-  "TimeoutConfiguration.RetryTimeoutSeconds": 60,
-  "TimeoutConfiguration.RetryIntervalSeconds": 60,
+  "TimeoutConfiguration.RetryTimeoutSeconds": 5,
+  "TimeoutConfiguration.RetryIntervalMillisecondSeconds": 300,
   "TimeoutConfiguration.PageLoadTimeoutSeconds": 120,
-  "OrchardCoreUITestExecutorConfiguration.MaxTryCount": 2,
+  "OrchardCoreUITestExecutorConfiguration.MaxTryCount": 1,
   "AgentIndex":  3
 }
 ```
