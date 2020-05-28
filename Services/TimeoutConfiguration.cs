@@ -11,9 +11,13 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// How long to wait between retries after the operation didn't complete successfully. Note that this is
-        /// included in <see cref="RetryTimeout"/>, e.g. something permanently failing will be checked for a total of
-        /// 10s with a <see cref="RetryTimeout"/> of 5s, just then there will be two checks altogether.
+        /// included in <see cref="RetryTimeout"/>.
         /// </summary>
+        /// <example>
+        /// Something permanently failing will be checked for a total of 10s with a <see cref="RetryTimeout"/> of 10s
+        /// and <see cref="RetryInterval"/> of 5s, just then there will be two-three checks altogether (first check
+        /// fails, wait 5s, second check fails, wait 5s, and if we're within 10s still, a third check will also fail).
+        /// </example>
         public TimeSpan RetryInterval { get; set; }
 
         /// <summary>
