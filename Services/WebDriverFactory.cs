@@ -5,13 +5,22 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
 using System;
+using System.Collections.Concurrent;
+using System.IO;
+using WebDriverManager;
+using WebDriverManager.DriverConfigs;
+using WebDriverManager.DriverConfigs.Impl;
+using WebDriverManager.Helpers;
 
 namespace Lombiq.Tests.UI.Services
 {
     public static class WebDriverFactory
     {
+        private readonly static ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
+
+
         public static ChromeDriver CreateChromeDriver(TimeSpan pageLoadTimeout) =>
-            WrapIntoException(() =>
+            CreateDriver(() =>
             {
                 var options = new ChromeOptions().SetCommonOptions();
 
@@ -21,27 +30,41 @@ namespace Lombiq.Tests.UI.Services
                 // with trusted code (i.e. our own).
                 options.AddArgument("no-sandbox");
 
-                return new ChromeDriver(".", options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
-            });
+                return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            }, new ChromeConfig());
 
         public static EdgeDriver CreateEdgeDriver(TimeSpan pageLoadTimeout) =>
-            WrapIntoException(() =>
-                new EdgeDriver(
-                    EdgeDriverService.CreateDefaultService(".", "msedgedriver.exe"),
-                    new EdgeOptions().SetCommonOptions())
-                .SetCommonTimeouts(pageLoadTimeout));
+            CreateDriver(
+                () =>
+                {
+                    // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
+                    var config = new StaticVersionEdgeConfig();
+                    var architecture = ArchitectureHelper.GetArchitecture();
+                    // Using a hard-coded version for now to use the latest released one instead of canary that would
+                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74 
+                    var version = config.GetLatestVersion();
+                    var url = UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
+                    var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+
+                    return new EdgeDriver(
+                        EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
+                        new EdgeOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout);
+                },
+                new StaticVersionEdgeConfig());
 
         public static FirefoxDriver CreateFirefoxDriver(TimeSpan pageLoadTimeout) =>
-            WrapIntoException(() => new FirefoxDriver(".", new FirefoxOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout));
+            CreateDriver(
+                () => new FirefoxDriver(new FirefoxOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout),
+                new FirefoxConfig());
 
         public static InternetExplorerDriver CreateInternetExplorerDriver(TimeSpan pageLoadTimeout) =>
-            WrapIntoException(() =>
+            CreateDriver(() =>
             {
                 var options = new InternetExplorerOptions().SetCommonOptions();
                 // IE doesn't support this.
                 options.AcceptInsecureCertificates = false;
-                return new InternetExplorerDriver(".", options).SetCommonTimeouts(pageLoadTimeout);
-            });
+                return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+            }, new InternetExplorerConfig());
 
 
         private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions) where TDriverOptions : DriverOptions
@@ -63,10 +86,21 @@ namespace Lombiq.Tests.UI.Services
             return driver;
         }
 
-        private static TDriver WrapIntoException<TDriver>(Func<TDriver> driverFactory) where TDriver : RemoteWebDriver
+        private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig) where TDriver : RemoteWebDriver
         {
             try
             {
+                // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup
+                // was already done. For 100 such calls it's around 16 s vs <100 ms.
+                // The Lazy<T> trick taken from: https://stackoverflow.com/a/31637510/220230
+                _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
+                {
+                    // Note that this will set up the latest version of the driver, there is no matching on the browser
+                    // version yet: https://github.com/rosolko/WebDriverManager.Net/issues/73
+                    new DriverManager().SetUpDriver(driverConfig);
+                    return true;
+                })).Value;
+
                 return driverFactory();
             }
             catch (Exception ex)
@@ -75,6 +109,12 @@ namespace Lombiq.Tests.UI.Services
                     $"Creating the web driver failed with the message \"{ex.Message}\". Note that this can mean that there is a leftover web driver process that you have to kill manually.",
                     ex);
             }
+        }
+
+
+        private class StaticVersionEdgeConfig : EdgeConfig
+        {
+            public override string GetLatestVersion() => "83.0.478.37";
         }
     }
 }

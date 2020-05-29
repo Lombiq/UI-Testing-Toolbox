@@ -35,10 +35,18 @@ namespace Lombiq.Tests.UI.Extensions
             }
         }
 
-        public static void ClickReliablyUntilPageLeave(this IWebElement element, UITestContext context, TimeSpan? timeout = null) =>
-            element.ClickReliablyUntilPageLeave(context.Driver, timeout);
+        public static void ClickReliablyUntilPageLeave(
+            this IWebElement element,
+            UITestContext context,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
+            element.ClickReliablyUntilPageLeave(context.Driver, timeout, interval);
 
-        public static void ClickReliablyUntilPageLeave(this IWebElement element, IWebDriver driver, TimeSpan? timeout = null) =>
+        public static void ClickReliablyUntilPageLeave(
+            this IWebElement element,
+            IWebDriver driver,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
             ReliabilityHelper.DoWithRetries(() =>
             {
                 try
@@ -52,6 +60,6 @@ namespace Lombiq.Tests.UI.Extensions
                     // there doesn't seem to be a better way to do this.
                     return true;
                 }
-            }, timeout);
+            }, timeout, interval);
     }
 }
