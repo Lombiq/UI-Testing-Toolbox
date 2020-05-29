@@ -47,7 +47,7 @@ namespace Lombiq.Tests.UI.Services
         static OrchardCoreInstance()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-            _portLeaseManager = new PortLeaseManager(6000 + agentIndexTimesHundred, 6099 + agentIndexTimesHundred);
+            _portLeaseManager = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
         }
 
         public OrchardCoreInstance(OrchardCoreConfiguration configuration, ITestOutputHelper testOutputHelper)
