@@ -4,6 +4,14 @@ namespace Lombiq.Tests.UI.Services
 {
     public class UITestContext
     {
+        /// <summary>
+        /// Technical name of the current test.
+        /// </summary>
+        public string TestName { get; }
+
+        /// <summary>
+        /// Configuration of the test execution.
+        /// </summary>
         public OrchardCoreUITestExecutorConfiguration Configuration { get; }
 
         /// <summary>
@@ -28,11 +36,13 @@ namespace Lombiq.Tests.UI.Services
 
 
         public UITestContext(
+            string testName,
             OrchardCoreUITestExecutorConfiguration configuration,
             IWebApplicationInstance application,
             AtataScope scope,
             SmtpServiceRunningContext smtpContext)
         {
+            TestName = testName;
             Configuration = configuration;
             Application = application;
             Scope = scope;

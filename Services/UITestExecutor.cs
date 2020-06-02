@@ -58,12 +58,15 @@ namespace Lombiq.Tests.UI.Services
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
                     dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
             }
-            var sanitizedTestName = string
-                .Join("_", dumpFolderNameBase.Split(Path.GetInvalidFileNameChars()))
-                .Replace('.', '_')
-                .Replace(' ', '-');
-            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, sanitizedTestName);
+
+            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
             DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+
+            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            {
+                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
+                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            }
 
             var testOutputHelper = configuration.TestOutputHelper;
             var tryCount = 1;
@@ -99,7 +102,7 @@ namespace Lombiq.Tests.UI.Services
                             uri,
                             configuration);
 
-                        return new UITestContext(configuration, applicationInstance, atataScope, smtpContext);
+                        return new UITestContext(testManifest.Name, configuration, applicationInstance, atataScope, smtpContext);
                     }
 
                     if (runSetupOperation)

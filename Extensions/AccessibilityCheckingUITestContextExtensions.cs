@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
 using Selenium.Axe;
 using System;
+using System.IO;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -25,22 +26,25 @@ namespace Lombiq.Tests.UI.Extensions
             Action<AxeResult> assertAxeResult = null)
         {
             var axeResult = context.AnalyzeAccessibility(axeBuilderConfigurator);
+            var accessibilityConfiguration = context.Configuration.AccessibilityCheckingConfiguration;
 
             try
             {
-                if (assertAxeResult == null)
-                {
-                    context.Configuration.AccessibilityCheckingConfiguration.AssertAxeResult?.Invoke(axeResult);
-                }
-                else
-                {
-                    assertAxeResult?.Invoke(axeResult);
-                }
+                if (assertAxeResult == null) accessibilityConfiguration.AssertAxeResult?.Invoke(axeResult);
+                else assertAxeResult?.Invoke(axeResult);
             }
             catch (Exception ex)
             {
-                throw new AccessibilityAssertionException(
-                    axeResult, context.Configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure, ex);
+                throw new AccessibilityAssertionException(axeResult, accessibilityConfiguration.CreateReportOnFailure, ex);
+            }
+
+            if (accessibilityConfiguration.CreateReportAlways)
+            {
+                context.Driver.CreateAxeHtmlReport(
+                    axeResult,
+                    Path.Combine(
+                        accessibilityConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath,
+                        context.TestName.MakeFileSystemFriendly() + ".html"));
             }
         }
 
