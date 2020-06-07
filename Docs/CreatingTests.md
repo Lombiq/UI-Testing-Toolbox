@@ -25,6 +25,7 @@
       - Sanity check the commands, remove unneeded ones.
       - If there are a lot of commands then add line breaks between sections, like between groups of a form, different pages, and between the Arrange and Assert sections (though with UI tests every command is an assertion too).
       - Add documentation if something is hard to understand.
+      - It's good practice to always explicitly set the size of the browser window so it doesn't depend on the machine executing the test. You can do this with the `UITestContext.SetBrowserSize()` shortcut.
 
 Note:
 
