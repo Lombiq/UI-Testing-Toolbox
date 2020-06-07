@@ -27,6 +27,8 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
 }
 ```
 
+Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode. 
+
 
 ## <a name="multi-process"></a>Multi-process test execution
 
