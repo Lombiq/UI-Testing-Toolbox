@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.Services
 
     public class OrchardCoreUITestExecutorConfiguration
     {
-        public Browser Browser { get; set; }
+        public BrowserConfiguration BrowserConfiguration { get; set; } = new BrowserConfiguration();
         public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
         public AtataConfiguration AtataConfiguration { get; set; } = new AtataConfiguration();
         public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }

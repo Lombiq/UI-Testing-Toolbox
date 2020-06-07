@@ -32,6 +32,12 @@ namespace Lombiq.Tests.UI.Services
             return string.IsNullOrEmpty(config) ? (int?)null : int.Parse(config);
         }
 
+        public static bool? GetBoolConfiguration(string key)
+        {
+            var config = GetConfiguration(key);
+            return string.IsNullOrEmpty(config) ? (bool?)null : bool.Parse(config);
+        }
+
         public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
         {
             var prefixedKey = "Lombiq.Tests.UI." + key;

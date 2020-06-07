@@ -22,6 +22,7 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
   "TimeoutConfiguration.RetryIntervalMillisecondSeconds": 300,
   "TimeoutConfiguration.PageLoadTimeoutSeconds": 120,
   "OrchardCoreUITestExecutorConfiguration.MaxTryCount": 1,
+  "BrowserConfiguration.Headless": true,
   "AgentIndex":  3
 }
 ```

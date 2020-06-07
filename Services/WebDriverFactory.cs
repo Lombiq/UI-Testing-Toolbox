@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly static ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
 
 
-        public static ChromeDriver CreateChromeDriver(TimeSpan pageLoadTimeout) =>
+        public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(() =>
             {
                 var options = new ChromeOptions().SetCommonOptions();
@@ -29,11 +29,13 @@ namespace Lombiq.Tests.UI.Services
                 // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
                 // with trusted code (i.e. our own).
                 options.AddArgument("no-sandbox");
+                if (configuration.Headless) options.AddArgument("headless");
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                 return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
             }, new ChromeConfig());
 
-        public static EdgeDriver CreateEdgeDriver(TimeSpan pageLoadTimeout) =>
+        public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(
                 () =>
                 {
@@ -46,23 +48,43 @@ namespace Lombiq.Tests.UI.Services
                     var url = UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
                     var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
 
+                    var options = new EdgeOptions().SetCommonOptions();
+
+                    // Edge will soon have headless support too, see:
+                    // https://techcommunity.microsoft.com/t5/discussions/chromium-edge-automation-with-selenium-best-practice/m-p/436338
+                    // Maybe not like this but in Selenium 4 at least.
+                    //if (configuration.Headless) options.AddArgument("headless");
+                    configuration.BrowserOptionsConfigurator?.Invoke(options);
+
                     return new EdgeDriver(
                         EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
-                        new EdgeOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout);
+                        options)
+                    .SetCommonTimeouts(pageLoadTimeout);
                 },
                 new StaticVersionEdgeConfig());
 
-        public static FirefoxDriver CreateFirefoxDriver(TimeSpan pageLoadTimeout) =>
-            CreateDriver(
-                () => new FirefoxDriver(new FirefoxOptions().SetCommonOptions()).SetCommonTimeouts(pageLoadTimeout),
-                new FirefoxConfig());
+        public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+        {
+            var options = new FirefoxOptions().SetCommonOptions();
 
-        public static InternetExplorerDriver CreateInternetExplorerDriver(TimeSpan pageLoadTimeout) =>
+            if (configuration.Headless) options.AddArgument("--headless");
+            configuration?.BrowserOptionsConfigurator(options);
+
+            return CreateDriver(
+                () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
+                new FirefoxConfig());
+        }
+
+
+        public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(() =>
             {
                 var options = new InternetExplorerOptions().SetCommonOptions();
+
                 // IE doesn't support this.
                 options.AcceptInsecureCertificates = false;
+                configuration?.BrowserOptionsConfigurator(options);
+
                 return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
             }, new InternetExplorerConfig());
 

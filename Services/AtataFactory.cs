@@ -21,15 +21,16 @@ namespace Lombiq.Tests.UI.Services
             AtataContext.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
 
             var timeoutConfiguration = configuration.TimeoutConfiguration;
+            var browserConfiguration = configuration.BrowserConfiguration;
 
             var builder = AtataContext.Configure()
-                .UseDriver(configuration.Browser switch
+                .UseDriver(browserConfiguration.Browser switch
                 {
-                    Browser.Chrome => WebDriverFactory.CreateChromeDriver(timeoutConfiguration.PageLoadTimeout),
-                    Browser.Edge => WebDriverFactory.CreateEdgeDriver(timeoutConfiguration.PageLoadTimeout),
-                    Browser.Firefox => WebDriverFactory.CreateFirefoxDriver(timeoutConfiguration.PageLoadTimeout),
-                    Browser.InternetExplorer => WebDriverFactory.CreateInternetExplorerDriver(timeoutConfiguration.PageLoadTimeout),
-                    _ => throw new InvalidOperationException($"Unknown browser: {configuration.Browser}.")
+                    Browser.Chrome => WebDriverFactory.CreateChromeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                    Browser.Edge => WebDriverFactory.CreateEdgeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                    Browser.Firefox => WebDriverFactory.CreateFirefoxDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                    Browser.InternetExplorer => WebDriverFactory.CreateInternetExplorerDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                    _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}.")
                 })
                 .UseBaseUrl(baseUri.ToString())
                 .UseCulture("en-us")

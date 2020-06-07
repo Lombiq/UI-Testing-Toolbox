@@ -42,11 +42,12 @@ namespace Lombiq.Tests.UI
 
             var configuration = new OrchardCoreUITestExecutorConfiguration
             {
-                Browser = browser,
                 OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
                 SetupOperation = setupOperation,
                 TestOutputHelper = _testOutputHelper
             };
+
+            configuration.BrowserConfiguration.Browser = browser;
 
             changeConfiguration?.Invoke(configuration);
 
