@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System.Drawing;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -20,9 +21,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// Reverts the visibility of admin checkboxes made visible with
         /// <see cref="MakeAdminCheckboxesVisible(UITestContext)"/>.
         /// </summary>
-        /// <param name="context"></param>
         public static void RevertAdminCheckboxesVisibility(this UITestContext context) =>
             (context.Driver as IJavaScriptExecutor)
             .ExecuteScript("Array.from(document.querySelectorAll('.custom-control-input')).forEach(x => x.style.opacity = 0)");
+
+        /// <summary>
+        /// Set the browser window's size to the given value.
+        /// </summary>
+        /// <param name="size">The outer size of the browser window.</param>
+        public static void SetBrowserSize(this UITestContext context, Size size)
+        {
+            context.Scope.AtataContext?.Log.Info($"Set window size to {size.Width}x{size.Height}.");
+            context.Driver.Manage().Window.Size = size;
+        }
     }
 }
