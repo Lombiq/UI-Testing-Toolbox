@@ -26,11 +26,15 @@ namespace Lombiq.Tests.UI.Services
             return !string.IsNullOrEmpty(config) ? int.Parse(config) : 0;
         }
 
+        public static int GetIntConfiguration(string key, int defaultValue) => GetIntConfiguration(key) ?? defaultValue;
+
         public static int? GetIntConfiguration(string key)
         {
             var config = GetConfiguration(key);
             return string.IsNullOrEmpty(config) ? (int?)null : int.Parse(config);
         }
+
+        public static bool GetBoolConfiguration(string key, bool defaultValue) => GetBoolConfiguration(key) ?? defaultValue;
 
         public static bool? GetBoolConfiguration(string key)
         {
