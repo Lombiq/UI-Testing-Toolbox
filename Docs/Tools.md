@@ -9,5 +9,5 @@
   - For IE you'll need to do [some manual configuration](https://github.com/SeleniumHQ/selenium/wiki/InternetExplorerDriver#required-configuration) in the browser.
 - Browser driver setup is automated with [WebDriverManager.NET](https://github.com/rosolko/WebDriverManager.Net).
 - There are multiple recording tools available for Selenium but the "official" one which works pretty well is [Selenium IDE](https://www.selenium.dev/selenium-ide/) (which is a Chrome/Firefox extension). To fine-tune XPath queries and CSS selectors and also to record tests check out [ChroPath](https://chrome.google.com/webstore/detail/chropath/ljngjbnaijcbncmcnjfhigebomdlkcjo/).
-- Recorded tests are then executed from xUnit tests.
+- Recorded tests are then executed from [xUnit](https://xunit.net/) tests.
 - Accessibility checking can be done with [axe](https://github.com/dequelabs/axe-core) via [Selenium.Axe for .NET](https://github.com/TroyWalshProf/SeleniumAxeDotnet).
