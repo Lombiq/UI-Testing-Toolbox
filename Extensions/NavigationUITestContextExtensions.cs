@@ -1,8 +1,9 @@
-using System;
 using Atata;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -50,5 +51,9 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static ITargetLocator SwitchTo(this UITestContext context) => context.Driver.SwitchTo();
 
+        public static IWebDriver SwitchToLastWindow(this UITestContext context) =>
+            context.SwitchTo().Window(context.Driver.WindowHandles.Last());
+
+        public static IWebDriver SwitchToFrame0(this UITestContext context) => context.SwitchTo().Frame(0);
     }
 }
