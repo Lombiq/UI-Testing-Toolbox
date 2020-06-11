@@ -29,6 +29,9 @@ namespace Lombiq.Tests.UI.Extensions
         /// Set the browser window's size to the given value. See <see cref="CommonDisplayResolutions"/> for some
         /// resolution presets (but generally it's better to test the given app's responsive breakpoints specifically).
         /// </summary>
+        /// <remarks>
+        /// Note that if you switch windows / tabs during the test you may need to set the browser size again.
+        /// </remarks>
         /// <param name="size">The outer size of the browser window.</param>
         public static void SetBrowserSize(this UITestContext context, Size size)
         {
