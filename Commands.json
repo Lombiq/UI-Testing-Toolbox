@@ -1,0 +1,9 @@
+{
+  "commands": {
+    "KillLeftoverProcesses": {
+      "fileName": "cmd.exe",
+      "workingDirectory": ".",
+      "arguments": "/c KillLeftoverProcesses.bat"
+    }
+  }
+}
