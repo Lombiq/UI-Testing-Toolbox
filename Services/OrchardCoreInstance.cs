@@ -1,6 +1,5 @@
 using CliWrap;
 using CliWrap.Builders;
-using CliWrap.EventStream;
 using Lombiq.Tests.UI.Helpers;
 using System;
 using System.Collections.Generic;
@@ -157,35 +156,16 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            var enumerator = _command
-                .ListenAsync(_cancellationTokenSource.Token).GetAsyncEnumerator();
-
-            try
-            {
-                while (await enumerator.MoveNextAsync())
-                {
-                    var commandEvent = enumerator.Current;
-
-                    switch (commandEvent)
-                    {
-                        case StandardOutputCommandEvent stdOut:
-                            if (stdOut.Text.Contains("Application started. Press Ctrl+C to shut down.")) return;
-                            break;
-                        case StandardErrorCommandEvent stdErr:
-                            throw new IOException(
-                                "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                                Environment.NewLine +
-                                stdErr.Text +
-                                (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
-                                    " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
-                                    string.Empty));
-                    }
-                }
-            }
-            finally
-            {
-                await enumerator.DisposeAsync();
-            }
+            await _command.ExecuteDotNetApplication(
+                    stdErr =>
+                        throw new IOException(
+                            "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
+                            Environment.NewLine +
+                            stdErr.Text +
+                            (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
+                                " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
+                                string.Empty)),
+                    _cancellationTokenSource.Token);
         }
 
         private Task StopOrchardApp()

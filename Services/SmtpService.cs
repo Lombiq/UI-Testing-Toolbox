@@ -1,6 +1,5 @@
 using CliWrap;
 using CliWrap.Buffered;
-using CliWrap.EventStream;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -110,7 +109,7 @@ namespace Lombiq.Tests.UI.Services
             // dotnet tool run smtp4dev --db="" --smtpport 26 --urls http://localhost:1234
             // For the possible command line arguments see https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L95
             // Although e.g. "urls" is not there.
-            var enumerator = Cli
+            await Cli
                 .Wrap("dotnet.exe")
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
@@ -118,27 +117,15 @@ namespace Lombiq.Tests.UI.Services
                     .Add("--db=").Add("")
                     .Add("--smtpport").Add(_smtpPort)
                     .Add("--urls").Add(webUIUri.ToString()))
-                    .ListenAsync(_cancellationTokenSource.Token)
-                    .GetAsyncEnumerator();
+                .ExecuteDotNetApplication(
+                    stdErr =>
+                        throw new IOException(
+                            $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port {_webUIPort} due to the following error: " +
+                            Environment.NewLine +
+                            stdErr.Text),
+                    _cancellationTokenSource.Token);
 
-            try
-            {
-                // Waiting for the server to start.
-                while (await enumerator.MoveNextAsync())
-                {
-                    if (enumerator.Current is StandardOutputCommandEvent stdOut &&
-                        stdOut.Text.Contains("Application started. Press Ctrl+C to shut down."))
-                    {
-                        return new SmtpServiceRunningContext(_smtpPort, webUIUri);
-                    }
-                }
-            }
-            finally
-            {
-                await enumerator.DisposeAsync();
-            };
-
-            throw new InvalidOperationException("The smtp4dev service didn't start properly.");
+            return new SmtpServiceRunningContext(_smtpPort, webUIUri);
         }
 
         public ValueTask DisposeAsync()
