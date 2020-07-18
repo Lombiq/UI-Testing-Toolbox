@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -14,5 +15,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         public static void SignInDirectly(this UITestContext context, string userName) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" + userName);
+
+        /// <summary>
+        /// Retrieves the currently authenticated user's name, if any. The target app needs to have
+        /// Lombiq.Tests.UI.Shortcuts enabled.
+        /// </summary>
+        /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
+        public static string GetCurrentUserName(this UITestContext context) =>
+            context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
     }
 }
