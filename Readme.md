@@ -15,6 +15,7 @@ Highlights:
 - Test e-mail sending with a local SMTP server too. Everything just works.
 - Check for web content accessibility so people with disabilities can user your app properly too. You can also create accessibility reports for all pages.
 - Reliability is built in, so you won't get false negatives.
+- Use shortcuts for common Orchard Core operations like login instead of going through the UI.
 
 
 ## Table of contents
