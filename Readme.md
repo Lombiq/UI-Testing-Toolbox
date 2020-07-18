@@ -19,8 +19,8 @@ Highlights:
 
 ## Table of contents
 
-- [Tools we use](Docs/Tools.md)
-- [Creating tests](Docs/CreatingTests.md)
-- [Configuration](Docs/Configuration.md)
-- [Troubleshooting](Docs/Troubleshooting.md)
-- [Limits](Docs/Limits.md)
+- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+- [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
+- [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
+- [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
+- [Limits](Lombiq.Tests.UI/Docs/Limits.md)
