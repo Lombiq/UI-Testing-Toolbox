@@ -161,27 +161,31 @@ namespace Lombiq.Tests.UI.Services
                     if (context == null) throw;
 
                     var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + tryCount.ToString());
+                    var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+                    Directory.CreateDirectory(dumpContainerPath);
+                    Directory.CreateDirectory(debugInformationPath);
 
                     if (dumpConfiguration.CaptureAppSnapshot)
                     {
-                        await context.Application.TakeSnapshot(dumpContainerPath);
+                        await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
                     }
 
                     if (dumpConfiguration.CaptureScreenshot)
                     {
                         // Only PNG is supported on .NET Core.
-                        context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(dumpContainerPath, "Screenshot.png"));
+                        context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
                     }
 
                     if (dumpConfiguration.CaptureHtmlSource)
                     {
-                        await File.WriteAllTextAsync(Path.Combine(dumpContainerPath, "PageSource.html"), context.Scope.Driver.PageSource);
+                        await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
                     }
 
                     if (dumpConfiguration.CaptureBrowserLog)
                     {
                         await File.WriteAllLinesAsync(
-                            Path.Combine(dumpContainerPath, "BrowserLog.log"),
+                            Path.Combine(debugInformationPath, "BrowserLog.log"),
                             (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
                     }
 
@@ -190,7 +194,7 @@ namespace Lombiq.Tests.UI.Services
                     {
                         context.Driver.CreateAxeHtmlReport(
                             accessibilityAssertionException.AxeResult,
-                            Path.Combine(dumpContainerPath, "AccessibilityReport.html"));
+                            Path.Combine(debugInformationPath, "AccessibilityReport.html"));
                     }
 
                     if (tryCount == configuration.MaxTryCount)
