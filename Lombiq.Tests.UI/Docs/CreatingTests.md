@@ -42,6 +42,8 @@
 
 ## Tips on optimizing tests
 
+- The biggest performance gain of test execution is parallelization. Note that xUnit [by design only executes test collections in parallel](https://github.com/xunit/xunit/issues/1227), not tests within them. So instead of large test collections (which mostly equals test classes) break them up into smaller ones.
 - If you want different Orchard settings for tests then you can achieve this with recipes created just for tests, used when launching a test.
 - Load static resources locally instead of from a CDN. While using CDNs, especially shared CDNs for framework files (like jQuery, Bootstrap) can provide a lot of performance benefits in production apps they seriously limit (parallel) UI test execution. This is because all tests are executed in a new and independent browser session thus they don't benefit from long-living caches. Instead, loading many external resources in parallel can saturate the given machine's internet connection, causing tests to be slower or even fail due to timeouts.
 - The accompanying Lombiq.Tests.UI.Shortcuts module adds shortcuts for common operations so you can do something directly in the app instead of going through the UI (like logging in), making test execution much faster if you're not actually testing the given features. See `ShortcutsUITestContextExtensions`. In a similar fashion, you can make your tests a lot faster if you don't execute long operations repeatedly from the UI but just test them once and then use a shortcut for them.
+
