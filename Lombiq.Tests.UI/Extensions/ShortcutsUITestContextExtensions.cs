@@ -17,6 +17,13 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" + userName);
 
         /// <summary>
+        /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the
+        /// logoff page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
+        /// </summary>
+        public static void SignOutDirectly(this UITestContext context) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignOutDirectly");
+
+        /// <summary>
         /// Retrieves the currently authenticated user's name, if any. The target app needs to have
         /// Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>

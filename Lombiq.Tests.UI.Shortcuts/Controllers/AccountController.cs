@@ -32,5 +32,12 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
 
             return StatusCode(200);
         }
+
+        public async Task<IActionResult> SignOutDirectly(string userName)
+        {
+            await _userSignInManager.SignOutAsync();
+
+            return StatusCode(200);
+        }
     }
 }
