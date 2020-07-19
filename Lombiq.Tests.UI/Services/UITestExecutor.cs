@@ -153,8 +153,6 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"\n\n\n{ex}\n\n");
-
                     // If there is no context then something went really wrong. This did happen a few times already
                     // though, unclear yet why.
                     if (context == null) throw;
