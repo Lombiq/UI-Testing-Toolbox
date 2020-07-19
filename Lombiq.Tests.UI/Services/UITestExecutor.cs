@@ -38,6 +38,9 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
+            var startTime = DateTime.UtcNow;
+            DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
+
             configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = configuration.SetupSnapshotPath;
             var runSetupOperation = configuration.SetupOperation != null;
 
@@ -205,6 +208,8 @@ namespace Lombiq.Tests.UI.Services
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
+
+                    DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
 
                 tryCount++;
