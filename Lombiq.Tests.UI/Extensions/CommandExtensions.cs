@@ -16,27 +16,20 @@ namespace CliWrap
             Action<StandardErrorCommandEvent> stdErrHandler = default,
             CancellationToken cancellationToken = default)
         {
-            var enumerator = command.ListenAsync(cancellationToken).GetAsyncEnumerator();
+            await using var enumerator = command.ListenAsync(cancellationToken).GetAsyncEnumerator();
 
-            try
+            while (await enumerator.MoveNextAsync())
             {
-                while (await enumerator.MoveNextAsync())
+                if (enumerator.Current is StandardOutputCommandEvent stdOut &&
+                    stdOut.Text.Contains("Application started. Press Ctrl+C to shut down."))
                 {
-                    if (enumerator.Current is StandardOutputCommandEvent stdOut &&
-                        stdOut.Text.Contains("Application started. Press Ctrl+C to shut down."))
-                    {
-                        return;
-                    }
-                    else if (enumerator.Current is StandardErrorCommandEvent stdErr)
-                    {
-                        stdErrHandler?.Invoke(stdErr);
-                    }
+                    return;
+                }
+                else if (enumerator.Current is StandardErrorCommandEvent stdErr)
+                {
+                    stdErrHandler?.Invoke(stdErr);
                 }
             }
-            finally
-            {
-                await enumerator.DisposeAsync();
-            };
         }
     }
 }
