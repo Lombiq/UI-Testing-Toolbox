@@ -156,56 +156,57 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    // If there is no context then something went really wrong. This did happen a few times already
-                    // though, unclear yet why.
-                    if (context == null) throw;
+                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex.ToString()}.");
 
-                    var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + tryCount.ToString());
-                    var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                    Directory.CreateDirectory(dumpContainerPath);
-                    Directory.CreateDirectory(debugInformationPath);
-
-                    if (dumpConfiguration.CaptureAppSnapshot)
+                    if (context != null)
                     {
-                        await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
-                    }
+                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + tryCount.ToString());
+                        var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
-                    if (dumpConfiguration.CaptureScreenshot)
-                    {
-                        // Only PNG is supported on .NET Core.
-                        context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
-                    }
+                        Directory.CreateDirectory(dumpContainerPath);
+                        Directory.CreateDirectory(debugInformationPath);
 
-                    if (dumpConfiguration.CaptureHtmlSource)
-                    {
-                        await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
-                    }
+                        if (dumpConfiguration.CaptureAppSnapshot)
+                        {
+                            await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
+                        }
 
-                    if (dumpConfiguration.CaptureBrowserLog)
-                    {
-                        await File.WriteAllLinesAsync(
-                            Path.Combine(debugInformationPath, "BrowserLog.log"),
-                            (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
-                    }
+                        if (dumpConfiguration.CaptureScreenshot)
+                        {
+                            // Only PNG is supported on .NET Core.
+                            context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                        }
 
-                    if (ex is AccessibilityAssertionException accessibilityAssertionException
-                        && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                    {
-                        context.Driver.CreateAxeHtmlReport(
-                            accessibilityAssertionException.AxeResult,
-                            Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                        if (dumpConfiguration.CaptureHtmlSource)
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
+                        }
+
+                        if (dumpConfiguration.CaptureBrowserLog)
+                        {
+                            await File.WriteAllLinesAsync(
+                                Path.Combine(debugInformationPath, "BrowserLog.log"),
+                                (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
+                        }
+
+                        if (ex is AccessibilityAssertionException accessibilityAssertionException
+                            && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+                        {
+                            context.Driver.CreateAxeHtmlReport(
+                                accessibilityAssertionException.AxeResult,
+                                Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                        }
                     }
 
                     if (tryCount == configuration.MaxTryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {tryCount} times and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine($"The test was attempted {tryCount} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
                     testOutputHelper.WriteLine(
-                        $"The test was attempted {tryCount} times. {configuration.MaxTryCount - tryCount} more attempt(s) will be made.");
+                        $"The test was attempted {tryCount} time(s). {configuration.MaxTryCount - tryCount} more attempt(s) will be made.");
                 }
                 finally
                 {
