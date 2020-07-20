@@ -72,7 +72,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             var testOutputHelper = configuration.TestOutputHelper;
-            var tryCount = 1;
+            var retryCount = 0;
             while (true)
             {
                 BrowserLogMessage[] browserLogMessages = null;
@@ -156,11 +156,11 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex.ToString()}.");
+                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}.");
 
                     if (context != null)
                     {
-                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + tryCount.ToString());
+                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
                         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
                         Directory.CreateDirectory(dumpContainerPath);
@@ -198,15 +198,15 @@ namespace Lombiq.Tests.UI.Services
                         }
                     }
 
-                    if (tryCount == configuration.MaxTryCount)
+                    if (retryCount == configuration.MaxRetryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {tryCount} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
                     testOutputHelper.WriteLine(
-                        $"The test was attempted {tryCount} time(s). {configuration.MaxTryCount - tryCount} more attempt(s) will be made.");
+                        $"The test was attempted {retryCount + 1} time(s). {configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
                 }
                 finally
                 {
@@ -217,7 +217,7 @@ namespace Lombiq.Tests.UI.Services
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
 
-                tryCount++;
+                retryCount++;
             }
         }
     }

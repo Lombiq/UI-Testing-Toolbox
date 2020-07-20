@@ -23,8 +23,10 @@ namespace Lombiq.Tests.UI.Services
         public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
         public AtataConfiguration AtataConfiguration { get; set; } = new AtataConfiguration();
         public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }
-        public int MaxTryCount { get; set; } =
-            TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxTryCount", 5);
+        public int MaxRetryCount { get; set; } =
+            // Backwards compatibility with older MaxTryCount config.
+            TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxTryCount") - 1 ??
+            TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxRetryCount", 5);
         public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
