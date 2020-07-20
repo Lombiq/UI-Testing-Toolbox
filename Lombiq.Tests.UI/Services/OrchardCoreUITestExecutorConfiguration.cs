@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Services
         public int MaxRetryCount { get; set; } =
             // Backwards compatibility with older MaxTryCount config.
             TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxTryCount") - 1 ??
-            TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxRetryCount", 5);
+            TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxRetryCount", 2);
         public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
