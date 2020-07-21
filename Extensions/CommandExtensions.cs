@@ -36,7 +36,7 @@ namespace CliWrap
             finally
             {
                 await enumerator.DisposeAsync();
-            };
+            }
         }
     }
 }

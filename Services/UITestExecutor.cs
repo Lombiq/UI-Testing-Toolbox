@@ -56,7 +56,7 @@ namespace Lombiq.Tests.UI.Services
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('('))
             {
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
-                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
+                    dumpFolderNameBase.LastIndexOf('.', 0, dumpFolderNameBase.IndexOf('(')) + 1);
             }
 
             var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
@@ -148,8 +148,6 @@ namespace Lombiq.Tests.UI.Services
 
                         throw;
                     }
-
-                    return;
                 }
                 catch (Exception ex)
                 {
