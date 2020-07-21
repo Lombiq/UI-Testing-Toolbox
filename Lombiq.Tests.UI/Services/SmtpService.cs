@@ -45,8 +45,8 @@ namespace Lombiq.Tests.UI.Services
         static SmtpService()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-            _smtpPortLeaseManager = new PortLeaseManager(11000 + agentIndexTimesHundred, 11000 + agentIndexTimesHundred);
-            _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12000 + agentIndexTimesHundred);
+            _smtpPortLeaseManager = new PortLeaseManager(11000 + agentIndexTimesHundred, 11099 + agentIndexTimesHundred);
+            _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
         }
 
 
