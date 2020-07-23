@@ -62,7 +62,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (!File.Exists(dotnetToolsConfigFilePath))
             {
-                new InvalidOperationException("No .NET CLI local tool manifest file found. Was the .config folder removed?");
+                throw new InvalidOperationException("No .NET CLI local tool manifest file found. Was the .config folder removed?");
             }
 
             var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath));
@@ -136,6 +136,7 @@ namespace Lombiq.Tests.UI.Services
             if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
             {
                 _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
             }
 
             return new ValueTask(Task.CompletedTask);
