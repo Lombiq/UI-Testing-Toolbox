@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
 {
-    [DevelopmentOnly]
+    [DevelopmentAndLocalhostOnly]
     public class AccountController : Controller
     {
         private readonly UserManager<IUser> _userManager;
