@@ -42,7 +42,10 @@ namespace Lombiq.Tests.UI.Services
         private bool _isDisposed;
 
 
-        [SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "Code is much nicer this way.")]
+        [SuppressMessage(
+            "Minor Code Smell",
+            "S3963:\"static\" fields should be initialized inline",
+            Justification = "No GetAgentIndexOrDefault() duplication this way.")]
         static OrchardCoreInstance()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
