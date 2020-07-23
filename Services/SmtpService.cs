@@ -114,7 +114,7 @@ namespace Lombiq.Tests.UI.Services
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
                     // For the db parameter the equal sign is needed.
-                    .Add("--db=").Add("")
+                    .Add("--db=").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort)
                     .Add("--urls").Add(webUIUri.ToString()))
                 .ExecuteDotNetApplication(
