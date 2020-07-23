@@ -59,7 +59,7 @@ namespace Lombiq.Tests.UI.Services
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('('))
             {
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
-                    dumpFolderNameBase.LastIndexOf('.', 0, dumpFolderNameBase.IndexOf('(')) + 1);
+                         dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
             }
 
             var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
