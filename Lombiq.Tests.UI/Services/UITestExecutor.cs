@@ -58,8 +58,10 @@ namespace Lombiq.Tests.UI.Services
             var dumpFolderNameBase = testManifest.Name;
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('('))
             {
+#pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
                     dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
+#pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
             var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());

@@ -9,9 +9,12 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
+    [SuppressMessage(
+        "StyleCop.CSharp.MaintainabilityRules",
+        "SA1402:File may only contain a single type",
+        Justification = "Here for future use.")]
     public class SmtpServiceConfiguration
     {
-        // Here for future use.
     }
 
 
@@ -41,7 +44,10 @@ namespace Lombiq.Tests.UI.Services
         private CancellationTokenSource _cancellationTokenSource;
 
 
-        [SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "Code is much nicer this way.")]
+        [SuppressMessage(
+            "Minor Code Smell",
+            "S3963:\"static\" fields should be initialized inline",
+            Justification = "No GetAgentIndexOrDefault() duplication this way.")]
         static SmtpService()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -114,7 +120,7 @@ namespace Lombiq.Tests.UI.Services
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
                     // For the db parameter the equal sign is needed.
-                    .Add("--db=").Add("")
+                    .Add("--db=").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort)
                     .Add("--urls").Add(webUIUri.ToString()))
                 .ExecuteDotNetApplication(
