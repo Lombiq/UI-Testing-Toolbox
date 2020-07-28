@@ -2,8 +2,10 @@
 
 
 
+## Steps for creating a test
+
 1. Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
-2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. You can then do Atata testing as usual by starting with `context.GoToPage<TPage>();`. For simpler cases, however, we create recorded tests. The rest of this guide shows how to create such recorded tests. So create a class for this with the basics of a test method, but no commands yet.
+2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. You can then do Atata testing as usual by starting with `context.GoToPage<TPage>();`. For simpler cases, however, we create recorded tests. The rest of this guide shows how to create such recorded tests. So create a class for this with the basics of a test method, but no commands yet. You can inherit your test class from `OrchardCoreUITestBase` to makes things simpler.
 3. Launch the app and go to a page where the next click would lead to the first page of the tested feature. This is most possibly the homepage or the dashboard, both of which you can easily reach with helpers in the test.
 4. Open Selenium IDE, create a new project (it doesn't matter, we won't use it) and inside it create a new test case (again, doesn't matter).
 5. Start recording. Now everything you do will be recorded as commands in Selenium IDE. Sometimes it messes up the order but don't worry, you can reorder commands freely.
@@ -27,7 +29,8 @@
       - Add documentation if something is hard to understand.
       - It's good practice to always explicitly set the size of the browser window so it doesn't depend on the machine executing the test. You can do this with the `UITestContext.SetBrowserSize()` shortcut.
 
-Note:
+
+## Notes on test execution
 
 - By default any non-warning entry in the Orchard log and any warning or error in the browser log will fail a test.
 - Individual driver operations are retried with a timeout, and failing tests are also retried. While you're developing a test this might not be what you want but rather for the tests to fail as quickly as possible. For this, lower the timeout values in and the try count, see [Configuration](Configuration.md).
@@ -35,3 +38,12 @@ Note:
 - E-mails can be sent out to a local SMTP server and the received e-mails checked too, fully automated. Note that this also needs support from the web project since the SMTP port needs to be configured on the fly.
 - Accessibility checking is available with [axe](https://github.com/dequelabs/axe-core). [Check out](https://github.com/TroyWalshProf/SeleniumAxeDotnet) what you can do with the library we use. You can also use the [axe Chrome extension](https://chrome.google.com/webstore/detail/axe-web-accessibility-tes/lhdoppojpmngadmnindnejefpokejbdd) to aid you fixing issues.
 - In case of testing Trumbowyg editors, make sure each editor is placed inside its own uniquely named container so that multiple editors on the same page can be identified separately.
+
+
+## Tips on optimizing tests
+
+- The biggest performance gain of test execution is parallelization. Note that xUnit [by design only executes test collections in parallel](https://github.com/xunit/xunit/issues/1227), not tests within them. So instead of large test collections (which mostly equals test classes) break them up into smaller ones.
+- If you want different Orchard settings for tests then you can achieve this with recipes created just for tests, used when launching a test.
+- Load static resources locally instead of from a CDN. While using CDNs, especially shared CDNs for framework files (like jQuery, Bootstrap) can provide a lot of performance benefits in production apps they seriously limit (parallel) UI test execution. This is because all tests are executed in a new and independent browser session thus they don't benefit from long-living caches. Instead, loading many external resources in parallel can saturate the given machine's internet connection, causing tests to be slower or even fail due to timeouts.
+- The accompanying Lombiq.Tests.UI.Shortcuts module adds shortcuts for common operations so you can do something directly in the app instead of going through the UI (like logging in), making test execution much faster if you're not actually testing the given features. See `ShortcutsUITestContextExtensions`. In a similar fashion, you can make your tests a lot faster if you don't execute long operations repeatedly from the UI but just test them once and then use a shortcut for them.
+

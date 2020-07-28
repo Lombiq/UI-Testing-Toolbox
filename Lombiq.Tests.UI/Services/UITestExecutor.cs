@@ -38,6 +38,9 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
+            var startTime = DateTime.UtcNow;
+            DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
+
             configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = configuration.SetupSnapshotPath;
             var runSetupOperation = configuration.SetupOperation != null;
 
@@ -71,7 +74,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             var testOutputHelper = configuration.TestOutputHelper;
-            var tryCount = 1;
+            var retryCount = 0;
             while (true)
             {
                 BrowserLogMessage[] browserLogMessages = null;
@@ -155,63 +158,68 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"\n\n\n{ex}\n\n");
+                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}.");
 
-                    // If there is no context then something went really wrong. This did happen a few times already
-                    // though, unclear yet why.
-                    if (context == null) throw;
-
-                    var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + tryCount.ToString());
-
-                    if (dumpConfiguration.CaptureAppSnapshot)
+                    if (context != null)
                     {
-                        await context.Application.TakeSnapshot(dumpContainerPath);
+                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
+                        var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+                        Directory.CreateDirectory(dumpContainerPath);
+                        Directory.CreateDirectory(debugInformationPath);
+
+                        if (dumpConfiguration.CaptureAppSnapshot)
+                        {
+                            await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
+                        }
+
+                        if (dumpConfiguration.CaptureScreenshot)
+                        {
+                            // Only PNG is supported on .NET Core.
+                            context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                        }
+
+                        if (dumpConfiguration.CaptureHtmlSource)
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
+                        }
+
+                        if (dumpConfiguration.CaptureBrowserLog)
+                        {
+                            await File.WriteAllLinesAsync(
+                                Path.Combine(debugInformationPath, "BrowserLog.log"),
+                                (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
+                        }
+
+                        if (ex is AccessibilityAssertionException accessibilityAssertionException
+                            && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+                        {
+                            context.Driver.CreateAxeHtmlReport(
+                                accessibilityAssertionException.AxeResult,
+                                Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                        }
                     }
 
-                    if (dumpConfiguration.CaptureScreenshot)
-                    {
-                        // Only PNG is supported on .NET Core.
-                        context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(dumpContainerPath, "Screenshot.png"));
-                    }
-
-                    if (dumpConfiguration.CaptureHtmlSource)
-                    {
-                        await File.WriteAllTextAsync(Path.Combine(dumpContainerPath, "PageSource.html"), context.Scope.Driver.PageSource);
-                    }
-
-                    if (dumpConfiguration.CaptureBrowserLog)
-                    {
-                        await File.WriteAllLinesAsync(
-                            Path.Combine(dumpContainerPath, "BrowserLog.log"),
-                            (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
-                    }
-
-                    if (ex is AccessibilityAssertionException accessibilityAssertionException
-                        && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                    {
-                        context.Driver.CreateAxeHtmlReport(
-                            accessibilityAssertionException.AxeResult,
-                            Path.Combine(dumpContainerPath, "AccessibilityReport.html"));
-                    }
-
-                    if (tryCount == configuration.MaxTryCount)
+                    if (retryCount == configuration.MaxRetryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {tryCount} times and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
                     testOutputHelper.WriteLine(
-                        $"The test was attempted {tryCount} times. {configuration.MaxTryCount - tryCount} more attempt(s) will be made.");
+                        $"The test was attempted {retryCount + 1} time(s). {configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
                 }
                 finally
                 {
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
+
+                    DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
 
-                tryCount++;
+                retryCount++;
             }
         }
     }

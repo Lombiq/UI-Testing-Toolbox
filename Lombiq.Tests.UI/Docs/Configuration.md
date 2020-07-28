@@ -21,7 +21,7 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
   "TimeoutConfiguration.RetryTimeoutSeconds": 5,
   "TimeoutConfiguration.RetryIntervalMillisecondSeconds": 300,
   "TimeoutConfiguration.PageLoadTimeoutSeconds": 120,
-  "OrchardCoreUITestExecutorConfiguration.MaxTryCount": 1,
+  "OrchardCoreUITestExecutorConfiguration.MaxRetryCount": 0,
   "BrowserConfiguration.Headless": true,
   "AgentIndex":  3
 }
@@ -32,4 +32,6 @@ Note that this will execute tests in headless mode, so no browser windows will b
 
 ## <a name="multi-process"></a>Multi-process test execution
 
-UI tests are executed in parallel by default for the given test execution process. However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented. Supply the agent index (it doesn't need to be zero-indexed but it must be unique to each process) in the `AgentIndex` configuration. You can also use this to find a port interval where on your machine there are no other processes listening.
+UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
+
+Supply the agent index in the `AgentIndex` configuration. It doesn't need to but is highly recommended to be zero-indexed (see the [docs on limits](Limits.md)) and it must be unique to each process. You can also use this to find a port interval where on your machine there are no other processes listening.

@@ -15,12 +15,13 @@ Highlights:
 - Test e-mail sending with a local SMTP server too. Everything just works.
 - Check for web content accessibility so people with disabilities can user your app properly too. You can also create accessibility reports for all pages.
 - Reliability is built in, so you won't get false negatives.
+- Use shortcuts for common Orchard Core operations like login instead of going through the UI.
 
 
 ## Table of contents
 
-- [Tools we use](Docs/Tools.md)
-- [Creating tests](Docs/CreatingTests.md)
-- [Configuration](Docs/Configuration.md)
-- [Troubleshooting](Docs/Troubleshooting.md)
-- [Limits](Docs/Limits.md)
+- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+- [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
+- [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
+- [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
+- [Limits](Lombiq.Tests.UI/Docs/Limits.md)
