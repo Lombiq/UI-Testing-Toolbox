@@ -26,11 +26,14 @@ namespace Lombiq.Tests.UI.Services
             var builder = AtataContext.Configure()
                 .UseDriver(browserConfiguration.Browser switch
                 {
+                    // The drivers are disposed when disposing the AtataScope.
+#pragma warning disable CA2000 // Dispose objects before losing scope
                     Browser.Chrome => WebDriverFactory.CreateChromeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     Browser.Edge => WebDriverFactory.CreateEdgeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     Browser.Firefox => WebDriverFactory.CreateFirefoxDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     Browser.InternetExplorer => WebDriverFactory.CreateInternetExplorerDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}.")
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 })
                 .UseBaseUrl(baseUri.ToString())
                 .UseCulture("en-us")
