@@ -55,7 +55,7 @@ namespace Lombiq.Tests.UI.Services
             _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
         }
 
-
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Here for future use.")]
         public async Task<SmtpServiceRunningContext> Start(SmtpServiceConfiguration configuration = null)
         {
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
