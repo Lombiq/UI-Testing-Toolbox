@@ -74,7 +74,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// console: https://codoid.com/selenium-4-chrome-devtools-log-entry-listeners/
         /// All details accessible from under
         /// https://stackoverflow.com/questions/57209503/system-nullreferenceexception-when-reading-browser-log-with-selenium.
-        /// For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types
+        /// For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types.
         /// </remarks>
         public async static Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLog(this IWebDriver driver)
         {
