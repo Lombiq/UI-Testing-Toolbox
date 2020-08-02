@@ -76,8 +76,6 @@ namespace Lombiq.Tests.UI.Extensions
         /// https://stackoverflow.com/questions/57209503/system-nullreferenceexception-when-reading-browser-log-with-selenium.
         /// For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types
         /// </remarks>
-        /// <param name="driver"></param>
-        /// <returns></returns>
         public async static Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLog(this IWebDriver driver)
         {
             if (driver.GetType() != typeof(ChromeDriver)) return Enumerable.Empty<BrowserLogMessage>();
@@ -87,7 +85,7 @@ namespace Lombiq.Tests.UI.Extensions
             var resource = $"{endpoint}session/{session}/se/log";
             const string jsonBody = @"{""type"":""browser""}";
 
-            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            using var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var response = await _httpClient.PostAsync(resource, content);
             var responseBody = await response.Content.ReadAsStringAsync();
             return AsLogEntries(responseBody)
