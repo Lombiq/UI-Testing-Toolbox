@@ -61,5 +61,17 @@ namespace Lombiq.Tests.UI.Extensions
                     return true;
                 }
             }, timeout, interval);
+
+        public static void ClickNewContentItem(this UITestContext context, string contentItemName)
+        {
+            context.Get(By.Id("new-dropdown")).ClickReliably(context);
+            context.Get(By.LinkText(contentItemName)).ClickReliably(context);
+        }
+
+        public static void GoToUsers(this UITestContext context)
+        {
+            context.Get(By.CssSelector("#security .title")).ClickReliably(context);
+            context.Get(By.CssSelector(".item-label.users .title")).ClickReliably(context);
+        }
     }
 }
