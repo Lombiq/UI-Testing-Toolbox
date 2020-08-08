@@ -18,8 +18,8 @@ namespace Lombiq.Tests.UI.Extensions
     public class BrowserLogMessage
     {
         /// <summary>
-        /// The source where the message originates from. This can be ultimately anything but you can find some common
-        /// ones under <see cref="Sources"/>.
+        /// Gets or sets the source where the message originates from. This can be ultimately anything but you can find
+        /// some common ones under <see cref="Sources"/>.
         /// </summary>
         public string Source { get; set; }
         public MessageLevel Level { get; set; }
