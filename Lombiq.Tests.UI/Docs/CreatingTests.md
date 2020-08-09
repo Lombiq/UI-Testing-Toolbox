@@ -2,19 +2,25 @@
 
 
 
-## Steps for creating a test
+## Creating a test project
 
-1. Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
-2. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. You can then do Atata testing as usual by starting with `context.GoToPage<TPage>();`. For simpler cases, however, we create recorded tests. The rest of this guide shows how to create such recorded tests. So create a class for this with the basics of a test method, but no commands yet. You can inherit your test class from `OrchardCoreUITestBase` to makes things simpler.
-3. Launch the app and go to a page where the next click would lead to the first page of the tested feature. This is most possibly the homepage or the dashboard, both of which you can easily reach with helpers in the test.
-4. Open Selenium IDE, create a new project (it doesn't matter, we won't use it) and inside it create a new test case (again, doesn't matter).
-5. Start recording. Now everything you do will be recorded as commands in Selenium IDE. Sometimes it messes up the order but don't worry, you can reorder commands freely.
-6. Click through the app and use the feature you want to test as you'd use it normally (or try to break it for negative testing). When you want to check whether something is on a site as it should then right click on the element → Selenium IDE → Assert or Verify and then select the appropriate condition. Assert will make the test fail if there is a mismatch, Verify won't (but you have to determine how to handle it, like write some message to the output; Selenium will just generate the same assertion expressions for them). Do make sure to use these appropriately, since most of the time it's not enough to just click through pages and only fail the test if there's an exception but you need to make sure the page looks like it should (e.g. is what you just saved actually loaded, are you logged in as you should?).
-7. Once you're done stop the recording. While still in the command list:
+Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
+
+
+## Steps for creating a test class
+
+Keep test classes relatively small, with just a couple of test cases in them, and only put tightly related tests into the same class. This not just makes working with tests easier but also allows for a higher degree of parallel test execution, making testing faster.
+
+1. For complex and important Orchard-level pages that we re-use in multiple tests we create Atata Page classes, e.g. `OrchardSetupPage`, and instead of recording commands we code them directly, see e.g. `OrchardSetupPageExtensions.Setup()`. You can then do Atata testing as usual by starting with `context.GoToPage<TPage>();`. For simpler cases, however, we create recorded tests. The rest of this guide shows how to create such recorded tests. So create a class for this with the basics of a test method, but no commands yet. You can inherit your test class from `OrchardCoreUITestBase` to makes things simpler.
+2. Launch the app and go to a page where the next click would lead to the first page of the tested feature. This is most possibly the homepage or the dashboard, both of which you can easily reach with helpers in the test.
+3. Open Selenium IDE, create a new project (it doesn't matter, we won't use it) and inside it create a new test case (again, doesn't matter).
+4. Start recording. Now everything you do will be recorded as commands in Selenium IDE. Sometimes it messes up the order but don't worry, you can reorder commands freely.
+5. Click through the app and use the feature you want to test as you'd use it normally (or try to break it for negative testing). When you want to check whether something is on a site as it should then right click on the element → Selenium IDE → Assert or Verify and then select the appropriate condition. Assert will make the test fail if there is a mismatch, Verify won't (but you have to determine how to handle it, like write some message to the output; Selenium will just generate the same assertion expressions for them). Do make sure to use these appropriately, since most of the time it's not enough to just click through pages and only fail the test if there's an exception but you need to make sure the page looks like it should (e.g. is what you just saved actually loaded, are you logged in as you should?).
+6. Once you're done stop the recording. While still in the command list:
       - Reorder commands if necessary.
       - Make sure that the selectors Selenium used as targets are appropriate (like they are indeed unique, as little fragile and not future-proof if possible). Use CSS selectors when the element can be better pinpointed from the HTML structure, and use XPATH selectors if the content of the element helps to match it (like the text of a link). Don't make the selector depend on a user-facing string if possible (as these can change more frequently). The aim is for the selector to be specific (so it only matches the element we want, even in the future there will be more similar ones, like more such fields on a form) but not be overly tied to the HTML structure. The ID selector (if the ID is indeed unique, as it should be) is the most suitable for this. For links (due to the lack of IDs usually) mostly the link texts (even though they're user-facing).
-8. Export the test case to C\# xUnit. You won't need Selenium to generate any comments.
-9. Copy the commands to the previously prepared test class.
+7. Export the test case to C\# xUnit. You won't need Selenium to generate any comments.
+8. Copy the commands to the previously prepared test class.
       - Replace what we do differently:
         - For the simple 1-1 replacements use this in the Notepad++ Replace dialog with "Regular expression" Search Mode: "(FindElements)|(FindElement)|(SendKeys)|(Click\\(\\))|(driver)" for "Find what" and "(?1GetAll)(?2Get)(?3ClickAndFillInWithRetries)(?4ClickReliably\\(context\\))(?5context)" for "Replace with".
         - Note that the generate test does operations on an `IWebDriver` instance. While this is available in our tests you'll mostly use the ambient `UIContext`. So change all `driver` references to `context` (extensions are available for this context to proxy usual driver calls to the driver contained in it and you can also access the driver directly).
