@@ -26,10 +26,17 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickNewContentItem(contentType);
         }
 
-        public static void ClickNewContentItem(this UITestContext context, string contentType)
+        public static void ClickNewContentItem(this UITestContext context, string contentItemName, bool dropdown = true)
         {
-            context.Get(By.Id("new-dropdown")).ClickReliably(context);
-            context.Get(By.LinkText(contentType)).ClickReliably(context);
+            if (dropdown)
+            {
+                context.Get(By.Id("new-dropdown")).ClickReliably(context);
+                context.Get(By.LinkText(contentItemName)).ClickReliably(context);
+            }
+            else
+            {
+                context.Get(By.LinkText($"New {contentItemName}")).ClickReliably(context);
+            }
         }
 
         public static void GoToUsers(this UITestContext context)
