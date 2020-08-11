@@ -13,11 +13,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="SampleUploadFiles\Document.pdf" />
+    <None Remove="SampleUploadFiles\Image.png" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include=".config\dotnet-tools.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleUploadFiles\Document.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleUploadFiles\Image.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="xunit.runner.json">
