@@ -15,6 +15,8 @@
   <ItemGroup>
     <None Remove="SampleUploadFiles\Document.pdf" />
     <None Remove="SampleUploadFiles\Image.png" />
+    <None Remove="SampleUploadFiles\UploadingTestFileXLSX.xlsx" />
+    <None Remove="SampleUploadFiles\UploadingTestFileDOCX.docx" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
 
@@ -23,6 +25,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleUploadFiles\Document.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleUploadFiles\UploadingTestFileXLSX.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleUploadFiles\UploadingTestFileDOCX.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleUploadFiles\Image.png">
