@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
 
@@ -55,5 +56,10 @@ namespace Lombiq.Tests.UI.Extensions
             context.SwitchTo().Window(context.Driver.WindowHandles.Last());
 
         public static IWebDriver SwitchToFrame0(this UITestContext context) => context.SwitchTo().Frame(0);
+
+        // Taken from: https://stackoverflow.com/a/36590395
+        public static bool WaitForPageLoad(this UITestContext context) =>
+            new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
+                d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
     }
 }

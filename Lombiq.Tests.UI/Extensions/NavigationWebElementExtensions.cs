@@ -21,6 +21,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// </remarks>
         public static void ClickReliably(this IWebElement element, UITestContext context) => element.ClickReliably(context.Driver);
 
+        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
+
         public static void ClickReliably(this IWebElement element, IWebDriver driver)
         {
             try
