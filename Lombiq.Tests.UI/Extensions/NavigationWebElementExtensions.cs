@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using System;
+using Atata;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -63,5 +64,17 @@ namespace Lombiq.Tests.UI.Extensions
                     return true;
                 }
             }, timeout, interval);
+
+        public static void SetDropdown<T>(this UITestContext context, string selectId, T value) where T : Enum
+        {
+            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.Get(By.CssSelector($"#{selectId} option[value='{(int)((object)value)}']")).Click();
+        }
+
+        public static void SetDatePicker(this UITestContext context, string id, DateTime value)
+        {
+            ((IJavaScriptExecutor)context.Driver)
+                .ExecuteScript($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
+        }
     }
 }
