@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using System;
-using Atata;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -71,10 +70,8 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(By.CssSelector($"#{selectId} option[value='{(int)((object)value)}']")).Click();
         }
 
-        public static void SetDatePicker(this UITestContext context, string id, DateTime value)
-        {
-            ((IJavaScriptExecutor)context.Driver)
-                .ExecuteScript($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
-        }
+        public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
+            ((IJavaScriptExecutor)context.Driver).ExecuteScript(
+                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
     }
 }
