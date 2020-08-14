@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 })
                 .UseBaseUrl(baseUri.ToString())
-                .UseCulture("en-us")
+                .UseCulture(browserConfiguration.AcceptLanguage.ToString())
                 .UseTestName(configuration.AtataConfiguration.TestName)
                 .AddDebugLogging()
                 .AddLogConsumer(new TestOutputLogConsumer(testOutputHelper))

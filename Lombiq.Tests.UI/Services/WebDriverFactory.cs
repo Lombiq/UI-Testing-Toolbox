@@ -24,12 +24,16 @@ namespace Lombiq.Tests.UI.Services
             {
                 var options = new ChromeOptions().SetCommonOptions();
 
+                options.AddArgument("--lang=" + configuration.AcceptLanguage.ToString());
+
                 // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
                 // during parallel execution: https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
                 // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
                 // with trusted code (i.e. our own).
                 options.AddArgument("no-sandbox");
+
                 if (configuration.Headless) options.AddArgument("headless");
+
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                 return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
@@ -50,10 +54,21 @@ namespace Lombiq.Tests.UI.Services
 
                     var options = new EdgeOptions().SetCommonOptions();
 
+                    // Will be available with Selenium 4: https://stackoverflow.com/a/60894335/220230.
+                    if (configuration.AcceptLanguage != BrowserConfiguration.DefaultAcceptLanguage)
+                    {
+                        throw new NotSupportedException("Edge doesn't support configuring Accept Language.");
+                    }
+
                     // Edge will soon have headless support too, see:
                     // https://techcommunity.microsoft.com/t5/discussions/chromium-edge-automation-with-selenium-best-practice/m-p/436338
                     // Maybe not like this but in Selenium 4 at least.
                     //if (configuration.Headless) options.AddArgument("headless");
+                    if (configuration.Headless)
+                    {
+                        throw new NotSupportedException("Edge doesn't support headless mode.");
+                    }
+
                     configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                     return new EdgeDriver(
@@ -66,6 +81,8 @@ namespace Lombiq.Tests.UI.Services
         public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
         {
             var options = new FirefoxOptions().SetCommonOptions();
+
+            options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
             if (configuration.Headless) options.AddArgument("--headless");
             configuration?.BrowserOptionsConfigurator(options);
