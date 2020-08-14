@@ -1,9 +1,13 @@
 using System;
+using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services
 {
     public class BrowserConfiguration
     {
+        public static readonly CultureInfo DefaultAcceptLanguage = new CultureInfo("en-US");
+
+
         /// <summary>
         /// The browser to use for the current test.
         /// </summary>
@@ -18,5 +22,11 @@ namespace Lombiq.Tests.UI.Services
         /// This action will be invoked with the browser's options object so you can modify the options as necessary.
         /// </summary>
         public Action<object> BrowserOptionsConfigurator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the culture that'll be used in the browser to set the Accept-Language HTTP header and make
+        /// requests. Defaults to <see cref="DefaultAcceptLanguage"/>.
+        /// </summary>
+        public CultureInfo AcceptLanguage { get; set; } = DefaultAcceptLanguage;
     }
 }
