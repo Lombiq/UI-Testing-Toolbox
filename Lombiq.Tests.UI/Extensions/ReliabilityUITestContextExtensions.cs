@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Extensions
 
                     return context.Exists(elementToWaitFor.Safely().Within(
                         existsTimeout.Value,
-                        timeout ?? TimeoutConfiguration.Default.RetryInterval));
+                        interval ?? TimeoutConfiguration.Default.RetryInterval));
                 },
                 timeout,
                 interval);
