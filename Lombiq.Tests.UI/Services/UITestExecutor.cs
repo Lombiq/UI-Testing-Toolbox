@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -167,6 +168,11 @@ namespace Lombiq.Tests.UI.Services
 
                         Directory.CreateDirectory(dumpContainerPath);
                         Directory.CreateDirectory(debugInformationPath);
+
+                        if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                        }
 
                         if (dumpConfiguration.CaptureAppSnapshot)
                         {
