@@ -47,8 +47,18 @@ namespace Lombiq.Tests.UI.Extensions
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
 
-        public static void GoToSmtpWebUI(this UITestContext context) =>
+        public static void GoToSmtpWebUI(this UITestContext context)
+        {
+            if (context.SmtpServiceRunningContext == null)
+            {
+                throw new InvalidOperationException(
+                    "The SMTP service is not running. Did you turn it on with " +
+                    nameof(OrchardCoreUITestExecutorConfiguration) + "." + nameof(OrchardCoreUITestExecutorConfiguration.UseSmtpService) +
+                    " and could it properly start?");
+            }
+
             context.Driver.Navigate().GoToUrl(context.SmtpServiceRunningContext.WebUIUri);
+        }
 
         public static ITargetLocator SwitchTo(this UITestContext context) => context.Driver.SwitchTo();
 
