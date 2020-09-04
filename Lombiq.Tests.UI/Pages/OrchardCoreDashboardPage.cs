@@ -1,10 +1,10 @@
-﻿using Atata;
+using Atata;
 
 namespace Lombiq.Tests.UI.Pages
 {
     using _ = OrchardCoreDashboardPage;
 
-    [VerifyH4("Welcome to Orchard")]
+    [ControlDefinition("div[contains(@class, 'menu-admin')]")]
     [Url("Admin")]
     public class OrchardCoreDashboardPage : Page<_>
     {
