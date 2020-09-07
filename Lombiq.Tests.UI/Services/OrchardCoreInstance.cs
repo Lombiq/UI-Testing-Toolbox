@@ -1,6 +1,7 @@
 using CliWrap;
 using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -9,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -64,7 +64,7 @@ namespace Lombiq.Tests.UI.Services
             _port = _portLeaseManager.LeaseAvailableRandomPort();
             var url = UrlPrefix + _port;
 
-            _testOutputHelper.WriteLine("Generated URL for Orchard Core instance is \"{0}\".", url);
+            _testOutputHelper.WriteLine("The generated URL for the Orchard Core instance is \"{0}\".", url);
 
             CreateContentRootFolder();
 

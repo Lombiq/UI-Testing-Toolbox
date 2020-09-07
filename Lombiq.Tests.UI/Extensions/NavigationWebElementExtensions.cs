@@ -21,6 +21,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// </remarks>
         public static void ClickReliably(this IWebElement element, UITestContext context) => element.ClickReliably(context.Driver);
 
+        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
+
         public static void ClickReliably(this IWebElement element, IWebDriver driver)
         {
             try
@@ -61,5 +63,15 @@ namespace Lombiq.Tests.UI.Extensions
                     return true;
                 }
             }, timeout, interval);
+
+        public static void SetDropdown<T>(this UITestContext context, string selectId, T value) where T : Enum
+        {
+            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.Get(By.CssSelector($"#{selectId} option[value='{(int)((object)value)}']")).Click();
+        }
+
+        public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
+            ((IJavaScriptExecutor)context.Driver).ExecuteScript(
+                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic.FileIO;
+using Microsoft.VisualBasic.FileIO;
 using System.IO;
 using System.Linq;
 
@@ -9,7 +9,6 @@ namespace Lombiq.Tests.UI.Helpers
         /// <summary>
         /// Copies an Orchard Core application folder to a new location, without any generated or temporary files.
         /// </summary>
-        /// <returns></returns>
         public static void CopyAppFolder(string sourcePath, string destinationPath)
         {
             var destinationAppData = Path.Combine(destinationPath, "App_Data");
