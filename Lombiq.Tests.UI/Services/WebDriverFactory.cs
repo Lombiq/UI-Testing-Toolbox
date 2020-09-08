@@ -47,7 +47,7 @@ namespace Lombiq.Tests.UI.Services
                     var config = new StaticVersionEdgeConfig();
                     var architecture = ArchitectureHelper.GetArchitecture();
                     // Using a hard-coded version for now to use the latest released one instead of canary that would
-                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74 
+                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74
                     var version = config.GetLatestVersion();
                     var url = UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
                     var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
@@ -120,7 +120,7 @@ namespace Lombiq.Tests.UI.Services
             // We're not increasing ImplicityWait, the default of which is 0, since that would make all tests slower.
             // See: https://stackoverflow.com/a/7312740/220230
             var timeouts = driver.Manage().Timeouts();
-            // Default is 5 minutes. 
+            // Default is 5 minutes.
             timeouts.PageLoad = pageLoadTimeout;
             return driver;
         }

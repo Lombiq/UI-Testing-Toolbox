@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility checking. For more
-        /// information on the various options see 
+        /// information on the various options see
         /// <see href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>.
         /// </summary>
         public Action<AxeBuilder> AxeBuilderConfigurator { get; set; }
