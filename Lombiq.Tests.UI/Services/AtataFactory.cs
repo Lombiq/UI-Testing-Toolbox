@@ -32,7 +32,7 @@ namespace Lombiq.Tests.UI.Services
                     Browser.Edge => WebDriverFactory.CreateEdgeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     Browser.Firefox => WebDriverFactory.CreateFirefoxDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                     Browser.InternetExplorer => WebDriverFactory.CreateInternetExplorerDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
-                    _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}.")
+                    _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 })
                 .UseBaseUrl(baseUri.ToString())

@@ -37,14 +37,14 @@ namespace Lombiq.Tests.UI
                     .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
                     .FirstOrDefault(x => x.FieldType == typeof(ITest))
                     ?.GetValue(_testOutputHelper) as ITest)?.DisplayName,
-                Test = test
+                Test = test,
             };
 
             var configuration = new OrchardCoreUITestExecutorConfiguration
             {
                 OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
                 SetupOperation = setupOperation,
-                TestOutputHelper = _testOutputHelper
+                TestOutputHelper = _testOutputHelper,
             };
 
             configuration.BrowserConfiguration.Browser = browser;

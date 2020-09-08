@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Services
         Chrome,
         Edge,
         Firefox,
-        InternetExplorer
+        InternetExplorer,
     }
 
 

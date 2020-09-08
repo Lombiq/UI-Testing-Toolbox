@@ -35,7 +35,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             Severe,
             Warning,
-            Info
+            Info,
         }
 
         public static class Sources
@@ -55,7 +55,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             ["SEVERE"] = BrowserLogMessage.MessageLevel.Severe,
             ["WARNING"] = BrowserLogMessage.MessageLevel.Warning,
-            ["INFO"] = BrowserLogMessage.MessageLevel.Info
+            ["INFO"] = BrowserLogMessage.MessageLevel.Info,
         };
 
         private static readonly HttpClient _httpClient = new HttpClient();
@@ -94,7 +94,7 @@ namespace Lombiq.Tests.UI.Extensions
                     Source = entry["source"],
                     Level = _levelMappings[entry["level"]],
                     DateTimeUtc = DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(entry["timestamp"])).DateTime,
-                    Message = entry["message"]
+                    Message = entry["message"],
                 });
         }
 

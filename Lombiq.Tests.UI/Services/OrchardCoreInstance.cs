@@ -123,7 +123,7 @@ namespace Lombiq.Tests.UI.Services
                     .Select(filePath => (IApplicationLog)new ApplicationLog
                     {
                         Name = Path.GetFileName(filePath),
-                        ContentLoader = () => File.ReadAllTextAsync(filePath)
+                        ContentLoader = () => File.ReadAllTextAsync(filePath),
                     }) :
                 Enumerable.Empty<IApplicationLog>();
         }

@@ -34,7 +34,7 @@ namespace Lombiq.Tests.UI.Services
             RetryInterval = TimeSpan
                 .FromMilliseconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.RetryIntervalMillisecondSeconds", 500)),
             PageLoadTimeout = TimeSpan
-                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.PageLoadTimeoutSeconds", 180))
+                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.PageLoadTimeoutSeconds", 180)),
         };
     }
 }
