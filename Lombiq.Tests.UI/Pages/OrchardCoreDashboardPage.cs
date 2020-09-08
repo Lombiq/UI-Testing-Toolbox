@@ -8,12 +8,12 @@ namespace Lombiq.Tests.UI.Pages
     public class OrchardCoreDashboardPage : Page<_>
     {
         [FindByClass("menu-admin")]
-        public Content<_, _> SomeAdminContent { get; private set; }
+        public Content<_, _> AdminMenu { get; private set; }
 
         protected override void OnVerify()
         {
             base.OnVerify();
-            SomeAdminContent.Should.Exist();
+            AdminMenu.Should.Exist();
         }
     }
 }
