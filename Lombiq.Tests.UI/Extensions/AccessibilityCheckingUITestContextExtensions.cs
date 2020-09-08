@@ -13,11 +13,11 @@ namespace Lombiq.Tests.UI.Extensions
         /// every page load, it won't accumulate during a session.
         /// </summary>
         /// <param name="assertAxeResult">
-        /// The assertion logic to run on the result of an axe accessibility analysis. If <c>null</c> then the 
+        /// The assertion logic to run on the result of an axe accessibility analysis. If <c>null</c> then the
         /// assertion supplied in the context will be used.
         /// </param>
         /// <param name="axeBuilderConfigurator">
-        /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator 
+        /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator
         /// supplied in the context.
         /// </param>
         public static void AssertAccessibility(
@@ -30,12 +30,14 @@ namespace Lombiq.Tests.UI.Extensions
 
             try
             {
-                if (assertAxeResult == null) accessibilityConfiguration.AssertAxeResult?.Invoke(axeResult);
-                else assertAxeResult?.Invoke(axeResult);
+                (assertAxeResult ?? accessibilityConfiguration.AssertAxeResult)?.Invoke(axeResult);
             }
             catch (Exception ex)
             {
-                throw new AccessibilityAssertionException(axeResult, accessibilityConfiguration.CreateReportOnFailure, ex);
+                throw new AccessibilityAssertionException(
+                    axeResult,
+                    accessibilityConfiguration.CreateReportOnFailure,
+                    ex);
             }
 
             if (accessibilityConfiguration.CreateReportAlways)
@@ -49,15 +51,16 @@ namespace Lombiq.Tests.UI.Extensions
         }
 
         /// <summary>
-        /// Runs an axe accessibility analysis. Note that you need to run this after every page load, it won't 
+        /// Runs an axe accessibility analysis. Note that you need to run this after every page load, it won't
         /// accumulate during a session.
         /// </summary>
         /// <param name="axeBuilderConfigurator">
-        /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator 
+        /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator
         /// supplied in the context.
         /// </param>
-        /// <returns></returns>
-        public static AxeResult AnalyzeAccessibility(this UITestContext context, Action<AxeBuilder> axeBuilderConfigurator = null)
+        public static AxeResult AnalyzeAccessibility(
+            this UITestContext context,
+            Action<AxeBuilder> axeBuilderConfigurator = null)
         {
             var axeBuilder = new AxeBuilder(context.Scope.Driver);
             context.Configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator?.Invoke(axeBuilder);

@@ -10,11 +10,11 @@ namespace Lombiq.Tests.UI
 {
     public abstract class OrchardCoreUITestBase
     {
-        private readonly static object _snapshotCopyLock = new object();
-
-        private static bool _appFolderCreated;
+        private static readonly object _snapshotCopyLock = new object();
 
         protected readonly ITestOutputHelper _testOutputHelper;
+
+        private static bool _appFolderCreated;
 
         protected abstract string AppAssemblyPath { get; }
 
@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI
         /// <summary>
         /// Executes the given UI test, optionally after setting up the site.
         /// </summary>
-        protected virtual Task ExecuteTest(
+        protected virtual Task ExecuteTestAsync(
             Action<UITestContext> test,
             Browser browser,
             Func<UITestContext, Uri> setupOperation = null,
@@ -45,9 +45,8 @@ namespace Lombiq.Tests.UI
                 OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
                 SetupOperation = setupOperation,
                 TestOutputHelper = _testOutputHelper,
+                BrowserConfiguration = { Browser = browser },
             };
-
-            configuration.BrowserConfiguration.Browser = browser;
 
             changeConfiguration?.Invoke(configuration);
 
@@ -55,10 +54,10 @@ namespace Lombiq.Tests.UI
         }
 
         /// <summary>
-        /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data 
+        /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data
         /// folder.
         /// </summary>
-        protected virtual Task ExecuteTestFromExistingDB(
+        protected virtual Task ExecuteTestFromExistingDBAsync(
             Action<UITestContext> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null)
@@ -79,7 +78,7 @@ namespace Lombiq.Tests.UI
                 }
             }
 
-            return ExecuteTest(
+            return ExecuteTestAsync(
                 test,
                 browser,
                 null,
