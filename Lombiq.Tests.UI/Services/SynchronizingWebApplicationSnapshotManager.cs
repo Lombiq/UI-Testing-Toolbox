@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Services
         public SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath) => _snapshotDirectoryPath = snapshotDirectoryPath;
 
 
-        public async Task<Uri> RunOperationAndSnapshotIfNew(AppInitializer appInitializer)
+        public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
         {
             DebugHelper.WriteTimestampedLine("Entering SynchronizingWebApplicationSnapshotManager semaphore.");
 
@@ -40,8 +40,8 @@ namespace Lombiq.Tests.UI.Services
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(_snapshotDirectoryPath);
 
                 var result = await appInitializer();
-                await result.Context.Application.TakeSnapshot(_snapshotDirectoryPath);
-                await result.Context.Application.Resume();
+                await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);
+                await result.Context.Application.ResumeAsync();
 
                 DebugHelper.WriteTimestampedLine("Finished snapshot.");
 

@@ -6,6 +6,7 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -76,7 +77,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// https://stackoverflow.com/questions/57209503/system-nullreferenceexception-when-reading-browser-log-with-selenium.
         /// For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types.
         /// </remarks>
-        public async static Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLog(this IWebDriver driver)
+        public static async Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLogAsync(this IWebDriver driver)
         {
             if (driver.GetType() != typeof(ChromeDriver)) return Enumerable.Empty<BrowserLogMessage>();
 
@@ -93,7 +94,9 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     Source = entry["source"],
                     Level = _levelMappings[entry["level"]],
-                    DateTimeUtc = DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(entry["timestamp"])).DateTime,
+                    DateTimeUtc = DateTimeOffset
+                        .FromUnixTimeMilliseconds(long.Parse(entry["timestamp"], CultureInfo.InvariantCulture))
+                        .DateTime,
                     Message = entry["message"],
                 });
         }

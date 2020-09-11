@@ -38,24 +38,24 @@ namespace Lombiq.Tests.UI.Services
         public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new AccessibilityCheckingConfiguration();
 
 
-        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmpty();
-        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings = app => app.LogsShouldBeEmpty(true);
+        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmptyAsync();
+        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings = app => app.LogsShouldBeEmptyAsync(true);
 
         public static readonly Action<IEnumerable<BrowserLogMessage>> AssertBrowserLogIsEmpty =
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
             messages => messages.ShouldNotContain(message =>
                 message.Source != BrowserLogMessage.Sources.Deprecation ||
-                !message.Message.Contains("HTML Imports is deprecated"));
+                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCulture));
     }
 
 
     public class UITestExecutorFailureDumpConfiguration
     {
         /// <summary>
-        /// When set to <c>true</c> the subfolder of each test's dumps will use a shortened name, only containing the
-        /// name of the test method, without the name of the test class and its namespace. This is to overcome the 260
-        /// character path length limitations on Windows. Defaults to <c>true</c>.
+        /// Gets or sets a value indicating whether the subfolder of each test's dumps will use a shortened name, only
+        /// containing the name of the test method, without the name of the test class and its namespace. This is to
+        /// overcome the 260 character path length limitations on Windows. Defaults to <c>true</c>.
         /// </summary>
         public bool UseShortNames { get; set; } = true;
 

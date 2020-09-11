@@ -21,8 +21,6 @@ namespace Lombiq.Tests.UI.Extensions
         /// </remarks>
         public static void ClickReliably(this IWebElement element, UITestContext context) => element.ClickReliably(context.Driver);
 
-        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
-
         public static void ClickReliably(this IWebElement element, IWebDriver driver)
         {
             try
@@ -30,12 +28,16 @@ namespace Lombiq.Tests.UI.Extensions
                 new Actions(driver).MoveToElement(element).Click().Perform();
             }
             catch (WebDriverException ex)
-                when (ex.Message.Contains("javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
+                when (ex.Message.Contains(
+                    "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite.",
+                    StringComparison.InvariantCulture))
             {
                 throw new NotSupportedException(
                     "For this element use the standard Click() method. Add the element as an exception to the documentation.");
             }
         }
+
+        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
 
         public static void ClickReliablyUntilPageLeave(
             this IWebElement element,
@@ -49,22 +51,26 @@ namespace Lombiq.Tests.UI.Extensions
             IWebDriver driver,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.DoWithRetries(() =>
-            {
-                try
+            ReliabilityHelper.DoWithRetries(
+                () =>
                 {
-                    element.ClickReliably(driver);
-                    return false;
-                }
-                catch (StaleElementReferenceException)
-                {
-                    // When navigating away this exception will be thrown for all old element references. Not nice but
-                    // there doesn't seem to be a better way to do this.
-                    return true;
-                }
-            }, timeout, interval);
+                    try
+                    {
+                        element.ClickReliably(driver);
+                        return false;
+                    }
+                    catch (StaleElementReferenceException)
+                    {
+                        // When navigating away this exception will be thrown for all old element references. Not nice but
+                        // there doesn't seem to be a better way to do this.
+                        return true;
+                    }
+                },
+                timeout,
+                interval);
 
-        public static void SetDropdown<T>(this UITestContext context, string selectId, T value) where T : Enum
+        public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
+            where T : Enum
         {
             context.Get(By.Id(selectId)).ClickReliably(context);
             context.Get(By.CssSelector($"#{selectId} option[value='{(int)((object)value)}']")).Click();

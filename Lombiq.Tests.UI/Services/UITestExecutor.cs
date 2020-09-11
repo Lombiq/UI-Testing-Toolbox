@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Sdk;
+using static System.Globalization.CultureInfo;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -20,14 +21,14 @@ namespace Lombiq.Tests.UI.Services
 
     public static class UITestExecutor
     {
-        private readonly static object _setupSnapshotManangerLock = new object();
+        private static readonly object _setupSnapshotManangerLock = new object();
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
         /// </summary>
-        public static async Task ExecuteOrchardCoreTest(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+        public static Task ExecuteOrchardCoreTestAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
             if (string.IsNullOrEmpty(testManifest.Name))
             {
@@ -39,6 +40,11 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
+            return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
+        }
+
+        private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+        {
             var startTime = DateTime.UtcNow;
             DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
 
@@ -57,11 +63,11 @@ namespace Lombiq.Tests.UI.Services
 
             var dumpConfiguration = configuration.FailureDumpConfiguration;
             var dumpFolderNameBase = testManifest.Name;
-            if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('('))
+            if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.InvariantCulture))
             {
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
-                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
+                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.InvariantCulture)).LastIndexOf('.') + 1);
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
@@ -80,7 +86,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 BrowserLogMessage[] browserLogMessages = null;
                 async Task<BrowserLogMessage[]> GetBrowserLog(RemoteWebDriver driver) =>
-                    browserLogMessages ??= (await driver.GetAndEmptyBrowserLog()).ToArray();
+                    browserLogMessages ??= (await driver.GetAndEmptyBrowserLogAsync()).ToArray();
 
                 SmtpService smtpService = null;
                 IWebApplicationInstance applicationInstance = null;
@@ -95,13 +101,13 @@ namespace Lombiq.Tests.UI.Services
                         if (configuration.UseSmtpService)
                         {
                             smtpService = new SmtpService();
-                            smtpContext = await smtpService.Start();
+                            smtpContext = await smtpService.StartAsync();
                             configuration.OrchardCoreConfiguration.BeforeAppStart += (contentRoot, argumentsBuilder) =>
-                                argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port);
+                                argumentsBuilder.Add("--SmtpPort", InvariantCulture).Add(smtpContext.Port, InvariantCulture);
                         }
 
                         applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
-                        var uri = await applicationInstance.StartUp();
+                        var uri = await applicationInstance.StartUpAsync();
 
                         var atataScope = AtataFactory.StartAtataScope(
                             testOutputHelper,
@@ -113,7 +119,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (runSetupOperation)
                     {
-                        var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNew(async () =>
+                        var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                         {
                             // Note that the context creation needs to be done here too because the Orchard app needs
                             // the snapshot config to be available at startup too.
@@ -122,12 +128,12 @@ namespace Lombiq.Tests.UI.Services
                             return (context, configuration.SetupOperation(context));
                         });
 
-                        if (context == null) context = await CreateContext();
+                        context ??= await CreateContext();
 
                         context.GoToRelativeUrl(resultUri.PathAndQuery);
                     }
 
-                    if (context == null) context = await CreateContext();
+                    context ??= await CreateContext();
 
                     testManifest.Test(context);
 
@@ -138,7 +144,7 @@ namespace Lombiq.Tests.UI.Services
                     catch (Exception)
                     {
                         testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-                        testOutputHelper.WriteLine(await context.Application.GetLogOutput());
+                        testOutputHelper.WriteLine(await context.Application.GetLogOutputAsync());
 
                         throw;
                     }
@@ -163,7 +169,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (context != null)
                     {
-                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
+                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString(InvariantCulture));
                         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
                         Directory.CreateDirectory(dumpContainerPath);
@@ -176,7 +182,7 @@ namespace Lombiq.Tests.UI.Services
 
                         if (dumpConfiguration.CaptureAppSnapshot)
                         {
-                            await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
+                            await context.Application.TakeSnapshotAsync(Path.Combine(dumpContainerPath, "AppDump"));
                         }
 
                         if (dumpConfiguration.CaptureScreenshot)
@@ -209,7 +215,9 @@ namespace Lombiq.Tests.UI.Services
                     if (retryCount == configuration.MaxRetryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine(
+                            $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can " +
+                            $"see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 

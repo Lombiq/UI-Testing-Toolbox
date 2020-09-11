@@ -32,19 +32,15 @@ namespace Lombiq.Tests.UI.Pages
 
         [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Only used by Atata.")]
         public class RecipesDropdownToggle : BSDropdownToggle<_> { }
-    }
 
-    public static class OrchardSetupPageExtensions
-    {
-        public static _ SetupOrchardCore(
-            this _ setupPage,
+        public _ SetupOrchardCore(
             string siteName = "Test Site",
             string recipeId = "SaaS",
             string userName = "admin",
             string email = "admin@admin.com",
             string password = "Password1!") =>
-            setupPage
-                .SiteName.Set(siteName)
+            SiteName
+                .Set(siteName)
                 .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", recipeId)).Click()
                 .UserName.Set(userName)
                 .Email.Set(email)

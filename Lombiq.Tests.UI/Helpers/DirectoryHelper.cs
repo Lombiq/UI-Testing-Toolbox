@@ -22,9 +22,9 @@ namespace Lombiq.Tests.UI.Helpers
                     // subfolders. Perhaps this happens when one opens it in Explorer and that keeps a handle open.
                     if (!Directory.Exists(path)) return;
                 }
-                // This means the directory was actually deleted.
                 catch (DirectoryNotFoundException)
                 {
+                    // This means the directory was actually deleted.
                     return;
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)

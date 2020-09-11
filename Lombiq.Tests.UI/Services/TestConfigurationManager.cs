@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace Lombiq.Tests.UI.Services
@@ -18,12 +19,12 @@ namespace Lombiq.Tests.UI.Services
             JObject.Parse(File.Exists("TestConfiguration.json") ? File.ReadAllText("TestConfiguration.json") : "{}");
 
 
-        public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true));
+        public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true), CultureInfo.InvariantCulture);
 
         public static int GetAgentIndexOrDefault()
         {
             var config = GetConfiguration("AgentIndex");
-            return !string.IsNullOrEmpty(config) ? int.Parse(config) : 0;
+            return !string.IsNullOrEmpty(config) ? int.Parse(config, CultureInfo.InvariantCulture) : 0;
         }
 
         public static int GetIntConfiguration(string key, int defaultValue) => GetIntConfiguration(key) ?? defaultValue;
@@ -31,7 +32,7 @@ namespace Lombiq.Tests.UI.Services
         public static int? GetIntConfiguration(string key)
         {
             var config = GetConfiguration(key);
-            return string.IsNullOrEmpty(config) ? (int?)null : int.Parse(config);
+            return string.IsNullOrEmpty(config) ? (int?)null : int.Parse(config, CultureInfo.InvariantCulture);
         }
 
         public static bool GetBoolConfiguration(string key, bool defaultValue) => GetBoolConfiguration(key) ?? defaultValue;

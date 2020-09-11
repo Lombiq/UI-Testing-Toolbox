@@ -8,9 +8,9 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class ApplicationLogEnumerableExtensions
     {
-        public static async Task<string> ToFormattedString(this IEnumerable<IApplicationLog> logs) =>
+        public static async Task<string> ToFormattedStringAsync(this IEnumerable<IApplicationLog> logs) =>
             string.Join(
                 Environment.NewLine + Environment.NewLine,
-                await Task.WhenAll(logs.Select(async log => log.Name + Environment.NewLine + Environment.NewLine + await log.GetContent())));
+                await Task.WhenAll(logs.Select(async log => log.Name + Environment.NewLine + Environment.NewLine + await log.GetContentAsync())));
     }
 }

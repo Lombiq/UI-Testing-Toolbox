@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic.FileIO;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -25,7 +26,9 @@ namespace Lombiq.Tests.UI.Helpers
         {
             var configFilePaths = Directory
                 .EnumerateFiles(sourcePath)
-                .Where(filePath => filePath.EndsWith(".config") || filePath.EndsWith(".json"));
+                .Where(filePath =>
+                filePath.EndsWith(".config", StringComparison.InvariantCultureIgnoreCase) ||
+                filePath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase));
 
             foreach (var filePath in configFilePaths)
             {

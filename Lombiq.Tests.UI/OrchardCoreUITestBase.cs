@@ -50,7 +50,7 @@ namespace Lombiq.Tests.UI
 
             changeConfiguration?.Invoke(configuration);
 
-            return UITestExecutor.ExecuteOrchardCoreTest(testManifest, configuration);
+            return UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
         }
 
         /// <summary>

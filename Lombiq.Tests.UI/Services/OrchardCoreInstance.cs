@@ -59,7 +59,7 @@ namespace Lombiq.Tests.UI.Services
         }
 
 
-        public async Task<Uri> StartUp()
+        public async Task<Uri> StartUpAsync()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
             var url = UrlPrefix + _port;
@@ -96,18 +96,18 @@ namespace Lombiq.Tests.UI.Services
                     }
                 });
 
-            await StartOrchardApp();
+            await StartOrchardAppAsync();
 
             return new Uri(url);
         }
 
-        public Task Pause() => StopOrchardApp();
+        public Task PauseAsync() => StopOrchardAppAsync();
 
-        public Task Resume() => StartOrchardApp();
+        public Task ResumeAsync() => StartOrchardAppAsync();
 
-        public async Task TakeSnapshot(string snapshotDirectoryPath)
+        public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
         {
-            await Pause();
+            await PauseAsync();
 
             if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
 
@@ -134,7 +134,7 @@ namespace Lombiq.Tests.UI.Services
 
             _isDisposed = true;
 
-            await StopOrchardApp();
+            await StopOrchardAppAsync();
 
             _portLeaseManager.StopLease(_port);
 
@@ -148,7 +148,7 @@ namespace Lombiq.Tests.UI.Services
             Directory.CreateDirectory(_contentRootPath);
         }
 
-        private async Task StartOrchardApp()
+        private async Task StartOrchardAppAsync()
         {
             if (_command == null)
             {
@@ -159,7 +159,7 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            await _command.ExecuteDotNetApplication(
+            await _command.ExecuteDotNetApplicationAsync(
                     stdErr =>
                         throw new IOException(
                             "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
@@ -171,7 +171,7 @@ namespace Lombiq.Tests.UI.Services
                     _cancellationTokenSource.Token);
         }
 
-        private Task StopOrchardApp()
+        private Task StopOrchardAppAsync()
         {
             if (_cancellationTokenSource == null) return Task.CompletedTask;
 
@@ -190,7 +190,7 @@ namespace Lombiq.Tests.UI.Services
             public string Name { get; set; }
             public Func<Task<string>> ContentLoader { get; set; }
 
-            public Task<string> GetContent() => ContentLoader();
+            public Task<string> GetContentAsync() => ContentLoader();
         }
     }
 }
