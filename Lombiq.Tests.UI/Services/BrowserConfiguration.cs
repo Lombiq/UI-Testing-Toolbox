@@ -14,8 +14,8 @@ namespace Lombiq.Tests.UI.Services
         public Browser Browser { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether if set to <c>true</c> the test will use the given browser in
-        /// headless mode if it there's support for it.
+        /// Gets or sets a value indicating whether if set to <see langword="true"/> the test will use the given
+        /// browser in headless mode if it there's support for it.
         /// </summary>
         public bool Headless { get; set; } = TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration.Headless", false);
 

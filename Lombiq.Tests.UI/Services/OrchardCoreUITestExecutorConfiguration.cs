@@ -55,7 +55,7 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets or sets a value indicating whether the subfolder of each test's dumps will use a shortened name, only
         /// containing the name of the test method, without the name of the test class and its namespace. This is to
-        /// overcome the 260 character path length limitations on Windows. Defaults to <c>true</c>.
+        /// overcome the 260 character path length limitations on Windows. Defaults to <see langword="true"/>.
         /// </summary>
         public bool UseShortNames { get; set; } = true;
 

@@ -161,7 +161,9 @@ namespace Lombiq.Tests.UI.Services
         {
             foreach (var argument in arguments)
             {
-                builder = builder.Add((IFormattable)argument, CultureInfo.InvariantCulture);
+                builder = argument is IFormattable formattable
+                    ? builder.Add(formattable, CultureInfo.InvariantCulture)
+                    : builder.Add(argument.ToString());
             }
         }
     }

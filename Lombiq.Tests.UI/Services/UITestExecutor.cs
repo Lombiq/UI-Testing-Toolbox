@@ -103,7 +103,7 @@ namespace Lombiq.Tests.UI.Services
                             smtpService = new SmtpService();
                             smtpContext = await smtpService.StartAsync();
                             configuration.OrchardCoreConfiguration.BeforeAppStart += (contentRoot, argumentsBuilder) =>
-                                argumentsBuilder.Add("--SmtpPort", InvariantCulture).Add(smtpContext.Port, InvariantCulture);
+                                argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, InvariantCulture);
                         }
 
                         applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
