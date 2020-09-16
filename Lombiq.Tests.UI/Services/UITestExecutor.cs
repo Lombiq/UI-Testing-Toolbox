@@ -82,6 +82,7 @@ namespace Lombiq.Tests.UI.Services
                 async Task<BrowserLogMessage[]> GetBrowserLog(RemoteWebDriver driver) =>
                     browserLogMessages ??= (await driver.GetAndEmptyBrowserLog()).ToArray();
 
+                SqlServerManager sqlServerManager = null;
                 SmtpService smtpService = null;
                 IWebApplicationInstance applicationInstance = null;
                 UITestContext context = null;
@@ -90,11 +91,19 @@ namespace Lombiq.Tests.UI.Services
                 {
                     async Task<UITestContext> CreateContext()
                     {
+                        SqlServerRunningContext sqlServerContext = null;
+
+                        if (configuration.UseSqlServer)
+                        {
+                            sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
+                            sqlServerContext = await sqlServerManager.CreateDatabaseAsync();
+                        }
+
                         SmtpServiceRunningContext smtpContext = null;
 
                         if (configuration.UseSmtpService)
                         {
-                            smtpService = new SmtpService();
+                            smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
                             smtpContext = await smtpService.Start();
                             configuration.OrchardCoreConfiguration.BeforeAppStart += (contentRoot, argumentsBuilder) =>
                                 argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port);
@@ -108,7 +117,7 @@ namespace Lombiq.Tests.UI.Services
                             uri,
                             configuration);
 
-                        return new UITestContext(testManifest.Name, configuration, applicationInstance, atataScope, smtpContext);
+                        return new UITestContext(testManifest.Name, configuration, sqlServerContext, applicationInstance, atataScope, smtpContext);
                     }
 
                     if (runSetupOperation)
@@ -221,6 +230,7 @@ namespace Lombiq.Tests.UI.Services
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
+                    if (sqlServerManager != null) await sqlServerManager.DisposeAsync();
 
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }

@@ -15,6 +15,12 @@ namespace Lombiq.Tests.UI.Services
         public OrchardCoreUITestExecutorConfiguration Configuration { get; }
 
         /// <summary>
+        /// Gets the context for the currently used SQL Server instance and database, if SQL Server is the DB used for
+        /// the test.
+        /// </summary>
+        public SqlServerRunningContext SqlServerRunningContext { get; }
+
+        /// <summary>
         /// The web application instance, e.g. an Orchard Core app currently running.
         /// </summary>
         public IWebApplicationInstance Application { get; }
@@ -38,12 +44,14 @@ namespace Lombiq.Tests.UI.Services
         public UITestContext(
             string testName,
             OrchardCoreUITestExecutorConfiguration configuration,
+            SqlServerRunningContext sqlServerContext,
             IWebApplicationInstance application,
             AtataScope scope,
             SmtpServiceRunningContext smtpContext)
         {
             TestName = testName;
             Configuration = configuration;
+            SqlServerRunningContext = sqlServerContext;
             Application = application;
             Scope = scope;
             SmtpServiceRunningContext = smtpContext;
