@@ -20,11 +20,7 @@ namespace Lombiq.Tests.UI.Services
 
         public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true));
 
-        public static int GetAgentIndexOrDefault()
-        {
-            var config = GetConfiguration("AgentIndex");
-            return !string.IsNullOrEmpty(config) ? int.Parse(config) : 0;
-        }
+        public static int GetAgentIndexOrDefault() => int.Parse(GetConfiguration("AgentIndex", "0"));
 
         public static int GetIntConfiguration(string key, int defaultValue) => GetIntConfiguration(key) ?? defaultValue;
 
@@ -41,6 +37,9 @@ namespace Lombiq.Tests.UI.Services
             var config = GetConfiguration(key);
             return string.IsNullOrEmpty(config) ? (bool?)null : bool.Parse(config);
         }
+
+        // Default value should only be used on null value because an empty string is a valid existing configuration.
+        public static string GetConfiguration(string key, string defaultValue) => GetConfiguration(key) ?? defaultValue;
 
         public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
         {
