@@ -51,12 +51,9 @@ namespace Lombiq.Tests.UI.Services
                 config = _fileConfiguration[key]?.ToString();
             }
 
-            if (throwIfNullOrEmpty && string.IsNullOrEmpty(config))
-            {
-                throw new InvalidOperationException($"The configuration with the key {key} was null or empty.");
-            }
-
-            return config;
+            return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
+                ? throw new InvalidOperationException($"The configuration with the key {key} was null or empty.")
+                : config;
         }
     }
 }
