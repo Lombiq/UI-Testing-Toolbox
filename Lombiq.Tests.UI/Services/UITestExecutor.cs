@@ -206,56 +206,69 @@ namespace Lombiq.Tests.UI.Services
 
                     if (context != null)
                     {
-                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
-                        var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                        Directory.CreateDirectory(dumpContainerPath);
-                        Directory.CreateDirectory(debugInformationPath);
-
-                        if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                        try
                         {
-                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                            var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
+                            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+                            Directory.CreateDirectory(dumpContainerPath);
+                            Directory.CreateDirectory(debugInformationPath);
+
+                            if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                            {
+                                await File.WriteAllTextAsync(
+                                    Path.Combine(debugInformationPath, "TestOutput.log"),
+                                    concreteTestOutputHelper.Output);
+                            }
+
+                            if (dumpConfiguration.CaptureAppSnapshot)
+                            {
+                                var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
+                                await context.Application.TakeSnapshot(appDumpPath);
+
+                                if (sqlServerManager != null) sqlServerManager.TakeSnapshot(appDumpPath, true);
+                            }
+
+                            if (dumpConfiguration.CaptureScreenshot)
+                            {
+                                // Only PNG is supported on .NET Core.
+                                context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                            }
+
+                            if (dumpConfiguration.CaptureHtmlSource)
+                            {
+                                await File.WriteAllTextAsync(
+                                    Path.Combine(debugInformationPath, "PageSource.html"),
+                                    context.Scope.Driver.PageSource);
+                            }
+
+                            if (dumpConfiguration.CaptureBrowserLog)
+                            {
+                                await File.WriteAllLinesAsync(
+                                    Path.Combine(debugInformationPath, "BrowserLog.log"),
+                                    (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
+                            }
+
+                            if (ex is AccessibilityAssertionException accessibilityAssertionException
+                                && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+                            {
+                                context.Driver.CreateAxeHtmlReport(
+                                    accessibilityAssertionException.AxeResult,
+                                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                            }
                         }
-
-                        if (dumpConfiguration.CaptureAppSnapshot)
+                        catch (Exception dumpException)
                         {
-                            var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
-                            await context.Application.TakeSnapshot(appDumpPath);
-
-                            if (sqlServerManager != null) sqlServerManager.TakeSnapshot(appDumpPath, true);
-                        }
-
-                        if (dumpConfiguration.CaptureScreenshot)
-                        {
-                            // Only PNG is supported on .NET Core.
-                            context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
-                        }
-
-                        if (dumpConfiguration.CaptureHtmlSource)
-                        {
-                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
-                        }
-
-                        if (dumpConfiguration.CaptureBrowserLog)
-                        {
-                            await File.WriteAllLinesAsync(
-                                Path.Combine(debugInformationPath, "BrowserLog.log"),
-                                (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
-                        }
-
-                        if (ex is AccessibilityAssertionException accessibilityAssertionException
-                            && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                        {
-                            context.Driver.CreateAxeHtmlReport(
-                                accessibilityAssertionException.AxeResult,
-                                Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                            testOutputHelper.WriteLine($"Creating the failure dump of the test failed with the following exception: {dumpException}.");
                         }
                     }
 
                     if (retryCount == configuration.MaxRetryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine(
+                            $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
+                            $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
