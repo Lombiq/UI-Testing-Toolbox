@@ -40,6 +40,7 @@ namespace Lombiq.Tests.UI.Services
         private int _databaseId;
         private string _serverName;
         private string _databaseName;
+        private bool _isDisposed;
 
 
         [SuppressMessage(
@@ -115,6 +116,11 @@ namespace Lombiq.Tests.UI.Services
 
         public void RestoreSnapshot(string snapshotDirectoryPath)
         {
+            if (_isDisposed)
+            {
+                throw new InvalidOperationException("This instance was already disposed.");
+            }
+
             var server = CreateServer();
 
             if (!server.Databases.Contains(_databaseName))
@@ -153,6 +159,8 @@ namespace Lombiq.Tests.UI.Services
 
         public void Dispose()
         {
+            _isDisposed = true;
+
             DropDatabaseIfExists(CreateServer());
 
             _portLeaseManager.StopLease(_databaseId);
