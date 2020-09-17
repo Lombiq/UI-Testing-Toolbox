@@ -99,12 +99,12 @@ namespace Lombiq.Tests.UI.Services
                             sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
                             sqlServerContext = sqlServerManager.CreateDatabase();
 
-                            testOutputHelper.WriteLine(sqlServerManager.GetHashCode() + " - " + testManifest.Name);
+                            testOutputHelper.WriteLine("Outer: " + sqlServerManager.GetHashCode() + " - " + testManifest.Name);
 
                             configuration.OrchardCoreConfiguration.BeforeAppStart +=
                                 (contentRootPath, argumentsBuilder) =>
                                 {
-                                    testOutputHelper.WriteLine(sqlServerManager.GetHashCode() + " - " + testManifest.Name);
+                                    testOutputHelper.WriteLine("Inner: " + sqlServerManager.GetHashCode() + " - " + testManifest.Name);
                                     var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
                                     if (!Directory.Exists(snapshotDirectoryPath)) return;
