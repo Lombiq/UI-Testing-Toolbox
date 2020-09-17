@@ -68,7 +68,7 @@ namespace Lombiq.Tests.UI.Services
 
             var server = CreateServer();
 
-            DropDatabaseIfExists(server, _databaseName);
+            DropDatabaseIfExists(server);
 
             new Database(server, _databaseName).Create();
 
@@ -82,6 +82,8 @@ namespace Lombiq.Tests.UI.Services
             if (File.Exists(filePath)) File.Delete(filePath);
 
             var server = CreateServer();
+
+            KillDatabaseProcesses(server);
 
             var useCompression = useCompressionIfAvailable &&
                 (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
@@ -113,12 +115,19 @@ namespace Lombiq.Tests.UI.Services
 
         public void RestoreSnapshot(string snapshotDirectoryPath)
         {
+            var server = CreateServer();
+
+            if (!server.Databases.Contains(_databaseName))
+            {
+                throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
+            }
+
+            KillDatabaseProcesses(server);
+
             var restore = new Restore();
             restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
             restore.Database = _databaseName;
             restore.ReplaceDatabase = true;
-
-            var server = CreateServer();
 
             // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
             // https://stackoverflow.com/a/17547737/220230.
@@ -148,7 +157,7 @@ namespace Lombiq.Tests.UI.Services
 
         public void Dispose()
         {
-            DropDatabaseIfExists(CreateServer(), _databaseName);
+            DropDatabaseIfExists(CreateServer());
 
             _portLeaseManager.StopLease(_databaseId);
         }
@@ -158,14 +167,16 @@ namespace Lombiq.Tests.UI.Services
         // referenced database to exist.
         private Server CreateServer() => new Server(_serverName);
 
-
-        private static void DropDatabaseIfExists(Server server, string databaseName)
+        private void DropDatabaseIfExists(Server server)
         {
-            if (!server.Databases.Contains(databaseName)) return;
+            if (!server.Databases.Contains(_databaseName)) return;
 
-            server.KillAllProcesses(databaseName);
-            server.Databases[databaseName].Drop();
+            KillDatabaseProcesses(server);
+            server.Databases[_databaseName].Drop();
         }
+
+        private void KillDatabaseProcesses(Server server) => server.KillAllProcesses(_databaseName);
+
 
         private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
             Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
