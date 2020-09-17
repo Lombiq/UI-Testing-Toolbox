@@ -179,8 +179,19 @@ namespace Lombiq.Tests.UI.Services
             server.Databases[_databaseName].Drop();
         }
 
-        private void KillDatabaseProcesses(Server server) => server.KillAllProcesses(_databaseName);
+        private void KillDatabaseProcesses(Server server)
+        {
+            try
+            {
+                server.KillAllProcesses(_databaseName);
 
+            }
+            catch (SqlException)
+            {
+                // This can cause all kinds of random exceptions that don't actually cause any issues when the server
+                // is under load.
+            }
+        }
 
         private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
             Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
