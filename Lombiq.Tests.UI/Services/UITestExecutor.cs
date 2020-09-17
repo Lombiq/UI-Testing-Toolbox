@@ -99,9 +99,12 @@ namespace Lombiq.Tests.UI.Services
                             sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
                             sqlServerContext = sqlServerManager.CreateDatabase();
 
+                            testOutputHelper.WriteLine(sqlServerManager.GetHashCode() + " - " + testManifest.Name);
+
                             configuration.OrchardCoreConfiguration.BeforeAppStart +=
                                 (contentRootPath, argumentsBuilder) =>
                                 {
+                                    testOutputHelper.WriteLine(sqlServerManager.GetHashCode() + " - " + testManifest.Name);
                                     var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
                                     if (!Directory.Exists(snapshotDirectoryPath)) return;
@@ -252,6 +255,7 @@ namespace Lombiq.Tests.UI.Services
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
+                    testOutputHelper.WriteLine(sqlServerManager.GetHashCode() + " dispose happens here");
                     sqlServerManager?.Dispose();
 
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
