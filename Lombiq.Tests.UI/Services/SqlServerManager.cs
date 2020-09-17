@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -31,6 +32,8 @@ namespace Lombiq.Tests.UI.Services
 
     public sealed class SqlServerManager : IDisposable
     {
+        private const string DbSnasphotName = "Database.bak";
+
         private static readonly PortLeaseManager _portLeaseManager;
 
         private readonly SqlServerConfiguration _configuration;
@@ -63,9 +66,7 @@ namespace Lombiq.Tests.UI.Services
             _serverName = connection.DataSource;
             _databaseName = connection.Database;
 
-            // It's easier to use the server name directly instead of the connection string as that also requires the
-            // referenced database to exist.
-            var server = new Server(_serverName);
+            var server = CreateServer();
 
             DropDatabaseIfExists(server, _databaseName);
 
@@ -74,13 +75,74 @@ namespace Lombiq.Tests.UI.Services
             return new SqlServerRunningContext(connectionString);
         }
 
+        public void TakeSnapshot(string snapshotDirectoryPath)
+        {
+            var backup = new Backup
+            {
+                Action = BackupActionType.Database,
+                CopyOnly = true,
+                Checksum = true,
+                Incremental = false,
+                ContinueAfterError = false,
+                // We don't need compression as this backup will be only short-lived but we want it to be fast.
+                CompressionOption = BackupCompressionOptions.Off,
+                SkipTapeHeader = true,
+                UnloadTapeAfter = false,
+                NoRewind = true,
+                FormatMedia = true,
+                Initialize = true,
+                Database = _databaseName
+            };
+
+            var destination = new BackupDeviceItem(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+            backup.Devices.Add(destination);
+            // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
+            // which is messy.
+            backup.SqlBackup(CreateServer());
+        }
+
+        public void RestoreSnapshot(string snapshotDirectoryPath)
+        {
+            var restore = new Restore();
+            restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+            restore.Database = _databaseName;
+            restore.ReplaceDatabase = true;
+
+            var server = CreateServer();
+
+            // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
+            // https://stackoverflow.com/a/17547737/220230.
+            var dataFile = new RelocateFile
+            {
+                LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName
+            };
+
+            var logFile = new RelocateFile
+            {
+                LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName
+            };
+
+            restore.RelocateFiles.Add(dataFile);
+            restore.RelocateFiles.Add(logFile);
+
+            // We're not using SqlRestoreAsync() and SqlVerifyAsync() due to the same reason we're not using
+            // SqlBackupAsync().
+            restore.SqlRestore(server);
+        }
+
         public void Dispose()
         {
-            var server = new Server(_serverName);
-            DropDatabaseIfExists(server, _databaseName);
+            DropDatabaseIfExists(CreateServer(), _databaseName);
 
             _portLeaseManager.StopLease(_databaseId);
         }
+
+
+        // It's easier to use the server name directly instead of the connection string as that also requires the
+        // referenced database to exist.
+        private Server CreateServer() => new Server(_serverName);
 
 
         private static void DropDatabaseIfExists(Server server, string databaseName)
@@ -91,5 +153,7 @@ namespace Lombiq.Tests.UI.Services
             server.Databases[databaseName].Drop();
         }
 
+        private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
+            Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
     }
 }

@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
@@ -97,6 +98,24 @@ namespace Lombiq.Tests.UI.Services
                         {
                             sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
                             sqlServerContext = sqlServerManager.CreateDatabase();
+
+                            configuration.OrchardCoreConfiguration.BeforeAppStart +=
+                                (contentRootPath, argumentsBuilder) =>
+                                {
+                                    var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+
+                                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+
+                                    sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+
+                                    var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+                                    var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
+                                    appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
+                                    File.WriteAllText(appSettingsPath, appSettings.ToString());
+                                };
+
+                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot +=
+                                (contentRootPath, snapshotDirectoryPath) => sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
                         }
 
                         SmtpServiceRunningContext smtpContext = null;
