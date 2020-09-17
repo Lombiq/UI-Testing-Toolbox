@@ -2,6 +2,7 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Microsoft.SqlServer.Management.Common;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
@@ -200,7 +201,7 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}.");
+                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
 
                     if (context != null)
                     {
@@ -224,7 +225,17 @@ namespace Lombiq.Tests.UI.Services
                                 var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
                                 await context.Application.TakeSnapshot(appDumpPath);
 
-                                if (sqlServerManager != null) sqlServerManager.TakeSnapshot(appDumpPath, true);
+                                if (sqlServerManager != null)
+                                {
+                                    try
+                                    {
+                                        sqlServerManager.TakeSnapshot(appDumpPath, true);
+                                    }
+                                    catch (ExecutionFailureException failureException)
+                                    {
+                                        testOutputHelper.WriteLine($"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
+                                    }
+                                }
                             }
 
                             if (dumpConfiguration.CaptureScreenshot)
@@ -257,7 +268,7 @@ namespace Lombiq.Tests.UI.Services
                         }
                         catch (Exception dumpException)
                         {
-                            testOutputHelper.WriteLine($"Creating the failure dump of the test failed with the following exception: {dumpException}.");
+                            testOutputHelper.WriteLine($"Creating the failure dump of the test failed with the following exception: {dumpException}");
                         }
                     }
 
