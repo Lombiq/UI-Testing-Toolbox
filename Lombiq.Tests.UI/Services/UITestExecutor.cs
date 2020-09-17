@@ -96,7 +96,7 @@ namespace Lombiq.Tests.UI.Services
                         if (configuration.UseSqlServer)
                         {
                             sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
-                            sqlServerContext = await sqlServerManager.CreateDatabaseAsync();
+                            sqlServerContext = sqlServerManager.CreateDatabase();
                         }
 
                         SmtpServiceRunningContext smtpContext = null;
@@ -230,7 +230,7 @@ namespace Lombiq.Tests.UI.Services
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
-                    if (sqlServerManager != null) await sqlServerManager.DisposeAsync();
+                    sqlServerManager?.Dispose();
 
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
