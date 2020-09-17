@@ -184,7 +184,6 @@ namespace Lombiq.Tests.UI.Services
             try
             {
                 server.KillAllProcesses(_databaseName);
-
             }
             catch (SqlException)
             {

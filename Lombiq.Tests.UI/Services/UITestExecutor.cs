@@ -1,3 +1,4 @@
+using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
@@ -101,24 +102,30 @@ namespace Lombiq.Tests.UI.Services
 
                             testOutputHelper.WriteLine("Outer: " + sqlServerManager.GetHashCode() + " - " + testManifest.Name);
 
-                            configuration.OrchardCoreConfiguration.BeforeAppStart +=
-                                (contentRootPath, argumentsBuilder) =>
-                                {
-                                    testOutputHelper.WriteLine("Inner: " + sqlServerManager.GetHashCode() + " - " + testManifest.Name);
-                                    var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+                            void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
 
-                                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+                                testOutputHelper.WriteLine("Inner: " + sqlServerManager.GetHashCode() + " - " + testManifest.Name);
+                                var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
-                                    sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+                                if (!Directory.Exists(snapshotDirectoryPath)) return;
 
-                                    var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
-                                    var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
-                                    appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
-                                    File.WriteAllText(appSettingsPath, appSettings.ToString());
-                                };
+                                sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
-                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot +=
-                                (contentRootPath, snapshotDirectoryPath) => sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                                var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+                                var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
+                                appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
+                                File.WriteAllText(appSettingsPath, appSettings.ToString());
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
+
+                            void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                                sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
                         }
 
                         SmtpServiceRunningContext smtpContext = null;
@@ -127,8 +134,13 @@ namespace Lombiq.Tests.UI.Services
                         {
                             smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
                             smtpContext = await smtpService.Start();
-                            configuration.OrchardCoreConfiguration.BeforeAppStart += (contentRoot, argumentsBuilder) =>
+
+                            void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
                                 argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port);
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
                         }
 
                         applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
