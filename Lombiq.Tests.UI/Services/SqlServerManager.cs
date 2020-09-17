@@ -185,7 +185,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 server.KillAllProcesses(_databaseName);
             }
-            catch (SqlException)
+            catch (FailedOperationException)
             {
                 // This can cause all kinds of random exceptions that don't actually cause any issues when the server
                 // is under load.
