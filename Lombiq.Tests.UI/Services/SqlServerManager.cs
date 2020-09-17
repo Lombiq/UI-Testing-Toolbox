@@ -70,7 +70,19 @@ namespace Lombiq.Tests.UI.Services
 
             DropDatabaseIfExists(server);
 
-            new Database(server, _databaseName).Create();
+            // For some reason the database is not always properly created the first time so we need to retry.
+            const int maxCount = 5;
+            var i = 0;
+            while (i < maxCount && !server.Databases.Contains(_databaseName))
+            {
+                new Database(server, _databaseName).Create();
+                i++;
+            }
+
+            if (!server.Databases.Contains(_databaseName))
+            {
+                throw new IOException($"The database {_databaseName} couldn't be created even after {maxCount} tries.");
+            }
 
             return new SqlServerRunningContext(connectionString);
         }
