@@ -75,8 +75,12 @@ namespace Lombiq.Tests.UI.Services
             return new SqlServerRunningContext(connectionString);
         }
 
-        public void TakeSnapshot(string snapshotDirectoryPath)
+        public void TakeSnapshot(string snapshotDirectoryPath, bool compress = false)
         {
+            var filePath = GetSnapshotFilePath(snapshotDirectoryPath);
+
+            if (File.Exists(filePath)) File.Delete(filePath);
+
             var backup = new Backup
             {
                 Action = BackupActionType.Database,
@@ -84,8 +88,9 @@ namespace Lombiq.Tests.UI.Services
                 Checksum = true,
                 Incremental = false,
                 ContinueAfterError = false,
-                // We don't need compression as this backup will be only short-lived but we want it to be fast.
-                CompressionOption = BackupCompressionOptions.Off,
+                // We don't need compression for setup snapshots as those backups will be only short-lived and we want
+                // them to be fast.
+                CompressionOption = compress ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
                 SkipTapeHeader = true,
                 UnloadTapeAfter = false,
                 NoRewind = true,
@@ -94,7 +99,7 @@ namespace Lombiq.Tests.UI.Services
                 Database = _databaseName
             };
 
-            var destination = new BackupDeviceItem(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+            var destination = new BackupDeviceItem(filePath, DeviceType.File);
             backup.Devices.Add(destination);
             // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
             // which is messy.

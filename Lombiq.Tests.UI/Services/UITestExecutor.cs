@@ -204,7 +204,10 @@ namespace Lombiq.Tests.UI.Services
 
                         if (dumpConfiguration.CaptureAppSnapshot)
                         {
-                            await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
+                            var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
+                            await context.Application.TakeSnapshot(appDumpPath);
+
+                            if (sqlServerManager != null) sqlServerManager.TakeSnapshot(appDumpPath, true);
                         }
 
                         if (dumpConfiguration.CaptureScreenshot)
