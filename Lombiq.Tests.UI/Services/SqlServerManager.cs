@@ -143,20 +143,16 @@ namespace Lombiq.Tests.UI.Services
 
             // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
             // https://stackoverflow.com/a/17547737/220230.
-            var dataFileName = restore.ReadFileList(server).Rows[0][0].ToString();
-            var dataPhyisicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName;
             var dataFile = new RelocateFile
             {
-                LogicalFileName = dataFileName,
-                PhysicalFileName = dataPhyisicalFileName
+                LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName
             };
 
-            var logFileName = restore.ReadFileList(server).Rows[1][0].ToString();
-            var logPhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName;
             var logFile = new RelocateFile
             {
-                LogicalFileName = logFileName,
-                PhysicalFileName = logPhysicalFileName
+                LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName
             };
 
             restore.RelocateFiles.Add(dataFile);
