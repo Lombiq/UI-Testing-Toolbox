@@ -73,7 +73,7 @@ namespace Lombiq.Tests.UI.Extensions
             where T : Enum
         {
             context.Get(By.Id(selectId)).ClickReliably(context);
-            context.Get(By.CssSelector($"#{selectId} option[value='{(int)((object)value)}']")).Click();
+            context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
         }
 
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
