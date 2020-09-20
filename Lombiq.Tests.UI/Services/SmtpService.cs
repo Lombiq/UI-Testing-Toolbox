@@ -157,7 +157,7 @@ namespace Lombiq.Tests.UI.Services
             return new ValueTask(Task.CompletedTask);
         }
 
-        private void AddArguments(ArgumentsBuilder builder, params object[] arguments)
+        private static void AddArguments(ArgumentsBuilder builder, params object[] arguments)
         {
             foreach (var argument in arguments)
             {
