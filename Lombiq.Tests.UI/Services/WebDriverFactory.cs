@@ -85,7 +85,7 @@ namespace Lombiq.Tests.UI.Services
             options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
             if (configuration.Headless) options.AddArgument("--headless");
-            configuration?.BrowserOptionsConfigurator(options);
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
             return CreateDriver(
                 () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
@@ -100,7 +100,7 @@ namespace Lombiq.Tests.UI.Services
 
                 // IE doesn't support this.
                 options.AcceptInsecureCertificates = false;
-                configuration?.BrowserOptionsConfigurator(options);
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                 return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
             }, new InternetExplorerConfig());
