@@ -36,6 +36,8 @@ namespace Lombiq.Tests.UI.Services
         public bool UseSmtpService { get; set; }
         public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new SmtpServiceConfiguration();
         public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new AccessibilityCheckingConfiguration();
+        public bool UseSqlServer { get; set; }
+        public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new SqlServerConfiguration();
 
 
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmpty();

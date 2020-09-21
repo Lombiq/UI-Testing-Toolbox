@@ -14,12 +14,14 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services
 {
     public delegate void BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
+    public delegate void BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
     public class OrchardCoreConfiguration
     {
         public string AppAssemblyPath { get; set; }
         public string SnapshotDirectoryPath { get; set; }
         public BeforeAppStartHandler BeforeAppStart { get; set; }
+        public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
     }
 
 
@@ -90,10 +92,7 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    if (_configuration.BeforeAppStart != null)
-                    {
-                        _configuration.BeforeAppStart.Invoke(_contentRootPath, builder);
-                    }
+                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder);
                 });
 
             await StartOrchardApp();
@@ -110,6 +109,10 @@ namespace Lombiq.Tests.UI.Services
             await Pause();
 
             if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
+
+            Directory.CreateDirectory(snapshotDirectoryPath);
+
+            _configuration.BeforeTakeSnapshot?.Invoke(_contentRootPath, snapshotDirectoryPath);
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
         }
@@ -160,15 +163,15 @@ namespace Lombiq.Tests.UI.Services
             _cancellationTokenSource = new CancellationTokenSource();
 
             await _command.ExecuteDotNetApplication(
-                    stdErr =>
-                        throw new IOException(
-                            "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                            Environment.NewLine +
-                            stdErr.Text +
-                            (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
-                                " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
-                                string.Empty)),
-                    _cancellationTokenSource.Token);
+                stdErr =>
+                    throw new IOException(
+                        "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
+                        Environment.NewLine +
+                        stdErr.Text +
+                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
+                            " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
+                            string.Empty)),
+                _cancellationTokenSource.Token);
         }
 
         private Task StopOrchardApp()

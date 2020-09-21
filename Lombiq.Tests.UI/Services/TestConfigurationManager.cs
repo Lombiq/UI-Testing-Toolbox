@@ -20,11 +20,7 @@ namespace Lombiq.Tests.UI.Services
 
         public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true));
 
-        public static int GetAgentIndexOrDefault()
-        {
-            var config = GetConfiguration("AgentIndex");
-            return !string.IsNullOrEmpty(config) ? int.Parse(config) : 0;
-        }
+        public static int GetAgentIndexOrDefault() => int.Parse(GetConfiguration("AgentIndex", "0"));
 
         public static int GetIntConfiguration(string key, int defaultValue) => GetIntConfiguration(key) ?? defaultValue;
 
@@ -42,6 +38,9 @@ namespace Lombiq.Tests.UI.Services
             return string.IsNullOrEmpty(config) ? (bool?)null : bool.Parse(config);
         }
 
+        // Default value should only be used on null value because an empty string is a valid existing configuration.
+        public static string GetConfiguration(string key, string defaultValue) => GetConfiguration(key) ?? defaultValue;
+
         public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
         {
             var prefixedKey = "Lombiq.Tests.UI." + key;
@@ -52,12 +51,9 @@ namespace Lombiq.Tests.UI.Services
                 config = _fileConfiguration[key]?.ToString();
             }
 
-            if (throwIfNullOrEmpty && string.IsNullOrEmpty(config))
-            {
-                throw new InvalidOperationException($"The configuration with the key {key} was null or empty.");
-            }
-
-            return config;
+            return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
+                ? throw new InvalidOperationException($"The configuration with the key {key} was null or empty.")
+                : config;
         }
     }
 }

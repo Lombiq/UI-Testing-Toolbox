@@ -39,6 +39,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly SemaphoreSlim _restoreSemaphore = new SemaphoreSlim(1, 1);
         private static bool _wasRestored;
 
+        private readonly SmtpServiceConfiguration _configuration;
         private int _smtpPort;
         private int _webUIPort;
         private CancellationTokenSource _cancellationTokenSource;
@@ -55,8 +56,10 @@ namespace Lombiq.Tests.UI.Services
             _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Here for future use.")]
-        public async Task<SmtpServiceRunningContext> Start(SmtpServiceConfiguration configuration = null)
+        public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
+
+
+        public async Task<SmtpServiceRunningContext> Start()
         {
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
             // a local tool (on local tools see: https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
