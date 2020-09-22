@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 
 namespace Lombiq.Tests.UI.Services
@@ -61,7 +62,7 @@ namespace Lombiq.Tests.UI.Services
             _databaseId = _portLeaseManager.LeaseAvailableRandomPort();
 
             var connectionString = _configuration.ConnectionStringTemplate
-                .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToString());
+                .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
 
             using var connection = new SqlConnection(connectionString);
             _serverName = connection.DataSource;
@@ -104,7 +105,7 @@ namespace Lombiq.Tests.UI.Services
                 NoRewind = true,
                 FormatMedia = true,
                 Initialize = true,
-                Database = _databaseName
+                Database = _databaseName,
             };
 
             var destination = new BackupDeviceItem(filePath, DeviceType.File);
@@ -140,13 +141,13 @@ namespace Lombiq.Tests.UI.Services
             var dataFile = new RelocateFile
             {
                 LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
-                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName
+                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName,
             };
 
             var logFile = new RelocateFile
             {
                 LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
-                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName
+                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName,
             };
 
             restore.RelocateFiles.Add(dataFile);

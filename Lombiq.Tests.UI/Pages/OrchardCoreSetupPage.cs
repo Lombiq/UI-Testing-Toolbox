@@ -16,12 +16,12 @@ namespace Lombiq.Tests.UI.Pages
             SqlServer,
             Sqlite,
             MySql,
-            Postgres
+            Postgres,
         }
 
 
         [FindById("culturesList")]
-        [SelectByValue()]
+        [SelectByValue]
         public Select<_> Language { get; private set; }
 
         [FindByName(nameof(SiteName))]
@@ -31,7 +31,7 @@ namespace Lombiq.Tests.UI.Pages
         public BSDropdownToggle<_> Recipe { get; private set; }
 
         [FindById("SiteTimeZone")]
-        [SelectByValue()]
+        [SelectByValue]
         public Select<_> SiteTimeZone { get; private set; }
 
         [FindById("DatabaseProvider")]
@@ -56,25 +56,20 @@ namespace Lombiq.Tests.UI.Pages
         public PasswordInput<_> PasswordConfirmation { get; private set; }
 
         public Button<_> FinishSetup { get; private set; }
-    }
 
-    public static class OrchardSetupPageExtensions
-    {
-        public static _ SetupOrchardCore(
-            this _ setupPage,
+        public _ SetupOrchardCore(
             string languageValue = "en",
             string siteName = "Test Site",
             string recipeId = "SaaS",
             string siteTimeZoneValue = null,
-            _.DatabaseType databaseProvider = _.DatabaseType.Sqlite,
+            DatabaseType databaseProvider = DatabaseType.Sqlite,
             string connectionString = null,
             string tablePrefix = null,
             string userName = "admin",
             string email = "admin@admin.com",
             string password = "Password1!")
         {
-            var page = setupPage
-                .Language.Set(languageValue)
+            var page = Language.Set(languageValue)
                 .SiteName.Set(siteName)
                 .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", recipeId)).Click()
                 .DatabaseProvider.Set(databaseProvider);
@@ -84,7 +79,7 @@ namespace Lombiq.Tests.UI.Pages
                 page.SiteTimeZone.Set(siteTimeZoneValue);
             }
 
-            if (databaseProvider != _.DatabaseType.Sqlite)
+            if (databaseProvider != DatabaseType.Sqlite)
             {
                 if (string.IsNullOrEmpty(connectionString))
                 {
