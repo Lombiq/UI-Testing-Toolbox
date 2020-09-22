@@ -14,12 +14,14 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services
 {
     public delegate void BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
+    public delegate void BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
     public class OrchardCoreConfiguration
     {
         public string AppAssemblyPath { get; set; }
         public string SnapshotDirectoryPath { get; set; }
         public BeforeAppStartHandler BeforeAppStart { get; set; }
+        public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
     }
 
 
@@ -59,7 +61,7 @@ namespace Lombiq.Tests.UI.Services
         }
 
 
-        public async Task<Uri> StartUpAsync()
+        public async Task<Uri> StartUp()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
             var url = UrlPrefix + _port;
@@ -90,26 +92,27 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    if (_configuration.BeforeAppStart != null)
-                    {
-                        _configuration.BeforeAppStart.Invoke(_contentRootPath, builder);
-                    }
+                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder);
                 });
 
-            await StartOrchardAppAsync();
+            await StartOrchardApp();
 
             return new Uri(url);
         }
 
-        public Task PauseAsync() => StopOrchardAppAsync();
+        public Task Pause() => StopOrchardApp();
 
-        public Task ResumeAsync() => StartOrchardAppAsync();
+        public Task Resume() => StartOrchardApp();
 
-        public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
+        public async Task TakeSnapshot(string snapshotDirectoryPath)
         {
-            await PauseAsync();
+            await Pause();
 
             if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
+
+            Directory.CreateDirectory(snapshotDirectoryPath);
+
+            _configuration.BeforeTakeSnapshot?.Invoke(_contentRootPath, snapshotDirectoryPath);
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
         }
@@ -123,7 +126,7 @@ namespace Lombiq.Tests.UI.Services
                     .Select(filePath => (IApplicationLog)new ApplicationLog
                     {
                         Name = Path.GetFileName(filePath),
-                        ContentLoader = () => File.ReadAllTextAsync(filePath),
+                        ContentLoader = () => File.ReadAllTextAsync(filePath)
                     }) :
                 Enumerable.Empty<IApplicationLog>();
         }
@@ -134,7 +137,7 @@ namespace Lombiq.Tests.UI.Services
 
             _isDisposed = true;
 
-            await StopOrchardAppAsync();
+            await StopOrchardApp();
 
             _portLeaseManager.StopLease(_port);
 
@@ -148,7 +151,7 @@ namespace Lombiq.Tests.UI.Services
             Directory.CreateDirectory(_contentRootPath);
         }
 
-        private async Task StartOrchardAppAsync()
+        private async Task StartOrchardApp()
         {
             if (_command == null)
             {
@@ -159,19 +162,19 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            await _command.ExecuteDotNetApplicationAsync(
-                    stdErr =>
-                        throw new IOException(
-                            "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                            Environment.NewLine +
-                            stdErr.Text +
-                            (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
-                                " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
-                                string.Empty)),
-                    _cancellationTokenSource.Token);
+            await _command.ExecuteDotNetApplication(
+                stdErr =>
+                    throw new IOException(
+                        "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
+                        Environment.NewLine +
+                        stdErr.Text +
+                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
+                            " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
+                            string.Empty)),
+                _cancellationTokenSource.Token);
         }
 
-        private Task StopOrchardAppAsync()
+        private Task StopOrchardApp()
         {
             if (_cancellationTokenSource == null) return Task.CompletedTask;
 
@@ -190,7 +193,7 @@ namespace Lombiq.Tests.UI.Services
             public string Name { get; set; }
             public Func<Task<string>> ContentLoader { get; set; }
 
-            public Task<string> GetContentAsync() => ContentLoader();
+            public Task<string> GetContent() => ContentLoader();
         }
     }
 }

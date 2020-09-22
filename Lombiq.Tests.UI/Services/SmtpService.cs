@@ -1,10 +1,8 @@
 using CliWrap;
 using CliWrap.Buffered;
-using CliWrap.Builders;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +39,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly SemaphoreSlim _restoreSemaphore = new SemaphoreSlim(1, 1);
         private static bool _wasRestored;
 
+        private readonly SmtpServiceConfiguration _configuration;
         private int _smtpPort;
         private int _webUIPort;
         private CancellationTokenSource _cancellationTokenSource;
@@ -57,8 +56,10 @@ namespace Lombiq.Tests.UI.Services
             _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Here for future use.")]
-        public async Task<SmtpServiceRunningContext> StartAsync(SmtpServiceConfiguration configuration = null)
+        public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
+
+
+        public async Task<SmtpServiceRunningContext> Start()
         {
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
             // a local tool (on local tools see: https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
@@ -119,20 +120,13 @@ namespace Lombiq.Tests.UI.Services
             // Although e.g. "urls" is not there.
             await Cli
                 .Wrap("dotnet.exe")
-                .WithArguments(a =>
-                    AddArguments(
-                        a,
-                        "tool",
-                        "run",
-                        "smtp4dev",
-                        // For the db parameter the equal sign is needed.
-                        "--db=",
-                        string.Empty,
-                        "--smtpport",
-                        _smtpPort,
-                        "--urls",
-                        webUIUri.ToString()))
-                .ExecuteDotNetApplicationAsync(
+                .WithArguments(a => a
+                    .Add("tool").Add("run").Add("smtp4dev")
+                    // For the db parameter the equal sign is needed.
+                    .Add("--db=").Add(string.Empty)
+                    .Add("--smtpport").Add(_smtpPort)
+                    .Add("--urls").Add(webUIUri.ToString()))
+                .ExecuteDotNetApplication(
                     stdErr =>
                         throw new IOException(
                             $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port {_webUIPort} due to the following error: " +
@@ -155,16 +149,6 @@ namespace Lombiq.Tests.UI.Services
             }
 
             return new ValueTask(Task.CompletedTask);
-        }
-
-        private static void AddArguments(ArgumentsBuilder builder, params object[] arguments)
-        {
-            foreach (var argument in arguments)
-            {
-                builder = argument is IFormattable formattable
-                    ? builder.Add(formattable, CultureInfo.InvariantCulture)
-                    : builder.Add(argument.ToString());
-            }
         }
     }
 }

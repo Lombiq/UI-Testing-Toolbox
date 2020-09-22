@@ -16,29 +16,28 @@ namespace Lombiq.Tests.UI.Services
 {
     public static class WebDriverFactory
     {
-        private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
+        private readonly static ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
 
 
         public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-            CreateDriver(
-                () =>
-                {
-                    var options = new ChromeOptions().SetCommonOptions();
+            CreateDriver(() =>
+            {
+                var options = new ChromeOptions().SetCommonOptions();
 
-                    options.AddArgument("--lang=" + configuration.AcceptLanguage);
+                options.AddArgument("--lang=" + configuration.AcceptLanguage.ToString());
 
-                    // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
-                    // during parallel execution: https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
-                    // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
-                    // with trusted code (i.e. our own).
-                    options.AddArgument("no-sandbox");
+                // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
+                // during parallel execution: https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
+                // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
+                // with trusted code (i.e. our own).
+                options.AddArgument("no-sandbox");
 
-                    if (configuration.Headless) options.AddArgument("headless");
+                if (configuration.Headless) options.AddArgument("headless");
 
-                    configuration.BrowserOptionsConfigurator?.Invoke(options);
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                    return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
-                }, new ChromeConfig());
+                return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            }, new ChromeConfig());
 
         public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(
@@ -48,9 +47,9 @@ namespace Lombiq.Tests.UI.Services
                     var config = new StaticVersionEdgeConfig();
                     var architecture = ArchitectureHelper.GetArchitecture();
                     // Using a hard-coded version for now to use the latest released one instead of canary that would
-                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74
+                    // be returned by EdgeConfig.GetLatestVersion(). See: https://github.com/rosolko/WebDriverManager.Net/issues/74 
                     var version = config.GetLatestVersion();
-                    UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
+                    var url = UrlHelper.BuildUrl(architecture == Architecture.X32 ? config.GetUrl32() : config.GetUrl64(), version);
                     var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
 
                     var options = new EdgeOptions().SetCommonOptions();
@@ -64,6 +63,7 @@ namespace Lombiq.Tests.UI.Services
                     // Edge will soon have headless support too, see:
                     // https://techcommunity.microsoft.com/t5/discussions/chromium-edge-automation-with-selenium-best-practice/m-p/436338
                     // Maybe not like this but in Selenium 4 at least.
+                    //if (configuration.Headless) options.AddArgument("headless");
                     if (configuration.Headless)
                     {
                         throw new NotSupportedException("Edge doesn't support headless mode.");
@@ -85,7 +85,7 @@ namespace Lombiq.Tests.UI.Services
             options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
             if (configuration.Headless) options.AddArgument("--headless");
-            configuration?.BrowserOptionsConfigurator(options);
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
             return CreateDriver(
                 () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
@@ -94,43 +94,38 @@ namespace Lombiq.Tests.UI.Services
 
 
         public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-            CreateDriver(
-                () =>
-                {
-                    var options = new InternetExplorerOptions().SetCommonOptions();
+            CreateDriver(() =>
+            {
+                var options = new InternetExplorerOptions().SetCommonOptions();
 
-                    // IE doesn't support this.
-                    options.AcceptInsecureCertificates = false;
-                    configuration?.BrowserOptionsConfigurator(options);
+                // IE doesn't support this.
+                options.AcceptInsecureCertificates = false;
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                    return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
-                },
-                new InternetExplorerConfig());
+                return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+            }, new InternetExplorerConfig());
 
 
-        private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
-            where TDriverOptions : DriverOptions
+        private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions) where TDriverOptions : DriverOptions
         {
             driverOptions.AcceptInsecureCertificates = true;
             driverOptions.PageLoadStrategy = PageLoadStrategy.Normal;
             return driverOptions;
         }
 
-        private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout)
-            where TDriver : RemoteWebDriver
+        private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout) where TDriver : RemoteWebDriver
         {
             // Setting timeouts for cases when tests randomly hang up a bit more for some reason (like the test
             // machine load momentarily spiking).
             // We're not increasing ImplicityWait, the default of which is 0, since that would make all tests slower.
             // See: https://stackoverflow.com/a/7312740/220230
             var timeouts = driver.Manage().Timeouts();
-            // Default is 5 minutes.
+            // Default is 5 minutes. 
             timeouts.PageLoad = pageLoadTimeout;
             return driver;
         }
 
-        private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
-            where TDriver : RemoteWebDriver
+        private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig) where TDriver : RemoteWebDriver
         {
             try
             {
@@ -139,9 +134,17 @@ namespace Lombiq.Tests.UI.Services
                 // The Lazy<T> trick taken from: https://stackoverflow.com/a/31637510/220230
                 _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
                 {
-                    // Note that this will set up the latest version of the driver, there is no matching on the browser
-                    // version yet: https://github.com/rosolko/WebDriverManager.Net/issues/73
-                    new DriverManager().SetUpDriver(driverConfig);
+                    // Version selection based on the locally installed version if only available for Chrome, see:
+                    // https://github.com/rosolko/WebDriverManager.Net/pull/91.
+                    if (driverConfig is ChromeConfig)
+                    {
+                        new DriverManager().SetUpDriver(driverConfig, VersionResolveStrategy.MatchingBrowser);
+                    }
+                    else
+                    {
+                        new DriverManager().SetUpDriver(driverConfig);
+                    }
+
                     return true;
                 })).Value;
 
@@ -149,7 +152,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                throw new WebDriverException(
+                throw new Exception(
                     $"Creating the web driver failed with the message \"{ex.Message}\". Note that this can mean that there is a leftover web driver process that you have to kill manually.",
                     ex);
             }
