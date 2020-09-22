@@ -1,0 +1,12 @@
+﻿<script>
+    var testingIndex = 0;
+
+    if (window.dataTableResources && window.dataTableResources.options) {
+        window.dataTableResources.options.infoCallback = function(settings, start, end, max, total) {
+            testingIndex++;
+            return "Showing " + start + " to " + end + " of " + max + " entries " +
+                "(filtered from " + total + " total entries) " +
+                "<span class=\"testing-index\">" + testingIndex + "</span>";
+        };
+    }
+</script>
