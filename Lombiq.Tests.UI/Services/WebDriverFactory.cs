@@ -85,7 +85,7 @@ namespace Lombiq.Tests.UI.Services
             options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
             if (configuration.Headless) options.AddArgument("--headless");
-            configuration?.BrowserOptionsConfigurator(options);
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
             return CreateDriver(
                 () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
@@ -100,7 +100,7 @@ namespace Lombiq.Tests.UI.Services
 
                 // IE doesn't support this.
                 options.AcceptInsecureCertificates = false;
-                configuration?.BrowserOptionsConfigurator(options);
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                 return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
             }, new InternetExplorerConfig());
@@ -134,9 +134,17 @@ namespace Lombiq.Tests.UI.Services
                 // The Lazy<T> trick taken from: https://stackoverflow.com/a/31637510/220230
                 _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
                 {
-                    // Note that this will set up the latest version of the driver, there is no matching on the browser
-                    // version yet: https://github.com/rosolko/WebDriverManager.Net/issues/73
-                    new DriverManager().SetUpDriver(driverConfig);
+                    // Version selection based on the locally installed version if only available for Chrome, see:
+                    // https://github.com/rosolko/WebDriverManager.Net/pull/91.
+                    if (driverConfig is ChromeConfig)
+                    {
+                        new DriverManager().SetUpDriver(driverConfig, VersionResolveStrategy.MatchingBrowser);
+                    }
+                    else
+                    {
+                        new DriverManager().SetUpDriver(driverConfig);
+                    }
+
                     return true;
                 })).Value;
 
