@@ -27,8 +27,8 @@ namespace Lombiq.Tests.UI.Helpers
             var configFilePaths = Directory
                 .EnumerateFiles(sourcePath)
                 .Where(filePath =>
-                filePath.EndsWith(".config", StringComparison.InvariantCultureIgnoreCase) ||
-                filePath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase));
+                    filePath.EndsWith(".config", StringComparison.InvariantCultureIgnoreCase) ||
+                    filePath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase));
 
             foreach (var filePath in configFilePaths)
             {

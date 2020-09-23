@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.Exceptions
 {
     public class AccessibilityAssertionException : Exception
     {
-        public AxeResult AxeResult { get; set; }
+        public AxeResult AxeResult { get; }
 
 
         public AccessibilityAssertionException(AxeResult axeResult, bool createReportOnFailure, Exception innerException)

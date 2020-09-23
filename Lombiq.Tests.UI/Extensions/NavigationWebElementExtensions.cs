@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Extensions
             catch (WebDriverException ex)
                 when (ex.Message.Contains(
                     "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite.",
-                    StringComparison.InvariantCulture))
+                    StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new NotSupportedException(
                     "For this element use the standard Click() method. Add the element as an exception to the documentation.");
