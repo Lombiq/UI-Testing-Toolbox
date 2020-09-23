@@ -165,14 +165,17 @@ namespace Lombiq.Tests.UI.Services
                             // the snapshot config to be available at startup too.
                             context = await CreateContext();
 
-                            // This is only necessary for the setup snapshot.
-                            void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                            if (configuration.UseSqlServer)
                             {
-                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                                sqlServerManager?.TakeSnapshot(snapshotDirectoryPath);
-                            }
+                                // This is only necessary for the setup snapshot.
+                                void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                                {
+                                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                                    sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                                }
 
-                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                            }
 
                             return (context, configuration.SetupOperation(context));
                         });
