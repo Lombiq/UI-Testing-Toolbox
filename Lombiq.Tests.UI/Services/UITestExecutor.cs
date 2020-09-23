@@ -28,7 +28,6 @@ namespace Lombiq.Tests.UI.Services
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
 
-
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
         /// </summary>
@@ -46,6 +45,7 @@ namespace Lombiq.Tests.UI.Services
 
             return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
         }
+
 
         private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
@@ -119,7 +119,7 @@ namespace Lombiq.Tests.UI.Services
                                 sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
                                 // This method is not actually async.
-#pragma warning disable AsyncFixer02 // Long-running or blocing operations inside an async method
+#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
                                 var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
                                 var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
                                 appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
