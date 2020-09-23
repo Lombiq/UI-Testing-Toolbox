@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -22,6 +23,14 @@ namespace Lombiq.Tests.UI.Extensions
             if (onlyIfNotAlreadyThere && new Uri(context.Driver.Url) == uri) return;
 
             context.Driver.Navigate().GoToUrl(uri);
+        }
+
+        public static void SignInDirectlyAndGoToHomepage(
+            this UITestContext context,
+            string email = DefaultUser.UserName)
+        {
+            context.SignInDirectly(email);
+            context.GoToHomePage();
         }
 
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
