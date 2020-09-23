@@ -18,8 +18,8 @@ namespace Lombiq.Tests.UI.Services
         public bool CreateReportAlways { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the (relative or absolute) path where those accessibility reports
-        /// are stored that are created for every test (see <see cref="CreateReportAlways"/>).
+        /// Gets or sets the (relative or absolute) path where those accessibility reports are stored that are created
+        /// for every test (see <see cref="CreateReportAlways"/>).
         /// </summary>
         public string AlwaysCreatedAccessibilityReportsDirectoryPath { get; set; } = "AccessibilityReports";
 

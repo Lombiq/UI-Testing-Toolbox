@@ -48,7 +48,7 @@ namespace Lombiq.Tests.UI.Services
             // every page.
             messages => messages.ShouldNotContain(message =>
                 message.Source != BrowserLogMessage.Sources.Deprecation ||
-                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCulture));
+                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase));
     }
 
 

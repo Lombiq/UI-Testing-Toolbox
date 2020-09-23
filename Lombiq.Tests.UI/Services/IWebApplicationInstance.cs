@@ -16,17 +16,18 @@ namespace Lombiq.Tests.UI.Services
         Task<Uri> StartUpAsync();
 
         /// <summary>
-        /// Stops running the application without disposing it.
+        /// Stops running the application without disposing it. It can be restarted with <see cref="ResumeAsync()"/>.
         /// </summary>
         Task PauseAsync();
 
         /// <summary>
-        /// Starts the application back up again.
+        /// Starts the application back up again after it was stopped with <see cref="PauseAsync()"/>.
         /// </summary>
         Task ResumeAsync();
 
         /// <summary>
-        /// Pauses and saves the state of the application.
+        /// Pauses (see <see cref="PauseAsync"/>) and saves the state of the application.  It can be restarted with
+        /// <see cref="ResumeAsync()"/>.
         /// </summary>
         /// <param name="snapshotDirectoryPath">The save location.</param>
         Task TakeSnapshotAsync(string snapshotDirectoryPath);
