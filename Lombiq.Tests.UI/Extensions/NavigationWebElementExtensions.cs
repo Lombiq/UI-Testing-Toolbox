@@ -9,6 +9,13 @@ namespace Lombiq.Tests.UI.Extensions
     public static class NavigationWebElementExtensions
     {
         /// <summary>
+        /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and
+        /// <see cref="ClickReliably(OpenQA.Selenium.IWebElement,Lombiq.Tests.UI.Services.UITestContext)"/> so the
+        /// <paramref name="context"/> doesn't have to be passed twice.
+        /// </summary>
+        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
+
+        /// <summary>
         /// Click an element even if the default Click() will sometimes fail to do so. It's more reliable than Click()
         /// but still not perfect.
         /// </summary>
@@ -36,8 +43,6 @@ namespace Lombiq.Tests.UI.Extensions
                     "For this element use the standard Click() method. Add the element as an exception to the documentation.");
             }
         }
-
-        public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
 
         public static void ClickReliablyUntilPageLeave(
             this IWebElement element,
