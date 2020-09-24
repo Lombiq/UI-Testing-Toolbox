@@ -24,12 +24,16 @@ namespace Lombiq.Tests.UI.Services
         public string AlwaysCreatedAccessibilityReportsDirectoryPath { get; set; } = "AccessibilityReports";
 
         /// <summary>
-        /// Gets or sets a value indicating whether configuration delegate for the <see cref="AxeBuilder"/> instance
-        /// used for accessibility checking. For more information on the various options see
-        /// <see href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>.
+        /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility
+        /// checking. For more information on the various options see <see
+        /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>.
         /// </summary>
         public Action<AxeBuilder> AxeBuilderConfigurator { get; set; }
 
+        /// <summary>
+        /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking
+        /// happens.
+        /// </summary>
         public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 
 

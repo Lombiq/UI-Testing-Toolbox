@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Launches the web application.
         /// </summary>
-        /// <returns>The starting URL of the webapp, such as the home page.</returns>
+        /// <returns>The starting URL of the web app, such as the home page.</returns>
         Task<Uri> StartUpAsync();
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Services
         Task ResumeAsync();
 
         /// <summary>
-        /// Pauses (see <see cref="PauseAsync"/>) and saves the state of the application.  It can be restarted with
+        /// Pauses (see <see cref="PauseAsync"/>) and saves the state of the application. It can be restarted with
         /// <see cref="ResumeAsync()"/>.
         /// </summary>
         /// <param name="snapshotDirectoryPath">The save location.</param>

@@ -1,7 +1,5 @@
 using Atata;
-using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using Shouldly;
 using System;
 
 namespace Lombiq.Tests.UI.Helpers

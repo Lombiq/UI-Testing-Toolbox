@@ -20,11 +20,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// but still not perfect.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Even when the element is absolutely, positively there (Atata's Get() succeeds) the clicks sometimes simply
         /// don't go through the first time.
         /// More literature on the scientific field of clicking (but the code there doesn't really help):
         /// https://cezarypiatek.github.io/post/why-click-with-selenium-so-hard/
         /// Also see: https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error.
+        /// </para>
         /// </remarks>
         public static void ClickReliably(this IWebElement element, UITestContext context) => element.ClickReliably(context.Driver);
 
