@@ -157,7 +157,7 @@ namespace Lombiq.Tests.UI.Services
                             void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
                             {
                                 configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                                sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                                sqlServerManager?.TakeSnapshot(snapshotDirectoryPath);
                             }
                             configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
 
