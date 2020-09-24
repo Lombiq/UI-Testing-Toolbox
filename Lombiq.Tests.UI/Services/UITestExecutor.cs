@@ -1,6 +1,9 @@
+using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Microsoft.SqlServer.Management.Common;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
@@ -82,6 +85,7 @@ namespace Lombiq.Tests.UI.Services
                 async Task<BrowserLogMessage[]> GetBrowserLog(RemoteWebDriver driver) =>
                     browserLogMessages ??= (await driver.GetAndEmptyBrowserLog()).ToArray();
 
+                SqlServerManager sqlServerManager = null;
                 SmtpService smtpService = null;
                 IWebApplicationInstance applicationInstance = null;
                 UITestContext context = null;
@@ -90,14 +94,44 @@ namespace Lombiq.Tests.UI.Services
                 {
                     async Task<UITestContext> CreateContext()
                     {
+                        SqlServerRunningContext sqlServerContext = null;
+
+                        if (configuration.UseSqlServer)
+                        {
+                            sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
+                            sqlServerContext = sqlServerManager.CreateDatabase();
+
+                            void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
+
+                                var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+
+                                if (!Directory.Exists(snapshotDirectoryPath)) return;
+
+                                sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+
+                                var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+                                var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
+                                appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
+                                File.WriteAllText(appSettingsPath, appSettings.ToString());
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
+                        }
+
                         SmtpServiceRunningContext smtpContext = null;
 
                         if (configuration.UseSmtpService)
                         {
-                            smtpService = new SmtpService();
+                            smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
                             smtpContext = await smtpService.Start();
-                            configuration.OrchardCoreConfiguration.BeforeAppStart += (contentRoot, argumentsBuilder) =>
+
+                            void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
                                 argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port);
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
                         }
 
                         applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
@@ -108,7 +142,7 @@ namespace Lombiq.Tests.UI.Services
                             uri,
                             configuration);
 
-                        return new UITestContext(testManifest.Name, configuration, applicationInstance, atataScope, smtpContext);
+                        return new UITestContext(testManifest.Name, configuration, sqlServerContext, applicationInstance, atataScope, smtpContext);
                     }
 
                     if (runSetupOperation)
@@ -118,6 +152,14 @@ namespace Lombiq.Tests.UI.Services
                             // Note that the context creation needs to be done here too because the Orchard app needs
                             // the snapshot config to be available at startup too.
                             context = await CreateContext();
+
+                            // This is only necessary for the setup snapshot.
+                            void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                            {
+                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                                sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                            }
+                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
 
                             return (context, configuration.SetupOperation(context));
                         });
@@ -159,57 +201,83 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}.");
+                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
 
                     if (context != null)
                     {
-                        var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
-                        var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                        Directory.CreateDirectory(dumpContainerPath);
-                        Directory.CreateDirectory(debugInformationPath);
-
-                        if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                        try
                         {
-                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                            var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
+                            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+                            Directory.CreateDirectory(dumpContainerPath);
+                            Directory.CreateDirectory(debugInformationPath);
+
+                            if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                            {
+                                await File.WriteAllTextAsync(
+                                    Path.Combine(debugInformationPath, "TestOutput.log"),
+                                    concreteTestOutputHelper.Output);
+                            }
+
+                            if (dumpConfiguration.CaptureAppSnapshot)
+                            {
+                                var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
+                                await context.Application.TakeSnapshot(appDumpPath);
+
+                                if (sqlServerManager != null)
+                                {
+                                    try
+                                    {
+                                        sqlServerManager.TakeSnapshot(appDumpPath, true);
+                                    }
+                                    catch (ExecutionFailureException failureException)
+                                    {
+                                        testOutputHelper.WriteLine($"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
+                                    }
+                                }
+                            }
+
+                            if (dumpConfiguration.CaptureScreenshot)
+                            {
+                                // Only PNG is supported on .NET Core.
+                                context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                            }
+
+                            if (dumpConfiguration.CaptureHtmlSource)
+                            {
+                                await File.WriteAllTextAsync(
+                                    Path.Combine(debugInformationPath, "PageSource.html"),
+                                    context.Scope.Driver.PageSource);
+                            }
+
+                            if (dumpConfiguration.CaptureBrowserLog)
+                            {
+                                await File.WriteAllLinesAsync(
+                                    Path.Combine(debugInformationPath, "BrowserLog.log"),
+                                    (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
+                            }
+
+                            if (ex is AccessibilityAssertionException accessibilityAssertionException
+                                && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+                            {
+                                context.Driver.CreateAxeHtmlReport(
+                                    accessibilityAssertionException.AxeResult,
+                                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                            }
                         }
-
-                        if (dumpConfiguration.CaptureAppSnapshot)
+                        catch (Exception dumpException)
                         {
-                            await context.Application.TakeSnapshot(Path.Combine(dumpContainerPath, "AppDump"));
-                        }
-
-                        if (dumpConfiguration.CaptureScreenshot)
-                        {
-                            // Only PNG is supported on .NET Core.
-                            context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
-                        }
-
-                        if (dumpConfiguration.CaptureHtmlSource)
-                        {
-                            await File.WriteAllTextAsync(Path.Combine(debugInformationPath, "PageSource.html"), context.Scope.Driver.PageSource);
-                        }
-
-                        if (dumpConfiguration.CaptureBrowserLog)
-                        {
-                            await File.WriteAllLinesAsync(
-                                Path.Combine(debugInformationPath, "BrowserLog.log"),
-                                (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
-                        }
-
-                        if (ex is AccessibilityAssertionException accessibilityAssertionException
-                            && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                        {
-                            context.Driver.CreateAxeHtmlReport(
-                                accessibilityAssertionException.AxeResult,
-                                Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                            testOutputHelper.WriteLine($"Creating the failure dump of the test failed with the following exception: {dumpException}");
                         }
                     }
 
                     if (retryCount == configuration.MaxRetryCount)
                     {
                         var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                        testOutputHelper.WriteLine(
+                            $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
+                            $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
                         throw;
                     }
 
@@ -221,6 +289,7 @@ namespace Lombiq.Tests.UI.Services
                     if (context != null) context.Scope.Dispose();
                     if (applicationInstance != null) await applicationInstance.DisposeAsync();
                     if (smtpService != null) await smtpService.DisposeAsync();
+                    sqlServerManager?.Dispose();
 
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
