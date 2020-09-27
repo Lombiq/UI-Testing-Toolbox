@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.Services
     /// Service for acquiring a lease on a given network port number between concurrent processes.
     /// </summary>
     /// <remarks>
-    /// You may think it's about managing the rent of a sea harbor but rest assured it isn't.
+    /// <para>You may think it's about managing the rent of a sea harbor but rest assured it isn't.</para>
     /// </remarks>
     public class PortLeaseManager
     {
@@ -26,7 +26,10 @@ namespace Lombiq.Tests.UI.Services
             lock (_portAcquisitionLock)
             {
                 var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
+                // This is not a security-critical random number.
+#pragma warning disable SCS0005 // Weak random generator
                 var port = availablePorts[new Random().Next(availablePorts.Count)];
+#pragma warning restore SCS0005 // Weak random generator
                 _usedPorts.Add(port);
                 return port;
             }
