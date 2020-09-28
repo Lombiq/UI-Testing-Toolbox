@@ -17,7 +17,7 @@ namespace Lombiq.Tests.UI.Components
 
             var scopeLocator = new PlainScopeLocator(By.XPath("ancestor::" + validationMessageDefinition.ScopeXPath))
             {
-                SearchContext = boundControl.Scope
+                SearchContext = boundControl.Scope,
             };
 
             return Component.Controls.Create<ValidationMessage<TOwner>>(boundControl.ComponentName, scopeLocator);
@@ -31,7 +31,7 @@ namespace Lombiq.Tests.UI.Components
 
             var scopeLocator = new PlainScopeLocator(By.XPath("ancestor::" + validationMessageDefinition.ScopeXPath))
             {
-                SearchContext = boundControl.Scope
+                SearchContext = boundControl.Scope,
             };
 
             return Component.Controls.Create<ValidationMessage<TOwner>>(name, scopeLocator);

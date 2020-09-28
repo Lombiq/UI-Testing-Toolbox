@@ -36,13 +36,15 @@ namespace Lombiq.Tests.UI.Extensions
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
             new Uri(context.Scope.BaseUri, relativeUrl);
 
-        public static T GoToPage<T>(this UITestContext context) where T : PageObject<T>
+        public static T GoToPage<T>(this UITestContext context)
+            where T : PageObject<T>
         {
             AtataContext.Current = context.Scope.AtataContext;
             return Go.To<T>();
         }
 
-        public static T GoToPage<T>(this UITestContext context, string relativeUrl) where T : PageObject<T>
+        public static T GoToPage<T>(this UITestContext context, string relativeUrl)
+            where T : PageObject<T>
         {
             var uri = context.GetAbsoluteUri(relativeUrl);
 

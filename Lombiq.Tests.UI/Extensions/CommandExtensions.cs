@@ -11,17 +11,17 @@ namespace CliWrap
         /// Executes a <see cref="Command"/> as a dotnet.exe command that starts a long-running application, and waits
         /// for the app to be started.
         /// </summary>
-        public static async Task ExecuteDotNetApplication(
+        public static async Task ExecuteDotNetApplicationAsync(
             this Command command,
             Action<StandardErrorCommandEvent> stdErrHandler = default,
             CancellationToken cancellationToken = default)
         {
-            await using var enumerator = command.ListenAsync(cancellationToken).GetAsyncEnumerator();
+            await using var enumerator = command.ListenAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
 
             while (await enumerator.MoveNextAsync())
             {
                 if (enumerator.Current is StandardOutputCommandEvent stdOut &&
-                    stdOut.Text.Contains("Application started. Press Ctrl+C to shut down."))
+                    stdOut.Text.Contains("Application started. Press Ctrl+C to shut down.", StringComparison.InvariantCulture))
                 {
                     return;
                 }

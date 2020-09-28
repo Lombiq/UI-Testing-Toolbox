@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,14 +24,14 @@ namespace Lombiq.Tests.UI.Services
 
     public static class UITestExecutor
     {
-        private readonly static object _setupSnapshotManangerLock = new object();
+        private static readonly object _setupSnapshotManangerLock = new object();
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
         /// </summary>
-        public static async Task ExecuteOrchardCoreTest(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+        public static Task ExecuteOrchardCoreTestAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
             if (string.IsNullOrEmpty(testManifest.Name))
             {
@@ -42,6 +43,12 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
+            return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
+        }
+
+
+        private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+        {
             var startTime = DateTime.UtcNow;
             DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
 
@@ -60,11 +67,11 @@ namespace Lombiq.Tests.UI.Services
 
             var dumpConfiguration = configuration.FailureDumpConfiguration;
             var dumpFolderNameBase = testManifest.Name;
-            if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('('))
+            if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
             {
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
-                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(')).LastIndexOf('.') + 1);
+                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)).LastIndexOf('.') + 1);
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
@@ -83,7 +90,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 BrowserLogMessage[] browserLogMessages = null;
                 async Task<BrowserLogMessage[]> GetBrowserLog(RemoteWebDriver driver) =>
-                    browserLogMessages ??= (await driver.GetAndEmptyBrowserLog()).ToArray();
+                    browserLogMessages ??= (await driver.GetAndEmptyBrowserLogAsync()).ToArray();
 
                 SqlServerManager sqlServerManager = null;
                 SmtpService smtpService = null;
@@ -111,11 +118,15 @@ namespace Lombiq.Tests.UI.Services
 
                                 sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
+                                // This method is not actually async.
+#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
                                 var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
                                 var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
                                 appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
                                 File.WriteAllText(appSettingsPath, appSettings.ToString());
+#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                             }
+
                             configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
                         }
 
@@ -124,18 +135,19 @@ namespace Lombiq.Tests.UI.Services
                         if (configuration.UseSmtpService)
                         {
                             smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
-                            smtpContext = await smtpService.Start();
+                            smtpContext = await smtpService.StartAsync();
 
                             void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                             {
                                 configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
-                                argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port);
+                                argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
                             }
+
                             configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
                         }
 
                         applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
-                        var uri = await applicationInstance.StartUp();
+                        var uri = await applicationInstance.StartUpAsync();
 
                         var atataScope = AtataFactory.StartAtataScope(
                             testOutputHelper,
@@ -147,29 +159,33 @@ namespace Lombiq.Tests.UI.Services
 
                     if (runSetupOperation)
                     {
-                        var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNew(async () =>
+                        var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                         {
                             // Note that the context creation needs to be done here too because the Orchard app needs
                             // the snapshot config to be available at startup too.
                             context = await CreateContext();
 
-                            // This is only necessary for the setup snapshot.
-                            void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                            if (configuration.UseSqlServer)
                             {
-                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                                sqlServerManager?.TakeSnapshot(snapshotDirectoryPath);
+                                // This is only necessary for the setup snapshot.
+                                void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                                {
+                                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                                    sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                                }
+
+                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
                             }
-                            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
 
                             return (context, configuration.SetupOperation(context));
                         });
 
-                        if (context == null) context = await CreateContext();
+                        context ??= await CreateContext();
 
                         context.GoToRelativeUrl(resultUri.PathAndQuery);
                     }
 
-                    if (context == null) context = await CreateContext();
+                    context ??= await CreateContext();
 
                     testManifest.Test(context);
 
@@ -180,7 +196,7 @@ namespace Lombiq.Tests.UI.Services
                     catch (Exception)
                     {
                         testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-                        testOutputHelper.WriteLine(await context.Application.GetLogOutput());
+                        testOutputHelper.WriteLine(await context.Application.GetLogOutputAsync());
 
                         throw;
                     }
@@ -207,7 +223,7 @@ namespace Lombiq.Tests.UI.Services
                     {
                         try
                         {
-                            var dumpContainerPath = Path.Combine(dumpRootPath, "Attempt " + retryCount.ToString());
+                            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
                             var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
                             Directory.CreateDirectory(dumpContainerPath);
@@ -223,7 +239,7 @@ namespace Lombiq.Tests.UI.Services
                             if (dumpConfiguration.CaptureAppSnapshot)
                             {
                                 var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
-                                await context.Application.TakeSnapshot(appDumpPath);
+                                await context.Application.TakeSnapshotAsync(appDumpPath);
 
                                 if (sqlServerManager != null)
                                 {

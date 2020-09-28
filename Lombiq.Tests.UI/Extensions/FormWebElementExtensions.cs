@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <remarks>
         /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled == true,
-        /// sometimes filling form fields still fails. Go figure!
+        /// sometimes filling form fields still fails. Go figure...
         /// </remarks>
         public static void FillInWithRetries(
             this IWebElement element,

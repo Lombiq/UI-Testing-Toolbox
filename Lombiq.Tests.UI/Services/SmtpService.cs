@@ -3,6 +3,7 @@ using CliWrap.Buffered;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,9 +38,11 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _smtpPortLeaseManager;
         private static readonly PortLeaseManager _webUIPortLeaseManager;
         private static readonly SemaphoreSlim _restoreSemaphore = new SemaphoreSlim(1, 1);
-        private static bool _wasRestored;
 
         private readonly SmtpServiceConfiguration _configuration;
+
+        private static bool _wasRestored;
+
         private int _smtpPort;
         private int _webUIPort;
         private CancellationTokenSource _cancellationTokenSource;
@@ -59,7 +62,7 @@ namespace Lombiq.Tests.UI.Services
         public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
 
 
-        public async Task<SmtpServiceRunningContext> Start()
+        public async Task<SmtpServiceRunningContext> StartAsync()
         {
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
             // a local tool (on local tools see: https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
@@ -124,9 +127,9 @@ namespace Lombiq.Tests.UI.Services
                     .Add("tool").Add("run").Add("smtp4dev")
                     // For the db parameter the equal sign is needed.
                     .Add("--db=").Add(string.Empty)
-                    .Add("--smtpport").Add(_smtpPort)
+                    .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
                     .Add("--urls").Add(webUIUri.ToString()))
-                .ExecuteDotNetApplication(
+                .ExecuteDotNetApplicationAsync(
                     stdErr =>
                         throw new IOException(
                             $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port {_webUIPort} due to the following error: " +
