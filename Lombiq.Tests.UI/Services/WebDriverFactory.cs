@@ -16,7 +16,6 @@ namespace Lombiq.Tests.UI.Services
 {
     public static class WebDriverFactory
     {
-        private static readonly object _driverSetupLock = new object();
         private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
 
 
@@ -154,10 +153,7 @@ namespace Lombiq.Tests.UI.Services
                     return true;
                 })).Value;
 
-                lock (_driverSetupLock)
-                {
-                    return driverFactory();
-                }
+                return driverFactory();
             }
             catch (Exception ex)
             {
