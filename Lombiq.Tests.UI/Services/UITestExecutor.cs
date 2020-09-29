@@ -37,7 +37,11 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentException("You need to specify the name of the test.");
             }
 
+            // It's nicer to have the argument checks separately. And we don't want to merge all of them into a single
+            // big ternary.
+#pragma warning disable IDE0046 // Convert to conditional expression
             if (configuration.OrchardCoreConfiguration == null)
+#pragma warning restore IDE0046 // Convert to conditional expression
             {
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
