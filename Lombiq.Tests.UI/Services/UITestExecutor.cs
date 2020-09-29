@@ -2,7 +2,6 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Microsoft.SqlServer.Management.Common;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
@@ -247,7 +246,7 @@ namespace Lombiq.Tests.UI.Services
                                     {
                                         sqlServerManager.TakeSnapshot(appDumpPath, true);
                                     }
-                                    catch (ExecutionFailureException failureException)
+                                    catch (Exception failureException)
                                     {
                                         testOutputHelper.WriteLine($"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
                                     }
