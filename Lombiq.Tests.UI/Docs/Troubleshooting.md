@@ -23,6 +23,10 @@
   - Be aware that if a page contains e.g. an element with the ID "Email", then you navigate away and the next page contains an element with the ID "Email" as well then a command will match it on the first page too, without waiting for the navigation to finish, even if you have a command to navigate away before that. So in such cases be sure to somehow execute a match that will indicate the navigation being done (like an element unique to the first page `Missing()` or `Get()`-ting a new one).
   - While tempting, don't use `Thread.Sleep()` to overcome a randomly failing condition! Use the above detailed mechanisms to do actions based on UI elements' presence.
 - If you can't get a link or button click working for some random reason but it's one that initiates a page leave then use `ClickSafelyUntilPageLeave()`.
+- When you're running a lot of tests in parallel then you may see random browser driver startup errors of the following sorts: 
+  > OpenQA.Selenium.WebDriverException: Creating the web driver failed with the message "Cannot start the driver service on http://localhost:50526/". Note that this can mean that there is a leftover web driver process that you have to kill manually.
+  
+    This, unfortunately, is not something we can do much about. However, the automatic test retries will prevent tests failing due to random errors like this.
 
 
 ## Headless mode
