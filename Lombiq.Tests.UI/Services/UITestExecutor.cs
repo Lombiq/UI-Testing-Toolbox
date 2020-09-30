@@ -2,7 +2,6 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Microsoft.SqlServer.Management.Common;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
@@ -38,7 +37,11 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentException("You need to specify the name of the test.");
             }
 
+            // It's nicer to have the argument checks separately. And we don't want to merge all of them into a single
+            // big ternary.
+#pragma warning disable IDE0046 // Convert to conditional expression
             if (configuration.OrchardCoreConfiguration == null)
+#pragma warning restore IDE0046 // Convert to conditional expression
             {
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
@@ -219,23 +222,16 @@ namespace Lombiq.Tests.UI.Services
                 {
                     testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
 
-                    if (context != null)
+                    var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+                    var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+                    try
                     {
-                        try
+                        Directory.CreateDirectory(dumpContainerPath);
+                        Directory.CreateDirectory(debugInformationPath);
+
+                        if (context != null)
                         {
-                            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
-                            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                            Directory.CreateDirectory(dumpContainerPath);
-                            Directory.CreateDirectory(debugInformationPath);
-
-                            if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
-                            {
-                                await File.WriteAllTextAsync(
-                                    Path.Combine(debugInformationPath, "TestOutput.log"),
-                                    concreteTestOutputHelper.Output);
-                            }
-
                             if (dumpConfiguration.CaptureAppSnapshot)
                             {
                                 var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
@@ -247,9 +243,10 @@ namespace Lombiq.Tests.UI.Services
                                     {
                                         sqlServerManager.TakeSnapshot(appDumpPath, true);
                                     }
-                                    catch (ExecutionFailureException failureException)
+                                    catch (Exception failureException)
                                     {
-                                        testOutputHelper.WriteLine($"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
+                                        testOutputHelper.WriteLine(
+                                            $"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
                                     }
                                 }
                             }
@@ -282,10 +279,26 @@ namespace Lombiq.Tests.UI.Services
                                     Path.Combine(debugInformationPath, "AccessibilityReport.html"));
                             }
                         }
-                        catch (Exception dumpException)
+                    }
+                    catch (Exception dumpException)
+                    {
+                        testOutputHelper.WriteLine(
+                            $"Creating the failure dump of the test failed with the following exception: {dumpException}");
+                    }
+
+                    try
+                    {
+                        if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
                         {
-                            testOutputHelper.WriteLine($"Creating the failure dump of the test failed with the following exception: {dumpException}");
+                            await File.WriteAllTextAsync(
+                                Path.Combine(debugInformationPath, "TestOutput.log"),
+                                concreteTestOutputHelper.Output);
                         }
+                    }
+                    catch (Exception testOutputHelperException)
+                    {
+                        testOutputHelper.WriteLine(
+                            $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
                     }
 
                     if (retryCount == configuration.MaxRetryCount)

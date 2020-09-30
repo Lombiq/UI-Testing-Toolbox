@@ -158,7 +158,8 @@ namespace Lombiq.Tests.UI.Services
             catch (Exception ex)
             {
                 throw new WebDriverException(
-                    $"Creating the web driver failed with the message \"{ex.Message}\". Note that this can mean that there is a leftover web driver process that you have to kill manually.",
+                    $"Creating the web driver failed with the message \"{ex.Message}\". " +
+                    $"Note that this can mean that there is a leftover web driver process that you have to kill manually. Full exception: {ex}",
                     ex);
             }
         }
