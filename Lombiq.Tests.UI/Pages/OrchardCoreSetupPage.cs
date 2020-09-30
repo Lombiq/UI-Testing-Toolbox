@@ -57,38 +57,46 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ SetupOrchardCore(OrchardCoreSetupConfiguration configuration = null)
+        public _ SetupOrchardCore(
+            string languageValue = "en",
+            string siteName = "Test Site",
+            string recipeId = "SaaS",
+            string siteTimeZoneValue = null,
+            DatabaseType databaseProvider = DatabaseType.Sqlite,
+            string connectionString = null,
+            string tablePrefix = null,
+            string userName = "admin",
+            string email = "admin@admin.com",
+            string password = "Password1!")
         {
-            configuration ??= new OrchardCoreSetupConfiguration();
+            var page = Language.Set(languageValue)
+                .SiteName.Set(siteName)
+                .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", recipeId)).Click()
+                .DatabaseProvider.Set(databaseProvider);
 
-            var page = Language.Set(configuration.LanguageValue)
-                .SiteName.Set(configuration.SiteName)
-                .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", configuration.RecipeId)).Click()
-                .DatabaseProvider.Set(configuration.DatabaseProvider);
-
-            if (!string.IsNullOrWhiteSpace(configuration.SiteTimeZoneValue))
+            if (!string.IsNullOrWhiteSpace(siteTimeZoneValue))
             {
-                page.SiteTimeZone.Set(configuration.SiteTimeZoneValue);
+                page.SiteTimeZone.Set(siteTimeZoneValue);
             }
 
-            if (configuration.DatabaseProvider != DatabaseType.Sqlite)
+            if (databaseProvider != DatabaseType.Sqlite)
             {
-                if (string.IsNullOrEmpty(configuration.ConnectionString))
+                if (string.IsNullOrEmpty(connectionString))
                 {
-                    throw new InvalidOperationException(
-                        $"{nameof(OrchardCoreSetupConfiguration)}.{nameof(configuration.DatabaseProvider)}: " +
+                    throw new ArgumentNullException(
+                        nameof(databaseProvider),
                         "If the selected database provider is other than SQLite a connection string must be provided.");
                 }
 
-                if (!string.IsNullOrEmpty(configuration.TablePrefix)) page.TablePrefix.Set(configuration.TablePrefix);
-                page.ConnectionString.Set(configuration.ConnectionString);
+                if (!string.IsNullOrEmpty(tablePrefix)) page.TablePrefix.Set(tablePrefix);
+                page.ConnectionString.Set(connectionString);
             }
 
             return page
-                .UserName.Set(configuration.UserName)
-                .Email.Set(configuration.Email)
-                .Password.Set(configuration.Password)
-                .PasswordConfirmation.Set(configuration.Password)
+                .UserName.Set(userName)
+                .Email.Set(email)
+                .Password.Set(password)
+                .PasswordConfirmation.Set(password)
                 .FinishSetup.Click();
         }
     }
