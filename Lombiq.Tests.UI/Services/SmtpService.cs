@@ -125,15 +125,25 @@ namespace Lombiq.Tests.UI.Services
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
                     // For the db parameter the equal sign is needed.
-                    .Add("--db=").Add(string.Empty)
+                    .Add("--db").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
                     .Add("--urls").Add(webUIUri.ToString()))
                 .ExecuteDotNetApplicationAsync(
                     stdErr =>
+                    {
+                        // During startup smtp4dev will write to the STDERR too but it really shouldn't, see:
+                        // https://github.com/rnwood/smtp4dev/issues/493.
+                        if (string.IsNullOrEmpty(stdErr.Text) ||
+                            stdErr.Text.Contains(" > For help use argument --help", StringComparison.InvariantCulture))
+                        {
+                            return;
+                        }
+
                         throw new IOException(
                             $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port {_webUIPort} due to the following error: " +
                             Environment.NewLine +
-                            stdErr.Text),
+                            stdErr.Text);
+                    },
                     _cancellationTokenSource.Token);
 
             return new SmtpServiceRunningContext(_smtpPort, webUIUri);
