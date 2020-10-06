@@ -40,6 +40,41 @@ namespace Lombiq.Tests.UI.Services
         public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new SqlServerConfiguration();
 
 
+        public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
+        {
+            if (AssertAppLogs == null) return;
+
+            try
+            {
+                await AssertAppLogs(instance);
+            }
+            catch (Exception)
+            {
+                log("Application logs: " + Environment.NewLine);
+                log(await instance.GetLogOutputAsync());
+
+                throw;
+            }
+        }
+
+        public void AssertBrowserLogMaybe(IList<BrowserLogMessage> browserLogs, Action<string> log)
+        {
+            if (AssertBrowserLog == null) return;
+
+            try
+            {
+                AssertBrowserLog(browserLogs);
+            }
+            catch (Exception)
+            {
+                log("Browser logs: " + Environment.NewLine);
+                log(browserLogs.ToFormattedString());
+
+                throw;
+            }
+        }
+
+
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmptyAsync();
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings = app => app.LogsShouldBeEmptyAsync(true);
 

@@ -2,25 +2,20 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium.Remote;
+using OpenQA.Selenium;
 using Selenium.Axe;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services
 {
-    public class UITestManifest
-    {
-        public string Name { get; set; }
-        public Action<UITestContext> Test { get; set; }
-    }
-
-
     public static class UITestExecutor
     {
         private static readonly object _setupSnapshotManangerLock = new object();
@@ -91,240 +86,267 @@ namespace Lombiq.Tests.UI.Services
             var retryCount = 0;
             while (true)
             {
-                BrowserLogMessage[] browserLogMessages = null;
-                async Task<BrowserLogMessage[]> GetBrowserLog(RemoteWebDriver driver) =>
-                    browserLogMessages ??= (await driver.GetAndEmptyBrowserLogAsync()).ToArray();
-
-                SqlServerManager sqlServerManager = null;
-                SmtpService smtpService = null;
-                IWebApplicationInstance applicationInstance = null;
-                UITestContext context = null;
+                var container = new UITestExecutorServiceContainer();
 
                 try
                 {
-                    async Task<UITestContext> CreateContext()
-                    {
-                        SqlServerRunningContext sqlServerContext = null;
-
-                        if (configuration.UseSqlServer)
-                        {
-                            sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
-                            sqlServerContext = sqlServerManager.CreateDatabase();
-
-                            void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
-                            {
-                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
-
-                                var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
-
-                                if (!Directory.Exists(snapshotDirectoryPath)) return;
-
-                                sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
-
-                                // This method is not actually async.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                                var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
-                                var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
-                                appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
-                                File.WriteAllText(appSettingsPath, appSettings.ToString());
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
-                            }
-
-                            configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
-                        }
-
-                        SmtpServiceRunningContext smtpContext = null;
-
-                        if (configuration.UseSmtpService)
-                        {
-                            smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
-                            smtpContext = await smtpService.StartAsync();
-
-                            void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
-                            {
-                                configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
-                                argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
-                            }
-
-                            configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
-                        }
-
-                        applicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
-                        var uri = await applicationInstance.StartUpAsync();
-
-                        var atataScope = AtataFactory.StartAtataScope(
-                            testOutputHelper,
-                            uri,
-                            configuration);
-
-                        return new UITestContext(testManifest.Name, configuration, sqlServerContext, applicationInstance, atataScope, smtpContext);
-                    }
-
                     if (runSetupOperation)
                     {
-                        var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
-                        {
-                            // Note that the context creation needs to be done here too because the Orchard app needs
-                            // the snapshot config to be available at startup too.
-                            context = await CreateContext();
-
-                            if (configuration.UseSqlServer)
-                            {
-                                // This is only necessary for the setup snapshot.
-                                void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
-                                {
-                                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                                    sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
-                                }
-
-                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
-                            }
-
-                            return (context, configuration.SetupOperation(context));
-                        });
-
-                        context ??= await CreateContext();
-
-                        context.GoToRelativeUrl(resultUri.PathAndQuery);
+                        await RunSetupOperationAsync(testManifest, configuration, container);
                     }
 
-                    context ??= await CreateContext();
+                    if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
 
-                    testManifest.Test(context);
+                    testManifest.Test(container.Context);
 
-                    try
+                    if (container?.Context?.Application is { } application)
                     {
-                        if (configuration.AssertAppLogs != null) await configuration.AssertAppLogs(context.Application);
-                    }
-                    catch (Exception)
-                    {
-                        testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-                        testOutputHelper.WriteLine(await context.Application.GetLogOutputAsync());
-
-                        throw;
+                        await configuration.AssertAppLogsMaybeAsync(application, testOutputHelper.WriteLine);
                     }
 
-                    try
-                    {
-                        configuration.AssertBrowserLog?.Invoke(await GetBrowserLog(context.Scope.Driver));
-                    }
-                    catch (Exception)
-                    {
-                        testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                        testOutputHelper.WriteLine((await GetBrowserLog(context.Scope.Driver)).ToFormattedString());
-
-                        throw;
-                    }
+                    var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
+                    configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
 
                     return;
                 }
                 catch (Exception ex)
                 {
-                    testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
-
-                    var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
-                    var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                    try
-                    {
-                        Directory.CreateDirectory(dumpContainerPath);
-                        Directory.CreateDirectory(debugInformationPath);
-
-                        if (context != null)
-                        {
-                            if (dumpConfiguration.CaptureAppSnapshot)
-                            {
-                                var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
-                                await context.Application.TakeSnapshotAsync(appDumpPath);
-
-                                if (sqlServerManager != null)
-                                {
-                                    try
-                                    {
-                                        sqlServerManager.TakeSnapshot(appDumpPath, true);
-                                    }
-                                    catch (Exception failureException)
-                                    {
-                                        testOutputHelper.WriteLine(
-                                            $"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
-                                    }
-                                }
-                            }
-
-                            if (dumpConfiguration.CaptureScreenshot)
-                            {
-                                // Only PNG is supported on .NET Core.
-                                context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
-                            }
-
-                            if (dumpConfiguration.CaptureHtmlSource)
-                            {
-                                await File.WriteAllTextAsync(
-                                    Path.Combine(debugInformationPath, "PageSource.html"),
-                                    context.Scope.Driver.PageSource);
-                            }
-
-                            if (dumpConfiguration.CaptureBrowserLog)
-                            {
-                                await File.WriteAllLinesAsync(
-                                    Path.Combine(debugInformationPath, "BrowserLog.log"),
-                                    (await GetBrowserLog(context.Scope.Driver)).Select(message => message.ToString()));
-                            }
-
-                            if (ex is AccessibilityAssertionException accessibilityAssertionException
-                                && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                            {
-                                context.Driver.CreateAxeHtmlReport(
-                                    accessibilityAssertionException.AxeResult,
-                                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
-                            }
-                        }
-                    }
-                    catch (Exception dumpException)
-                    {
-                        testOutputHelper.WriteLine(
-                            $"Creating the failure dump of the test failed with the following exception: {dumpException}");
-                    }
-
-                    try
-                    {
-                        if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
-                        {
-                            await File.WriteAllTextAsync(
-                                Path.Combine(debugInformationPath, "TestOutput.log"),
-                                concreteTestOutputHelper.Output);
-                        }
-                    }
-                    catch (Exception testOutputHelperException)
-                    {
-                        testOutputHelper.WriteLine(
-                            $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
-                    }
-
-                    if (retryCount == configuration.MaxRetryCount)
-                    {
-                        var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                        testOutputHelper.WriteLine(
-                            $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
-                            $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
-                        throw;
-                    }
-
-                    testOutputHelper.WriteLine(
-                        $"The test was attempted {retryCount + 1} time(s). {configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
+                    await HandleErrorAsync(
+                        ex,
+                        testOutputHelper,
+                        dumpRootPath,
+                        retryCount,
+                        container,
+                        dumpConfiguration,
+                        configuration);
                 }
                 finally
                 {
-                    if (context != null) context.Scope.Dispose();
-                    if (applicationInstance != null) await applicationInstance.DisposeAsync();
-                    if (smtpService != null) await smtpService.DisposeAsync();
-                    sqlServerManager?.Dispose();
-
+                    await container.DisposeAsync();
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
 
                 retryCount++;
             }
         }
+
+        private static async Task RunSetupOperationAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration, UITestExecutorServiceContainer container)
+        {
+            var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
+            {
+                // Note that the context creation needs to be done here too because the Orchard app needs
+                // the snapshot config to be available at startup too.
+                await CreateContextAsync(testManifest, configuration, container);
+
+                if (configuration.UseSqlServer)
+                {
+                    // This is only necessary for the setup snapshot.
+                    void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                    {
+                        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                        container.SqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                    }
+
+                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                }
+
+                return (container.Context, configuration.SetupOperation(container.Context));
+            });
+
+            if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
+
+            container.Context.GoToRelativeUrl(resultUri.PathAndQuery);
+        }
+
+        private static async Task CreateContextAsync(
+            UITestManifest testManifest,
+            OrchardCoreUITestExecutorConfiguration configuration,
+            UITestExecutorServiceContainer serviceContainer)
+        {
+            var testOutputHelper = configuration.TestOutputHelper;
+
+            if (configuration.UseSqlServer)
+            {
+                serviceContainer.SqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
+                serviceContainer.SqlServerContext = serviceContainer.SqlServerManager.CreateDatabase();
+
+                void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                {
+                    configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
+
+                    var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+
+                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+
+                    serviceContainer.SqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+
+                    // This method is not actually async.
+#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
+                    var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+                    var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
+                    appSettings["ConnectionString"] = serviceContainer.SqlServerContext.ConnectionString;
+                    File.WriteAllText(appSettingsPath, appSettings.ToString());
+#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
+                }
+
+                configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
+            }
+
+            SmtpServiceRunningContext smtpContext = null;
+
+            if (configuration.UseSmtpService)
+            {
+                serviceContainer.SmtpService = new SmtpService(configuration.SmtpServiceConfiguration);
+                smtpContext = await serviceContainer.SmtpService.StartAsync();
+
+                void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                {
+                    configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
+                    argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
+                }
+
+                configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
+            }
+
+            serviceContainer.ApplicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
+            var uri = await serviceContainer.ApplicationInstance.StartUpAsync();
+
+            var atataScope = AtataFactory.StartAtataScope(
+                testOutputHelper,
+                uri,
+                configuration);
+
+            serviceContainer.Context = new UITestContext(
+                testManifest.Name,
+                configuration,
+                serviceContainer.SqlServerContext,
+                serviceContainer.ApplicationInstance,
+                atataScope,
+                smtpContext);
+        }
+
+        private static async Task HandleErrorAsync(
+            Exception exception,
+            ITestOutputHelper testOutputHelper,
+            string dumpRootPath,
+            int retryCount,
+            UITestExecutorServiceContainer container,
+            UITestExecutorFailureDumpConfiguration dumpConfiguration,
+            OrchardCoreUITestExecutorConfiguration configuration)
+        {
+            testOutputHelper.WriteLine($"The test failed with the following exception: {exception}");
+
+            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
+            try
+            {
+                Directory.CreateDirectory(dumpContainerPath);
+                Directory.CreateDirectory(debugInformationPath);
+
+                if (container.Context != null)
+                    await HandleErrorContextAsync(
+                        exception,
+                        testOutputHelper,
+                        container,
+                        dumpConfiguration,
+                        configuration,
+                        dumpContainerPath,
+                        debugInformationPath);
+            }
+            catch (Exception dumpException)
+            {
+                testOutputHelper.WriteLine(
+                    $"Creating the failure dump of the test failed with the following exception: {dumpException}");
+            }
+
+            try
+            {
+                if (testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                {
+                    await File.WriteAllTextAsync(
+                        Path.Combine(debugInformationPath, "TestOutput.log"),
+                        concreteTestOutputHelper.Output);
+                }
+            }
+            catch (Exception testOutputHelperException)
+            {
+                testOutputHelper.WriteLine(
+                    $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
+            }
+
+            if (retryCount == configuration.MaxRetryCount)
+            {
+                var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
+                testOutputHelper.WriteLine(
+                    $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
+                    $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+                throw exception;
+            }
+
+            testOutputHelper.WriteLine(
+                $"The test was attempted {retryCount + 1} time(s). {configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
+        }
+
+        private static async Task HandleErrorContextAsync(
+            Exception exception,
+            ITestOutputHelper testOutputHelper,
+            UITestExecutorServiceContainer container,
+            UITestExecutorFailureDumpConfiguration dumpConfiguration,
+            OrchardCoreUITestExecutorConfiguration configuration,
+            string dumpContainerPath,
+            string debugInformationPath)
+        {
+            if (dumpConfiguration.CaptureAppSnapshot)
+            {
+                var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
+                await container.Context.Application.TakeSnapshotAsync(appDumpPath);
+
+                if (container.SqlServerManager != null)
+                {
+                    try
+                    {
+                        container.SqlServerManager.TakeSnapshot(appDumpPath, true);
+                    }
+                    catch (Exception failureException)
+                    {
+                        testOutputHelper.WriteLine(
+                            $"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
+                    }
+                }
+            }
+
+            if (dumpConfiguration.CaptureScreenshot)
+            {
+                // Only PNG is supported on .NET Core.
+                container.Context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+            }
+
+            if (dumpConfiguration.CaptureHtmlSource)
+            {
+                await File.WriteAllTextAsync(
+                    Path.Combine(debugInformationPath, "PageSource.html"),
+                    container.Context.Scope.Driver.PageSource);
+            }
+
+            if (dumpConfiguration.CaptureBrowserLog)
+            {
+                await File.WriteAllLinesAsync(
+                    Path.Combine(debugInformationPath, "BrowserLog.log"),
+                    (await GetBrowserLogAsync(container.Context.Scope.Driver))
+                    .Select(message => message.ToString()));
+            }
+
+            if (exception is AccessibilityAssertionException accessibilityAssertionException
+                && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+            {
+                container.Context.Driver.CreateAxeHtmlReport(
+                    accessibilityAssertionException.AxeResult,
+                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+            }
+        }
+
+        private static Task<BrowserLogMessage[]> GetBrowserLogAsync(IWebDriver driver) =>
+            driver.GetAndEmptyBrowserLogAsync().ContinueWith(task => task.Result.ToArray(), TaskScheduler.Default);
     }
 }
