@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Linq;
