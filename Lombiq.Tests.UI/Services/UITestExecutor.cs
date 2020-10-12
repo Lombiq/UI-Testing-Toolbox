@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using Selenium.Axe;
+using Shouldly;
 using System;
 using System.Globalization;
 using System.IO;
@@ -76,33 +77,28 @@ namespace Lombiq.Tests.UI.Services
             var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
             DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways &&
+                configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath is { } directoryPath &&
+                !Directory.Exists(directoryPath))
             {
-                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(directoryPath);
             }
 
+            Exception lastException = null;
             var testOutputHelper = configuration.TestOutputHelper;
-            var retryCount = 0;
-            while (true)
+            for (var retryCount = 0; retryCount <= configuration.MaxRetryCount; retryCount++)
             {
                 var container = new UITestExecutorServiceContainer();
 
+                // These are outside of the try block because if the fail at first they will fail always.
+                if (runSetupOperation) await RunSetupOperationAsync(testManifest, configuration, container);
+                if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
+
                 try
                 {
-                    if (runSetupOperation)
-                    {
-                        await RunSetupOperationAsync(testManifest, configuration, container);
-                    }
-
-                    if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
-
                     testManifest.Test(container.Context);
 
-                    if (container?.Context?.Application is { } application)
-                    {
-                        await configuration.AssertAppLogsMaybeAsync(application, testOutputHelper.WriteLine);
-                    }
+                    await configuration.AssertAppLogsMaybeAsync(container.Context!.Application, testOutputHelper.WriteLine);
 
                     var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
                     configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
@@ -111,23 +107,34 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception ex)
                 {
+                    lastException = ex;
                     await HandleErrorAsync(
                         ex,
                         testOutputHelper,
-                        dumpRootPath,
-                        retryCount,
+                        Path.Combine(dumpRootPath, $"Attempt {retryCount}"),
                         container,
                         dumpConfiguration,
                         configuration);
+
+                    var remaining = configuration.MaxRetryCount - retryCount;
+                    var remainingText = remaining > 0 ? remaining.ToString(CultureInfo.InvariantCulture) : "No";
+                    testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s). " +
+                                               $"{remainingText} more attempt(s) will be made.");
                 }
                 finally
                 {
                     await container.DisposeAsync();
                     DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
                 }
-
-                retryCount++;
             }
+
+
+            var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
+            testOutputHelper.WriteLine(
+                $"The test was attempted {configuration.MaxRetryCount + 1} time(s) and won't be retried anymore. " +
+                $"You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+            lastException.ShouldNotBeNull();
+            throw lastException;
         }
 
         private static async Task RunSetupOperationAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration, UITestExecutorServiceContainer container)
@@ -228,15 +235,13 @@ namespace Lombiq.Tests.UI.Services
         private static async Task HandleErrorAsync(
             Exception exception,
             ITestOutputHelper testOutputHelper,
-            string dumpRootPath,
-            int retryCount,
+            string dumpContainerPath,
             UITestExecutorServiceContainer container,
             UITestExecutorFailureDumpConfiguration dumpConfiguration,
             OrchardCoreUITestExecutorConfiguration configuration)
         {
             testOutputHelper.WriteLine($"The test failed with the following exception: {exception}");
 
-            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
             var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
             try
@@ -274,18 +279,6 @@ namespace Lombiq.Tests.UI.Services
                 testOutputHelper.WriteLine(
                     $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
             }
-
-            if (retryCount == configuration.MaxRetryCount)
-            {
-                var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                testOutputHelper.WriteLine(
-                    $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
-                    $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
-                throw exception;
-            }
-
-            testOutputHelper.WriteLine(
-                $"The test was attempted {retryCount + 1} time(s). {configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
         }
 
         private static async Task HandleErrorContextAsync(

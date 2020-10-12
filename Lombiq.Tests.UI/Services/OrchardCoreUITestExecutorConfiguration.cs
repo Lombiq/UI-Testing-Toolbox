@@ -42,7 +42,7 @@ namespace Lombiq.Tests.UI.Services
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
-            if (AssertAppLogs == null) return;
+            if (instance == null || AssertAppLogs == null) return;
 
             try
             {
