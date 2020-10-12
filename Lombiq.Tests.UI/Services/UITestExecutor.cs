@@ -6,13 +6,12 @@ using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using Selenium.Axe;
-using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services
@@ -59,9 +58,8 @@ namespace Lombiq.Tests.UI.Services
 
             configuration.AtataConfiguration.TestName = testManifest.Name;
 
-            var dumpConfiguration = configuration.FailureDumpConfiguration;
             var dumpFolderNameBase = testManifest.Name;
-            if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
+            if (configuration.FailureDumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
             {
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
                 dumpFolderNameBase = dumpFolderNameBase.Substring(
@@ -69,7 +67,7 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
-            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
+            var dumpRootPath = Path.Combine(configuration.FailureDumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
             DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
             if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways &&
@@ -79,68 +77,68 @@ namespace Lombiq.Tests.UI.Services
                 Directory.CreateDirectory(directoryPath);
             }
 
-            return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration, runSetupOperation, dumpRootPath, dumpConfiguration, startTime);
+            return Enumerable.Range(0, configuration.MaxRetryCount)
+                .AwaitWhileAsync(retryCount => ExecuteOrchardCoreTestInnerAsync(
+                    retryCount,
+                    testManifest,
+                    configuration,
+                    runSetupOperation,
+                    dumpRootPath))
+                .ContinueWith(
+                    task => DebugHelper.WriteTimestampedLine($"Finishing the execution of '{testManifest.Name}' with " +
+                                                             $"total time: {DateTime.UtcNow - startTime}."),
+                    TaskScheduler.Default);
         }
 
 
-        private static async Task ExecuteOrchardCoreTestInnerAsync(
+        private static async Task<bool> ExecuteOrchardCoreTestInnerAsync(
+            int retryCount,
             UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
             bool runSetupOperation,
-            string dumpRootPath,
-            UITestExecutorFailureDumpConfiguration dumpConfiguration,
-            DateTime startTime)
+            string dumpRootPath)
         {
-            var container = new UITestExecutorServiceContainer();
+            var retry = true;
+            var testOutputHelper = configuration.TestOutputHelper;
+
+            await using var container = new UITestExecutorServiceContainer();
             if (runSetupOperation) await RunSetupOperationAsync(testManifest, configuration, container);
 
-            Exception lastException = null;
-            var testOutputHelper = configuration.TestOutputHelper;
-            for (var retryCount = 0; retryCount <= configuration.MaxRetryCount; retryCount++)
+            try
             {
-                try
+                if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
+                testManifest.Test(container.Context);
+
+                await configuration.AssertAppLogsMaybeAsync(container.Context!.Application, testOutputHelper.WriteLine);
+
+                var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
+                configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
+
+                retry = false;
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync(
+                    ex,
+                    Path.Combine(dumpRootPath, $"Attempt {retryCount}"),
+                    container,
+                    configuration);
+
+                var remaining = configuration.MaxRetryCount - retryCount;
+                var remainingText = remaining > 0 ? remaining.ToString(CultureInfo.InvariantCulture) : "No";
+                testOutputHelper.WriteLine(
+                    $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
+                    $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
+
+                if (retryCount == configuration.MaxRetryCount)
                 {
-                    if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
-                    testManifest.Test(container.Context);
-
-                    await configuration.AssertAppLogsMaybeAsync(container.Context!.Application, testOutputHelper.WriteLine);
-
-                    var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
-                    configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    lastException = ex;
-                    await HandleErrorAsync(
-                        ex,
-                        testOutputHelper,
-                        Path.Combine(dumpRootPath, $"Attempt {retryCount}"),
-                        container,
-                        dumpConfiguration,
-                        configuration);
-
-                    var remaining = configuration.MaxRetryCount - retryCount;
-                    var remainingText = remaining > 0 ? remaining.ToString(CultureInfo.InvariantCulture) : "No";
-                    testOutputHelper.WriteLine(
-                        $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
-                        $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
-                }
-                finally
-                {
-                    await container.DisposeAsync();
-                    DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, " +
-                                                     $"total time: {DateTime.UtcNow - startTime}.");
+                    var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
+                    testOutputHelper.WriteLine($"You can see more details in the folder: {dumpFolderAbsolutePath}");
+                    throw;
                 }
             }
 
-
-            var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-            testOutputHelper.WriteLine(
-                $"You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
-            lastException.ShouldNotBeNull();
-            throw lastException;
+            return retry;
         }
 
         private static async Task RunSetupOperationAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration, UITestExecutorServiceContainer container)
@@ -224,10 +222,7 @@ namespace Lombiq.Tests.UI.Services
             serviceContainer.ApplicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
             var uri = await serviceContainer.ApplicationInstance.StartUpAsync();
 
-            var atataScope = AtataFactory.StartAtataScope(
-                testOutputHelper,
-                uri,
-                configuration);
+            var atataScope = AtataFactory.StartAtataScope(testOutputHelper, uri, configuration);
 
             serviceContainer.Context = new UITestContext(
                 testManifest.Name,
@@ -240,12 +235,11 @@ namespace Lombiq.Tests.UI.Services
 
         private static async Task HandleErrorAsync(
             Exception exception,
-            ITestOutputHelper testOutputHelper,
             string dumpContainerPath,
             UITestExecutorServiceContainer container,
-            UITestExecutorFailureDumpConfiguration dumpConfiguration,
             OrchardCoreUITestExecutorConfiguration configuration)
         {
+            var testOutputHelper = configuration.TestOutputHelper;
             testOutputHelper.WriteLine($"The test failed with the following exception: {exception}");
 
             var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
@@ -258,9 +252,7 @@ namespace Lombiq.Tests.UI.Services
                 if (container.Context != null)
                     await HandleErrorContextAsync(
                         exception,
-                        testOutputHelper,
                         container,
-                        dumpConfiguration,
                         configuration,
                         dumpContainerPath,
                         debugInformationPath);
@@ -289,14 +281,13 @@ namespace Lombiq.Tests.UI.Services
 
         private static async Task HandleErrorContextAsync(
             Exception exception,
-            ITestOutputHelper testOutputHelper,
             UITestExecutorServiceContainer container,
-            UITestExecutorFailureDumpConfiguration dumpConfiguration,
             OrchardCoreUITestExecutorConfiguration configuration,
             string dumpContainerPath,
             string debugInformationPath)
         {
-            if (dumpConfiguration.CaptureAppSnapshot)
+            var testOutputHelper = configuration.TestOutputHelper;
+            if (configuration.FailureDumpConfiguration.CaptureAppSnapshot)
             {
                 var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
                 await container.Context.Application.TakeSnapshotAsync(appDumpPath);
@@ -315,20 +306,20 @@ namespace Lombiq.Tests.UI.Services
                 }
             }
 
-            if (dumpConfiguration.CaptureScreenshot)
+            if (configuration.FailureDumpConfiguration.CaptureScreenshot)
             {
                 // Only PNG is supported on .NET Core.
                 container.Context.Scope.Driver.GetScreenshot().SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
             }
 
-            if (dumpConfiguration.CaptureHtmlSource)
+            if (configuration.FailureDumpConfiguration.CaptureHtmlSource)
             {
                 await File.WriteAllTextAsync(
                     Path.Combine(debugInformationPath, "PageSource.html"),
                     container.Context.Scope.Driver.PageSource);
             }
 
-            if (dumpConfiguration.CaptureBrowserLog)
+            if (configuration.FailureDumpConfiguration.CaptureBrowserLog)
             {
                 await File.WriteAllLinesAsync(
                     Path.Combine(debugInformationPath, "BrowserLog.log"),
