@@ -119,14 +119,13 @@ namespace Lombiq.Tests.UI.Services
 
             // Starting smtp4dev with a command like this:
             // dotnet tool run smtp4dev --db="" --smtpport 26 --urls http://localhost:1234
-            // For the possible command line arguments see https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L95
-            // Although e.g. "urls" is not there.
+            // For the possible command line arguments see https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
             await Cli
                 .Wrap("dotnet.exe")
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
                     // For the db parameter the equal sign is needed.
-                    .Add("--db=").Add(string.Empty)
+                    .Add("--db").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
                     .Add("--urls").Add(webUIUri.ToString()))
                 .ExecuteDotNetApplicationAsync(
