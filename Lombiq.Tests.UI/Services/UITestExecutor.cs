@@ -154,11 +154,11 @@ namespace Lombiq.Tests.UI.Services
                     // This is only necessary for the setup snapshot.
                     void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
                     {
-                        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot = (a, b) => { };
                         container.SqlServerManager.TakeSnapshot(snapshotDirectoryPath);
                     }
 
-                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                    configuration.OrchardCoreConfiguration.BeforeTakeSnapshot = SqlServerManagerBeforeTakeSnapshotHandler;
                 }
 
                 return (container.Context, configuration.SetupOperation(container.Context));
@@ -183,7 +183,7 @@ namespace Lombiq.Tests.UI.Services
 
                 void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
-                    configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
+                    configuration.OrchardCoreConfiguration.BeforeAppStart = (a, b) => { };
 
                     var snapshotDirectoryPath = configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
@@ -200,7 +200,7 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 }
 
-                configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
+                configuration.OrchardCoreConfiguration.BeforeAppStart = SqlServerManagerBeforeAppStartHandler;
             }
 
             SmtpServiceRunningContext smtpContext = null;
@@ -212,11 +212,11 @@ namespace Lombiq.Tests.UI.Services
 
                 void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
-                    configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
+                    configuration.OrchardCoreConfiguration.BeforeAppStart = (a, b) => { };
                     argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
                 }
 
-                configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
+                configuration.OrchardCoreConfiguration.BeforeAppStart = SmtpServiceBeforeAppStartHandler;
             }
 
             serviceContainer.ApplicationInstance = new OrchardCoreInstance(configuration.OrchardCoreConfiguration, testOutputHelper);
