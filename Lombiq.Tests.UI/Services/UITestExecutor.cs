@@ -42,12 +42,7 @@ namespace Lombiq.Tests.UI.Services
                 throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
-            return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
-        }
 
-
-        private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
-        {
             var startTime = DateTime.UtcNow;
             DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
 
@@ -84,18 +79,28 @@ namespace Lombiq.Tests.UI.Services
                 Directory.CreateDirectory(directoryPath);
             }
 
+            return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration, runSetupOperation, dumpRootPath, dumpConfiguration, startTime);
+        }
+
+
+        private static async Task ExecuteOrchardCoreTestInnerAsync(
+            UITestManifest testManifest,
+            OrchardCoreUITestExecutorConfiguration configuration,
+            bool runSetupOperation,
+            string dumpRootPath,
+            UITestExecutorFailureDumpConfiguration dumpConfiguration,
+            DateTime startTime)
+        {
+            var container = new UITestExecutorServiceContainer();
+            if (runSetupOperation) await RunSetupOperationAsync(testManifest, configuration, container);
+
             Exception lastException = null;
             var testOutputHelper = configuration.TestOutputHelper;
             for (var retryCount = 0; retryCount <= configuration.MaxRetryCount; retryCount++)
             {
-                var container = new UITestExecutorServiceContainer();
-
-                // These are outside of the try block because if the fail at first they will fail always.
-                if (runSetupOperation) await RunSetupOperationAsync(testManifest, configuration, container);
-                if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
-
                 try
                 {
+                    if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
                     testManifest.Test(container.Context);
 
                     await configuration.AssertAppLogsMaybeAsync(container.Context!.Application, testOutputHelper.WriteLine);
