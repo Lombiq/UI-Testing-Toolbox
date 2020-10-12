@@ -118,20 +118,21 @@ namespace Lombiq.Tests.UI.Services
 
                     var remaining = configuration.MaxRetryCount - retryCount;
                     var remainingText = remaining > 0 ? remaining.ToString(CultureInfo.InvariantCulture) : "No";
-                    testOutputHelper.WriteLine($"The test was attempted {retryCount + 1} time(s). " +
-                                               $"{remainingText} more attempt(s) will be made.");
+                    testOutputHelper.WriteLine(
+                        $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
+                        $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
                 }
                 finally
                 {
                     await container.DisposeAsync();
-                    DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
+                    DebugHelper.WriteTimestampedLine($"Finishing the execution of {testManifest.Name}, " +
+                                                     $"total time: {DateTime.UtcNow - startTime}.");
                 }
             }
 
 
             var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
             testOutputHelper.WriteLine(
-                $"The test was attempted {configuration.MaxRetryCount + 1} time(s) and won't be retried anymore. " +
                 $"You can see more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
             lastException.ShouldNotBeNull();
             throw lastException;
