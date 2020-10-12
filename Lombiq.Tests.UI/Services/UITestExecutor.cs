@@ -130,6 +130,7 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                             }
 
+                            configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
                             configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
                         }
 
@@ -146,6 +147,7 @@ namespace Lombiq.Tests.UI.Services
                                 argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
                             }
 
+                            configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
                             configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
                         }
 
@@ -177,6 +179,7 @@ namespace Lombiq.Tests.UI.Services
                                     sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
                                 }
 
+                                configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
                                 configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
                             }
 
