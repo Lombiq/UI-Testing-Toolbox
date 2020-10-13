@@ -107,6 +107,7 @@ namespace Lombiq.Tests.UI.Services
             try
             {
                 if (container.Context == null) await CreateContextAsync(testManifest, configuration, container);
+
                 testManifest.Test(container.Context);
 
                 await configuration.AssertAppLogsMaybeAsync(container.Context!.Application, testOutputHelper.WriteLine);
