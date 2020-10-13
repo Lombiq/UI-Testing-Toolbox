@@ -23,6 +23,8 @@ namespace Lombiq.Tests.UI.Models
             Context?.Scope?.Dispose();
             SqlServerManager?.Dispose();
 
+            // If both are null, don't needlessly start up a state machine by returning DisposeInnerAsync.
+            // note: default in ValueTask is equivalent to Task.CompletedTask in classic Task
             return SmtpService == null && ApplicationInstance == null
                 ? default
                 : DisposeInnerAsync();
