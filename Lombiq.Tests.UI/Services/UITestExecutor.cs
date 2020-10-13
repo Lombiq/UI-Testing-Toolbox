@@ -79,7 +79,7 @@ namespace Lombiq.Tests.UI.Services
                 Directory.CreateDirectory(directoryPath);
             }
 
-            return Enumerable.Range(0, configuration.MaxRetryCount)
+            return Enumerable.Range(0, configuration.MaxRetryCount + 1)
                 .AwaitWhileAsync(retryCount => ExecuteOrchardCoreTestInnerAsync(
                     retryCount,
                     testManifest,
@@ -130,7 +130,7 @@ namespace Lombiq.Tests.UI.Services
                     $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
                     $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
 
-                if (retryCount + 1 == configuration.MaxRetryCount)
+                if (retryCount == configuration.MaxRetryCount)
                 {
                     var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, testManifest.DumpRootPath);
                     testOutputHelper.WriteLine($"You can see more details in the folder: {dumpFolderAbsolutePath}");
