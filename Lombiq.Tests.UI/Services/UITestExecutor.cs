@@ -86,8 +86,8 @@ namespace Lombiq.Tests.UI.Services
                     configuration,
                     runSetupOperation))
                 .ContinueWith(
-                    task => DebugHelper.WriteTimestampedLine($"Finishing the execution of '{testManifest.Name}' with " +
-                                                             $"total time: {DateTime.UtcNow - startTime}."),
+                    task => DebugHelper.WriteTimestampedLine(
+                        $"Finished the execution of '{testManifest.Name}' with total time: {DateTime.UtcNow - startTime}."),
                     TaskScheduler.Default);
         }
 
