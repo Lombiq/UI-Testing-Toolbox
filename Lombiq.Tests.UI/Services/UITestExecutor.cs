@@ -149,8 +149,8 @@ namespace Lombiq.Tests.UI.Services
         {
             var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
             {
-                // Note that the context creation needs to be done here too because the Orchard app needs
-                // the snapshot config to be available at startup too.
+                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
+                // config to be available at startup too.
                 await CreateContextAsync(testManifest, configuration, container);
 
                 if (configuration.UseSqlServer)
