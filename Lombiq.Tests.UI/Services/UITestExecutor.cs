@@ -98,7 +98,6 @@ namespace Lombiq.Tests.UI.Services
             OrchardCoreUITestExecutorConfiguration configuration,
             bool runSetupOperation)
         {
-            var retry = true;
             var testOutputHelper = configuration.TestOutputHelper;
 
             await using var container = new UITestExecutorServiceContainer();
@@ -114,7 +113,7 @@ namespace Lombiq.Tests.UI.Services
                 var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
                 configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
 
-                retry = false;
+                return false;
             }
             catch (Exception ex)
             {
@@ -130,7 +129,7 @@ namespace Lombiq.Tests.UI.Services
                     $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
                     $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
 
-                if (retryCount == configuration.MaxRetryCount)
+                if (retryCount + 1 == configuration.MaxRetryCount)
                 {
                     var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, testManifest.DumpRootPath);
                     testOutputHelper.WriteLine($"You can see more details in the folder: {dumpFolderAbsolutePath}");
@@ -138,7 +137,7 @@ namespace Lombiq.Tests.UI.Services
                 }
             }
 
-            return retry;
+            return true;
         }
 
         private static async Task RunSetupOperationAsync(
@@ -256,12 +255,14 @@ namespace Lombiq.Tests.UI.Services
                 Directory.CreateDirectory(debugInformationPath);
 
                 if (container.Context != null)
+                {
                     await HandleErrorContextAsync(
                         exception,
                         container,
                         configuration,
                         dumpContainerPath,
                         debugInformationPath);
+                }
             }
             catch (Exception dumpException)
             {
