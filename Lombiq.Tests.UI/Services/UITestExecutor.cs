@@ -67,8 +67,10 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
-            var dumpRootPath = Path.Combine(configuration.FailureDumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            testManifest.DumpRootPath = Path.Combine(
+                configuration.FailureDumpConfiguration.DumpsDirectoryPath,
+                dumpFolderNameBase.MakeFileSystemFriendly());
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(testManifest.DumpRootPath);
 
             if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways &&
                 configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath is { } directoryPath &&
@@ -82,8 +84,7 @@ namespace Lombiq.Tests.UI.Services
                     retryCount,
                     testManifest,
                     configuration,
-                    runSetupOperation,
-                    dumpRootPath))
+                    runSetupOperation))
                 .ContinueWith(
                     task => DebugHelper.WriteTimestampedLine($"Finishing the execution of '{testManifest.Name}' with " +
                                                              $"total time: {DateTime.UtcNow - startTime}."),
@@ -95,8 +96,7 @@ namespace Lombiq.Tests.UI.Services
             int retryCount,
             UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
-            bool runSetupOperation,
-            string dumpRootPath)
+            bool runSetupOperation)
         {
             var retry = true;
             var testOutputHelper = configuration.TestOutputHelper;
@@ -120,7 +120,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 await HandleErrorAsync(
                     ex,
-                    Path.Combine(dumpRootPath, $"Attempt {retryCount}"),
+                    Path.Combine(testManifest.DumpRootPath, $"Attempt {retryCount}"),
                     container,
                     configuration);
 
@@ -132,7 +132,7 @@ namespace Lombiq.Tests.UI.Services
 
                 if (retryCount == configuration.MaxRetryCount)
                 {
-                    var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
+                    var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, testManifest.DumpRootPath);
                     testOutputHelper.WriteLine($"You can see more details in the folder: {dumpFolderAbsolutePath}");
                     throw;
                 }
@@ -141,7 +141,10 @@ namespace Lombiq.Tests.UI.Services
             return retry;
         }
 
-        private static async Task RunSetupOperationAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration, UITestExecutorServiceContainer container)
+        private static async Task RunSetupOperationAsync(
+            UITestManifest testManifest,
+            OrchardCoreUITestExecutorConfiguration configuration,
+            UITestExecutorServiceContainer container)
         {
             var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
             {

@@ -4,6 +4,11 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models
 {
+    /// <summary>
+    /// A common container for various <see cref="IDisposable"/>/<see cref="IAsyncDisposable"/> services/objects used in
+    /// <see cref="UITestExecutor"/>. The purpose is to encapsulate safe disposal with no risk of
+    /// <see cref="NullReferenceException"/>.
+    /// </summary>
     public sealed class UITestExecutorServiceContainer : IAsyncDisposable
     {
         public UITestContext Context { get; set; }
