@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using Selenium.Axe;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -86,8 +87,12 @@ namespace Lombiq.Tests.UI.Services
                     configuration,
                     runSetupOperation))
                 .ContinueWith(
-                    task => DebugHelper.WriteTimestampedLine(
-                        $"Finished the execution of '{testManifest.Name}' with total time: {DateTime.UtcNow - startTime}."),
+                    task =>
+                    {
+                        task.Result.ShouldBeFalse();
+                        DebugHelper.WriteTimestampedLine(
+                            $"Finished the execution of '{testManifest.Name}' with total time: {DateTime.UtcNow - startTime}.");
+                    },
                     TaskScheduler.Default);
         }
 
