@@ -81,8 +81,8 @@ namespace Lombiq.Tests.UI.Services
             }
 
             return Enumerable.Range(0, configuration.MaxRetryCount + 1)
-                .AwaitWhileAsync(retryCount => ExecuteOrchardCoreTestInnerAsync(
-                    retryCount,
+                .AwaitWhileAsync(tryIndex => ExecuteOrchardCoreTestInnerAsync(
+                    tryIndex,
                     testManifest,
                     configuration,
                     runSetupOperation))
@@ -98,7 +98,7 @@ namespace Lombiq.Tests.UI.Services
 
 
         private static async Task<bool> ExecuteOrchardCoreTestInnerAsync(
-            int retryCount,
+            int tryIndex,
             UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
             bool runSetupOperation)
@@ -125,17 +125,17 @@ namespace Lombiq.Tests.UI.Services
             {
                 await HandleErrorAsync(
                     ex,
-                    Path.Combine(testManifest.DumpRootPath, $"Attempt {retryCount}"),
+                    Path.Combine(testManifest.DumpRootPath, $"Attempt {tryIndex}"),
                     container,
                     configuration);
 
-                var remaining = configuration.MaxRetryCount - retryCount;
+                var remaining = configuration.MaxRetryCount - tryIndex;
                 var remainingText = remaining > 0 ? remaining.ToString(CultureInfo.InvariantCulture) : "No";
                 testOutputHelper.WriteLine(
-                    $"The test was attempted {retryCount + 1} {(retryCount == 0 ? "time" : "times")}. " +
+                    $"The test was attempted {tryIndex + 1} {(tryIndex == 0 ? "time" : "times")}. " +
                     $"{remainingText} more {(remaining == 1 ? "attempt" : "attempts")} will be made.");
 
-                if (retryCount == configuration.MaxRetryCount)
+                if (tryIndex == configuration.MaxRetryCount)
                 {
                     var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, testManifest.DumpRootPath);
                     testOutputHelper.WriteLine($"You can see more details in the folder: {dumpFolderAbsolutePath}");
