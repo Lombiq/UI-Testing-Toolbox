@@ -104,7 +104,7 @@ namespace Lombiq.Tests.UI.Services
         /// <param name="tryIndex">The zero based index of the test run.</param>
         /// <returns>
         /// <see langword="true"/> on test success and <see langword="true"/> on failure. Except on the last retry,
-        /// when it throws the latest exception onwards.
+        /// when it rethrows the last exception.
         /// </returns>
         private static async Task<bool> ExecuteOrchardCoreTestInnerAsync(
             int tryIndex,
