@@ -81,7 +81,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             return Enumerable.Range(0, configuration.MaxRetryCount + 1)
-                .AwaitWhileAsync(tryIndex => ExecuteOrchardCoreTestInnerAsync(
+                .AwaitUntilAsync(tryIndex => ExecuteOrchardCoreTestInnerAsync(
                     tryIndex,
                     testManifest,
                     configuration,
@@ -89,7 +89,8 @@ namespace Lombiq.Tests.UI.Services
                 .ContinueWith(
                     task =>
                     {
-                        task.Result.ShouldBeFalse();
+                        task.Result.ShouldBeFalse("If this is true, the exception on the final retry didn't throw " +
+                                                  "which should not be possible under any circumstance.");
                         DebugHelper.WriteTimestampedLine(
                             $"Finished the execution of '{testManifest.Name}' with total time: {DateTime.UtcNow - startTime}.");
                     },
@@ -97,6 +98,14 @@ namespace Lombiq.Tests.UI.Services
         }
 
 
+        /// <summary>
+        /// Executes a single attempt of test run.
+        /// </summary>
+        /// <param name="tryIndex">The zero based index of the test run.</param>
+        /// <returns>
+        /// <see langword="true"/> on test success and <see langword="true"/> on failure. Except on the last retry,
+        /// when it throws the latest exception onwards.
+        /// </returns>
         private static async Task<bool> ExecuteOrchardCoreTestInnerAsync(
             int tryIndex,
             UITestManifest testManifest,
@@ -119,7 +128,7 @@ namespace Lombiq.Tests.UI.Services
                 var browserLogs = await GetBrowserLogAsync(container.Context.Scope.Driver);
                 configuration.AssertBrowserLogMaybe(browserLogs, testOutputHelper.WriteLine);
 
-                return false;
+                return true;
             }
             catch (Exception ex)
             {
@@ -143,7 +152,7 @@ namespace Lombiq.Tests.UI.Services
                 }
             }
 
-            return true;
+            return false;
         }
 
         private static async Task RunSetupOperationAsync(
