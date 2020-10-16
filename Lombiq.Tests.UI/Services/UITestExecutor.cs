@@ -22,6 +22,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly OrchardCoreUITestExecutorConfiguration _configuration;
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
+
         private static readonly object _setupSnapshotManangerLock = new object();
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
@@ -43,6 +44,26 @@ namespace Lombiq.Tests.UI.Services
             _dumpConfiguration = dumpConfiguration;
             _testOutputHelper = testOutputHelper;
         }
+
+
+        public ValueTask DisposeAsync()
+        {
+            _sqlServerManager?.Dispose();
+            _context?.Scope?.Dispose();
+
+            // Only call the truly async part if there is anything to do. Otherwise return default which is the
+            // ValueTask equivalent of Task.CompletedTask.
+            return _smtpService != null || _applicationInstance != null
+                ? DisposeInnerAsync()
+                : default;
+        }
+
+        private async ValueTask DisposeInnerAsync()
+        {
+            if (_smtpService != null) await _smtpService.DisposeAsync();
+            if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
+        }
+
 
         private async Task<bool> ExecuteAsync(
             int retryCount,
@@ -225,7 +246,6 @@ namespace Lombiq.Tests.UI.Services
             _context.GoToRelativeUrl(resultUri.PathAndQuery);
         }
 
-
         private async Task<UITestContext> CreateContextAsync()
         {
             SqlServerRunningContext sqlServerContext = null;
@@ -357,24 +377,6 @@ namespace Lombiq.Tests.UI.Services
                 if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
                 retryCount++;
             }
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            _sqlServerManager?.Dispose();
-            _context?.Scope?.Dispose();
-
-            // Only call the truly async part if there is anything to do. Otherwise return default which is the
-            // ValueTask equivalent of Task.CompletedTask.
-            return _smtpService != null || _applicationInstance != null
-                ? DisposeInnerAsync()
-                : default;
-        }
-
-        private async ValueTask DisposeInnerAsync()
-        {
-            if (_smtpService != null) await _smtpService.DisposeAsync();
-            if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
         }
     }
 }
