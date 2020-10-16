@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services;
 using System;
 
 namespace Lombiq.Tests.UI.Models
@@ -7,7 +7,5 @@ namespace Lombiq.Tests.UI.Models
     {
         public string Name { get; set; }
         public Action<UITestContext> Test { get; set; }
-
-        internal string DumpRootPath { get; set; }
     }
 }
