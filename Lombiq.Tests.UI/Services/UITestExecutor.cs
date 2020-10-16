@@ -111,6 +111,7 @@ namespace Lombiq.Tests.UI.Services
 
                 var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
                 var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
                 await CreateFailureDumpAsync(ex, dumpContainerPath, debugInformationPath);
 
                 try
@@ -369,11 +370,10 @@ namespace Lombiq.Tests.UI.Services
                 if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
             }
 
-            var testOutputHelper = configuration.TestOutputHelper;
             var retryCount = 0;
             while (true)
             {
-                await using var instance = new UITestExecutor(testManifest, configuration, dumpConfiguration, testOutputHelper);
+                await using var instance = new UITestExecutor(testManifest, configuration, dumpConfiguration, configuration.TestOutputHelper);
                 if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
                 retryCount++;
             }
