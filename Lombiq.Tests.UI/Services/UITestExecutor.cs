@@ -33,7 +33,7 @@ namespace Lombiq.Tests.UI.Services
         private BrowserLogMessage[] _browserLogMessages;
 
 
-        public UITestExecutor(
+        private UITestExecutor(
             UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
             UITestExecutorFailureDumpConfiguration dumpConfiguration,
