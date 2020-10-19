@@ -1,9 +1,11 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Smo;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -177,7 +179,33 @@ namespace Lombiq.Tests.UI.Services
             if (!server.Databases.Contains(_databaseName)) return;
 
             KillDatabaseProcesses(server);
-            server.Databases[_databaseName].Drop();
+
+            const int maxTryCount = 10;
+            var i = 0;
+            var dbDropExceptions = new List<Exception>(maxTryCount);
+            while (i < maxTryCount)
+            {
+                i++;
+
+                try
+                {
+                    server.Databases[_databaseName].Drop();
+                    return;
+                }
+                catch (FailedOperationException ex)
+                {
+                    dbDropExceptions.Add(ex);
+
+                    if (i == maxTryCount)
+                    {
+                        throw new AggregateException(
+                            $"Dropping the database {_databaseName} failed {maxTryCount} times and won't be retried again.",
+                            dbDropExceptions);
+                    }
+
+                    Thread.Sleep(5000);
+                }
+            }
         }
 
         private void KillDatabaseProcesses(Server server)
