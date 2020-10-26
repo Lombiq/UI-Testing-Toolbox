@@ -178,8 +178,6 @@ namespace Lombiq.Tests.UI.Services
         {
             if (!server.Databases.Contains(_databaseName)) return;
 
-            KillDatabaseProcesses(server);
-
             const int maxTryCount = 10;
             var i = 0;
             var dbDropExceptions = new List<Exception>(maxTryCount);
@@ -189,7 +187,9 @@ namespace Lombiq.Tests.UI.Services
 
                 try
                 {
+                    KillDatabaseProcesses(server);
                     server.Databases[_databaseName].Drop();
+
                     return;
                 }
                 catch (FailedOperationException ex)
@@ -203,7 +203,7 @@ namespace Lombiq.Tests.UI.Services
                             dbDropExceptions);
                     }
 
-                    Thread.Sleep(5000);
+                    Thread.Sleep(10000);
                 }
             }
         }
