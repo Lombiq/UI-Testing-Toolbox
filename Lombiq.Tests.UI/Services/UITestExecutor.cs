@@ -235,7 +235,12 @@ namespace Lombiq.Tests.UI.Services
                         _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
                     }
 
-                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                    // This is necessary because a simple subtraction wouldn't remove previous instances of the local
+                    // function. Thus if anything goes wrong between the below delegate registration and it being called
+                    // then it'll remain registered and later during a retry try to run (and fail on the disposed
+                    // SqlServerManager.
+                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandler);
                     _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
                 }
 
@@ -275,7 +280,8 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 }
 
-                _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
+                _configuration.OrchardCoreConfiguration.BeforeAppStart =
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SqlServerManagerBeforeAppStartHandler);
                 _configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
             }
 
@@ -292,7 +298,8 @@ namespace Lombiq.Tests.UI.Services
                     argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
                 }
 
-                _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
+                _configuration.OrchardCoreConfiguration.BeforeAppStart =
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandler);
                 _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
             }
 
