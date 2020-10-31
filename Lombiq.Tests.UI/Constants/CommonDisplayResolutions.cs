@@ -9,8 +9,10 @@ namespace Lombiq.Tests.UI.Constants
     /// using such standard resolutions.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Taken mostly from <see href="https://en.wikipedia.org/wiki/Display_resolution#Common_display_resolutions"/>,
     /// and also from <see href="https://en.wikipedia.org/wiki/List_of_common_resolutions"/>.
+    /// </para>
     /// </remarks>
     public static class CommonDisplayResolutions
     {

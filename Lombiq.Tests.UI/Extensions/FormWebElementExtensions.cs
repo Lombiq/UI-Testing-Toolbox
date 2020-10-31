@@ -29,8 +29,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// Fills a form field with the given text, and retries if the value doesn't stick.
         /// </summary>
         /// <remarks>
-        /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled == true,
-        /// sometimes filling form fields still fails. Go figure...
+        /// <para>
+        /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
+        /// true, sometimes filling form fields still fails. Go figure...
+        /// </para>
         /// </remarks>
         public static void FillInWithRetries(
             this IWebElement element,
