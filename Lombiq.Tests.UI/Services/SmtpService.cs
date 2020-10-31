@@ -10,10 +10,6 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
-    [SuppressMessage(
-        "StyleCop.CSharp.MaintainabilityRules",
-        "SA1402:File may only contain a single type",
-        Justification = "Here for future use.")]
     public class SmtpServiceConfiguration
     {
     }
@@ -39,7 +35,10 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _webUIPortLeaseManager;
         private static readonly SemaphoreSlim _restoreSemaphore = new SemaphoreSlim(1, 1);
 
+        // Here for future use.
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly SmtpServiceConfiguration _configuration;
+#pragma warning restore IDE0052 // Remove unread private members
 
         private static bool _wasRestored;
 
