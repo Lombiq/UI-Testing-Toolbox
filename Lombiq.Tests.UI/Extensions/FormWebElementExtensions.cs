@@ -46,12 +46,14 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
                     {
+                        element.Clear();
+
                         // On some platforms, probably due to keyboard settings, the @ character can be missing from
                         // the address when entered into a textfield so we need to use JS. The following solution
                         // doesn't work: https://stackoverflow.com/a/52202594/220230.
                         // This needs to be done in addition to the standard FillInWith() as without that some forms
                         // start to behave strange and not save values.
-                        new Actions(context.Driver).MoveToElement(element).SendKeys(text).Perform();
+                        new Actions(context.Driver).SendKeys(element, text).Perform();
                     }
                     else
                     {
