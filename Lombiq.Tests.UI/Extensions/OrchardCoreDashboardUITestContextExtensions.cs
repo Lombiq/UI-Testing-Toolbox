@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Extensions
     public static class OrchardCoreDashboardUITestContextExtensions
     {
         public static void FillContentItemTitle(this UITestContext context, string title) =>
-            context.Get(By.Id("TitlePart_Title")).ClickAndFillInWithRetries(title);
+            context.Get(By.Id("TitlePart_Title")).ClickAndFillInWithRetries(title, context);
 
         public static void GoToEditorTab(this UITestContext context, string tabText) =>
             context.Get(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']")).ClickReliably(context);
