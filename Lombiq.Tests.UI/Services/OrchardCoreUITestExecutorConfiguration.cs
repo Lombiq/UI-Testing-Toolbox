@@ -30,7 +30,13 @@ namespace Lombiq.Tests.UI.Services
         public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Orchard setup operation so the result can be snapshot and used in subsequent tests.
+        /// WARNING: It's highly recommended to put assertions at the end of it to pinpoint setup issues.
+        /// </summary>
         public Func<UITestContext, Uri> SetupOperation { get; set; }
+
         public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
         public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new UITestExecutorFailureDumpConfiguration();
         public bool UseSmtpService { get; set; }

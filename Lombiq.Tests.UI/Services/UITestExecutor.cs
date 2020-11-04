@@ -274,6 +274,13 @@ namespace Lombiq.Tests.UI.Services
                     // This method is not actually async.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
                     var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+
+                    if (!File.Exists(appSettingsPath))
+                    {
+                        throw new InvalidOperationException(
+                            "The setup snapshot's appsettings.json file wasn't found. This most possibly means that the setup failed.");
+                    }
+
                     var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
                     appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
                     File.WriteAllText(appSettingsPath, appSettings.ToString());

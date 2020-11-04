@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Tests.UI.Pages
+namespace Lombiq.Tests.UI.Pages
 {
     public class OrchardCoreSetupConfiguration
     {

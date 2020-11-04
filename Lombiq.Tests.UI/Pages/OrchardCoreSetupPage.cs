@@ -1,5 +1,8 @@
 using Atata;
 using Atata.Bootstrap;
+using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System;
 
 namespace Lombiq.Tests.UI.Pages
@@ -57,7 +60,7 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ SetupOrchardCore(OrchardCoreSetupConfiguration configuration = null)
+        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupConfiguration configuration = null)
         {
             configuration ??= new OrchardCoreSetupConfiguration();
 
@@ -84,9 +87,10 @@ namespace Lombiq.Tests.UI.Pages
                 page.ConnectionString.Set(configuration.ConnectionString);
             }
 
+            context.Get(By.Name(nameof(Email))).ClickAndFillInWithRetries(configuration.Email, context);
+
             return page
                 .UserName.Set(configuration.UserName)
-                .Email.Set(configuration.Email)
                 .Password.Set(configuration.Password)
                 .PasswordConfirmation.Set(configuration.Password)
                 .FinishSetup.Click();
