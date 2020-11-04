@@ -15,10 +15,11 @@ namespace Lombiq.Tests.UI.Extensions
             string text,
             UITestContext context,
             TimeSpan? timeout = null,
-            TimeSpan? interval = null)
+            TimeSpan? interval = null,
+            bool dontClear = false)
         {
             element.Click();
-            element.FillInWithRetries(text, context, timeout, interval);
+            element.FillInWithRetries(text, context, timeout, interval, dontClear);
         }
 
         public static void ClickAndClear(this IWebElement element)
@@ -39,11 +40,13 @@ namespace Lombiq.Tests.UI.Extensions
             string text,
             UITestContext context,
             TimeSpan? timeout = null,
-            TimeSpan? interval = null) =>
+            TimeSpan? interval = null,
+            bool dontClear = false) =>
             ReliabilityHelper.DoWithRetries(
                 () =>
                 {
-                    element.FillInWith(text);
+                    if (dontClear) element.SendKeys(text);
+                    else element.FillInWith(text);
 
                     if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
                     {
