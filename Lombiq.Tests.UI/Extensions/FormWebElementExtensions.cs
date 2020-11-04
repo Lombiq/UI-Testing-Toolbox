@@ -4,7 +4,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 
-// Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenius not
+// Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenium not
 // necessarily.
 namespace Lombiq.Tests.UI.Extensions
 {
