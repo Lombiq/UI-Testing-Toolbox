@@ -1,5 +1,6 @@
 using Atata;
 using Atata.Bootstrap;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -86,11 +87,7 @@ namespace Lombiq.Tests.UI.Pages
                 page.ConnectionString.Set(configuration.ConnectionString);
             }
 
-            // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
-            // when entered into the textfield so we need to use JS. The following solution doesn't work:
-            // https://stackoverflow.com/a/52202594/220230.
-            var element = context.Driver.FindElement(By.Name(nameof(Email)));
-            ((IJavaScriptExecutor)context.Driver).ExecuteScript($"arguments[0].value='{configuration.Email}';", element);
+            context.Get(By.Name(nameof(Email))).ClickAndFillInWithRetries(configuration.Email, context);
 
             return page
                 .UserName.Set(configuration.UserName)

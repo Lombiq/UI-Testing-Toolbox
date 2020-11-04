@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 
@@ -12,11 +13,12 @@ namespace Lombiq.Tests.UI.Extensions
         public static void ClickAndFillInWithRetries(
             this IWebElement element,
             string text,
+            UITestContext context,
             TimeSpan? timeout = null,
             TimeSpan? interval = null)
         {
             element.Click();
-            element.FillInWithRetries(text, timeout, interval);
+            element.FillInWithRetries(text, context, timeout, interval);
         }
 
         public static void ClickAndClear(this IWebElement element)
@@ -35,8 +37,27 @@ namespace Lombiq.Tests.UI.Extensions
         public static void FillInWithRetries(
             this IWebElement element,
             string text,
+            UITestContext context,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.DoWithRetries(() => element.FillInWith(text).GetValue() == text, timeout, interval);
+            ReliabilityHelper.DoWithRetries(
+                () =>
+                {
+                    if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
+                    {
+                        // On some platforms, probably due to keyboard settings, the @ character can be missing from
+                        // the address when entered into a textfield so we need to use JS. The following solution
+                        // doesn't work: https://stackoverflow.com/a/52202594/220230.
+                        ((IJavaScriptExecutor)context.Driver).ExecuteScript($"arguments[0].value='{text}';", element);
+                    }
+                    else
+                    {
+                        element.FillInWith(text);
+                    }
+
+                    return element.GetValue() == text;
+                },
+                timeout,
+                interval);
     }
 }
