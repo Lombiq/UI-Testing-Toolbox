@@ -1,5 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
+using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System;
 
 namespace Lombiq.Tests.UI.Pages
@@ -57,7 +59,7 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ SetupOrchardCore(OrchardCoreSetupConfiguration configuration = null)
+        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupConfiguration configuration = null)
         {
             configuration ??= new OrchardCoreSetupConfiguration();
 
@@ -84,9 +86,14 @@ namespace Lombiq.Tests.UI.Pages
                 page.ConnectionString.Set(configuration.ConnectionString);
             }
 
+            // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
+            // when entered into the textfield so we need to use JS. The following solution doesn't work:
+            // https://stackoverflow.com/a/52202594/220230.
+            var element = context.Driver.FindElement(By.Name(nameof(Email)));
+            ((IJavaScriptExecutor)context.Driver).ExecuteScript($"arguments[0].value='{configuration.Email}';", element);
+
             return page
                 .UserName.Set(configuration.UserName)
-                .Email.Set(configuration.Email)
                 .Password.Set(configuration.Password)
                 .PasswordConfirmation.Set(configuration.Password)
                 .FinishSetup.Click();
