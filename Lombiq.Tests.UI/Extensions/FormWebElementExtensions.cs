@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using System;
 
 // Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenium not
@@ -15,11 +16,10 @@ namespace Lombiq.Tests.UI.Extensions
             string text,
             UITestContext context,
             TimeSpan? timeout = null,
-            TimeSpan? interval = null,
-            bool dontClear = false)
+            TimeSpan? interval = null)
         {
             element.Click();
-            element.FillInWithRetries(text, context, timeout, interval, dontClear);
+            element.FillInWithRetries(text, context, timeout, interval);
         }
 
         public static void ClickAndClear(this IWebElement element)
@@ -40,14 +40,10 @@ namespace Lombiq.Tests.UI.Extensions
             string text,
             UITestContext context,
             TimeSpan? timeout = null,
-            TimeSpan? interval = null,
-            bool dontClear = false) =>
+            TimeSpan? interval = null) =>
             ReliabilityHelper.DoWithRetries(
                 () =>
                 {
-                    if (dontClear) element.SendKeys(text);
-                    else element.FillInWith(text);
-
                     if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
                     {
                         // On some platforms, probably due to keyboard settings, the @ character can be missing from
@@ -55,7 +51,11 @@ namespace Lombiq.Tests.UI.Extensions
                         // doesn't work: https://stackoverflow.com/a/52202594/220230.
                         // This needs to be done in addition to the standard FillInWith() as without that some forms
                         // start to behave strange and not save values.
-                        ((IJavaScriptExecutor)context.Driver).ExecuteScript($"arguments[0].value='{text}';", element);
+                        new Actions(context.Driver).MoveToElement(element).SendKeys(text).Perform();
+                    }
+                    else
+                    {
+                        element.FillInWith(text);
                     }
 
                     return element.GetValue() == text;
