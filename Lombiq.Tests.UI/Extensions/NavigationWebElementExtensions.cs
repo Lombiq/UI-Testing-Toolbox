@@ -83,6 +83,12 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
         }
 
+        public static void SetDropdownByText(this UITestContext context, string selectId, string value)
+        {
+            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.Get(By.XPath($"//select[@id='{selectId}']//option[contains(., '{value}')]")).Click();
+        }
+
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
             ((IJavaScriptExecutor)context.Driver).ExecuteScript(
                 $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
