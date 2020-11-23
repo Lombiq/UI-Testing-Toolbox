@@ -18,7 +18,8 @@ namespace Lombiq.Tests.UI.Helpers
         }
 
         /// <summary>
-        /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
+        /// Executes the process and retries if an element becomes stale ( <see
+        /// cref="StaleElementReferenceException"/>).
         ///
         /// In situations like a DataTable load it is possible that the page will change during execution of multiple
         /// long running operations such as GetAll, causing stale virtual DOM. Such change tends to be near

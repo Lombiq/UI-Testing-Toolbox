@@ -13,8 +13,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// every page load, it won't accumulate during a session.
         /// </summary>
         /// <param name="assertAxeResult">
-        /// The assertion logic to run on the result of an axe accessibility analysis. If <see langword="null" /> then the
-        /// assertion supplied in the context will be used.
+        /// The assertion logic to run on the result of an axe accessibility analysis. If <see langword="null"/> then
+        /// the assertion supplied in the context will be used.
         /// </param>
         /// <param name="axeBuilderConfigurator">
         /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator

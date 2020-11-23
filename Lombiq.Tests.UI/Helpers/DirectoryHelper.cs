@@ -29,7 +29,8 @@ namespace Lombiq.Tests.UI.Helpers
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
-                    // This means that somehow a process is still locking the content folder so let's wait and try again.
+                    // This means that somehow a process is still locking the content folder so let's wait and try
+                    // again.
                     Thread.Sleep(1000);
                     tryCount++;
 

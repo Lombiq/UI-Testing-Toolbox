@@ -11,8 +11,9 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class NavigationUITestContextExtensions
     {
-        // The context is passed in to every method so they're future-proof in the case Atata won't be fully static. Also,
-        // with async code it's also necessary to re-set AtataContext.Current now, see: https://github.com/atata-framework/atata/issues/364
+        // The context is passed in to every method so they're future-proof in the case Atata won't be fully static.
+        // Also, with async code it's also necessary to re-set AtataContext.Current now, see:
+        // https://github.com/atata-framework/atata/issues/364
 
         public static void GoToHomePage(this UITestContext context) => context.GoToRelativeUrl("/");
 

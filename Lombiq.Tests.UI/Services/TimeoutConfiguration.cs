@@ -21,8 +21,8 @@ namespace Lombiq.Tests.UI.Services
         public TimeSpan RetryInterval { get; set; }
 
         /// <summary>
-        /// Gets or sets how long to wait for a page load to finish. Note that this is mostly for the initial page
-        /// load of an app (i.e. app start), running the Orchard setup and importing large recipes.
+        /// Gets or sets how long to wait for a page load to finish. Note that this is mostly for the initial page load
+        /// of an app (i.e. app start), running the Orchard setup and importing large recipes.
         /// </summary>
         public TimeSpan PageLoadTimeout { get; set; }
 

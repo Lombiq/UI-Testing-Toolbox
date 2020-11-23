@@ -26,8 +26,8 @@ namespace Lombiq.Tests.UI.Services
         Task ResumeAsync();
 
         /// <summary>
-        /// Pauses (see <see cref="PauseAsync"/>) and saves the state of the application. It can be restarted with
-        /// <see cref="ResumeAsync()"/>.
+        /// Pauses (see <see cref="PauseAsync"/>) and saves the state of the application. It can be restarted with <see
+        /// cref="ResumeAsync()"/>.
         /// </summary>
         /// <param name="snapshotDirectoryPath">The save location.</param>
         Task TakeSnapshotAsync(string snapshotDirectoryPath);

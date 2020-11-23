@@ -7,7 +7,8 @@ namespace Lombiq.Tests.UI.Services
     public class AccessibilityCheckingConfiguration
     {
         /// <summary>
-        /// Gets or sets a value indicating whether to create an accessibility report if the given test fails for any reason.
+        /// Gets or sets a value indicating whether to create an accessibility report if the given test fails for any
+        /// reason.
         /// </summary>
         public bool CreateReportOnFailure { get; set; } = true;
 
