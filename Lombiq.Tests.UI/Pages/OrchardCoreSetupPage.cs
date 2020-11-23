@@ -7,7 +7,10 @@ using System;
 
 namespace Lombiq.Tests.UI.Pages
 {
+    // Atata convention.
+#pragma warning disable IDE0065 // Misplaced using directive
     using _ = OrchardCoreSetupPage;
+#pragma warning restore IDE0065 // Misplaced using directive
 
     [VerifyTitle("Orchard Setup", Format = "{0}")]
     [VerifyH1("Setup")]

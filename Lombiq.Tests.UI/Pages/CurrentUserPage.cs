@@ -2,7 +2,10 @@ using Atata;
 
 namespace Lombiq.Tests.UI.Pages
 {
+    // Atata convention.
+#pragma warning disable IDE0065 // Misplaced using directive
     using _ = CurrentUserPage;
+#pragma warning restore IDE0065 // Misplaced using directive
 
     [Url("Lombiq.Tests.UI.Shortcuts/CurrentUser/Index")]
     public class CurrentUserPage : Page<_>
