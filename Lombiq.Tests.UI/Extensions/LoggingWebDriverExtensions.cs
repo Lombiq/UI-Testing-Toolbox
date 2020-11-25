@@ -23,6 +23,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// some common ones under <see cref="Sources"/>.
         /// </summary>
         public string Source { get; set; }
+
         public MessageLevel Level { get; set; }
         public DateTime DateTimeUtc { get; set; }
         public string Message { get; set; }
@@ -72,16 +73,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// deliberate, this is just how it works apparently.
         /// </para>
         /// <para>
-        /// Direct log retrieval (see: https://stackoverflow.com/a/36463573/220230) currently doesn't work and every
-        /// log operation throws an NRE. Apparently this will work again in WebDriver v4 which is currently in alpha
+        /// Direct log retrieval (see: https://stackoverflow.com/a/36463573/220230) currently doesn't work and every log
+        /// operation throws an NRE. Apparently this will work again in WebDriver v4 which is currently in alpha
         /// (https://www.nuget.org/packages/Selenium.WebDriver/).Then we'll also have access to the Chrome DevTools
         /// console: https://codoid.com/selenium-4-chrome-devtools-log-entry-listeners/. All details accessible from
         /// under
         /// https://stackoverflow.com/questions/57209503/system-nullreferenceexception-when-reading-browser-log-with-selenium.
         /// </para>
-        /// <para>
-        /// For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types.
-        /// </para>
+        /// <para>For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types.</para>
         /// </remarks>
         public static async Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLogAsync(this IWebDriver driver)
         {

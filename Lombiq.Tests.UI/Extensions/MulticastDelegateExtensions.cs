@@ -5,8 +5,8 @@ namespace System
     public static class MulticastDelegateExtensions
     {
         /// <summary>
-        /// Removes all instances of the delegate <paramref name="delegateToRemove"/> from the given
-        /// <see cref="MulticastDelegate"/>.
+        /// Removes all instances of the delegate <paramref name="delegateToRemove"/> from the given <see
+        /// cref="MulticastDelegate"/>.
         /// </summary>
         public static T RemoveAll<T>(this T multicastDelegate, T delegateToRemove)
             where T : MulticastDelegate

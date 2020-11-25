@@ -222,8 +222,8 @@ namespace Lombiq.Tests.UI.Services
         {
             var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
             {
-                // Note that the context creation needs to be done here too because the Orchard app needs
-                // the snapshot config to be available at startup too.
+                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
+                // config to be available at startup too.
                 _context = await CreateContextAsync();
 
                 if (_configuration.UseSqlServer)
@@ -369,9 +369,14 @@ namespace Lombiq.Tests.UI.Services
             var dumpFolderNameBase = testManifest.Name;
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
             {
+                // Incorrect suggestion.
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
-                dumpFolderNameBase = dumpFolderNameBase.Substring(
-                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)).LastIndexOf('.') + 1);
+                // Incorrect suggestion.
+#pragma warning disable S1854 // Unused assignments should be removed
+                var dumpFolderNameBeginningIndex =
+#pragma warning restore S1854 // Unused assignments should be removed
+                    dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)).LastIndexOf('.') + 1;
+                dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 

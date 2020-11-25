@@ -9,9 +9,9 @@ namespace Lombiq.Tests.UI.Extensions
     public static class NavigationWebElementExtensions
     {
         /// <summary>
-        /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and
-        /// <see cref="ClickReliably(OpenQA.Selenium.IWebElement,Lombiq.Tests.UI.Services.UITestContext)"/> so the
-        /// <paramref name="context"/> doesn't have to be passed twice.
+        /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+        /// cref="ClickReliably(OpenQA.Selenium.IWebElement,Lombiq.Tests.UI.Services.UITestContext)"/> so the <paramref
+        /// name="context"/> doesn't have to be passed twice.
         /// </summary>
         public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
 
@@ -22,10 +22,9 @@ namespace Lombiq.Tests.UI.Extensions
         /// <remarks>
         /// <para>
         /// Even when the element is absolutely, positively there (Atata's Get() succeeds) the clicks sometimes simply
-        /// don't go through the first time.
-        /// More literature on the scientific field of clicking (but the code there doesn't really help):
-        /// https://cezarypiatek.github.io/post/why-click-with-selenium-so-hard/
-        /// Also see: https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error.
+        /// don't go through the first time. More literature on the scientific field of clicking (but the code there
+        /// doesn't really help): https://cezarypiatek.github.io/post/why-click-with-selenium-so-hard/ Also see:
+        /// https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error.
         /// </para>
         /// </remarks>
         public static void ClickReliably(this IWebElement element, UITestContext context) => element.ClickReliably(context.Driver);
@@ -68,8 +67,8 @@ namespace Lombiq.Tests.UI.Extensions
                     }
                     catch (StaleElementReferenceException)
                     {
-                        // When navigating away this exception will be thrown for all old element references. Not nice but
-                        // there doesn't seem to be a better way to do this.
+                        // When navigating away this exception will be thrown for all old element references. Not nice
+                        // but there doesn't seem to be a better way to do this.
                         return true;
                     }
                 },

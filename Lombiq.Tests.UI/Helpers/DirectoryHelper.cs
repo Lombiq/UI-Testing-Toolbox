@@ -27,9 +27,10 @@ namespace Lombiq.Tests.UI.Helpers
                     // This means the directory was actually deleted.
                     return;
                 }
-                catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
                 {
-                    // This means that somehow a process is still locking the content folder so let's wait and try again.
+                    // This means that somehow a process is still locking the content folder so let's wait and try
+                    // again.
                     Thread.Sleep(1000);
                     tryCount++;
 

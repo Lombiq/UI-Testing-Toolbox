@@ -1,4 +1,4 @@
-﻿using Atata;
+using Atata;
 using OpenQA.Selenium;
 using System;
 

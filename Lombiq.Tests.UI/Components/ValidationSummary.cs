@@ -1,4 +1,4 @@
-﻿using Atata;
+using Atata;
 
 namespace Lombiq.Tests.UI.Components
 {
