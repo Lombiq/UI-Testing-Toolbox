@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace FLombiq.Tests.UI.Helpers
+namespace Lombiq.Tests.UI.Helpers
 {
     public static class FileUploadHelper
     {
