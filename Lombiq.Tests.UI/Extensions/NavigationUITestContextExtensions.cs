@@ -74,6 +74,15 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static ITargetLocator SwitchTo(this UITestContext context) => context.Driver.SwitchTo();
 
+        /// <summary>
+        /// Switches control back to the most recent previous window/tab.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Call <see cref="UITestContext.AssertBrowserLogAsync"/> before last leaving a window/tab if you want the
+        /// browser log to be checked. Otherwise only the last active window's logs will be checked.
+        /// </para>
+        /// </remarks>
         public static IWebDriver SwitchToLastWindow(this UITestContext context) =>
             context.SwitchTo().Window(context.Driver.WindowHandles.Last());
 

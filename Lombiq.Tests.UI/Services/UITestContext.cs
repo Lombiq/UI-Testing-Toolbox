@@ -1,4 +1,6 @@
+using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -40,7 +42,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public SmtpServiceRunningContext SmtpServiceRunningContext { get; }
 
-
         public UITestContext(
             string testName,
             OrchardCoreUITestExecutorConfiguration configuration,
@@ -55,6 +56,12 @@ namespace Lombiq.Tests.UI.Services
             Application = application;
             Scope = scope;
             SmtpServiceRunningContext = smtpContext;
+        }
+
+        public async Task AssertBrowserLogAsync()
+        {
+            var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
+            Configuration.AssertBrowserLog?.Invoke(browserLog);
         }
     }
 }
