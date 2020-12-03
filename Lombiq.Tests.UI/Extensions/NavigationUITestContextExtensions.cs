@@ -34,6 +34,14 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToHomePage();
         }
 
+        public static void SignInDirectlyAndGoToDashboard(
+            this UITestContext context,
+            string email = DefaultUser.UserName)
+        {
+            context.SignInDirectly(email);
+            context.GoToDashboard();
+        }
+
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
             new Uri(context.Scope.BaseUri, relativeUrl);
 
