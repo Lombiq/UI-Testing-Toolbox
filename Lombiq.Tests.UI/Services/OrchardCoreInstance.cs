@@ -14,6 +14,7 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services
 {
     public delegate void BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
+
     public delegate void BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
     public class OrchardCoreConfiguration
@@ -23,7 +24,6 @@ namespace Lombiq.Tests.UI.Services
         public BeforeAppStartHandler BeforeAppStart { get; set; }
         public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
     }
-
 
     /// <summary>
     /// A locally executing Orchard Core application.
@@ -43,7 +43,6 @@ namespace Lombiq.Tests.UI.Services
         private string _contentRootPath;
         private bool _isDisposed;
 
-
         [SuppressMessage(
             "Minor Code Smell",
             "S3963:\"static\" fields should be initialized inline",
@@ -59,7 +58,6 @@ namespace Lombiq.Tests.UI.Services
             _configuration = configuration;
             _testOutputHelper = testOutputHelper;
         }
-
 
         public async Task<Uri> StartUpAsync()
         {
@@ -144,7 +142,6 @@ namespace Lombiq.Tests.UI.Services
             DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath);
         }
 
-
         private void CreateContentRootFolder()
         {
             _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
@@ -186,7 +183,6 @@ namespace Lombiq.Tests.UI.Services
 
             return Task.CompletedTask;
         }
-
 
         private class ApplicationLog : IApplicationLog
         {

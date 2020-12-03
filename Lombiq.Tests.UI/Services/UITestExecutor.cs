@@ -32,7 +32,6 @@ namespace Lombiq.Tests.UI.Services
         private UITestContext _context;
         private BrowserLogMessage[] _browserLogMessages;
 
-
         private UITestExecutor(
             UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
@@ -44,7 +43,6 @@ namespace Lombiq.Tests.UI.Services
             _dumpConfiguration = dumpConfiguration;
             _testOutputHelper = testOutputHelper;
         }
-
 
         public ValueTask DisposeAsync()
         {
@@ -63,7 +61,6 @@ namespace Lombiq.Tests.UI.Services
             if (_smtpService != null) await _smtpService.DisposeAsync();
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
         }
-
 
         private async Task<bool> ExecuteAsync(
             int retryCount,
@@ -321,7 +318,6 @@ namespace Lombiq.Tests.UI.Services
             return new UITestContext(_testManifest.Name, _configuration, sqlServerContext, _applicationInstance, atataScope, smtpContext);
         }
 
-
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
         /// </summary>
@@ -341,7 +337,6 @@ namespace Lombiq.Tests.UI.Services
 
             return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
         }
-
 
         private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {

@@ -13,13 +13,11 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
         private readonly UserManager<IUser> _userManager;
         private readonly SignInManager<IUser> _userSignInManager;
 
-
         public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager)
         {
             _userManager = userManager;
             _userSignInManager = userSignInManager;
         }
-
 
         [AllowAnonymous]
         public async Task<IActionResult> SignInDirectly(string userName)

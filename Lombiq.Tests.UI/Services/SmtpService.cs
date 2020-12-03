@@ -14,12 +14,10 @@ namespace Lombiq.Tests.UI.Services
     {
     }
 
-
     public class SmtpServiceRunningContext
     {
         public int Port { get; }
         public Uri WebUIUri { get; }
-
 
         public SmtpServiceRunningContext(int port, Uri webUIUri)
         {
@@ -27,7 +25,6 @@ namespace Lombiq.Tests.UI.Services
             WebUIUri = webUIUri;
         }
     }
-
 
     public class SmtpService : IAsyncDisposable
     {
@@ -46,7 +43,6 @@ namespace Lombiq.Tests.UI.Services
         private int _webUIPort;
         private CancellationTokenSource _cancellationTokenSource;
 
-
         [SuppressMessage(
             "Minor Code Smell",
             "S3963:\"static\" fields should be initialized inline",
@@ -59,7 +55,6 @@ namespace Lombiq.Tests.UI.Services
         }
 
         public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
-
 
         public async Task<SmtpServiceRunningContext> StartAsync()
         {

@@ -26,7 +26,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public TimeSpan PageLoadTimeout { get; set; }
 
-
         public static readonly TimeoutConfiguration Default = new TimeoutConfiguration
         {
             RetryTimeout = TimeSpan

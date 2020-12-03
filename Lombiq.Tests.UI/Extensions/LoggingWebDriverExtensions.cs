@@ -28,10 +28,8 @@ namespace Lombiq.Tests.UI.Extensions
         public DateTime DateTimeUtc { get; set; }
         public string Message { get; set; }
 
-
         public override string ToString() =>
             $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
-
 
         public enum MessageLevel
         {
@@ -49,7 +47,6 @@ namespace Lombiq.Tests.UI.Extensions
             public const string Recommendation = "recommendation";
         }
     }
-
 
     public static class LoggingWebDriverExtensions
     {
@@ -105,7 +102,6 @@ namespace Lombiq.Tests.UI.Extensions
                     Message = entry["message"],
                 });
         }
-
 
         private static string GetEndpoint(IWebDriver driver)
         {

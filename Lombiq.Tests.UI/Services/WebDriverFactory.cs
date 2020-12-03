@@ -18,7 +18,6 @@ namespace Lombiq.Tests.UI.Services
     {
         private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
 
-
         public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(
                 () =>
@@ -95,7 +94,6 @@ namespace Lombiq.Tests.UI.Services
                 new FirefoxConfig());
         }
 
-
         public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(
                 () =>
@@ -109,7 +107,6 @@ namespace Lombiq.Tests.UI.Services
                     return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
                 },
                 new InternetExplorerConfig());
-
 
         private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
             where TDriverOptions : DriverOptions
@@ -166,7 +163,6 @@ namespace Lombiq.Tests.UI.Services
                     ex);
             }
         }
-
 
         private class StaticVersionEdgeConfig : EdgeConfig
         {
