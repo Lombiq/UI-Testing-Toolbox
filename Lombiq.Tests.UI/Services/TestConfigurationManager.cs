@@ -20,7 +20,6 @@ namespace Lombiq.Tests.UI.Services
         private static readonly JObject _fileConfiguration =
             JObject.Parse(File.Exists("TestConfiguration.json") ? File.ReadAllText("TestConfiguration.json") : "{}");
 
-
         public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true), CultureInfo.InvariantCulture);
 
         public static int GetAgentIndexOrDefault() => int.Parse(GetConfiguration("AgentIndex", "0"), CultureInfo.InvariantCulture);

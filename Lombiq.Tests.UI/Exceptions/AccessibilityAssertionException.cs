@@ -7,7 +7,6 @@ namespace Lombiq.Tests.UI.Exceptions
     {
         public AxeResult AxeResult { get; }
 
-
         public AccessibilityAssertionException(AxeResult axeResult, bool createReportOnFailure, Exception innerException)
             : base(
                 "Asserting the accessibility analysis result failed." + (createReportOnFailure ? " Check the accessibility report for details." : string.Empty),

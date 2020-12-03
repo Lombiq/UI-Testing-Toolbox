@@ -16,17 +16,18 @@ namespace Lombiq.Tests.UI.Services
         InternetExplorer,
     }
 
-
     public class OrchardCoreUITestExecutorConfiguration
     {
         public BrowserConfiguration BrowserConfiguration { get; set; } = new BrowserConfiguration();
         public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
         public AtataConfiguration AtataConfiguration { get; set; } = new AtataConfiguration();
         public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }
+
         public int MaxRetryCount { get; set; } =
             // Backwards compatibility with older MaxTryCount config.
             TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxTryCount") - 1 ??
             TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration.MaxRetryCount", 2);
+
         public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
@@ -44,7 +45,6 @@ namespace Lombiq.Tests.UI.Services
         public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new AccessibilityCheckingConfiguration();
         public bool UseSqlServer { get; set; }
         public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new SqlServerConfiguration();
-
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
@@ -80,7 +80,6 @@ namespace Lombiq.Tests.UI.Services
             }
         }
 
-
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmptyAsync();
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings = app => app.LogsShouldBeEmptyAsync(true);
 
@@ -91,7 +90,6 @@ namespace Lombiq.Tests.UI.Services
                 message.Source != BrowserLogMessage.Sources.Deprecation ||
                 !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase));
     }
-
 
     public class UITestExecutorFailureDumpConfiguration
     {

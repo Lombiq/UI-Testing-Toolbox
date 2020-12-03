@@ -40,7 +40,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public SmtpServiceRunningContext SmtpServiceRunningContext { get; }
 
-
         public UITestContext(
             string testName,
             OrchardCoreUITestExecutorConfiguration configuration,

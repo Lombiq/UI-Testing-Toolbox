@@ -16,10 +16,8 @@ namespace Lombiq.Tests.UI.Services
         private readonly HashSet<int> _usedPorts = new HashSet<int>();
         private readonly object _portAcquisitionLock = new object();
 
-
         public PortLeaseManager(int lowerBound, int upperBound) =>
             _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);
-
 
         public int LeaseAvailableRandomPort()
         {
