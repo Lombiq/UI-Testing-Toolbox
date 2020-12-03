@@ -1,4 +1,4 @@
-﻿using Atata;
+using Atata;
 
 namespace Lombiq.Tests.UI.Components
 {
@@ -9,7 +9,6 @@ namespace Lombiq.Tests.UI.Components
         public new FieldVerificationProvider<string, ValidationMessage<TOwner>, TOwner> Should =>
             new FieldVerificationProvider<string, ValidationMessage<TOwner>, TOwner>(this);
     }
-
 
     public static class ValidationMessageExtensions
     {

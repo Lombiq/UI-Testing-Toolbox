@@ -39,7 +39,6 @@ namespace Lombiq.Tests.UI.Services
         IEnumerable<IApplicationLog> GetLogs();
     }
 
-
     /// <summary>
     /// An abstraction over a log, be it in the form of a file or something else.
     /// </summary>

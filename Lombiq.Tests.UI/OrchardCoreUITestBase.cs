@@ -19,9 +19,7 @@ namespace Lombiq.Tests.UI
 
         protected abstract string AppAssemblyPath { get; }
 
-
         protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
-
 
         /// <summary>
         /// Executes the given UI test, optionally after setting up the site.

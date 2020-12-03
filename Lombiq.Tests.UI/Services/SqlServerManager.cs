@@ -23,15 +23,12 @@ namespace Lombiq.Tests.UI.Services
             $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;MultipleActiveResultSets=True;");
     }
 
-
     public class SqlServerRunningContext
     {
         public string ConnectionString { get; }
 
-
         public SqlServerRunningContext(string connectionString) => ConnectionString = connectionString;
     }
-
 
     public sealed class SqlServerManager : IDisposable
     {
@@ -45,7 +42,6 @@ namespace Lombiq.Tests.UI.Services
         private string _databaseName;
         private bool _isDisposed;
 
-
         [SuppressMessage(
             "Minor Code Smell",
             "S3963:\"static\" fields should be initialized inline",
@@ -57,7 +53,6 @@ namespace Lombiq.Tests.UI.Services
         }
 
         public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
-
 
         public SqlServerRunningContext CreateDatabase()
         {
@@ -168,7 +163,6 @@ namespace Lombiq.Tests.UI.Services
 
             _portLeaseManager.StopLease(_databaseId);
         }
-
 
         // It's easier to use the server name directly instead of the connection string as that also requires the
         // referenced database to exist.

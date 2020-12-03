@@ -12,7 +12,6 @@ namespace Lombiq.Tests.UI.Services
         public Action<AtataContextBuilder> ContextBuilder { get; set; }
     }
 
-
     public static class AtataFactory
     {
         public static AtataScope StartAtataScope(

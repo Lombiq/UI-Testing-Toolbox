@@ -25,7 +25,6 @@ namespace Lombiq.Tests.UI.Pages
             Postgres,
         }
 
-
         [FindById("culturesList")]
         [SelectByValue]
         public Select<_> Language { get; private set; }

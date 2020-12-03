@@ -37,7 +37,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 
-
         public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
         {
             axeResult.Violations.ShouldBeEmpty();

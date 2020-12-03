@@ -14,13 +14,11 @@ namespace Lombiq.Tests.UI.Services
         public RemoteWebDriver Driver => AtataContext.Driver;
         public Uri BaseUri { get; }
 
-
         public AtataScope(AtataContext atataContext, Uri baseUri)
         {
             AtataContext = atataContext;
             BaseUri = baseUri;
         }
-
 
         public void Dispose() => AtataContext.Dispose();
     }
