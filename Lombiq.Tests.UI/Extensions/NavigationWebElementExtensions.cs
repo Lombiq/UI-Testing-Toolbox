@@ -10,8 +10,8 @@ namespace Lombiq.Tests.UI.Extensions
     {
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-        /// cref="ClickReliably(OpenQA.Selenium.IWebElement,Lombiq.Tests.UI.Services.UITestContext)"/> so the <paramref
-        /// name="context"/> doesn't have to be passed twice.
+        /// cref="ClickReliably(IWebElement,UITestContext)"/> so the <paramref name="context"/> doesn't have to be
+        /// passed twice.
         /// </summary>
         public static void ClickReliablyOn(this UITestContext context, By by) => ClickReliably(context.Get(by), context);
 
@@ -57,20 +57,11 @@ namespace Lombiq.Tests.UI.Extensions
             IWebDriver driver,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.DoWithRetries(
+            ReliabilityHelper.RetryIfNotStale(
                 () =>
                 {
-                    try
-                    {
-                        element.ClickReliably(driver);
-                        return false;
-                    }
-                    catch (StaleElementReferenceException)
-                    {
-                        // When navigating away this exception will be thrown for all old element references. Not nice
-                        // but there doesn't seem to be a better way to do this.
-                        return true;
-                    }
+                    element.ClickReliably(driver);
+                    return false;
                 },
                 timeout,
                 interval);
