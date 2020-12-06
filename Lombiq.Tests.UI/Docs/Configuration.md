@@ -27,7 +27,9 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
 }
 ```
 
-Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode. 
+Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode.
+
+We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 
 
 ## <a name="multi-process"></a>Multi-process test execution
