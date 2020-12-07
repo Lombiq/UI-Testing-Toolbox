@@ -25,9 +25,9 @@ namespace Lombiq.Tests.UI.Services
             {
                 var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
                 // This is not a security-critical random number.
-#pragma warning disable SCS0005 // Weak random generator
+#pragma warning disable CA5394 // Do not use insecure randomness
                 var port = availablePorts[new Random().Next(availablePorts.Count)];
-#pragma warning restore SCS0005 // Weak random generator
+#pragma warning restore CA5394 // Do not use insecure randomness
                 _usedPorts.Add(port);
                 return port;
             }
