@@ -26,6 +26,14 @@ namespace Lombiq.Tests.UI.Extensions
             context.Driver.Navigate().GoToUrl(uri);
         }
 
+        public static void SignOutDirectlyThenSignInDirectlyAndGoToHomepage(
+            this UITestContext context,
+            string email = DefaultUser.UserName)
+        {
+            context.SignOutDirectly();
+            context.SignInDirectlyAndGoToHomepage(email);
+        }
+
         public static void SignInDirectlyAndGoToHomepage(
             this UITestContext context,
             string email = DefaultUser.UserName)
@@ -34,12 +42,28 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToHomePage();
         }
 
+        public static void SignOutDirectlyThenSignInDirectlyAndGoToDashboard(
+            this UITestContext context,
+            string email = DefaultUser.UserName)
+        {
+            context.SignOutDirectly();
+            context.SignInDirectlyAndGoToDashboard(email);
+        }
+
         public static void SignInDirectlyAndGoToDashboard(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
             context.SignInDirectly(email);
             context.GoToDashboard();
+        }
+
+        public static void SignOutDirectlyThenSignInDirectly(
+            this UITestContext context,
+            string email = DefaultUser.UserName)
+        {
+            context.SignOutDirectly();
+            context.SignInDirectly(email);
         }
 
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
