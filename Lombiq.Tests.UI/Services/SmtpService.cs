@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Services
         }
     }
 
-    public class SmtpService : IAsyncDisposable
+    public sealed class SmtpService : IAsyncDisposable
     {
         private static readonly PortLeaseManager _smtpPortLeaseManager;
         private static readonly PortLeaseManager _webUIPortLeaseManager;
