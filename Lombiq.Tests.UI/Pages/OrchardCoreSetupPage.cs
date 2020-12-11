@@ -14,7 +14,7 @@ namespace Lombiq.Tests.UI.Pages
 
     [VerifyTitle("Orchard Setup", Format = "{0}")]
     [VerifyH1("Setup")]
-    public class OrchardCoreSetupPage : Page<_>
+    public sealed class OrchardCoreSetupPage : Page<_>
     {
         public enum DatabaseType
         {
