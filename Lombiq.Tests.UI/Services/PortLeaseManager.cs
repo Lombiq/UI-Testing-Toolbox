@@ -1,4 +1,4 @@
-using System;
+using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,10 +24,7 @@ namespace Lombiq.Tests.UI.Services
             lock (_portAcquisitionLock)
             {
                 var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
-                // This is not a security-critical random number.
-#pragma warning disable CA5394 // Do not use insecure randomness
-                var port = availablePorts[new Random().Next(availablePorts.Count)];
-#pragma warning restore CA5394 // Do not use insecure randomness
+                var port = availablePorts[new NonSecurityRandomizer().GetFromRange(availablePorts.Count)];
                 _usedPorts.Add(port);
                 return port;
             }
