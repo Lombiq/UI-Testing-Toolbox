@@ -20,20 +20,28 @@ namespace Lombiq.Tests.UI.Extensions
         public static TResult ExecuteLogged<TResult>(this UITestContext context, string operationName, By by, Func<TResult> function) =>
             context.ExecuteSection(GetLogSection(operationName, by), function);
 
+        public static void ExecuteLogged(this UITestContext context, string operationName, string objectOfOperation, Action action) =>
+            context.ExecuteSection(GetLogSection(operationName, objectOfOperation), action);
+
+        public static TResult ExecuteLogged<TResult>(this UITestContext context, string operationName, string objectOfOperation, Func<TResult> function) =>
+            context.ExecuteSection(GetLogSection(operationName, objectOfOperation), function);
+
         private static ExtendedLogSection GetLogSection(string operationName, IWebElement element) =>
             new ExtendedLogSection(GetSectionMessage(operationName, element.ToDetailedString()));
 
         private static ExtendedLogSection GetLogSection(string operationName, By by) =>
             new ExtendedLogSection(GetSectionMessage(operationName, by.ToString()));
 
-        private static string GetSectionMessage(string operationName, string appliedToDescription) =>
-            $"{operationName} applied to: {Environment.NewLine}{appliedToDescription}";
+        private static ExtendedLogSection GetLogSection(string operationName, string objectOfOperation) =>
+            new ExtendedLogSection(GetSectionMessage(operationName, objectOfOperation));
+
+        private static string GetSectionMessage(string operationName, string objectOfOperation) =>
+            $"{operationName} applied to: {Environment.NewLine}{objectOfOperation}";
 
         #region ExecuteSectionBackPort
         // Only needed until this change of Atata is released:
         // https://github.com/atata-framework/atata/commit/bf9a9cf9d665a1e790b0efcd1a98c23cc787417f. Copied from the
-        // Atata code base, stripped down to not include what's needed for other new features there. This is lacking
-        // operation execution time and result output but we'll get that after the update.
+        // Atata code base, stripped down to not include what's needed for other new features there.
         private static void ExecuteSection(this UITestContext context, ExtendedLogSection section, Action action)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
