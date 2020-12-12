@@ -27,7 +27,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Set the browser window's size to the given value. See <see
-        /// cref="Lombiq.Tests.UI.Constants.CommonDisplayResolutions"/> for some resolution presets (but generally it's
+        /// cref="Constants.CommonDisplayResolutions"/> for some resolution presets (but generally it's
         /// better to test the given app's responsive breakpoints specifically).
         /// </summary>
         /// <remarks>
