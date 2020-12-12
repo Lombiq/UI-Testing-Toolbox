@@ -72,7 +72,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static T GoToPage<T>(this UITestContext context)
             where T : PageObject<T>
         {
-            AtataContext.Current = context.Scope.AtataContext;
+            context.Scope.SetContextAsCurrent();
             return Go.To<T>();
         }
 
@@ -81,7 +81,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             var uri = context.GetAbsoluteUri(relativeUrl);
 
-            AtataContext.Current = context.Scope.AtataContext;
+            context.Scope.SetContextAsCurrent();
             return Go.To<T>(url: uri.ToString());
         }
 
