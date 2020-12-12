@@ -114,7 +114,8 @@ namespace Lombiq.Tests.UI.Extensions
                     " and could it properly start?");
             }
 
-            context.GoToAbsoluteUrl(context.SmtpServiceRunningContext.WebUIUri);
+            // GoToAbsoluteUrl() may think we're on WebUIUri if it's open on another tab.
+            context.GoToAbsoluteUrl(context.SmtpServiceRunningContext.WebUIUri, true);
         }
 
         public static void SwitchTo(this UITestContext context, Action<ITargetLocator> switchOperation, string targetDescription) =>
