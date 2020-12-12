@@ -124,5 +124,29 @@ namespace Lombiq.Tests.UI.Extensions
         public static bool WaitForPageLoad(this UITestContext context) =>
             new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
                 d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
+
+        public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
+            where T : Enum
+        {
+            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
+        }
+
+        public static void SetDropdownByText(this UITestContext context, string selectId, string value)
+        {
+            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.Get(By.XPath($"//select[@id='{selectId}']//option[contains(., '{value}')]")).Click();
+        }
+
+        public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
+            ((IJavaScriptExecutor)context.Driver).ExecuteScript(
+                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
+
+        /// <summary>
+        /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+        /// cref="NavigationWebElementExtensions.ClickReliably(IWebElement,UITestContext)"/> so the <paramref
+        /// name="context"/> doesn't have to be passed twice.
+        /// </summary>
+        public static void ClickReliablyOn(this UITestContext context, By by) => context.Get(by).ClickReliably(context);
     }
 }
