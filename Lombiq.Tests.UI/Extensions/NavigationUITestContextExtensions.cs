@@ -180,5 +180,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// name="context"/> doesn't have to be passed twice.
         /// </summary>
         public static void ClickReliablyOn(this UITestContext context, By by) => context.Get(by).ClickReliably(context);
+
+        /// <summary>
+        /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+        /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeave(IWebElement, UITestContext, TimeSpan?,
+        /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+        /// </summary>
+        public static void ClickReliablyOnUntilPageLeave(
+            this UITestContext context,
+            By by,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
+            context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
     }
 }
