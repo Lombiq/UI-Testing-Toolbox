@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Lombiq.Tests.UI.Services
         private SmtpService _smtpService;
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
-        private BrowserLogMessage[] _browserLogMessages;
+        private List<BrowserLogMessage> _browserLogMessages;
 
         private UITestExecutor(
             UITestManifest testManifest,
@@ -146,8 +147,21 @@ namespace Lombiq.Tests.UI.Services
             return false;
         }
 
-        private async Task<BrowserLogMessage[]> GetBrowserLogAsync(RemoteWebDriver driver) =>
-            _browserLogMessages ??= (await driver.GetAndEmptyBrowserLogAsync()).ToArray();
+        private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
+        {
+            if (_browserLogMessages != null) return _browserLogMessages;
+
+            var allMessages = new List<BrowserLogMessage>();
+
+            foreach (var windowHandle in _context.Driver.WindowHandles)
+            {
+                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                _context.Driver.SwitchTo().Window(windowHandle);
+                allMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+            }
+
+            return _browserLogMessages = allMessages;
+        }
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpContainerPath, string debugInformationPath)
         {
