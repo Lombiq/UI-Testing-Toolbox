@@ -7,7 +7,9 @@ using System.Collections.ObjectModel;
 namespace Lombiq.Tests.UI.Extensions
 {
     /// <summary>
-    /// Extension methods to retrieve elements using Atata helpers.
+    /// Extension methods to retrieve elements using Atata helpers. See the Atata docs
+    /// (<see href="https://github.com/atata-framework/atata-webdriverextras#usage"/>) for more information on what you
+    /// can do with these.
     /// </summary>
     /// <remarks>
     /// <para>
