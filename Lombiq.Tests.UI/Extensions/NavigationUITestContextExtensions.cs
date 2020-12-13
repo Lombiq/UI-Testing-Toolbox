@@ -88,7 +88,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static T GoToPage<T>(this UITestContext context, string relativeUrl)
             where T : PageObject<T> =>
             context.ExecuteLogged(
-                nameof(GoToAbsoluteUrl),
+                nameof(GoToPage),
                 $"{typeof(T).FullName} - {relativeUrl}",
                 () =>
                 {

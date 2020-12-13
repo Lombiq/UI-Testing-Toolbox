@@ -9,6 +9,6 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(nameof(ExecuteScript), script, () => ((IJavaScriptExecutor)context.Driver).ExecuteScript(script, args));
 
         public static object ExecuteAsyncScript(this UITestContext context, string script, params object[] args) =>
-            context.ExecuteLogged(nameof(ExecuteScript), script, () => ((IJavaScriptExecutor)context.Driver).ExecuteAsyncScript(script, args));
+            context.ExecuteLogged(nameof(ExecuteAsyncScript), script, () => ((IJavaScriptExecutor)context.Driver).ExecuteAsyncScript(script, args));
     }
 }
