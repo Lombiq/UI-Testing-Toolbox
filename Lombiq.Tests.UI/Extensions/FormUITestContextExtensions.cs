@@ -50,7 +50,7 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null) =>
             context.ExecuteLogged(
                 nameof(FillInWithRetries),
-                by,
+                $"{by} - \"{text}\"",
                 () => ReliabilityHelper.DoWithRetries(
                     () =>
                     {
