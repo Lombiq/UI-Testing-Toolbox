@@ -9,15 +9,15 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickAndFillInWithRetries(By.Id("TitlePart_Title"), title);
 
         public static void GoToEditorTab(this UITestContext context, string tabText) =>
-            context.Get(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']")).ClickReliably(context);
+            context.ClickReliablyOn(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
 
         public static void ClickPublish(this UITestContext context) =>
-            context.Get(By.Name("submit.Publish")).ClickReliably(context);
+            context.ClickReliablyOn(By.Name("submit.Publish"));
 
         public static void GoToContentItemList(this UITestContext context)
         {
-            context.Get(By.CssSelector("#content")).ClickReliably(context);
-            context.Get(By.LinkText("Content Items")).ClickReliably(context);
+            context.ClickReliablyOn(By.CssSelector("#content"));
+            context.ClickReliablyOn(By.LinkText("Content Items"));
         }
 
         public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentType)
@@ -30,19 +30,19 @@ namespace Lombiq.Tests.UI.Extensions
         {
             if (dropdown)
             {
-                context.Get(By.Id("new-dropdown")).ClickReliably(context);
-                context.Get(By.LinkText(contentItemName)).ClickReliably(context);
+                context.ClickReliablyOn(By.Id("new-dropdown"));
+                context.ClickReliablyOn(By.LinkText(contentItemName));
             }
             else
             {
-                context.Get(By.LinkText($"New {contentItemName}")).ClickReliably(context);
+                context.ClickReliablyOn(By.LinkText($"New {contentItemName}"));
             }
         }
 
         public static void GoToUsers(this UITestContext context)
         {
-            context.Get(By.CssSelector("#security .title")).ClickReliably(context);
-            context.Get(By.CssSelector(".item-label.users .title")).ClickReliably(context);
+            context.ClickReliablyOn(By.CssSelector("#security .title"));
+            context.ClickReliablyOn(By.CssSelector(".item-label.users .title"));
         }
     }
 }

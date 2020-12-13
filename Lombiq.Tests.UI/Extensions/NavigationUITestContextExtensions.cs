@@ -161,13 +161,13 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
             where T : Enum
         {
-            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.ClickReliablyOn(By.Id(selectId));
             context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
         }
 
         public static void SetDropdownByText(this UITestContext context, string selectId, string value)
         {
-            context.Get(By.Id(selectId)).ClickReliably(context);
+            context.ClickReliablyOn(By.Id(selectId));
             context.Get(By.XPath($"//select[@id='{selectId}']//option[contains(., '{value}')]")).Click();
         }
 
