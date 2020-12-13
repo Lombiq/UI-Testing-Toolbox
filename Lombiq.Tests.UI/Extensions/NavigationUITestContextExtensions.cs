@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static void GoToAbsoluteUrl(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
             context.ExecuteLogged(
                 nameof(GoToAbsoluteUrl),
-                absoluteUri.ToString(),
+                $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
                 () =>
                 {
                     if (onlyIfNotAlreadyThere && new Uri(context.Driver.Url) == absoluteUri) return;
