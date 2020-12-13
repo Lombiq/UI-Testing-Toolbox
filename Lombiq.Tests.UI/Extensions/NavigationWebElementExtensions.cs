@@ -9,8 +9,9 @@ namespace Lombiq.Tests.UI.Extensions
     public static class NavigationWebElementExtensions
     {
         /// <summary>
-        /// Click an element even if the default Click() will sometimes fail to do so. It's more reliable than Click()
-        /// but still not perfect.
+        /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click()
+        /// but still not perfect. If you're doing a Get() before then use <see
+        /// cref="NavigationUITestContextExtensions.ClickReliablyOn(UITestContext, By)"/> instead.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -40,6 +41,10 @@ namespace Lombiq.Tests.UI.Extensions
                     }
                 });
 
+        /// <summary>
+        /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use
+        /// <see cref="NavigationUITestContextExtensions.ClickReliablyOn(UITestContext, By)"/> instead.
+        /// </summary>
         public static void ClickReliablyUntilPageLeave(
             this IWebElement element,
             UITestContext context,
