@@ -29,7 +29,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// cref="Exists(UITestContext, By)"/>, and <see cref="Missing(UITestContext, By)"/> instead.
         /// </summary>
         public static ReadOnlyCollection<IWebElement> GetAll(this UITestContext context, By by) =>
-            context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().FindElements(by));
+            context.ExecuteLogged(nameof(GetAll), by, () => context.CreateSearchContext().FindElements(by));
 
         /// <summary>
         /// Conditionally checks the existence of the element with retries within the configured timeout.
@@ -44,7 +44,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
         /// </summary>
         public static bool Exists(this UITestContext context, By by) =>
-            context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().Exists(by));
+            context.ExecuteLogged(nameof(Exists), by, () => context.CreateSearchContext().Exists(by));
 
         /// <summary>
         /// Checks the existence of the element with retries within the configured timeout. Depending on the
@@ -53,7 +53,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
         /// </summary>
         public static bool Missing(this UITestContext context, By by) =>
-            context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().Missing(by));
+            context.ExecuteLogged(nameof(Missing), by, () => context.CreateSearchContext().Missing(by));
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new ExtendedSearchContext<RemoteWebDriver>(
