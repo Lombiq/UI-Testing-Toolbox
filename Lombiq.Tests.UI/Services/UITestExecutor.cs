@@ -244,7 +244,7 @@ namespace Lombiq.Tests.UI.Services
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
                         if (failureCount > _configuration.MaxRetryCount)
                         {
-                            throw new SetupFailedFastException { FailureCount = failureCount };
+                            throw new SetupFailedFastException(failureCount);
                         }
                     }
 
