@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -24,7 +25,8 @@ namespace Lombiq.Tests.UI.Services
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private static readonly object _setupSnapshotManangerLock = new object();
+        private static readonly object _setupSnapshotManangerLock = new();
+        private static readonly ConcurrentDictionary<int, int> _setupOperationFailureCount = new();
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
         private SqlServerManager _sqlServerManager;
@@ -106,6 +108,8 @@ namespace Lombiq.Tests.UI.Services
             catch (Exception ex)
             {
                 _testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
+
+                if (ex is SetupFailedFastException) throw;
 
                 var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
                 var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
@@ -231,36 +235,57 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task SetupAsync()
         {
-            var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
+            try
             {
-                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
-                // config to be available at startup too.
-                _context = await CreateContextAsync();
-
-                if (_configuration.UseSqlServer)
+                var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
-                    // This is only necessary for the setup snapshot.
-                    void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                    if (_configuration.FastFailSetup)
                     {
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                        _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                        _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
+                        if (failureCount > _configuration.MaxRetryCount)
+                        {
+                            throw new SetupFailedFastException { FailureCount = failureCount };
+                        }
                     }
 
-                    // This is necessary because a simple subtraction wouldn't remove previous instances of the local
-                    // function. Thus if anything goes wrong between the below delegate registration and it being called
-                    // then it'll remain registered and later during a retry try to run (and fail on the disposed
-                    // SqlServerManager.
-                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                    // Note that the context creation needs to be done here too because the Orchard app needs the
+                    // snapshot config to be available at startup too.
+                    _context = await CreateContextAsync();
+
+                    if (_configuration.UseSqlServer)
+                    {
+                        // This is only necessary for the setup snapshot.
+                        void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                        {
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                            _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                        }
+
+                        // This is necessary because a simple subtraction wouldn't remove previous instances of the
+                        // local function. Thus if anything goes wrong between the below delegate registration and it
+                        // being called then it'll remain registered and later during a retry try to run (and fail on
+                        // the disposed SqlServerManager.
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandler);
-                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                    }
+
+                    return (_context, _configuration.SetupOperation(_context));
+                });
+
+                _context ??= await CreateContextAsync();
+
+                _context.GoToRelativeUrl(resultUri.PathAndQuery);
+            }
+            catch (Exception ex) when (ex is not SetupFailedFastException)
+            {
+                if (_configuration.FastFailSetup)
+                {
+                    _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
                 }
 
-                return (_context, _configuration.SetupOperation(_context));
-            });
-
-            _context ??= await CreateContextAsync();
-
-            _context.GoToRelativeUrl(resultUri.PathAndQuery);
+                throw;
+            }
         }
 
         private async Task<UITestContext> CreateContextAsync()
@@ -331,6 +356,8 @@ namespace Lombiq.Tests.UI.Services
 
             return new UITestContext(_testManifest.Name, _configuration, sqlServerContext, _applicationInstance, atataScope, smtpContext);
         }
+
+        private int GetSetupHashCode() => _configuration.SetupOperation.GetHashCode();
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
