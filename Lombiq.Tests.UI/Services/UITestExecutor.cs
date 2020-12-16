@@ -35,16 +35,12 @@ namespace Lombiq.Tests.UI.Services
         private UITestContext _context;
         private List<BrowserLogMessage> _browserLogMessages;
 
-        private UITestExecutor(
-            UITestManifest testManifest,
-            OrchardCoreUITestExecutorConfiguration configuration,
-            UITestExecutorFailureDumpConfiguration dumpConfiguration,
-            ITestOutputHelper testOutputHelper)
+        private UITestExecutor(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
             _testManifest = testManifest;
             _configuration = configuration;
-            _dumpConfiguration = dumpConfiguration;
-            _testOutputHelper = testOutputHelper;
+            _dumpConfiguration = configuration.FailureDumpConfiguration;
+            _testOutputHelper = configuration.TestOutputHelper;
         }
 
         public ValueTask DisposeAsync()
@@ -111,25 +107,7 @@ namespace Lombiq.Tests.UI.Services
 
                 if (ex is SetupFailedFastException) throw;
 
-                var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
-                var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
-
-                await CreateFailureDumpAsync(ex, dumpContainerPath, debugInformationPath);
-
-                try
-                {
-                    if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
-                    {
-                        await File.WriteAllTextAsync(
-                            Path.Combine(debugInformationPath, "TestOutput.log"),
-                            concreteTestOutputHelper.Output);
-                    }
-                }
-                catch (Exception testOutputHelperException)
-                {
-                    _testOutputHelper.WriteLine(
-                        $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
-                }
+                await CreateFailureDumpAsync(ex, dumpRootPath, retryCount);
 
                 if (retryCount == _configuration.MaxRetryCount)
                 {
@@ -167,12 +145,17 @@ namespace Lombiq.Tests.UI.Services
             return _browserLogMessages = allMessages;
         }
 
-        private async Task CreateFailureDumpAsync(Exception ex, string dumpContainerPath, string debugInformationPath)
+        private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
         {
+            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
             try
             {
                 Directory.CreateDirectory(dumpContainerPath);
                 Directory.CreateDirectory(debugInformationPath);
+
+                await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), _testManifest.Name);
 
                 if (_context == null) return;
 
@@ -211,6 +194,23 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLine(
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
+            }
+
+            try
+            {
+                if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                {
+                    // While this depends on the directory creation in the above try block it needs to come after the
+                    // catch otherwise the message saved there wouldn't be included.
+
+                    await File.WriteAllTextAsync(
+                        Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                }
+            }
+            catch (Exception testOutputHelperException)
+            {
+                _testOutputHelper.WriteLine(
+                    $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
             }
         }
 
@@ -397,6 +397,27 @@ namespace Lombiq.Tests.UI.Services
 
             configuration.AtataConfiguration.TestName = testManifest.Name;
 
+            var dumpRootPath = PrepareDumpFolder(testManifest, configuration);
+
+            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            {
+                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
+                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            }
+
+            var retryCount = 0;
+            while (true)
+            {
+                await using var instance = new UITestExecutor(testManifest, configuration);
+                if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
+                retryCount++;
+            }
+        }
+
+        private static string PrepareDumpFolder(
+            UITestManifest testManifest,
+            OrchardCoreUITestExecutorConfiguration configuration)
+        {
             var dumpConfiguration = configuration.FailureDumpConfiguration;
             var dumpFolderNameBase = testManifest.Name;
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
@@ -412,22 +433,56 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
-            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
+            dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
+
+            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
+
             DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name,
+            // or volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe
+            // both length and characters play a role (a path containing either the same characters or having the same
+            // length would work but not both). Playing safe here.
+
+            try
             {
-                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(dumpRootPath);
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            }
+            catch (Exception ex) when (
+                (ex is IOException &&
+                    ex.Message.Contains("The filename, directory name, or volume label syntax is incorrect.", StringComparison.InvariantCultureIgnoreCase))
+                || ex is PathTooLongException)
+            {
+                // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which
+                // usually make it long.
+
+                // They're not actually unused.
+#pragma warning disable S1854 // Unused assignments should be removed
+                var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
+                var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
+#pragma warning restore S1854 // Unused assignments should be removed
+
+                // Can't use string.GetHasCode() because that varies between executions.
+                var hashedParameters = Sha256Helper
+                    .ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
+
+                dumpFolderNameBase =
+                    dumpFolderNameBase[0..(openingBracketIndex + 1)] +
+                    hashedParameters +
+                    dumpFolderNameBase[closingBracketIndex..];
+
+                dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
+
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+
+                configuration.TestOutputHelper.WriteLine(
+                    "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +
+                    $"full name ({testManifest.Name}) will be put into the folder to help troubleshooting if the " +
+                    "test fails.");
             }
 
-            var retryCount = 0;
-            while (true)
-            {
-                await using var instance = new UITestExecutor(testManifest, configuration, dumpConfiguration, configuration.TestOutputHelper);
-                if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
-                retryCount++;
-            }
+            return dumpRootPath;
         }
     }
 }
