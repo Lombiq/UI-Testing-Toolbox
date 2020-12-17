@@ -13,6 +13,7 @@
     2. Run `dotnet dev-certs https --clean`.
     3. Run `dotnet dev-certs https --trust` and accept the security warning that pops up. (This is why we can't automate all of this.)
     4. Now `dotnet dev-certs https --check --verbose` should display "A valid certificate was found."
+- If you have retries configured for the tests and they've been running for a long time without any visible progress then most possibly all of them are failing. This can happen e.g. if the setup or initialization steps are failing. However, by default the `OrchardCoreUITestExecutorConfiguration.FastFailSetup` configuration will quickly fail all affected tests if a common setup operation is failing, without retrying it for all tests.
 
 
 ## Issues with driving browsers
