@@ -34,9 +34,20 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets the Orchard setup operation so the result can be snapshot and used in subsequent tests.
-        /// WARNING: It's highly recommended to put assertions at the end of it to pinpoint setup issues.
+        /// WARNING: It's highly recommended to put assertions at the end of it to pinpoint setup issues. Also see
+        /// <see cref="FastFailSetup"/>.
         /// </summary>
         public Func<UITestContext, Uri> SetupOperation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether if a specific setup operations fails and exhausts <see
+        /// cref="MaxRetryCount"/> globally then all tests using the same operation should fail immediately, without
+        /// attempting to run it again. If set to <see langword="false"/> then every test will retry the setup until
+        /// each tests' <see cref="MaxRetryCount"/> allows. If set to <see langword="true"/> then the setup operation
+        /// will only be retried <see cref="MaxRetryCount"/> times (as set by the first test running that operation)
+        /// altogether. Defaults to <see langword="true"/>.
+        /// </summary>
+        public bool FastFailSetup { get; set; } = true;
 
         public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
         public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new UITestExecutorFailureDumpConfiguration();

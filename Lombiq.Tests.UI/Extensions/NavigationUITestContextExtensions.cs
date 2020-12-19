@@ -126,24 +126,12 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Switches control back to the most recent previous window/tab.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Call <see cref="UITestContext.AssertBrowserLogAsync"/> before last leaving a window/tab if you want the
-        /// browser log to be checked. Otherwise only the last active window's logs will be checked.
-        /// </para>
-        /// </remarks>
         public static void SwitchToLastWindow(this UITestContext context) =>
             context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.Last()), "last window");
 
         /// <summary>
         /// Switches control back to the oldest previous window/tab.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Call <see cref="UITestContext.AssertBrowserLogAsync"/> before last leaving a window/tab if you want the
-        /// browser log to be checked. Otherwise only the last active window's logs will be checked.
-        /// </para>
-        /// </remarks>
         public static void SwitchToFirstWindow(this UITestContext context) =>
             context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
 
