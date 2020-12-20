@@ -89,7 +89,7 @@ namespace Lombiq.Tests.UI.Pages
                 page.ConnectionString.Set(configuration.ConnectionString);
             }
 
-            context.Get(By.Name(nameof(Email))).ClickAndFillInWithRetries(configuration.Email, context);
+            context.ClickAndFillInWithRetries(By.Name(nameof(Email)), configuration.Email);
 
             return page
                 .UserName.Set(configuration.UserName)

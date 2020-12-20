@@ -58,6 +58,10 @@ namespace Lombiq.Tests.UI.Services
             SmtpServiceRunningContext = smtpContext;
         }
 
+        /// <summary>
+        /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
+        /// cref="Configuration"/>.
+        /// </summary>
         public async Task AssertBrowserLogAsync()
         {
             var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();

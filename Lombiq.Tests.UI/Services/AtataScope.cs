@@ -20,6 +20,11 @@ namespace Lombiq.Tests.UI.Services
             BaseUri = baseUri;
         }
 
+        /// <summary>
+        /// Sets <see cref="AtataContext.Current"/> to the value of <see cref="AtataContext"/>.
+        /// </summary>
+        public void SetContextAsCurrent() => AtataContext.Current = AtataContext;
+
         public void Dispose() => AtataContext.Dispose();
     }
 }

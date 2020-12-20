@@ -7,6 +7,8 @@ using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,25 +25,22 @@ namespace Lombiq.Tests.UI.Services
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private static readonly object _setupSnapshotManangerLock = new object();
+        private static readonly object _setupSnapshotManangerLock = new();
+        private static readonly ConcurrentDictionary<int, int> _setupOperationFailureCount = new();
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
 
         private SqlServerManager _sqlServerManager;
         private SmtpService _smtpService;
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
-        private BrowserLogMessage[] _browserLogMessages;
+        private List<BrowserLogMessage> _browserLogMessages;
 
-        private UITestExecutor(
-            UITestManifest testManifest,
-            OrchardCoreUITestExecutorConfiguration configuration,
-            UITestExecutorFailureDumpConfiguration dumpConfiguration,
-            ITestOutputHelper testOutputHelper)
+        private UITestExecutor(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
             _testManifest = testManifest;
             _configuration = configuration;
-            _dumpConfiguration = dumpConfiguration;
-            _testOutputHelper = testOutputHelper;
+            _dumpConfiguration = configuration.FailureDumpConfiguration;
+            _testOutputHelper = configuration.TestOutputHelper;
         }
 
         public ValueTask DisposeAsync()
@@ -106,25 +105,9 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
 
-                var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
-                var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+                if (ex is SetupFailedFastException) throw;
 
-                await CreateFailureDumpAsync(ex, dumpContainerPath, debugInformationPath);
-
-                try
-                {
-                    if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
-                    {
-                        await File.WriteAllTextAsync(
-                            Path.Combine(debugInformationPath, "TestOutput.log"),
-                            concreteTestOutputHelper.Output);
-                    }
-                }
-                catch (Exception testOutputHelperException)
-                {
-                    _testOutputHelper.WriteLine(
-                        $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
-                }
+                await CreateFailureDumpAsync(ex, dumpRootPath, retryCount);
 
                 if (retryCount == _configuration.MaxRetryCount)
                 {
@@ -146,15 +129,33 @@ namespace Lombiq.Tests.UI.Services
             return false;
         }
 
-        private async Task<BrowserLogMessage[]> GetBrowserLogAsync(RemoteWebDriver driver) =>
-            _browserLogMessages ??= (await driver.GetAndEmptyBrowserLogAsync()).ToArray();
-
-        private async Task CreateFailureDumpAsync(Exception ex, string dumpContainerPath, string debugInformationPath)
+        private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
         {
+            if (_browserLogMessages != null) return _browserLogMessages;
+
+            var allMessages = new List<BrowserLogMessage>();
+
+            foreach (var windowHandle in _context.Driver.WindowHandles)
+            {
+                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                _context.Driver.SwitchTo().Window(windowHandle);
+                allMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+            }
+
+            return _browserLogMessages = allMessages;
+        }
+
+        private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
+        {
+            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+            var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+
             try
             {
                 Directory.CreateDirectory(dumpContainerPath);
                 Directory.CreateDirectory(debugInformationPath);
+
+                await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), _testManifest.Name);
 
                 if (_context == null) return;
 
@@ -194,6 +195,23 @@ namespace Lombiq.Tests.UI.Services
                 _testOutputHelper.WriteLine(
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
             }
+
+            try
+            {
+                if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+                {
+                    // While this depends on the directory creation in the above try block it needs to come after the
+                    // catch otherwise the message saved there wouldn't be included.
+
+                    await File.WriteAllTextAsync(
+                        Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                }
+            }
+            catch (Exception testOutputHelperException)
+            {
+                _testOutputHelper.WriteLine(
+                    $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
+            }
         }
 
         private async Task CaptureAppSnapshotAsync(string dumpContainerPath)
@@ -217,36 +235,57 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task SetupAsync()
         {
-            var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
+            try
             {
-                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
-                // config to be available at startup too.
-                _context = await CreateContextAsync();
-
-                if (_configuration.UseSqlServer)
+                var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
-                    // This is only necessary for the setup snapshot.
-                    void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                    if (_configuration.FastFailSetup)
                     {
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
-                        _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                        _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
+                        if (failureCount > _configuration.MaxRetryCount)
+                        {
+                            throw new SetupFailedFastException(failureCount);
+                        }
                     }
 
-                    // This is necessary because a simple subtraction wouldn't remove previous instances of the local
-                    // function. Thus if anything goes wrong between the below delegate registration and it being called
-                    // then it'll remain registered and later during a retry try to run (and fail on the disposed
-                    // SqlServerManager.
-                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                    // Note that the context creation needs to be done here too because the Orchard app needs the
+                    // snapshot config to be available at startup too.
+                    _context = await CreateContextAsync();
+
+                    if (_configuration.UseSqlServer)
+                    {
+                        // This is only necessary for the setup snapshot.
+                        void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                        {
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                            _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                        }
+
+                        // This is necessary because a simple subtraction wouldn't remove previous instances of the
+                        // local function. Thus if anything goes wrong between the below delegate registration and it
+                        // being called then it'll remain registered and later during a retry try to run (and fail on
+                        // the disposed SqlServerManager.
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandler);
-                    _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                    }
+
+                    return (_context, _configuration.SetupOperation(_context));
+                });
+
+                _context ??= await CreateContextAsync();
+
+                _context.GoToRelativeUrl(resultUri.PathAndQuery);
+            }
+            catch (Exception ex) when (ex is not SetupFailedFastException)
+            {
+                if (_configuration.FastFailSetup)
+                {
+                    _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
                 }
 
-                return (_context, _configuration.SetupOperation(_context));
-            });
-
-            _context ??= await CreateContextAsync();
-
-            _context.GoToRelativeUrl(resultUri.PathAndQuery);
+                throw;
+            }
         }
 
         private async Task<UITestContext> CreateContextAsync()
@@ -318,6 +357,8 @@ namespace Lombiq.Tests.UI.Services
             return new UITestContext(_testManifest.Name, _configuration, sqlServerContext, _applicationInstance, atataScope, smtpContext);
         }
 
+        private int GetSetupHashCode() => _configuration.SetupOperation.GetHashCode();
+
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
         /// </summary>
@@ -356,6 +397,27 @@ namespace Lombiq.Tests.UI.Services
 
             configuration.AtataConfiguration.TestName = testManifest.Name;
 
+            var dumpRootPath = PrepareDumpFolder(testManifest, configuration);
+
+            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            {
+                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
+                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            }
+
+            var retryCount = 0;
+            while (true)
+            {
+                await using var instance = new UITestExecutor(testManifest, configuration);
+                if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
+                retryCount++;
+            }
+        }
+
+        private static string PrepareDumpFolder(
+            UITestManifest testManifest,
+            OrchardCoreUITestExecutorConfiguration configuration)
+        {
             var dumpConfiguration = configuration.FailureDumpConfiguration;
             var dumpFolderNameBase = testManifest.Name;
             if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
@@ -371,22 +433,56 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
             }
 
-            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase.MakeFileSystemFriendly());
+            dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
+
+            var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
+
             DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-            if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
+            // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name,
+            // or volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe
+            // both length and characters play a role (a path containing either the same characters or having the same
+            // length would work but not both). Playing safe here.
+
+            try
             {
-                var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(dumpRootPath);
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            }
+            catch (Exception ex) when (
+                (ex is IOException &&
+                    ex.Message.Contains("The filename, directory name, or volume label syntax is incorrect.", StringComparison.InvariantCultureIgnoreCase))
+                || ex is PathTooLongException)
+            {
+                // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which
+                // usually make it long.
+
+                // They're not actually unused.
+#pragma warning disable S1854 // Unused assignments should be removed
+                var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
+                var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
+#pragma warning restore S1854 // Unused assignments should be removed
+
+                // Can't use string.GetHasCode() because that varies between executions.
+                var hashedParameters = Sha256Helper
+                    .ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
+
+                dumpFolderNameBase =
+                    dumpFolderNameBase[0..(openingBracketIndex + 1)] +
+                    hashedParameters +
+                    dumpFolderNameBase[closingBracketIndex..];
+
+                dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
+
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+
+                configuration.TestOutputHelper.WriteLine(
+                    "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +
+                    $"full name ({testManifest.Name}) will be put into the folder to help troubleshooting if the " +
+                    "test fails.");
             }
 
-            var retryCount = 0;
-            while (true)
-            {
-                await using var instance = new UITestExecutor(testManifest, configuration, dumpConfiguration, configuration.TestOutputHelper);
-                if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
-                retryCount++;
-            }
+            return dumpRootPath;
         }
     }
 }
