@@ -26,10 +26,17 @@ namespace Lombiq.Tests.UI.Extensions
                 $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
                 () =>
                 {
-                    if (onlyIfNotAlreadyThere && new Uri(context.Driver.Url) == absoluteUri) return;
+                    if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
                     context.Driver.Navigate().GoToUrl(absoluteUri);
                 });
+
+        public static Uri GetCurrentUri(this UITestContext context) => new Uri(context.Driver.Url);
+
+        public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
+
+        public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
+            new Uri(context.Scope.BaseUri, relativeUrl);
 
         public static void SignOutDirectlyThenSignInDirectlyAndGoToHomepage(
             this UITestContext context,
@@ -70,9 +77,6 @@ namespace Lombiq.Tests.UI.Extensions
             context.SignOutDirectly();
             context.SignInDirectly(email);
         }
-
-        public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
-            new Uri(context.Scope.BaseUri, relativeUrl);
 
         public static T GoToPage<T>(this UITestContext context)
             where T : PageObject<T> =>
