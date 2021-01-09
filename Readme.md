@@ -21,6 +21,7 @@ Highlights:
 ## Table of contents
 
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+- [Making an Orchard Core app testable](Lombiq.Tests.UI/Docs/TestableOrchardCoreApps.md)
 - [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
