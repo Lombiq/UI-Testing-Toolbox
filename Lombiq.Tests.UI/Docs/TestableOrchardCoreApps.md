@@ -8,10 +8,10 @@ Tips on making specific features testable are under the ["Creating tests" page](
 - Tests should be self-contained and not rely on any external dependencies like APIs or CDNs. It should be possible to run the app as such. For static resources always have local copies available with CDN only being a possibility, and disable CDN usage in the setup recipe:
     ```json
     "steps": [
-      {
-        "name": "settings",
-        "UseCdn": false
-      }
+        {
+            "name": "settings",
+            "UseCdn": false
+        }
     ]
     ```
 - If features send out e-mails that you want to test too then you can use the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). For this to work, you need to do two things:
