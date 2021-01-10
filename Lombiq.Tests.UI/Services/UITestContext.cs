@@ -42,13 +42,19 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public SmtpServiceRunningContext SmtpServiceRunningContext { get; }
 
+        /// <summary>
+        /// Gets the context for the currently used Azure Blob Storage folder, if Blob Storage is used for the test.
+        /// </summary>
+        public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
+
         public UITestContext(
             string testName,
             OrchardCoreUITestExecutorConfiguration configuration,
             SqlServerRunningContext sqlServerContext,
             IWebApplicationInstance application,
             AtataScope scope,
-            SmtpServiceRunningContext smtpContext)
+            SmtpServiceRunningContext smtpContext,
+            AzureBlobStorageRunningContext blobStorageContext)
         {
             TestName = testName;
             Configuration = configuration;
@@ -56,6 +62,7 @@ namespace Lombiq.Tests.UI.Services
             Application = application;
             Scope = scope;
             SmtpServiceRunningContext = smtpContext;
+            AzureBlobStorageRunningContext = blobStorageContext;
         }
 
         /// <summary>

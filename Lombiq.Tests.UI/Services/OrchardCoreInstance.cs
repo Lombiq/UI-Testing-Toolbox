@@ -13,9 +13,9 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services
 {
-    public delegate void BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
+    public delegate Task BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
 
-    public delegate void BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
+    public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
     public class OrchardCoreConfiguration
     {
