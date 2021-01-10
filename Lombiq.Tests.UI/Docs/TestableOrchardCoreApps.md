@@ -38,3 +38,4 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
 
         ```
+- If you want the site to use Azure Blob Storage then...

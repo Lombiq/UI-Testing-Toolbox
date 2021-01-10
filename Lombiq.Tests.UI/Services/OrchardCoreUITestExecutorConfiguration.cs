@@ -57,6 +57,14 @@ namespace Lombiq.Tests.UI.Services
         public bool UseSqlServer { get; set; }
         public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new SqlServerConfiguration();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to use Azure Blob Storage as the app's file storage instead of the
+        /// default local file system.
+        /// See <see cref="AzureBlobStorageConfiguration"/> on configuring this.
+        /// </summary>
+        public bool UseAzureBlobStorage { get; set; }
+        public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
+
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
             if (instance == null || AssertAppLogs == null) return;
