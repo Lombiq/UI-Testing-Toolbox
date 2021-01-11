@@ -37,7 +37,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
             services.ConfigureUITesting(_configuration);
         }
         ``` 
-- If features send out e-mails that you want to test too then you can use the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). For this to work, just enable the Email feature in the test setup recipe:
+- Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). You need to enable the Email feature in the test setup recipe:
     ```json
     "steps": [
         {
