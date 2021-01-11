@@ -14,7 +14,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
-- If features send out e-mails that you want to test too then you can use the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). For this to work, you need to do two things:
+- Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). You need to do two things to make it work:
     - Configure the basic SMTP settings from the mentioned test setup recipe:
         ```json
         "steps": [
@@ -26,7 +26,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
             }
         ]
         ```
-    - Since the SMTP port needs to be configured on the fly when the app is launched for test execution you also need to override the port from the `SmtpPort` configuration parameter in the app's `Startup` class:
+    - The SMTP port needs to be configured on the fly when the app is launched for test execution. So you also need to override the port from the `SmtpPort` configuration parameter in the app's `Startup` class:
         ```csharp
         public void ConfigureServices(IServiceCollection services)
         {
