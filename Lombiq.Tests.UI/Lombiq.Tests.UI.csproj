@@ -46,17 +46,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="1.8.0" />
-    <PackageReference Include="Atata.Bootstrap" Version="1.0.0" />
+    <PackageReference Include="Atata" Version="1.9.0" />
+    <PackageReference Include="Atata.Bootstrap" Version="1.1.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="1.4.0" />
-    <PackageReference Include="CliWrap" Version="3.2.4" />
+    <PackageReference Include="CliWrap" Version="3.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="150.4897.1" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.41011.9" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />
     <PackageReference Include="Selenium.Axe" Version="2.0.1" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Shouldly" Version="4.0.1" />
-    <PackageReference Include="WebDriverManager" Version="2.11.0" />
+    <PackageReference Include="Shouldly" Version="4.0.3" />
+    <PackageReference Include="WebDriverManager" Version="2.11.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
