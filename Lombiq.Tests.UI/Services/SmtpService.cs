@@ -44,8 +44,8 @@ namespace Lombiq.Tests.UI.Services
         private CancellationTokenSource _cancellationTokenSource;
 
         [SuppressMessage(
-            "Minor Code Smell",
-            "S3963:\"static\" fields should be initialized inline",
+            "Performance",
+            "CA1810:Initialize reference type static fields inline",
             Justification = "No GetAgentIndexOrDefault() duplication this way.")]
         static SmtpService()
         {
