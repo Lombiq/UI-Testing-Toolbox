@@ -28,7 +28,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ]
     ```
 - If you want to make use of any of the below features then in your web project do the following:
-  1. Add a reference to `Lombiq.Tests.UI.SetupExtensions`.
+  1. Add a reference to `Lombiq.Tests.UI.AppExtensions`.
   2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Startup` class:
         ```csharp
         public void ConfigureServices(IServiceCollection services)
