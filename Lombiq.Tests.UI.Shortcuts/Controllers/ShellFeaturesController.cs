@@ -25,22 +25,22 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
         {
             var feature = GetFeature(featureId);
 
-            if (feature == null) return StatusCode(404);
+            if (feature == null) return NotFound();
 
             await _shellFeatureManager.EnableFeaturesAsync(new[] { feature }, true);
 
-            return StatusCode(200);
+            return Ok();
         }
 
         public async Task<IActionResult> DisableFeatureDirectly(string featureId)
         {
             var feature = GetFeature(featureId);
 
-            if (feature == null) return StatusCode(404);
+            if (feature == null) return NotFound();
 
             await _shellFeatureManager.DisableFeaturesAsync(new[] { feature }, true);
 
-            return StatusCode(200);
+            return Ok();
         }
 
         private IFeatureInfo GetFeature(string featureId) =>
