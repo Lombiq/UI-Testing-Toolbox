@@ -43,5 +43,10 @@ namespace Lombiq.Tests.UI.Helpers
                 }
             }
         }
+
+        public static void CreateDirectoryIfNotExists(string path)
+        {
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+        }
     }
 }

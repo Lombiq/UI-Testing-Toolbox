@@ -157,6 +157,8 @@ namespace Lombiq.Tests.UI.Services
 
         public void Dispose()
         {
+            if (_isDisposed) return;
+
             _isDisposed = true;
 
             DropDatabaseIfExists(CreateServer());
