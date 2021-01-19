@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 
@@ -13,7 +14,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
         /// anything else happening on the login page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
-        public static void SignInDirectly(this UITestContext context, string userName) =>
+        public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" + userName);
 
         /// <summary>
