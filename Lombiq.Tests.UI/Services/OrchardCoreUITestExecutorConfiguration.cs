@@ -18,9 +18,9 @@ namespace Lombiq.Tests.UI.Services
 
     public class OrchardCoreUITestExecutorConfiguration
     {
-        public BrowserConfiguration BrowserConfiguration { get; set; } = new BrowserConfiguration();
+        public BrowserConfiguration BrowserConfiguration { get; set; } = new();
         public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
-        public AtataConfiguration AtataConfiguration { get; set; } = new AtataConfiguration();
+        public AtataConfiguration AtataConfiguration { get; set; } = new();
         public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }
 
         public int MaxRetryCount { get; set; } =
@@ -50,12 +50,31 @@ namespace Lombiq.Tests.UI.Services
         public bool FastFailSetup { get; set; } = true;
 
         public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
-        public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new UITestExecutorFailureDumpConfiguration();
+        public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to launch and use a local SMTP service to test sending out e-mails.
+        /// See <see cref="SmtpServiceConfiguration"/> on configuring this.
+        /// </summary>
         public bool UseSmtpService { get; set; }
-        public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new SmtpServiceConfiguration();
-        public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new AccessibilityCheckingConfiguration();
+        public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new();
+
+        public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use SQL Server as the app's database instead of the default
+        /// SQLite. See <see cref="SqlServerDatabaseConfiguration"/> on configuring this.
+        /// </summary>
         public bool UseSqlServer { get; set; }
-        public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new SqlServerConfiguration();
+        public SqlServerConfiguration SqlServerDatabaseConfiguration { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use Azure Blob Storage as the app's file storage instead of the
+        /// default local file system.
+        /// See <see cref="AzureBlobStorageConfiguration"/> on configuring this.
+        /// </summary>
+        public bool UseAzureBlobStorage { get; set; }
+        public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {

@@ -31,6 +31,7 @@ namespace Lombiq.Tests.UI.Services
 
         private SqlServerManager _sqlServerManager;
         private SmtpService _smtpService;
+        private AzureBlobStorageManager _azureBlobStorageManager;
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
         private List<BrowserLogMessage> _browserLogMessages;
@@ -43,22 +44,15 @@ namespace Lombiq.Tests.UI.Services
             _testOutputHelper = configuration.TestOutputHelper;
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
+            if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
+
             _sqlServerManager?.Dispose();
             _context?.Scope?.Dispose();
 
-            // Only call the truly async part if there is anything to do. Otherwise return default which is the
-            // ValueTask equivalent of Task.CompletedTask.
-            return _smtpService != null || _applicationInstance != null
-                ? DisposeInnerAsync()
-                : default;
-        }
-
-        private async ValueTask DisposeInnerAsync()
-        {
             if (_smtpService != null) await _smtpService.DisposeAsync();
-            if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
+            if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
         }
 
         private async Task<bool> ExecuteAsync(
@@ -231,6 +225,19 @@ namespace Lombiq.Tests.UI.Services
                         $"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
                 }
             }
+
+            if (_azureBlobStorageManager != null)
+            {
+                try
+                {
+                    await _azureBlobStorageManager.TakeSnapshotAsync(appDumpPath);
+                }
+                catch (Exception failureException)
+                {
+                    _testOutputHelper.WriteLine(
+                        $"Taking an Azure Blob Storage snapshot failed with the following exception: {failureException}");
+                }
+            }
         }
 
         private async Task SetupAsync()
@@ -255,10 +262,11 @@ namespace Lombiq.Tests.UI.Services
                     if (_configuration.UseSqlServer)
                     {
                         // This is only necessary for the setup snapshot.
-                        void SqlServerManagerBeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath)
+                        Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
                         {
-                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandler;
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
                             _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+                            return Task.CompletedTask;
                         }
 
                         // This is necessary because a simple subtraction wouldn't remove previous instances of the
@@ -266,8 +274,22 @@ namespace Lombiq.Tests.UI.Services
                         // being called then it'll remain registered and later during a retry try to run (and fail on
                         // the disposed SqlServerManager.
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandler);
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandler;
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+                    }
+
+                    if (_configuration.UseAzureBlobStorage)
+                    {
+                        // This is only necessary for the setup snapshot.
+                        Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
+                        {
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
+                            return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
+                        }
+
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync);
+                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
                     }
 
                     return (_context, _configuration.SetupOperation(_context));
@@ -291,15 +313,16 @@ namespace Lombiq.Tests.UI.Services
         private async Task<UITestContext> CreateContextAsync()
         {
             SqlServerRunningContext sqlServerContext = null;
+            AzureBlobStorageRunningContext azureBlobStorageContext = null;
 
             if (_configuration.UseSqlServer)
             {
                 _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
                 sqlServerContext = _sqlServerManager.CreateDatabase();
 
-                void SqlServerManagerBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
-                    _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandler;
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
                     var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
@@ -307,8 +330,6 @@ namespace Lombiq.Tests.UI.Services
 
                     _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
-                    // This method is not actually async.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
                     var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
 
                     if (!File.Exists(appSettingsPath))
@@ -317,15 +338,45 @@ namespace Lombiq.Tests.UI.Services
                             "The setup snapshot's appsettings.json file wasn't found. This most possibly means that the setup failed.");
                     }
 
-                    var appSettings = JObject.Parse(File.ReadAllText(appSettingsPath));
+                    var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
                     appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
-                    File.WriteAllText(appSettingsPath, appSettings.ToString());
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
+                    await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
                 }
 
                 _configuration.OrchardCoreConfiguration.BeforeAppStart =
-                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SqlServerManagerBeforeAppStartHandler);
-                _configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandler;
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SqlServerManagerBeforeAppStartHandlerAsync);
+                _configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandlerAsync;
+            }
+
+            if (_configuration.UseAzureBlobStorage)
+            {
+                _azureBlobStorageManager = new AzureBlobStorageManager(_configuration.AzureBlobStorageConfiguration);
+                azureBlobStorageContext = await _azureBlobStorageManager.SetupBlobStorageAsync();
+
+                async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                {
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
+
+                    var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+
+                    argumentsBuilder
+                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:BasePath")
+                        .Add(azureBlobStorageContext.BasePath, true);
+                    argumentsBuilder
+                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString")
+                        .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString, true);
+                    argumentsBuilder
+                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ContainerName")
+                        .Add(_configuration.AzureBlobStorageConfiguration.ContainerName, true);
+
+                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+
+                    await _azureBlobStorageManager.RestoreSnapshotAsync(snapshotDirectoryPath);
+                }
+
+                _configuration.OrchardCoreConfiguration.BeforeAppStart =
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(AzureBlobStorageManagerBeforeAppStartHandlerAsync);
+                _configuration.OrchardCoreConfiguration.BeforeAppStart += AzureBlobStorageManagerBeforeAppStartHandlerAsync;
             }
 
             SmtpServiceRunningContext smtpContext = null;
@@ -335,15 +386,17 @@ namespace Lombiq.Tests.UI.Services
                 _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
                 smtpContext = await _smtpService.StartAsync();
 
-                void SmtpServiceBeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+                Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
-                    _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandler;
-                    argumentsBuilder.Add("--SmtpPort").Add(smtpContext.Port, CultureInfo.InvariantCulture);
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
+                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
+                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Host").Add("localhost");
+                    return Task.CompletedTask;
                 }
 
                 _configuration.OrchardCoreConfiguration.BeforeAppStart =
-                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandler);
-                _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandler;
+                    _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandlerAsync);
+                _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
             }
 
             _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
@@ -354,7 +407,14 @@ namespace Lombiq.Tests.UI.Services
                 uri,
                 _configuration);
 
-            return new UITestContext(_testManifest.Name, _configuration, sqlServerContext, _applicationInstance, atataScope, smtpContext);
+            return new UITestContext(
+                _testManifest.Name,
+                _configuration,
+                sqlServerContext,
+                _applicationInstance,
+                atataScope,
+                smtpContext,
+                azureBlobStorageContext);
         }
 
         private int GetSetupHashCode() => _configuration.SetupOperation.GetHashCode();
@@ -402,7 +462,7 @@ namespace Lombiq.Tests.UI.Services
             if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
             {
                 var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-                if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+                DirectoryHelper.CreateDirectoryIfNotExists(directoryPath);
             }
 
             var retryCount = 0;
