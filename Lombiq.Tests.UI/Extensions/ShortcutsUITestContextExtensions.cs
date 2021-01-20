@@ -31,5 +31,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
         public static string GetCurrentUserName(this UITestContext context) =>
             context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
+
+        /// <summary>
+        /// Enables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// </summary>
+        public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
+
+        /// <summary>
+        /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// </summary>
+        public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
     }
 }
