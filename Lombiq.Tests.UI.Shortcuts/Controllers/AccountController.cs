@@ -24,18 +24,18 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
         {
             var user = await _userManager.FindByNameAsync(userName);
 
-            if (user == null) return StatusCode(404);
+            if (user == null) return NotFound();
 
             await _userSignInManager.SignInAsync(user, false);
 
-            return StatusCode(200);
+            return Ok();
         }
 
         public async Task<IActionResult> SignOutDirectly()
         {
             await _userSignInManager.SignOutAsync();
 
-            return StatusCode(200);
+            return Ok();
         }
     }
 }

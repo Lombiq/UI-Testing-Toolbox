@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 
@@ -13,7 +14,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
         /// anything else happening on the login page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
-        public static void SignInDirectly(this UITestContext context, string userName) =>
+        public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" + userName);
 
         /// <summary>
@@ -30,5 +31,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
         public static string GetCurrentUserName(this UITestContext context) =>
             context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
+
+        /// <summary>
+        /// Enables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// </summary>
+        public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
+
+        /// <summary>
+        /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// </summary>
+        public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
     }
 }
