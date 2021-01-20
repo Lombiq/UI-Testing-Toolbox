@@ -1,3 +1,4 @@
+using AngleSharp.Text;
 using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
@@ -75,5 +76,21 @@ namespace Lombiq.Tests.UI.Extensions
                     },
                     timeout,
                     interval));
+
+        /// <summary>
+        /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
+        /// </summary>
+        public static bool IsElementChecked(this UITestContext context, By by) =>
+            context.Get(by.OfAnyVisibility()).GetProperty("checked") == bool.TrueString;
+
+        public static void SetCheckboxValue(this UITestContext context, By by, bool isChecked)
+        {
+            var element = context.Get(by.OfAnyVisibility());
+            var currentValue = element.GetProperty("checked") == bool.TrueString;
+            if (currentValue != isChecked) element.ClickReliably(context);
+        }
+
+        public static int GetIntValue(this UITestContext context, By by) =>
+            context.Get(by).GetAttribute("value").ToInteger(0);
     }
 }
