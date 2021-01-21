@@ -361,13 +361,13 @@ namespace Lombiq.Tests.UI.Services
 
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:BasePath")
-                        .Add(azureBlobStorageContext.BasePath, true);
+                        .Add(azureBlobStorageContext.BasePath);
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString")
-                        .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString, true);
+                        .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ContainerName")
-                        .Add(_configuration.AzureBlobStorageConfiguration.ContainerName, true);
+                        .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
 
                     if (!Directory.Exists(snapshotDirectoryPath)) return;
 
