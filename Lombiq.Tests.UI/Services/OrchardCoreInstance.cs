@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -42,6 +43,10 @@ namespace Lombiq.Tests.UI.Services
         private string _contentRootPath;
         private bool _isDisposed;
 
+        [SuppressMessage(
+            "Performance",
+            "CA1810:Initialize reference type static fields inline",
+            Justification = "No GetAgentIndexOrDefault() duplication this way.")]
         static OrchardCoreInstance()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;

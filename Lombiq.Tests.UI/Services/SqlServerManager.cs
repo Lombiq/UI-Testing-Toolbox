@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -41,6 +42,10 @@ namespace Lombiq.Tests.UI.Services
         private string _databaseName;
         private bool _isDisposed;
 
+        [SuppressMessage(
+            "Performance",
+            "CA1810:Initialize reference type static fields inline",
+            Justification = "No GetAgentIndexOrDefault() duplication this way.")]
         static SqlServerManager()
         {
             var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
