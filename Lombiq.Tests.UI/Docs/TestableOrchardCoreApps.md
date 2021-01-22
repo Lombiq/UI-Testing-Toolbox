@@ -34,7 +34,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         public void ConfigureServices(IServiceCollection services)
         {
             // _configuration is a constructor-injected IConfiguration instance.
-            services.ConfigureUITesting(_configuration);
+            services.AddOrchardCms(builder => builder.ConfigureUITesting(_configuration));
         }
         ``` 
 - Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI (see `OrchardCoreUITestExecutorConfiguration`). You need to enable the Email feature in the test setup recipe:
