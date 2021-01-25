@@ -399,6 +399,17 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
             }
 
+            Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+            {
+                _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
+                argumentsBuilder.Add("--Lombiq_Tests_UI:IsUITesting").Add("true");
+                return Task.CompletedTask;
+            }
+
+            _configuration.OrchardCoreConfiguration.BeforeAppStart =
+                _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
+            _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
+
             _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
             var uri = await _applicationInstance.StartUpAsync();
 

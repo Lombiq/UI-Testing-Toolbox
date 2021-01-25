@@ -6,11 +6,27 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OrchardCoreBuilderExtensions
     {
-        public static OrchardCoreBuilder ConfigureUITesting(this OrchardCoreBuilder builder, IConfiguration configuration) =>
-            builder.ConfigureServices(
+        public static OrchardCoreBuilder ConfigureUITesting(this OrchardCoreBuilder builder, IConfiguration configuration)
+        {
+            if (!configuration.GetValue("Lombiq_Tests_UI:IsUITesting", false)) return builder;
+
+            var smtpPort = configuration.GetValue<string>("Lombiq_Tests_UI_SmtpSettings:Port");
+
+            if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email");
+
+            var blobStorageConnectionString = configuration
+                .GetValue<string>("Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString");
+
+            if (!string.IsNullOrEmpty(blobStorageConnectionString))
+            {
+                builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
+            }
+
+            return builder.ConfigureServices(
                 services => services
                     .PostConfigure<SmtpSettings>(settings => configuration.GetSection("Lombiq_Tests_UI_SmtpSettings").Bind(settings))
                     .PostConfigure<MediaBlobStorageOptions>(options =>
                         configuration.GetSection("Lombiq_Tests_UI_MediaBlobStorageOptions").Bind(options)));
+        }
     }
 }
