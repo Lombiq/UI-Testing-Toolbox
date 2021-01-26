@@ -361,13 +361,13 @@ namespace Lombiq.Tests.UI.Services
 
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:BasePath")
-                        .Add(azureBlobStorageContext.BasePath, true);
+                        .Add(azureBlobStorageContext.BasePath);
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString")
-                        .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString, true);
+                        .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
                     argumentsBuilder
                         .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ContainerName")
-                        .Add(_configuration.AzureBlobStorageConfiguration.ContainerName, true);
+                        .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
 
                     if (!Directory.Exists(snapshotDirectoryPath)) return;
 
@@ -398,6 +398,17 @@ namespace Lombiq.Tests.UI.Services
                     _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandlerAsync);
                 _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
             }
+
+            Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+            {
+                _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
+                argumentsBuilder.Add("--Lombiq_Tests_UI:IsUITesting").Add("true");
+                return Task.CompletedTask;
+            }
+
+            _configuration.OrchardCoreConfiguration.BeforeAppStart =
+                _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
+            _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
             _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
             var uri = await _applicationInstance.StartUpAsync();
