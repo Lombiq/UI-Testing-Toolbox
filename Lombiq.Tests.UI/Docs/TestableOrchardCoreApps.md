@@ -36,7 +36,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
-- Tests should be self-contained and not rely on any external dependencies like APIs or CDNs. It should be possible to run the app as such. For static resources always have local copies available with CDN only being a possibility, and disable CDN usage in the setup recipe:
+- Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app offline. For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
     ```json
     "steps": [
         {
