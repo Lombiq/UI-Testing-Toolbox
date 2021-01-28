@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services;
 using Shouldly;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -17,7 +17,8 @@ namespace Lombiq.Tests.UI.Extensions
                 fetch(url).then(function(response) {
                     callback(response.status);
                 });",
-                url).ShouldBe(statusCode);
+                url)
+            .ShouldBe(statusCode);
 
         /// <summary>
         /// Opens the given URL asynchronously and checks if the response code is 404.
