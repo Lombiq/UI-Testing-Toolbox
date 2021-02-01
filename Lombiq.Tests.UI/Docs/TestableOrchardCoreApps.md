@@ -36,7 +36,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
-- Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app offline. For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
+- Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app completely offline. For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
     ```json
     "steps": [
         {
@@ -45,6 +45,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
+  For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe.
 - Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI. The `OrchardCore.Email` feature will be automatically enabled, as well as the rest of the configuration applied.
 - If you want the site to use Azure Blob Storage then you have to do the following:
   - The `OrchardCore.Media.Azure` feature will be automatically enabled, as well as the rest of the configuration applied.
