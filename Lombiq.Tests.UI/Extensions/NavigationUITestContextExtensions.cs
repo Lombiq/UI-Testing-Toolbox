@@ -184,5 +184,23 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
             context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
+
+        /// <summary>
+        /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
+        /// </summary>
+        public static void AcceptAlert(this UITestContext context)
+        {
+            context.Driver.SwitchTo().Alert().Accept();
+            context.Driver.SwitchTo().DefaultContent();
+        }
+
+        /// <summary>
+        /// Switches control to JS alert box, dismisses it, and switches control back to main document or first frame.
+        /// </summary>
+        public static void DismissAlert(this UITestContext context)
+        {
+            context.Driver.SwitchTo().Alert().Dismiss();
+            context.Driver.SwitchTo().DefaultContent();
+        }
     }
 }
