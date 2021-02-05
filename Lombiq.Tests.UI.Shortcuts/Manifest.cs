@@ -1,4 +1,5 @@
 using OrchardCore.Modules.Manifest;
+using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 
 [assembly: Module(
     Name = "Lombiq UI Testing Toolbox - Shortcuts",
@@ -8,10 +9,10 @@ using OrchardCore.Modules.Manifest;
 )]
 
 [assembly: Feature(
-    Id = "Lombiq.Tests.UI.Shortcuts",
+    Id = Default,
     Name = "Lombiq UI Testing Toolbox - Shortcuts",
     Category = "Development",
-    Description = "WARNING: Only enable this module in the UI testing environment. Provides shortcuts for common operations that UI tests might want to do or check.",
+    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcuts for common operations that UI tests might want to do or check.",
     Dependencies = new[]
     {
         "OrchardCore.ContentManagement",
@@ -19,4 +20,11 @@ using OrchardCore.Modules.Manifest;
         "OrchardCore.DisplayManagement",
         "OrchardCore.Users",
     }
+)]
+
+[assembly: Feature(
+    Id = FeatureToggleTestBench,
+    Name = "Lombiq UI Testing Toolbox - Shortcuts - Feature Toggle Test Bench",
+    Category = "Development",
+    Description = "WARNING: Don't enable this feature by hand. Can be turned on and off to test if feature state changes work."
 )]
