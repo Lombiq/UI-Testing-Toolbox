@@ -246,7 +246,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
-                    if (_configuration.FastFailSetup)
+                    if (_configuration.SetupConfiguration.FastFailSetup)
                     {
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
                         if (failureCount > _configuration.MaxRetryCount)
@@ -292,7 +292,7 @@ namespace Lombiq.Tests.UI.Services
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
                     }
 
-                    return (_context, _configuration.SetupOperation(_context));
+                    return (_context, _configuration.SetupConfiguration.SetupOperation(_context));
                 });
 
                 _context ??= await CreateContextAsync();
@@ -301,7 +301,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {
-                if (_configuration.FastFailSetup)
+                if (_configuration.SetupConfiguration.FastFailSetup)
                 {
                     _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
                 }
@@ -428,7 +428,7 @@ namespace Lombiq.Tests.UI.Services
                 azureBlobStorageContext);
         }
 
-        private int GetSetupHashCode() => _configuration.SetupOperation.GetHashCode();
+        private int GetSetupHashCode() => _configuration.SetupConfiguration.SetupOperation.GetHashCode();
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
@@ -455,14 +455,15 @@ namespace Lombiq.Tests.UI.Services
             var startTime = DateTime.UtcNow;
             DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
 
-            configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = configuration.SetupSnapshotPath;
-            var runSetupOperation = configuration.SetupOperation != null;
+            var setupConfiguration = configuration.SetupConfiguration;
+            configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotPath;
+            var runSetupOperation = setupConfiguration.SetupOperation != null;
 
             if (runSetupOperation)
             {
                 lock (_setupSnapshotManangerLock)
                 {
-                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(configuration.SetupSnapshotPath);
+                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(setupConfiguration.SetupSnapshotPath);
                 }
             }
 
