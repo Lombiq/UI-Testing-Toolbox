@@ -113,14 +113,15 @@ namespace Lombiq.Tests.UI.Services
             _cancellationTokenSource = new CancellationTokenSource();
             var webUIUri = new Uri("http://localhost:" + _webUIPort);
 
-            // Starting smtp4dev with a command like this: dotnet tool run smtp4dev --db="" --smtpport 26 --urls
-            // http://localhost:1234 For the possible command line arguments see
+            // Starting smtp4dev with a command like this:
+            // dotnet.exe tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
+            // For the possible command line arguments see:
             // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
             await Cli
                 .Wrap("dotnet.exe")
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
-                    // For the db parameter the equal sign is needed.
+                    // An empty db parameter means an in-memory DB.
                     .Add("--db").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
                     .Add("--urls").Add(webUIUri.ToString()))
