@@ -44,7 +44,9 @@ namespace Lombiq.Tests.UI.Services
             _testOutputHelper = configuration.TestOutputHelper;
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync() => ShutdownAsync();
+
+        private async ValueTask ShutdownAsync()
         {
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
@@ -242,11 +244,15 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task SetupAsync()
         {
+            var setupConfiguration = _configuration.SetupConfiguration;
+
             try
             {
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
-                    if (_configuration.SetupConfiguration.FastFailSetup)
+                    setupConfiguration.BeforeSetup?.Invoke(_configuration);
+
+                    if (setupConfiguration.FastFailSetup)
                     {
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
                         if (failureCount > _configuration.MaxRetryCount)
@@ -292,16 +298,23 @@ namespace Lombiq.Tests.UI.Services
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
                     }
 
-                    return (_context, _configuration.SetupConfiguration.SetupOperation(_context));
+                    return (_context, setupConfiguration.SetupOperation(_context));
                 });
 
-                _context ??= await CreateContextAsync();
+                // Restart the app after even a fresh setup so all tests run with an app newly started from a snapshot.
+                if (_context != null)
+                {
+                    await ShutdownAsync();
+                    _context = null;
+                }
+
+                _context = await CreateContextAsync();
 
                 _context.GoToRelativeUrl(resultUri.PathAndQuery);
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {
-                if (_configuration.SetupConfiguration.FastFailSetup)
+                if (setupConfiguration.FastFailSetup)
                 {
                     _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
                 }

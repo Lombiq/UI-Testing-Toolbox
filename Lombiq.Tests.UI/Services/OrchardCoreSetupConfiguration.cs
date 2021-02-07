@@ -1,8 +1,11 @@
 using Lombiq.Tests.UI.Constants;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
+    public delegate Task BeforeSetupHandler(OrchardCoreUITestExecutorConfiguration configuration);
+
     /// <summary>
     /// Configuration for the initial setup of an Orchard Core app.
     /// </summary>
@@ -27,5 +30,7 @@ namespace Lombiq.Tests.UI.Services
         public bool FastFailSetup { get; set; } = true;
 
         public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
+
+        public BeforeSetupHandler BeforeSetup { get; set; }
     }
 }
