@@ -64,8 +64,8 @@ namespace Lombiq.Tests.UI.Services
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
             // a local tool (on local tools see:
             // https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use). The local tool manifest was
-            // already created with dotnet new tool-manifest and the tool installed with dotnet tool install
-            // Rnwood.Smtp4dev --version "3.1.0-*"
+            // already created with dotnet new tool-manifest and the tool installed with:
+            // dotnet tool install Rnwood.Smtp4dev --version "3.1.0-*"
             var dotnetToolsConfigFilePath = Path.Combine(".config", "dotnet-tools.json");
 
             if (!File.Exists(dotnetToolsConfigFilePath))
