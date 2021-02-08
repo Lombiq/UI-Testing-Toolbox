@@ -67,7 +67,7 @@ namespace Lombiq.Tests.UI.Services
             _port = _portLeaseManager.LeaseAvailableRandomPort();
             var url = UrlPrefix + _port;
 
-            _testOutputHelper.WriteLineTimestamped("The generated URL for the Orchard Core instance is \"{0}\".", url);
+            _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
 
             CreateContentRootFolder();
 
