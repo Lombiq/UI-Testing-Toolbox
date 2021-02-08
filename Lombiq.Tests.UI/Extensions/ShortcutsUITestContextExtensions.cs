@@ -48,8 +48,8 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
 
         /// <summary>
-        /// Turns the Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench feature on, then off, and checks if the operation
-        /// indeed worked. This can be used to test if anything breaks when a feature is enabled or disabled.
+        /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
+        /// operations indeed worked. This can be used to test if anything breaks when a feature is enabled or disabled.
         /// </summary>
         public static void ExecuteAndAssertTestFeatureToggle(this UITestContext context)
         {
