@@ -64,7 +64,7 @@ namespace Lombiq.Tests.UI.Services
         {
             var startTime = DateTime.UtcNow;
 
-            _testOutputHelper.WriteLineTimestampedAndDebug("Starting the execution of {0}.", _testManifest.Name);
+            _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
             try
             {
@@ -129,7 +129,7 @@ namespace Lombiq.Tests.UI.Services
             finally
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Finishing the execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
+                    "Finishing execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
             }
 
             return false;
@@ -258,8 +258,12 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
+                _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
+
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
+
                     setupConfiguration.BeforeSetup?.Invoke(_configuration);
 
                     if (setupConfiguration.FastFailSetup)
@@ -308,8 +312,12 @@ namespace Lombiq.Tests.UI.Services
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
                     }
 
-                    return (_context, setupConfiguration.SetupOperation(_context));
+                    var result = (_context, setupConfiguration.SetupOperation(_context));
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
+                    return result;
                 });
+
+                _testOutputHelper.WriteLineTimestampedAndDebug("Finished waiting for the setup operation.");
 
                 // Restart the app after even a fresh setup so all tests run with an app newly started from a snapshot.
                 if (_context != null)
