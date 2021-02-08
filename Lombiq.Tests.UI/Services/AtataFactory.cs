@@ -50,8 +50,9 @@ namespace Lombiq.Tests.UI.Services
                             i < maxTryCount - 1)
                         {
                             i++;
-                            testOutputHelper.WriteLine(
-                                $"While creating the web driver failed with the following exception, it'll be retried {maxTryCount - i} more time(s). Exception: {ex}");
+                            testOutputHelper.WriteLineTimestampedAndDebug(
+                                "While creating the web driver failed with the following exception, it'll be retried {0} more time(s). Exception: {ex}",
+                                maxTryCount - i);
                         }
                         else
                         {
