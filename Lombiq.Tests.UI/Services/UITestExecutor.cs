@@ -130,7 +130,6 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     "Finishing the execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
-                await File.AppendAllTextAsync(@"D:\Projects\Clients\Finitive\Output.txt", ((TestOutputHelper)_testOutputHelper).Output);
             }
 
             return false;
