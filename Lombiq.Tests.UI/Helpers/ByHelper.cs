@@ -11,11 +11,11 @@ namespace Lombiq.Tests.UI.Helpers
     public static class ByHelper
     {
         /// <summary>
-        /// Returns an XPath selector for an email in the list with the given subject.
+        /// Returns an XPath selector for an email in the list whose headers contain the text <paramref name="text"/>.
         /// </summary>
-        public static By SmtpInboxRow(string subject) =>
+        public static By SmtpInboxRow(string text) =>
             By
-                .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonConvert.SerializeObject(subject)})]")
+                .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonConvert.SerializeObject(text)})]")
                 .Within(TimeSpan.FromMinutes(2));
     }
 }
