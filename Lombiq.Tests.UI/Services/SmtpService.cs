@@ -64,8 +64,8 @@ namespace Lombiq.Tests.UI.Services
             // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as
             // a local tool (on local tools see:
             // https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use). The local tool manifest was
-            // already created with dotnet new tool-manifest and the tool installed with dotnet tool install
-            // Rnwood.Smtp4dev --version "3.1.0-*"
+            // already created with dotnet new tool-manifest and the tool installed with:
+            // dotnet tool install Rnwood.Smtp4dev --version "3.1.0-*"
             var dotnetToolsConfigFilePath = Path.Combine(".config", "dotnet-tools.json");
 
             if (!File.Exists(dotnetToolsConfigFilePath))
@@ -113,14 +113,15 @@ namespace Lombiq.Tests.UI.Services
             _cancellationTokenSource = new CancellationTokenSource();
             var webUIUri = new Uri("http://localhost:" + _webUIPort);
 
-            // Starting smtp4dev with a command like this: dotnet tool run smtp4dev --db="" --smtpport 26 --urls
-            // http://localhost:1234 For the possible command line arguments see
+            // Starting smtp4dev with a command like this:
+            // dotnet.exe tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
+            // For the possible command line arguments see:
             // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
             await Cli
                 .Wrap("dotnet.exe")
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
-                    // For the db parameter the equal sign is needed.
+                    // An empty db parameter means an in-memory DB.
                     .Add("--db").Add(string.Empty)
                     .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
                     .Add("--urls").Add(webUIUri.ToString()))

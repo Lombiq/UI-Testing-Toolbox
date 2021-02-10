@@ -24,14 +24,14 @@ namespace Lombiq.Tests.UI.Services
 
         public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
         {
-            DebugHelper.WriteTimestampedLine("Entering SynchronizingWebApplicationSnapshotManager semaphore.");
+            DebugHelper.WriteLineTimestamped("Entering SynchronizingWebApplicationSnapshotManager semaphore.");
 
             await _semaphore.WaitAsync();
             try
             {
                 if (_snapshotCreated) return _resultUri;
 
-                DebugHelper.WriteTimestampedLine("Creating snapshot.");
+                DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
                 // Always start the current test run with a fresh snapshot.
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(_snapshotDirectoryPath);
@@ -40,7 +40,7 @@ namespace Lombiq.Tests.UI.Services
                 await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);
                 await result.Context.Application.ResumeAsync();
 
-                DebugHelper.WriteTimestampedLine("Finished snapshot.");
+                DebugHelper.WriteLineTimestamped("Finished snapshot.");
 
                 // At the end so if any exception happens above then it won' be mistakenly set to true.
                 _snapshotCreated = true;
@@ -49,7 +49,7 @@ namespace Lombiq.Tests.UI.Services
             }
             finally
             {
-                DebugHelper.WriteTimestampedLine("Exiting SynchronizingWebApplicationSnapshotManager semaphore.");
+                DebugHelper.WriteLineTimestamped("Exiting SynchronizingWebApplicationSnapshotManager semaphore.");
                 _semaphore.Release();
             }
         }
