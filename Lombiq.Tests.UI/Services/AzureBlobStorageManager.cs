@@ -114,6 +114,7 @@ namespace Lombiq.Tests.UI.Services
                 await blobProcessor(_blobContainer.GetBlobClient(blob.Name));
             }
         }
+
         private async Task CreateSnapShotAsync(string mediaFolderPath)
         {
             var page = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
