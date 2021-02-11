@@ -75,7 +75,7 @@ namespace Lombiq.Tests.UI.Services
             var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
 
             DirectoryHelper.CreateDirectoryIfNotExists(mediaFolderPath);
-            return CreateSnapShot(mediaFolderPath);
+            return CreateSnapShotAsync(mediaFolderPath);
         }
 
         public async Task RestoreSnapshotAsync(string snapshotDirectoryPath)
@@ -114,7 +114,7 @@ namespace Lombiq.Tests.UI.Services
                 await blobProcessor(_blobContainer.GetBlobClient(blob.Name));
             }
         }
-        private async Task CreateSnapShot(string mediaFolderPath)
+        private async Task CreateSnapShotAsync(string mediaFolderPath)
         {
             var page = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
             await foreach (var blob in page)
