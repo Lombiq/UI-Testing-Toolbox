@@ -42,10 +42,11 @@ namespace Lombiq.Tests.UI
             var configuration = new OrchardCoreUITestExecutorConfiguration
             {
                 OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
-                SetupOperation = setupOperation,
                 TestOutputHelper = _testOutputHelper,
                 BrowserConfiguration = { Browser = browser },
             };
+
+            configuration.SetupConfiguration.SetupOperation = setupOperation;
 
             changeConfiguration?.Invoke(configuration);
 
@@ -83,7 +84,7 @@ namespace Lombiq.Tests.UI
                 null,
                 configuration =>
                 {
-                    configuration.SetupSnapshotPath = appFolder;
+                    configuration.SetupConfiguration.SetupSnapshotPath = appFolder;
                     changeConfiguration?.Invoke(configuration);
                 });
         }

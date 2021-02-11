@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System.Drawing;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -35,7 +36,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="size">The outer size of the browser window.</param>
         public static void SetBrowserSize(this UITestContext context, Size size)
         {
-            context.Scope.AtataContext.Log.Info($"Set window size to {size.Width}x{size.Height}.");
+            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                "Set window size to {0}x{1}.", size.Width, size.Height);
             context.Driver.Manage().Window.Size = size;
         }
     }

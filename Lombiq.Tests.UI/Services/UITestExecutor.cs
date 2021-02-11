@@ -44,7 +44,9 @@ namespace Lombiq.Tests.UI.Services
             _testOutputHelper = configuration.TestOutputHelper;
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync() => ShutdownAsync();
+
+        private async ValueTask ShutdownAsync()
         {
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
@@ -57,10 +59,13 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task<bool> ExecuteAsync(
             int retryCount,
-            DateTime startTime,
             bool runSetupOperation,
             string dumpRootPath)
         {
+            var startTime = DateTime.UtcNow;
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
+
             try
             {
                 if (runSetupOperation) await SetupAsync();
@@ -97,7 +102,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                _testOutputHelper.WriteLine($"The test failed with the following exception: {ex}");
+                _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
 
                 if (ex is SetupFailedFastException) throw;
 
@@ -106,18 +111,25 @@ namespace Lombiq.Tests.UI.Services
                 if (retryCount == _configuration.MaxRetryCount)
                 {
                     var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
-                    _testOutputHelper.WriteLine(
-                        $"The test was attempted {retryCount + 1} time(s) and won't be retried anymore. You can see " +
-                        $"more details on why it's failing in the FailureDumps folder: {dumpFolderAbsolutePath}");
+
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
+                            "on why it's failing in the FailureDumps folder: {1}",
+                        retryCount + 1,
+                        dumpFolderAbsolutePath);
+
                     throw;
                 }
 
-                _testOutputHelper.WriteLine(
-                    $"The test was attempted {retryCount + 1} time(s). {_configuration.MaxRetryCount - retryCount} more attempt(s) will be made.");
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "The test was attempted {0} time(s). {1} more attempt(s) will be made.",
+                    retryCount + 1,
+                    _configuration.MaxRetryCount - retryCount);
             }
             finally
             {
-                DebugHelper.WriteTimestampedLine($"Finishing the execution of {_testManifest.Name}, total time: {DateTime.UtcNow - startTime}.");
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Finishing execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
             }
 
             return false;
@@ -186,7 +198,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception dumpException)
             {
-                _testOutputHelper.WriteLine(
+                _testOutputHelper.WriteLineTimestampedAndDebug(
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
             }
 
@@ -221,7 +233,7 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception failureException)
                 {
-                    _testOutputHelper.WriteLine(
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
                         $"Taking an SQL Server DB snapshot failed with the following exception: {failureException}");
                 }
             }
@@ -234,7 +246,7 @@ namespace Lombiq.Tests.UI.Services
                 }
                 catch (Exception failureException)
                 {
-                    _testOutputHelper.WriteLine(
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
                         $"Taking an Azure Blob Storage snapshot failed with the following exception: {failureException}");
                 }
             }
@@ -242,11 +254,19 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task SetupAsync()
         {
+            var setupConfiguration = _configuration.SetupConfiguration;
+
             try
             {
+                _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
+
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
-                    if (_configuration.FastFailSetup)
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
+
+                    setupConfiguration.BeforeSetup?.Invoke(_configuration);
+
+                    if (setupConfiguration.FastFailSetup)
                     {
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
                         if (failureCount > _configuration.MaxRetryCount)
@@ -292,16 +312,27 @@ namespace Lombiq.Tests.UI.Services
                         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
                     }
 
-                    return (_context, _configuration.SetupOperation(_context));
+                    var result = (_context, setupConfiguration.SetupOperation(_context));
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
+                    return result;
                 });
 
-                _context ??= await CreateContextAsync();
+                _testOutputHelper.WriteLineTimestampedAndDebug("Finished waiting for the setup operation.");
+
+                // Restart the app after even a fresh setup so all tests run with an app newly started from a snapshot.
+                if (_context != null)
+                {
+                    await ShutdownAsync();
+                    _context = null;
+                }
+
+                _context = await CreateContextAsync();
 
                 _context.GoToRelativeUrl(resultUri.PathAndQuery);
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {
-                if (_configuration.FastFailSetup)
+                if (setupConfiguration.FastFailSetup)
                 {
                     _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
                 }
@@ -428,7 +459,7 @@ namespace Lombiq.Tests.UI.Services
                 azureBlobStorageContext);
         }
 
-        private int GetSetupHashCode() => _configuration.SetupOperation.GetHashCode();
+        private int GetSetupHashCode() => _configuration.SetupConfiguration.SetupOperation.GetHashCode();
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
@@ -452,17 +483,17 @@ namespace Lombiq.Tests.UI.Services
 
         private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
-            var startTime = DateTime.UtcNow;
-            DebugHelper.WriteTimestampedLine($"Starting the execution of {testManifest.Name}.");
+            configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Starting preparation for {0}.", testManifest.Name);
 
-            configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = configuration.SetupSnapshotPath;
-            var runSetupOperation = configuration.SetupOperation != null;
+            var setupConfiguration = configuration.SetupConfiguration;
+            configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotPath;
+            var runSetupOperation = setupConfiguration.SetupOperation != null;
 
             if (runSetupOperation)
             {
                 lock (_setupSnapshotManangerLock)
                 {
-                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(configuration.SetupSnapshotPath);
+                    _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(setupConfiguration.SetupSnapshotPath);
                 }
             }
 
@@ -476,11 +507,13 @@ namespace Lombiq.Tests.UI.Services
                 DirectoryHelper.CreateDirectoryIfNotExists(directoryPath);
             }
 
+            configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
+
             var retryCount = 0;
             while (true)
             {
                 await using var instance = new UITestExecutor(testManifest, configuration);
-                if (await instance.ExecuteAsync(retryCount, startTime, runSetupOperation, dumpRootPath)) return;
+                if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
                 retryCount++;
             }
         }
@@ -547,10 +580,10 @@ namespace Lombiq.Tests.UI.Services
 
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-                configuration.TestOutputHelper.WriteLine(
+                configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                     "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +
-                    $"full name ({testManifest.Name}) will be put into the folder to help troubleshooting if the " +
-                    "test fails.");
+                        "full name ({0}) will be put into the folder to help troubleshooting if the test fails.",
+                    testManifest.Name);
             }
 
             return dumpRootPath;

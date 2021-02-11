@@ -1,6 +1,6 @@
 namespace Lombiq.Tests.UI.Pages
 {
-    public class OrchardCoreSetupConfiguration
+    public class OrchardCoreSetupParameters
     {
         public string LanguageValue { get; set; } = "en";
         public string SiteName { get; set; } = "Test Site";
