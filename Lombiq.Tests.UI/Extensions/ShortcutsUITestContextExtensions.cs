@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
+using System.Net;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -18,7 +19,9 @@ namespace Lombiq.Tests.UI.Extensions
         /// anything else happening on the login page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" + userName);
+            context.GoToRelativeUrl(
+                "/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" +
+                WebUtility.UrlEncode(userName));
 
         /// <summary>
         /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the
