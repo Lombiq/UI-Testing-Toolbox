@@ -75,7 +75,16 @@ namespace Lombiq.Tests.UI.Services
             var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
 
             DirectoryHelper.CreateDirectoryIfNotExists(mediaFolderPath);
-            return CreateSnapShotAsync(mediaFolderPath);
+
+            return IterateThroughBlobsAsync(
+                blobClient =>
+                {
+                    var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
+                    var blobPath = blobUrl.Replace("/", Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase);
+                    var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
+                    DirectoryHelper.CreateDirectoryIfNotExists(Path.GetDirectoryName(blobFullPath));
+                    return blobClient.DownloadToAsync(blobFullPath);
+                });
         }
 
         public async Task RestoreSnapshotAsync(string snapshotDirectoryPath)
@@ -108,26 +117,12 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessor)
         {
-            var page = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath);
-            await foreach (var blob in page)
-            {
-                await blobProcessor(_blobContainer.GetBlobClient(blob.Name));
-            }
-        }
-
-        private async Task CreateSnapShotAsync(string mediaFolderPath)
-        {
             var page = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
             await foreach (var blob in page)
             {
                 foreach (var blobItem in blob.Values)
                 {
-                    var blobClient = _blobContainer.GetBlobClient(blobItem.Name);
-                    var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
-                    var blobPath = blobUrl.Replace("/", Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase);
-                    var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
-                    DirectoryHelper.CreateDirectoryIfNotExists(Path.GetDirectoryName(blobFullPath));
-                    await blobClient.DownloadToAsync(blobFullPath);
+                    await blobProcessor(_blobContainer.GetBlobClient(blobItem.Name));
                 }
             }
         }

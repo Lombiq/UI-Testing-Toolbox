@@ -113,7 +113,7 @@ namespace Lombiq.Tests.UI.Services
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
-            if (_configuration.BeforeTakeSnapshot != null) await _configuration.BeforeTakeSnapshot?.Invoke(_contentRootPath, snapshotDirectoryPath);
+            if (_configuration.BeforeTakeSnapshot != null) await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
         }

@@ -264,7 +264,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup?.Invoke(_configuration);
+                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
                     if (setupConfiguration.FastFailSetup)
                     {
