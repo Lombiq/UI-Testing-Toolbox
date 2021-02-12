@@ -117,12 +117,12 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessor)
         {
-            var page = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
-            await foreach (var blob in page)
+            var pages = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
+            await foreach (var page in pages)
             {
-                foreach (var blobItem in blob.Values)
+                foreach (var blob in page.Values)
                 {
-                    await blobProcessor(_blobContainer.GetBlobClient(blobItem.Name));
+                    await blobProcessor(_blobContainer.GetBlobClient(blob.Name));
                 }
             }
         }
