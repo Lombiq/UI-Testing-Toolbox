@@ -93,7 +93,7 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    // There is no other option here to wait for the invoked Tasks.
+                    // There is no other option here than to wait for the invoked Tasks.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
                     _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
