@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Extensions
     public static class ReliabilityUITestContextExtensions
     {
         /// <summary>
-        /// Trying to execute an operation until the given element exists.
+        /// Tries to execute an operation until the given element exists.
         /// </summary>
         /// <param name="process">Operation to execute.</param>
         /// <param name="elementToWaitFor">Selector of the element that's required to exist.</param>
@@ -40,7 +40,7 @@ namespace Lombiq.Tests.UI.Extensions
                 interval);
 
         /// <summary>
-        /// Trying to execute an operation until the given element goes missing.
+        /// Tries to execute an operation until the given element goes missing.
         /// </summary>
         /// <param name="process">Operation to execute.</param>
         /// <param name="elementToWaitForGoMissing">Selector of the element that's required to go missing.</param>
