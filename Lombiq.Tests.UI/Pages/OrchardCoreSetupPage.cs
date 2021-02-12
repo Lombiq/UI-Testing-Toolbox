@@ -62,39 +62,39 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupConfiguration configuration = null)
+        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
-            configuration ??= new OrchardCoreSetupConfiguration();
+            parameters ??= new OrchardCoreSetupParameters();
 
-            var page = Language.Set(configuration.LanguageValue)
-                .SiteName.Set(configuration.SiteName)
-                .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", configuration.RecipeId)).Click()
-                .DatabaseProvider.Set(configuration.DatabaseProvider);
+            var page = Language.Set(parameters.LanguageValue)
+                .SiteName.Set(parameters.SiteName)
+                .Recipe.Controls.CreateLink("TestRecipe", new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click()
+                .DatabaseProvider.Set(parameters.DatabaseProvider);
 
-            if (!string.IsNullOrWhiteSpace(configuration.SiteTimeZoneValue))
+            if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
             {
-                page.SiteTimeZone.Set(configuration.SiteTimeZoneValue);
+                page.SiteTimeZone.Set(parameters.SiteTimeZoneValue);
             }
 
-            if (configuration.DatabaseProvider != DatabaseType.Sqlite)
+            if (parameters.DatabaseProvider != DatabaseType.Sqlite)
             {
-                if (string.IsNullOrEmpty(configuration.ConnectionString))
+                if (string.IsNullOrEmpty(parameters.ConnectionString))
                 {
                     throw new InvalidOperationException(
-                        $"{nameof(OrchardCoreSetupConfiguration)}.{nameof(configuration.DatabaseProvider)}: " +
+                        $"{nameof(OrchardCoreSetupParameters)}.{nameof(parameters.DatabaseProvider)}: " +
                         "If the selected database provider is other than SQLite a connection string must be provided.");
                 }
 
-                if (!string.IsNullOrEmpty(configuration.TablePrefix)) page.TablePrefix.Set(configuration.TablePrefix);
-                page.ConnectionString.Set(configuration.ConnectionString);
+                if (!string.IsNullOrEmpty(parameters.TablePrefix)) page.TablePrefix.Set(parameters.TablePrefix);
+                page.ConnectionString.Set(parameters.ConnectionString);
             }
 
-            context.ClickAndFillInWithRetries(By.Name(nameof(Email)), configuration.Email);
+            context.ClickAndFillInWithRetries(By.Name(nameof(Email)), parameters.Email);
 
             return page
-                .UserName.Set(configuration.UserName)
-                .Password.Set(configuration.Password)
-                .PasswordConfirmation.Set(configuration.Password)
+                .UserName.Set(parameters.UserName)
+                .Password.Set(parameters.Password)
+                .PasswordConfirmation.Set(parameters.Password)
                 .FinishSetup.Click();
         }
     }
