@@ -93,7 +93,10 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder);
+                    // There is no other option here than to wait for the invoked Tasks.
+#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
+                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
+#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 });
 
             await StartOrchardAppAsync();
@@ -113,7 +116,7 @@ namespace Lombiq.Tests.UI.Services
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
-            _configuration.BeforeTakeSnapshot?.Invoke(_contentRootPath, snapshotDirectoryPath);
+            if (_configuration.BeforeTakeSnapshot != null) await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
         }
