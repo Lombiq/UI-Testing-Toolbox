@@ -145,7 +145,7 @@ namespace Lombiq.Tests.UI.Services
 
             _portLeaseManager.StopLease(_port);
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath);
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
         }
 
         private void CreateContentRootFolder()
