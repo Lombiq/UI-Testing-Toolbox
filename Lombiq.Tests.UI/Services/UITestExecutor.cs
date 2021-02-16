@@ -264,7 +264,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    setupConfiguration.BeforeSetup?.Invoke(_configuration);
+                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
                     if (setupConfiguration.FastFailSetup)
                     {
@@ -512,8 +512,17 @@ namespace Lombiq.Tests.UI.Services
             var retryCount = 0;
             while (true)
             {
-                await using var instance = new UITestExecutor(testManifest, configuration);
-                if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                try
+                {
+                    await using var instance = new UITestExecutor(testManifest, configuration);
+                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                }
+                catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
+                {
+                    configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                        $"Unhandled exception during text execution: {ex}.");
+                }
+
                 retryCount++;
             }
         }
