@@ -2,7 +2,11 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
+using System;
 using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -63,5 +67,9 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
         }
+
+        public static void PurgeAzureCacheDirectly(this UITestContext context) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/AzureCache/PurgeAzureCacheDirectly");
+
     }
 }
