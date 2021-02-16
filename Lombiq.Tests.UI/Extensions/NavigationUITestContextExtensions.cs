@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -165,6 +166,12 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
             context.ExecuteScript($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
+
+        public static DateTime GetDatePicker(this UITestContext context, string id) =>
+            DateTime.ParseExact(
+                context.Get(By.Id(id)).GetAttribute("value"),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture);
 
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
