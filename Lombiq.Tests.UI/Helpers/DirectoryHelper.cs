@@ -6,12 +6,11 @@ namespace Lombiq.Tests.UI.Helpers
 {
     public static class DirectoryHelper
     {
-        public static void SafelyDeleteDirectoryIfExists(string path)
+        public static void SafelyDeleteDirectoryIfExists(string path, int maxTryCount = 10)
         {
             if (!Directory.Exists(path)) return;
 
             var tryCount = 0;
-            const int maxTryCount = 10;
 
             while (true)
             {
