@@ -19,6 +19,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.ContentTypes",
         "OrchardCore.DisplayManagement",
         "OrchardCore.Users",
+        "OrchardCore.Media",
     }
 )]
 
@@ -27,4 +28,15 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Name = "Lombiq UI Testing Toolbox - Shortcuts - Feature Toggle Test Bench",
     Category = "Development",
     Description = "WARNING: Don't enable this feature by hand. Can be turned on and off to test if feature state changes work."
+)]
+
+[assembly: Feature(
+    Id = AzureCachePurgeController,
+    Name = "Lombiq UI Testing Toolbox - Shortcuts - Azure Cache Purge Controller",
+    Category = "Development",
+    Description = "WARNING: Don't enable this feature by hand. Can be turned on and off to test if feature state changes work.",
+    Dependencies = new[]
+    {
+        "OrchardCore.Media.Cache",
+    }
 )]

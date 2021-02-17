@@ -6,5 +6,6 @@ namespace Lombiq.Tests.UI.Shortcuts
 
         public const string Default = Area;
         public const string FeatureToggleTestBench = Default + ".FeatureToggleTestBench";
+        public const string AzureCachePurgeController = Default + ".AzureCachePurgeController";
     }
 }
