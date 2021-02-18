@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
 {
-    [Feature(ShortcutsFeatureIds.AzureCachePurgeController)]
-    public class AzureCachePurgeController : Controller
+    [Feature(ShortcutsFeatureIds.MediaCachePurge)]
+    public class MediaCachePurgeController : Controller
     {
         private readonly IMediaFileStoreCache _mediaFileStoreCache;
 
-        public AzureCachePurgeController(IMediaFileStoreCache mediaFileStoreCache)
+        public MediaCachePurgeController(IMediaFileStoreCache mediaFileStoreCache)
             => _mediaFileStoreCache = mediaFileStoreCache;
 
-        public async Task<IActionResult> PurgeAzureCacheDirectly()
+        public async Task<IActionResult> PurgeMediaCacheDirectly()
         {
             var hasErrors = await _mediaFileStoreCache.PurgeAsync();
 
-            return hasErrors ? NotFound() : Ok();
+            return hasErrors ? StatusCode(500) : Ok();
         }
     }
 }

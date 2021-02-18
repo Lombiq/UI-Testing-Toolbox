@@ -64,11 +64,25 @@ namespace Lombiq.Tests.UI.Extensions
             context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
         }
 
-        public static void PurgeAzureCacheDirectly(this UITestContext context)
+        /// <summary>
+        /// Purges the media cache without using any UI operations. Returns status code 500 in case of an error during
+        /// cache clear.
+        /// </summary>
+        /// <param name="toggleTheFeature">In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't
+        /// been turned on yet, then set true.</param>
+        public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = false)
         {
-            context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.AzureCachePurgeController");
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/AzureCachePurge/PurgeAzureCacheDirectly");
-            context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.AzureCachePurgeController");
+            if (toggleTheFeature)
+            {
+                context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            }
+
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/MediaCachePurge/PurgeMediaCacheDirectly");
+
+            if (toggleTheFeature)
+            {
+                context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            }
         }
     }
 }
