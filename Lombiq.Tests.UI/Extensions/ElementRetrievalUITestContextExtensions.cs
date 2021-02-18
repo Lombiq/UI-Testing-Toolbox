@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Shouldly;
+using System;
 using System.Collections.ObjectModel;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -68,9 +69,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// Verifies that publication has succeeded.
         /// </summary>
         /// <param name="matchText">If not null or empty, the element should contain its value.</param>
-        public static void ShouldBeSuccess(this UITestContext context, string matchText)
+        /// <param name="withinMinutes">If greater than 0, the selector will wait for that many minutes.</param>
+        public static void ShouldBeSuccess(this UITestContext context, string matchText = null, int withinMinutes = 0)
         {
-            var element = context.Get(By.CssSelector(".message-success"));
+            var by = By.CssSelector(".message-success");
+            if (withinMinutes > 0) by = by.Within(TimeSpan.FromMinutes(withinMinutes));
+
+            var element = context.Get(by);
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
         }
 
