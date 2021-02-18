@@ -57,6 +57,9 @@ namespace Lombiq.Tests.UI.Extensions
         public static bool Missing(this UITestContext context, By by) =>
             context.ExecuteLogged(nameof(Missing), by, () => context.CreateSearchContext().Missing(by));
 
+        public static void ShouldHaveNoValidationErrors(this UITestContext context) =>
+            context.Missing(By.CssSelector(".validation-summary-errors li"));
+
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new ExtendedSearchContext<RemoteWebDriver>(
                 context.Driver,
