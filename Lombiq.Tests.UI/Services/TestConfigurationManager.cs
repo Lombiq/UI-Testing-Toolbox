@@ -1,7 +1,6 @@
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Globalization;
-using System.IO;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -17,8 +16,9 @@ namespace Lombiq.Tests.UI.Services
     /// </remarks>
     public static class TestConfigurationManager
     {
-        private static readonly JObject _fileConfiguration =
-            JObject.Parse(File.Exists("TestConfiguration.json") ? File.ReadAllText("TestConfiguration.json") : "{}");
+        private static readonly IConfiguration _configuration;
+
+        static TestConfigurationManager() => _configuration = BuildConfiguration();
 
         public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true), CultureInfo.InvariantCulture);
 
@@ -45,17 +45,18 @@ namespace Lombiq.Tests.UI.Services
 
         public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
         {
-            var prefixedKey = "Lombiq.Tests.UI." + key;
-            var config = Environment.GetEnvironmentVariable(prefixedKey);
-
-            if (string.IsNullOrEmpty(config))
-            {
-                config = _fileConfiguration[key]?.ToString();
-            }
+            var prefixedKey = "Lombiq_Tests_UI:" + key;
+            var config = _configuration.GetValue<string>(prefixedKey);
 
             return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
-                ? throw new InvalidOperationException($"The configuration with the key {key} was null or empty.")
+                ? throw new InvalidOperationException($"The configuration with the key {prefixedKey} was null or empty.")
                 : config;
         }
+
+        private static IConfiguration BuildConfiguration() =>
+            new ConfigurationBuilder()
+                .AddJsonFile("TestConfiguration.json", true, false)
+                .AddEnvironmentVariables()
+                .Build();
     }
 }
