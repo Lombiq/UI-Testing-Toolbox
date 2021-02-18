@@ -69,11 +69,11 @@ namespace Lombiq.Tests.UI.Extensions
         /// Verifies that publishing a content item has succeeded.
         /// </summary>
         /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
-        /// <param name="withinMinutes">If greater than 0, the selector will wait for that many minutes.</param>
-        public static void ShouldBeSuccess(this UITestContext context, string matchText = null, int withinMinutes = 0)
+        /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
+        public static void ShouldBeSuccess(this UITestContext context, string matchText = null, TimeSpan? within = null)
         {
             var by = By.CssSelector(".message-success");
-            if (withinMinutes > 0) by = by.Within(TimeSpan.FromMinutes(withinMinutes));
+            if (within is { } timeSpan) by = by.Within(timeSpan);
 
             var element = context.Get(by);
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
