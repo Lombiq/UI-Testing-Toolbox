@@ -46,9 +46,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="1.9.0" />
+    <PackageReference Include="Atata" Version="1.10.0" />
     <PackageReference Include="Atata.Bootstrap" Version="1.1.0" />
-    <PackageReference Include="Atata.WebDriverExtras" Version="1.4.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="1.5.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.7.0" />
     <PackageReference Include="CliWrap" Version="3.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
