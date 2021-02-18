@@ -66,9 +66,9 @@ namespace Lombiq.Tests.UI.Extensions
             context.Missing(By.CssSelector(".validation-summary-errors li"));
 
         /// <summary>
-        /// Verifies that publication has succeeded.
+        /// Verifies that publishing a content item has succeeded.
         /// </summary>
-        /// <param name="matchText">If not null or empty, the element should contain its value.</param>
+        /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
         /// <param name="withinMinutes">If greater than 0, the selector will wait for that many minutes.</param>
         public static void ShouldBeSuccess(this UITestContext context, string matchText = null, int withinMinutes = 0)
         {
