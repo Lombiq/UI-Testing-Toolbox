@@ -77,6 +77,9 @@ namespace Lombiq.Tests.UI.Extensions
 
             var element = context.Get(by);
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
+
+            context.Missing(By.CssSelector(".message-warning"));
+            context.Missing(By.CssSelector(".message-error"));
         }
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
