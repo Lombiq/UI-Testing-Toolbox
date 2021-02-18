@@ -16,9 +16,7 @@ namespace Lombiq.Tests.UI.Services
     /// </remarks>
     public static class TestConfigurationManager
     {
-        private static readonly IConfiguration _configuration;
-
-        static TestConfigurationManager() => _configuration = BuildConfiguration();
+        private static readonly IConfiguration _configuration = BuildConfiguration();
 
         public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true), CultureInfo.InvariantCulture);
 
