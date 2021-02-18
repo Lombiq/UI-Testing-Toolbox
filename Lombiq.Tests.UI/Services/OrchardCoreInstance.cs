@@ -152,7 +152,7 @@ namespace Lombiq.Tests.UI.Services
         {
             _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
             Directory.CreateDirectory(_contentRootPath);
-            _testOutputHelper.WriteLineTimestamped("Content root path was created: " + _contentRootPath);
+            _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
         }
 
         private async Task StartOrchardAppAsync()
