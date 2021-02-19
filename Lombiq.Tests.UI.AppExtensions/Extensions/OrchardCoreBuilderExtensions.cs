@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!string.IsNullOrEmpty(blobStorageConnectionString))
             {
-                builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage", "OrchardCore.Media.Cache");
+                builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
             }
 
             return builder.ConfigureServices(
