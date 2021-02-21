@@ -92,5 +92,8 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static int GetIntValue(this UITestContext context, By by) =>
             context.Get(by).GetAttribute("value").ToInteger(0);
+
+        public static string GetSelectedTabText(this UITestContext context) =>
+            context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
     }
 }
