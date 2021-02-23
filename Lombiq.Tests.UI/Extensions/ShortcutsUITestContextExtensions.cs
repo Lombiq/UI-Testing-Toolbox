@@ -68,8 +68,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// Purges the media cache without using any UI operations. Returns status code 500 in case of an error during
         /// cache clear.
         /// </summary>
-        /// <param name="toggleTheFeature">In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't
-        /// been turned on yet, then set true.</param>
+        /// <param name="toggleTheFeature">
+        /// In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't been turned on yet, then set
+        /// <see langword="true"/>.
+        /// </param>
         public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = false)
         {
             if (toggleTheFeature)
