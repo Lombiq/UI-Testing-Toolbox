@@ -70,7 +70,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="toggleTheFeature">In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't
         /// been turned on yet, then set true.</param>
-        public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = true)
+        public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = false)
         {
             if (toggleTheFeature)
             {
