@@ -172,9 +172,9 @@ namespace Lombiq.Tests.UI.Services
                         "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
                         Environment.NewLine +
                         stdErr.Text +
-                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
-                            " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
-                            string.Empty)),
+                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
+                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too."
+                            : string.Empty)),
                 _cancellationTokenSource.Token);
         }
 
