@@ -30,11 +30,11 @@ namespace Lombiq.Tests.UI.Services
         public static readonly TimeoutConfiguration Default = new TimeoutConfiguration
         {
             RetryTimeout = TimeSpan
-                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.RetryTimeoutSeconds", 10)),
+                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryTimeoutSeconds", 10)),
             RetryInterval = TimeSpan
-                .FromMilliseconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.RetryIntervalMillisecondSeconds", 500)),
+                .FromMilliseconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryIntervalMillisecondSeconds", 500)),
             PageLoadTimeout = TimeSpan
-                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration.PageLoadTimeoutSeconds", 180)),
+                .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:PageLoadTimeoutSeconds", 180)),
         };
     }
 }
