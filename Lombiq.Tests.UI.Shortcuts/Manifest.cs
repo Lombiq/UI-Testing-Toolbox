@@ -28,3 +28,14 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Category = "Development",
     Description = "WARNING: Don't enable this feature by hand. Can be turned on and off to test if feature state changes work."
 )]
+
+[assembly: Feature(
+    Id = MediaCachePurge,
+    Name = "Lombiq UI Testing Toolbox - Shortcuts - Media Cache Purge",
+    Category = "Development",
+    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Media Cache Purge.",
+    Dependencies = new[]
+    {
+        "OrchardCore.Media.Cache",
+    }
+)]

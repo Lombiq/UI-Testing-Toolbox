@@ -264,7 +264,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    setupConfiguration.BeforeSetup?.Invoke(_configuration);
+                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
                     if (setupConfiguration.FastFailSetup)
                     {
@@ -483,6 +483,10 @@ namespace Lombiq.Tests.UI.Services
 
         private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
+            configuration.TestOutputHelper.WriteLine(
+                "NOTE: This log is cumulative for all test execution attempts. If the test fails repeatedly with " +
+                "retries then Attempt 0's output will contain only that execution's output, but Attempt 2's will " +
+                "contain 0's and 1's too in addition to 2's.");
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Starting preparation for {0}.", testManifest.Name);
 
             var setupConfiguration = configuration.SetupConfiguration;
@@ -512,8 +516,17 @@ namespace Lombiq.Tests.UI.Services
             var retryCount = 0;
             while (true)
             {
-                await using var instance = new UITestExecutor(testManifest, configuration);
-                if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                try
+                {
+                    await using var instance = new UITestExecutor(testManifest, configuration);
+                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                }
+                catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
+                {
+                    configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                        $"Unhandled exception during text execution: {ex}.");
+                }
+
                 retryCount++;
             }
         }

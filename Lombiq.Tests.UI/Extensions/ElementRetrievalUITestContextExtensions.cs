@@ -2,6 +2,8 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using Shouldly;
+using System;
 using System.Collections.ObjectModel;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -56,6 +58,29 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         public static bool Missing(this UITestContext context, By by) =>
             context.ExecuteLogged(nameof(Missing), by, () => context.CreateSearchContext().Missing(by));
+
+        /// <summary>
+        /// Verifies that the current page doesn't show any validation error notifications.
+        /// </summary>
+        public static void ShouldHaveNoValidationErrors(this UITestContext context) =>
+            context.Missing(By.CssSelector(".validation-summary-errors li"));
+
+        /// <summary>
+        /// Verifies that publishing a content item has succeeded.
+        /// </summary>
+        /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
+        /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
+        public static void ShouldBeSuccess(this UITestContext context, string matchText = null, TimeSpan? within = null)
+        {
+            var by = By.CssSelector(".message-success");
+            if (within is { } timeSpan) by = by.Within(timeSpan);
+
+            var element = context.Get(by);
+            if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
+
+            context.Missing(By.CssSelector(".message-warning"));
+            context.Missing(By.CssSelector(".message-error"));
+        }
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new ExtendedSearchContext<RemoteWebDriver>(
