@@ -68,7 +68,6 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
-                throw new Exception();
                 if (runSetupOperation) await SetupAsync();
 
                 _context ??= await CreateContextAsync();
