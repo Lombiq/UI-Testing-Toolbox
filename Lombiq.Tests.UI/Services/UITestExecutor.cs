@@ -68,6 +68,7 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
+                throw new Exception();
                 if (runSetupOperation) await SetupAsync();
 
                 _context ??= await CreateContextAsync();
@@ -122,9 +123,12 @@ namespace Lombiq.Tests.UI.Services
                 }
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "The test was attempted {0} time(s). {1} more attempt(s) will be made.",
+                    "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
                     retryCount + 1,
-                    _configuration.MaxRetryCount - retryCount);
+                    _configuration.MaxRetryCount - retryCount,
+                    _configuration.RetryInterval);
+
+                await Task.Delay(_configuration.RetryInterval);
             }
             finally
             {
