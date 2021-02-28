@@ -93,12 +93,26 @@ namespace Lombiq.Tests.UI.Extensions
         public static int GetIntValue(this UITestContext context, By by) =>
             context.Get(by).GetAttribute("value").ToInteger(0);
 
-        public static string GetSelectedTabText(this UITestContext context)
+        /// <summary>
+        /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value
+        /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/> using
+        /// <see cref="ReliabilityHelper.DoWithRetries"/>.
+        /// </summary>
+        public static string GetSelectedTabText(
+            this UITestContext context,
+            string defaultTitle = "Content",
+            TimeSpan? timeout = null)
         {
-            // Necessary to await tab change after page load, which happen on the document.ready() handler.
-            context.WaitForPageLoad();
+            string title = defaultTitle;
 
-            return context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+            ReliabilityHelper.DoWithRetries(
+                () =>
+                {
+                    title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+                    return title != defaultTitle;
+                });
+
+            return title;
         }
     }
 }
