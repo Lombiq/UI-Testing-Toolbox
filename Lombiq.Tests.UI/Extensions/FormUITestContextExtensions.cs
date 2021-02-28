@@ -93,7 +93,12 @@ namespace Lombiq.Tests.UI.Extensions
         public static int GetIntValue(this UITestContext context, By by) =>
             context.Get(by).GetAttribute("value").ToInteger(0);
 
-        public static string GetSelectedTabText(this UITestContext context) =>
-            context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+        public static string GetSelectedTabText(this UITestContext context)
+        {
+            // Necessary to await tab change after page load, which happen on the document.ready() handler.
+            context.WaitForPageLoad();
+
+            return context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+        }
     }
 }
