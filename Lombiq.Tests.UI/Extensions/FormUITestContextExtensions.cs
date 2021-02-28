@@ -110,7 +110,8 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
                     return title != defaultTitle;
-                });
+                },
+                timeout);
 
             return title;
         }
