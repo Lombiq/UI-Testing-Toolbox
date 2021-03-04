@@ -43,13 +43,17 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
 
         /// <summary>
-        /// Enables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// Enables the feature with the given ID directly, without anything
+        /// else happening on the admin Features page. The target app needs to
+        /// have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
 
         /// <summary>
-        /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// Disables the feature with the given ID directly, without anything
+        /// else happening on the admin Features page. The target app needs to
+        /// have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
