@@ -4,8 +4,10 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Models;
 using RestEase;
 using Shouldly;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -17,6 +19,8 @@ namespace Lombiq.Tests.UI.Extensions
     public static class ShortcutsUITestContextExtensions
     {
         public const string FeatureToggleTestBenchUrl = "/Lombiq.Tests.UI.Shortcuts/FeatureToggleTestBench/Index";
+
+        private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
 
         /// <summary>
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
@@ -102,13 +106,30 @@ namespace Lombiq.Tests.UI.Extensions
         public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
             context.GetApi().GetApplicationInfoAsync();
 
-        private static IShortcutsApi GetApi(this UITestContext context) => RestClient.For<IShortcutsApi>(context.Scope.BaseUri);
+        private static IShortcutsApi GetApi(this UITestContext context) =>
+            _apis.GetOrAdd(
+                context.Scope.BaseUri.ToString(),
+                key =>
+                {
+                    var httpClient = new HttpClient(new InvalidCertificateAllowingHttpClientHandler())
+                    {
+                        BaseAddress = context.Scope.BaseUri,
+                    };
+
+                    return RestClient.For<IShortcutsApi>(httpClient);
+                });
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Just maps to controller actions.")]
         public interface IShortcutsApi
         {
             [Get("api/ApplicationInfo")]
             Task<ApplicationInfo> GetApplicationInfoAsync();
+        }
+
+        private class InvalidCertificateAllowingHttpClientHandler : HttpClientHandler
+        {
+            public InvalidCertificateAllowingHttpClientHandler() =>
+                ServerCertificateCustomValidationCallback = DangerousAcceptAnyServerCertificateValidator;
         }
     }
 }
