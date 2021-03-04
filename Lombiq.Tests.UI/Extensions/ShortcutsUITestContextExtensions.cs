@@ -126,10 +126,15 @@ namespace Lombiq.Tests.UI.Extensions
             Task<ApplicationInfo> GetApplicationInfoAsync();
         }
 
+        // To allow self-signed development certificates.
         private class InvalidCertificateAllowingHttpClientHandler : HttpClientHandler
         {
-            public InvalidCertificateAllowingHttpClientHandler() =>
+            public InvalidCertificateAllowingHttpClientHandler()
+            {
                 ServerCertificateCustomValidationCallback = DangerousAcceptAnyServerCertificateValidator;
+                // Revoked certificates shouldn't be used though.
+                CheckCertificateRevocationList = true;
+            }
         }
     }
 }
