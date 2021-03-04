@@ -1,8 +1,12 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Models;
+using RestEase;
 using Shouldly;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -85,6 +89,22 @@ namespace Lombiq.Tests.UI.Extensions
             {
                 context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
             }
+        }
+
+        /// <summary>
+        /// Gets basic information about the Orchard Core application's executable.
+        /// </summary>
+        /// <returns>Basic information about the Orchard Core application's executable.</returns>
+        public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
+            context.GetApi().GetApplicationInfoAsync();
+
+        private static IShortcutsApi GetApi(this UITestContext context) => RestClient.For<IShortcutsApi>(context.Scope.BaseUri);
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Just maps to controller actions.")]
+        public interface IShortcutsApi
+        {
+            [Get("api/ApplicationInfo")]
+            Task<ApplicationInfo> GetApplicationInfoAsync();
         }
     }
 }
