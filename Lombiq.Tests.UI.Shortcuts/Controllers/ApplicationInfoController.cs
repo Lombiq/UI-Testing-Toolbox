@@ -28,10 +28,11 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
                     AssemblyName = application.Assembly.ToString(),
                 },
                 Modules = application.Modules.Select(
-                    module => new AssemblyInfo
+                    module => new ModuleInfo
                     {
                         AssemblyLocation = module.Assembly.Location,
                         AssemblyName = module.Assembly.ToString(),
+                        Assets = module.Assets.Select(asset => asset.ProjectAssetPath),
                     }),
             });
         }
