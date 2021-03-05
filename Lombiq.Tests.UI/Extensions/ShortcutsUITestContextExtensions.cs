@@ -111,7 +111,16 @@ namespace Lombiq.Tests.UI.Extensions
                 context.Scope.BaseUri.ToString(),
                 key =>
                 {
-                    var httpClient = new HttpClient(new InvalidCertificateAllowingHttpClientHandler())
+                    // To allow self-signed development certificates.
+
+                    var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                        // Revoked certificates shouldn't be used though.
+                        CheckCertificateRevocationList = true,
+                    };
+
+                    var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler)
                     {
                         BaseAddress = context.Scope.BaseUri,
                     };
@@ -124,17 +133,6 @@ namespace Lombiq.Tests.UI.Extensions
         {
             [Get("api/ApplicationInfo")]
             Task<ApplicationInfo> GetApplicationInfoAsync();
-        }
-
-        // To allow self-signed development certificates.
-        private class InvalidCertificateAllowingHttpClientHandler : HttpClientHandler
-        {
-            public InvalidCertificateAllowingHttpClientHandler()
-            {
-                ServerCertificateCustomValidationCallback = DangerousAcceptAnyServerCertificateValidator;
-                // Revoked certificates shouldn't be used though.
-                CheckCertificateRevocationList = true;
-            }
         }
     }
 }
