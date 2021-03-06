@@ -148,8 +148,7 @@ namespace Lombiq.Tests.UI.Services
 
             _portLeaseManager.StopLease(_port);
 
-            // Temporarily not deleting content roots for debugging.
-            ////DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
         }
 
         private void CreateContentRootFolder()
