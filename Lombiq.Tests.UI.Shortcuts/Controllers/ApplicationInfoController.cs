@@ -1,8 +1,6 @@
 using Lombiq.HelpfulLibraries.Libraries.Mvc;
-using Lombiq.Tests.UI.Shortcuts.Models;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Modules;
-using System.Linq;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
 {
@@ -16,25 +14,6 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
         public ApplicationInfoController(IApplicationContext applicationContext) => _applicationContext = applicationContext;
 
         [HttpGet]
-        public IActionResult Get()
-        {
-            var application = _applicationContext.Application;
-            return Ok(new ApplicationInfo
-            {
-                AppRoot = application.Root,
-                AssemblyInfo = new AssemblyInfo
-                {
-                    AssemblyLocation = application.Assembly.Location,
-                    AssemblyName = application.Assembly.ToString(),
-                },
-                Modules = application.Modules.Select(
-                    module => new ModuleInfo
-                    {
-                        AssemblyLocation = module.Assembly.Location,
-                        AssemblyName = module.Assembly.ToString(),
-                        Assets = module.Assets.Select(asset => asset.ProjectAssetPath),
-                    }),
-            });
-        }
+        public IActionResult Get() => Ok(_applicationContext.GetApplicationInfo());
     }
 }

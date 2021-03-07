@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Extensions
 {
     /// <summary>
-    /// Some useful shortcuts for test execution using the Lombiq.Tests.UI.Shortcuts module. Note that you have to have
-    /// it enabled in the app for these to work.
+    /// Some useful shortcuts for test execution using the <c>Lombiq.Tests.UI.Shortcuts</c> module. Note that you have
+    /// to have it enabled in the app for these to work.
     /// </summary>
     public static class ShortcutsUITestContextExtensions
     {
@@ -55,9 +55,8 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
 
         /// <summary>
-        /// Disables the feature with the given ID directly, without anything
-        /// else happening on the admin Features page. The target app needs to
-        /// have Lombiq.Tests.UI.Shortcuts enabled.
+        /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
@@ -100,7 +99,9 @@ namespace Lombiq.Tests.UI.Extensions
         }
 
         /// <summary>
-        /// Gets basic information about the Orchard Core application's executable.
+        /// Gets basic information about the Orchard Core application's executable. Also see the <see
+        /// cref="ShortcutsConfiguration.InjectApplicationInfo"/> configuration for injecting the same data into the
+        /// HTML output.
         /// </summary>
         /// <returns>Basic information about the Orchard Core application's executable.</returns>
         public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>

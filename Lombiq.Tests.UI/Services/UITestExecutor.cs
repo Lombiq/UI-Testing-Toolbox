@@ -436,7 +436,14 @@ namespace Lombiq.Tests.UI.Services
             Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
             {
                 _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
+
                 argumentsBuilder.Add("--Lombiq_Tests_UI:IsUITesting").Add("true");
+
+                if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
+                {
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:InjectApplicationInfo").Add("true");
+                }
+
                 return Task.CompletedTask;
             }
 
