@@ -394,13 +394,13 @@ namespace Lombiq.Tests.UI.Services
                     var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:BasePath")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:BasePath")
                         .Add(azureBlobStorageContext.BasePath);
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ConnectionString")
                         .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ContainerName")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ContainerName")
                         .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
 
                     if (!Directory.Exists(snapshotDirectoryPath)) return;
@@ -423,8 +423,8 @@ namespace Lombiq.Tests.UI.Services
                 Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
                     _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
-                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
-                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Host").Add("localhost");
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Host").Add("localhost");
                     return Task.CompletedTask;
                 }
 
