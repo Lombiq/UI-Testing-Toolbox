@@ -64,8 +64,9 @@ namespace Lombiq.Tests.UI.Services
         public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
 
         /// <summary>
-        /// Configuration for the <c>Lombiq.Tests.UI.Shortcuts</c> module. Note that you have to have it enabled in the
-        /// app for these to work.
+        /// Gets or sets configuration for the <c>Lombiq.Tests.UI.Shortcuts</c> module. Note that you have to have it
+        /// enabled in the app for these to work.
+        /// </summary>
         public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
