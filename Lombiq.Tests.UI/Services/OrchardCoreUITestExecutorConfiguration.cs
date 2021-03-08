@@ -25,6 +25,9 @@ namespace Lombiq.Tests.UI.Services
         public int MaxRetryCount { get; set; } =
             TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:MaxRetryCount", 2);
 
+        public TimeSpan RetryInterval { get; set; } =
+            TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:RetryIntervalSeconds", 0));
+
         public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
@@ -59,6 +62,12 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public bool UseAzureBlobStorage { get; set; }
         public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets configuration for the <c>Lombiq.Tests.UI.Shortcuts</c> module. Note that you have to have it
+        /// enabled in the app for these to work.
+        /// </summary>
+        public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {

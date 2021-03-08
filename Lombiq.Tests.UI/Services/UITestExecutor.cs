@@ -122,9 +122,12 @@ namespace Lombiq.Tests.UI.Services
                 }
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "The test was attempted {0} time(s). {1} more attempt(s) will be made.",
+                    "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
                     retryCount + 1,
-                    _configuration.MaxRetryCount - retryCount);
+                    _configuration.MaxRetryCount - retryCount,
+                    _configuration.RetryInterval);
+
+                await Task.Delay(_configuration.RetryInterval);
             }
             finally
             {
@@ -391,13 +394,13 @@ namespace Lombiq.Tests.UI.Services
                     var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:BasePath")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:BasePath")
                         .Add(azureBlobStorageContext.BasePath);
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ConnectionString")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ConnectionString")
                         .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
                     argumentsBuilder
-                        .Add("--Lombiq_Tests_UI_MediaBlobStorageOptions:ContainerName")
+                        .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ContainerName")
                         .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
 
                     if (!Directory.Exists(snapshotDirectoryPath)) return;
@@ -420,8 +423,8 @@ namespace Lombiq.Tests.UI.Services
                 Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
                 {
                     _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
-                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
-                    argumentsBuilder.Add("--Lombiq_Tests_UI_SmtpSettings:Host").Add("localhost");
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Host").Add("localhost");
                     return Task.CompletedTask;
                 }
 
@@ -433,7 +436,14 @@ namespace Lombiq.Tests.UI.Services
             Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
             {
                 _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
+
                 argumentsBuilder.Add("--Lombiq_Tests_UI:IsUITesting").Add("true");
+
+                if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
+                {
+                    argumentsBuilder.Add("--Lombiq_Tests_UI:InjectApplicationInfo").Add("true");
+                }
+
                 return Task.CompletedTask;
             }
 
@@ -475,7 +485,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (configuration.OrchardCoreConfiguration == null)
             {
-                throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
+                throw new ArgumentException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
             return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
