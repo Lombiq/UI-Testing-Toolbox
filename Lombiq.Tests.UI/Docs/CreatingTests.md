@@ -48,6 +48,7 @@ Keep test classes relatively small, with just a couple of test cases in them, an
 - UI tests can be quite computationally demanding since your machine is hammering multiple concurrently running Orchard apps via separate browser processes while also serving them, and on top of this potentially also fetching resources from CDNs and other external services. To prevent tests failing locally simply because the machine is overwhelmed and they time out (or just taking more time than if the resources weren't completely saturated) the number of parallel tests is usually capped at a generally safe level in an xUnit config file in the root of the test project (*xunit.runner.json*). If your PC can handle it then feel free to increase the limit for the duration of local testing (but don't commit these changes).
 - Accessibility checking is available with [axe](https://github.com/dequelabs/axe-core). [Check out](https://github.com/TroyWalshProf/SeleniumAxeDotnet) what you can do with the library we use. You can also use the [axe Chrome extension](https://chrome.google.com/webstore/detail/axe-web-accessibility-tes/lhdoppojpmngadmnindnejefpokejbdd) to aid you fixing issues.
 - In case of testing Trumbowyg editors, make sure each editor is placed inside its own uniquely named container so that multiple editors on the same page can be identified separately.
+- When asserting on dates be mindful about time zones. It's the easiest if both the app and the tests work with UTC.
 
 
 ## Tips on optimizing tests
