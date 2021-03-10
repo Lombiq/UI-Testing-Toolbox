@@ -99,6 +99,9 @@ namespace Lombiq.Tests.UI.Services
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 });
 
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
+
             await StartOrchardAppAsync();
 
             return new Uri(url);
@@ -152,10 +155,13 @@ namespace Lombiq.Tests.UI.Services
         {
             _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
             Directory.CreateDirectory(_contentRootPath);
+            _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
         }
 
         private async Task StartOrchardAppAsync()
         {
+            _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
+
             if (_command == null)
             {
                 throw new InvalidOperationException("The app needs to be started up first.");
@@ -171,21 +177,27 @@ namespace Lombiq.Tests.UI.Services
                         "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
                         Environment.NewLine +
                         stdErr.Text +
-                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase) ?
-                            " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too." :
-                            string.Empty)),
+                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
+                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too."
+                            : string.Empty)),
                 _cancellationTokenSource.Token);
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
         }
 
         private Task StopOrchardAppAsync()
         {
             if (_cancellationTokenSource == null) return Task.CompletedTask;
 
+            _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");
+
             // Cancellation is the only way to stop the process, won't be able to send a Ctrl+C, see:
             // https://github.com/Tyrrrz/CliWrap/issues/47
             if (!_cancellationTokenSource.IsCancellationRequested) _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
             return Task.CompletedTask;
         }

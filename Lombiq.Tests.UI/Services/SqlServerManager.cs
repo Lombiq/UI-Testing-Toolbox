@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.Services
         /// for concurrently running UI tests.
         /// </summary>
         public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
-            "SqlServerDatabaseConfiguration.ConnectionStringTemplate",
+            "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
             $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
                 $"MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
     }

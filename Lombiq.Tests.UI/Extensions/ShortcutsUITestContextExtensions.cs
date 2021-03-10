@@ -1,18 +1,26 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Models;
+using RestEase;
 using Shouldly;
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
     /// <summary>
-    /// Some useful shortcuts for test execution using the Lombiq.Tests.UI.Shortcuts module. Note that you have to have
-    /// it enabled in the app for these to work.
+    /// Some useful shortcuts for test execution using the <c>Lombiq.Tests.UI.Shortcuts</c> module. Note that you have
+    /// to have it enabled in the app for these to work.
     /// </summary>
     public static class ShortcutsUITestContextExtensions
     {
         public const string FeatureToggleTestBenchUrl = "/Lombiq.Tests.UI.Shortcuts/FeatureToggleTestBench/Index";
+
+        private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
 
         /// <summary>
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
@@ -39,13 +47,16 @@ namespace Lombiq.Tests.UI.Extensions
             context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
 
         /// <summary>
-        /// Enables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// Enables the feature with the given ID directly, without anything
+        /// else happening on the admin Features page. The target app needs to
+        /// have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
 
         /// <summary>
         /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
+        /// The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
@@ -62,6 +73,67 @@ namespace Lombiq.Tests.UI.Extensions
             context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
             context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
+        }
+
+        /// <summary>
+        /// Purges the media cache without using any UI operations. Returns status code 500 in case of an error during
+        /// cache clear.
+        /// </summary>
+        /// <param name="toggleTheFeature">
+        /// In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't been turned on yet, then set
+        /// <see langword="true"/>.
+        /// </param>
+        public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = false)
+        {
+            if (toggleTheFeature)
+            {
+                context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            }
+
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/MediaCachePurge/PurgeMediaCacheDirectly");
+
+            if (toggleTheFeature)
+            {
+                context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            }
+        }
+
+        /// <summary>
+        /// Gets basic information about the Orchard Core application's executable. Also see the <see
+        /// cref="ShortcutsConfiguration.InjectApplicationInfo"/> configuration for injecting the same data into the
+        /// HTML output.
+        /// </summary>
+        /// <returns>Basic information about the Orchard Core application's executable.</returns>
+        public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
+            context.GetApi().GetApplicationInfoAsync();
+
+        private static IShortcutsApi GetApi(this UITestContext context) =>
+            _apis.GetOrAdd(
+                context.Scope.BaseUri.ToString(),
+                key =>
+                {
+                    // To allow self-signed development certificates.
+
+                    var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                        // Revoked certificates shouldn't be used though.
+                        CheckCertificateRevocationList = true,
+                    };
+
+                    var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler)
+                    {
+                        BaseAddress = context.Scope.BaseUri,
+                    };
+
+                    return RestClient.For<IShortcutsApi>(httpClient);
+                });
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Just maps to controller actions.")]
+        public interface IShortcutsApi
+        {
+            [Get("api/ApplicationInfo")]
+            Task<ApplicationInfo> GetApplicationInfoAsync();
         }
     }
 }
