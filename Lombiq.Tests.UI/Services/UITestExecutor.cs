@@ -524,17 +524,28 @@ namespace Lombiq.Tests.UI.Services
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
             var retryCount = 0;
-            while (true)
+            var passed = false;
+            while (!passed)
             {
                 try
                 {
                     await using var instance = new UITestExecutor(testManifest, configuration);
-                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath))
+                    {
+                        passed = true;
+                    }
                 }
                 catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
                 {
                     configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                         $"Unhandled exception during text execution: {ex}.");
+                }
+                finally
+                {
+                    if (passed || retryCount == configuration.MaxRetryCount)
+                    {
+                        Console.WriteLine($"##teamcity[testMetadata name='TryCount' type='number' value='{retryCount - 1}']");
+                    }
                 }
 
                 retryCount++;
