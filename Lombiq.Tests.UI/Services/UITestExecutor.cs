@@ -220,8 +220,10 @@ namespace Lombiq.Tests.UI.Services
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
             }
-
-            await SaveTestOutputAsync(debugInformationPath);
+            finally
+            {
+                await SaveTestOutputAsync(debugInformationPath);
+            }
         }
 
         private async Task SaveTestOutputAsync(string debugInformationPath)
