@@ -173,22 +173,38 @@ namespace Lombiq.Tests.UI.Services
                 if (_dumpConfiguration.CaptureScreenshot)
                 {
                     // Only PNG is supported on .NET Core.
-                    _context.Scope.Driver.GetScreenshot()
-                        .SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                    var imagePath = Path.Combine(debugInformationPath, "Screenshot.png");
+                    _context.Scope.Driver.GetScreenshot().SaveAsFile(imagePath);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportImage("Screenshot", imagePath);
+                    }
                 }
 
                 if (_dumpConfiguration.CaptureHtmlSource)
                 {
-                    await File.WriteAllTextAsync(
-                        Path.Combine(debugInformationPath, "PageSource.html"),
-                        _context.Scope.Driver.PageSource);
+                    var htmlPath = Path.Combine(debugInformationPath, "PageSource.html");
+                    await File.WriteAllTextAsync(htmlPath, _context.Scope.Driver.PageSource);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink("PageSource", htmlPath);
+                    }
                 }
 
                 if (_dumpConfiguration.CaptureBrowserLog)
                 {
+                    var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
+
                     await File.WriteAllLinesAsync(
-                        Path.Combine(debugInformationPath, "BrowserLog.log"),
+                        browserLogPath,
                         (await GetBrowserLogAsync(_context.Scope.Driver)).Select(message => message.ToString()));
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink("BrowserLog", browserLogPath);
+                    }
                 }
 
                 if (ex is AccessibilityAssertionException accessibilityAssertionException
@@ -205,6 +221,11 @@ namespace Lombiq.Tests.UI.Services
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
             }
 
+            await SaveTestOutputAsync(debugInformationPath);
+        }
+
+        private async Task SaveTestOutputAsync(string debugInformationPath)
+        {
             try
             {
                 if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
@@ -212,8 +233,13 @@ namespace Lombiq.Tests.UI.Services
                     // While this depends on the directory creation in the above try block it needs to come after the
                     // catch otherwise the message saved there wouldn't be included.
 
-                    await File.WriteAllTextAsync(
-                        Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                    var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
+                    await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink("TestOutput", testOutputPath);
+                    }
                 }
             }
             catch (Exception testOutputHelperException)
@@ -542,9 +568,9 @@ namespace Lombiq.Tests.UI.Services
                 }
                 finally
                 {
-                    if (passed || retryCount == configuration.MaxRetryCount)
+                    if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                     {
-                        Console.WriteLine($"##teamcity[testMetadata name='TryCount' type='number' value='{retryCount - 1}']");
+                        TeamCityMetadataReporter.ReportInt("TryCount", retryCount + 1);
                     }
                 }
 

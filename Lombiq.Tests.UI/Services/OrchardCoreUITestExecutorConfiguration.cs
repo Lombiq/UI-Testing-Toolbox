@@ -33,6 +33,20 @@ namespace Lombiq.Tests.UI.Services
         public ITestOutputHelper TestOutputHelper { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to report <see
+        /// href="https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html">test metadata</see> to TeamCity
+        /// as <see href="https://www.jetbrains.com/help/teamcity/service-messages.html">service messages</see>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For this to properly work the build artifacts should be configured to contain only the FailureDumps folder,
+        /// e.g.: <c>+:FailureDumps/**/* => FailureDumps.%build.vcs.number%.zip</c>.
+        /// </para>
+        /// </remarks>
+        public bool ReportTeamCityMetadata { get; set; } =
+            TestConfigurationManager.GetBoolConfiguration("OrchardCoreUITestExecutorConfiguration:ReportTeamCityMetadata", false);
+
+        /// <summary>
         /// Gets or sets the configuration for the initial setup of the Orchard Core app under test.
         /// </summary>
         public OrchardCoreSetupConfiguration SetupConfiguration { get; set; } = new();
