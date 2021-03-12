@@ -168,8 +168,8 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_context == null) return;
 
-                if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
-
+                // Saving the screenshot and HTML output should be as early after the test fail as possible so they show
+                // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
                 if (_dumpConfiguration.CaptureScreenshot)
                 {
                     // Only PNG is supported on .NET Core.
@@ -206,6 +206,8 @@ namespace Lombiq.Tests.UI.Services
                         TeamCityMetadataReporter.ReportArtifactLink("BrowserLog", browserLogPath);
                     }
                 }
+
+                if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
                 if (ex is AccessibilityAssertionException accessibilityAssertionException
                     && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
