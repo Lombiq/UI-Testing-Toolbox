@@ -271,8 +271,18 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
-                _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
-                if (string.IsNullOrEmpty(_dockerConfiguration.HostSnapshotPath)) _dockerConfiguration = null;
+                if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is { } docker &&
+                    !string.IsNullOrEmpty(docker.HostSnapshotPath))
+                {
+                    var hashCode = GetSetupHashCode().ToString(CultureInfo.InvariantCulture);
+                    docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, hashCode);
+                    docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{hashCode}"; // Always unix.
+
+                    if (Directory.Exists(docker.HostSnapshotPath)) Directory.Delete(docker.HostSnapshotPath, true);
+                    Directory.CreateDirectory(docker.HostSnapshotPath);
+
+                    _dockerConfiguration = docker;
+                }
 
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
