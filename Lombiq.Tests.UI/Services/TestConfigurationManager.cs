@@ -51,6 +51,17 @@ namespace Lombiq.Tests.UI.Services
                 : config;
         }
 
+        public static T GetConfiguration<T>()
+            where T : new()
+        {
+            var result = new T();
+
+            var prefixedKey = "Lombiq_Tests_UI:" + typeof(T).Name;
+            _configuration.Bind(prefixedKey, result);
+
+            return result;
+        }
+
         private static IConfiguration BuildConfiguration() =>
             new ConfigurationBuilder()
                 .AddJsonFile("TestConfiguration.json", true, false)
