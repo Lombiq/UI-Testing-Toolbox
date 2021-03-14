@@ -35,6 +35,7 @@ namespace Lombiq.Tests.UI.Services
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
         private List<BrowserLogMessage> _browserLogMessages;
+        private DockerConfiguration _dockerConfiguration;
 
         private UITestExecutor(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
@@ -232,7 +233,14 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    _sqlServerManager.TakeSnapshot(appDumpPath, true);
+                    var remotePath = appDumpPath;
+                    if (_dockerConfiguration != null)
+                    {
+                        appDumpPath = _dockerConfiguration.HostSnapshotPath;
+                        remotePath = _dockerConfiguration.ContainerSnapshotPath;
+                    }
+
+                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, true);
                 }
                 catch (Exception failureException)
                 {
@@ -263,6 +271,9 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
+                _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
+                if (string.IsNullOrEmpty(_dockerConfiguration.HostSnapshotPath)) _dockerConfiguration = null;
+
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
@@ -288,7 +299,15 @@ namespace Lombiq.Tests.UI.Services
                         Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
                         {
                             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
-                            _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
+
+                            var remotePath = snapshotDirectoryPath;
+                            if (_dockerConfiguration != null)
+                            {
+                                snapshotDirectoryPath = _dockerConfiguration.HostSnapshotPath;
+                                remotePath = _dockerConfiguration.ContainerSnapshotPath;
+                            }
+
+                            _sqlServerManager.TakeSnapshot(remotePath, snapshotDirectoryPath);
                             return Task.CompletedTask;
                         }
 
@@ -358,9 +377,11 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
-                    var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+                    var snapshotDirectoryPath =
+                        _dockerConfiguration?.ContainerSnapshotPath ??
+                        _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
-                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+                    if (!Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath)) return;
 
                     _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 

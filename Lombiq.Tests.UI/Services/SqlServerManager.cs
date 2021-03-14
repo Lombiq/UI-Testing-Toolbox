@@ -1,4 +1,6 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Dmf;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
@@ -6,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -82,11 +85,15 @@ namespace Lombiq.Tests.UI.Services
             return new SqlServerRunningContext(connectionString);
         }
 
-        public void TakeSnapshot(string snapshotDirectoryPath, bool useCompressionIfAvailable = false)
+        public void TakeSnapshot(
+            string snapshotDirectoryPathRemote,
+            string snapshotDirectoryPathLocal,
+            bool useCompressionIfAvailable = false)
         {
-            var filePath = GetSnapshotFilePath(snapshotDirectoryPath);
+            var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal);
 
-            if (File.Exists(filePath)) File.Delete(filePath);
+            if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
             var server = CreateServer();
 
@@ -113,11 +120,20 @@ namespace Lombiq.Tests.UI.Services
                 Database = _databaseName,
             };
 
-            var destination = new BackupDeviceItem(filePath, DeviceType.File);
+            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
             backup.Devices.Add(destination);
             // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
             // which is messy.
             backup.SqlBackup(server);
+
+            if (!File.Exists(filePathLocal))
+            {
+                throw filePathLocal == filePathRemote
+                    ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
+                    : new InvalidOperandException(
+                        $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
+                        $"Are the two bound together? If you are using docker, did you set up the local volume?");
+            }
         }
 
         public void RestoreSnapshot(string snapshotDirectoryPath)
