@@ -41,6 +41,8 @@ namespace Lombiq.Tests.UI.Services
         private int _databaseId;
         private string _serverName;
         private string _databaseName;
+        private string _userId;
+        private string _password;
         private bool _isDisposed;
 
         // Not actually unnecessary.
@@ -65,9 +67,11 @@ namespace Lombiq.Tests.UI.Services
             var connectionString = _configuration.ConnectionStringTemplate
                 .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
 
-            using var connection = new SqlConnection(connectionString);
+            var connection = new SqlConnectionStringBuilder(connectionString);
             _serverName = connection.DataSource;
-            _databaseName = connection.Database;
+            _databaseName = connection.InitialCatalog;
+            _userId = connection.UserID;
+            _password = connection.Password;
 
             var server = CreateServer();
 
@@ -172,7 +176,10 @@ namespace Lombiq.Tests.UI.Services
 
         // It's easier to use the server name directly instead of the connection string as that also requires the
         // referenced database to exist.
-        private Server CreateServer() => new Server(_serverName);
+        private Server CreateServer() =>
+            string.IsNullOrWhiteSpace(_password)
+                ? new Server(_serverName)
+                : new Server(new ServerConnection(_serverName, _userId, _password));
 
         private void DropDatabaseIfExists(Server server)
         {

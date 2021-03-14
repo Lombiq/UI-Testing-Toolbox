@@ -16,7 +16,7 @@ Certain test execution parameters can be configured externally too, the ones ret
 
 Here's a full *TestConfiguration.json* file example, something appropriate during development when you have a fast machine (probably faster then the one used to execute these tests) and want tests to fail fast instead of being reliable:
 
-```
+```json
 {
   "Lombiq_Tests_UI": {
     "AgentIndex": 3,
@@ -40,6 +40,14 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
 Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode.
 
 We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
+
+If you need to use a remote server (or Docker container) where SQL Authentication is the only option, add the following property to your `Lombiq_Tests_UI` and adjust the Server, User Id and Password fields as needed:
+
+```json
+      "SqlServerDatabaseConfiguration": {
+          "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
+      }
+```
 
 
 ## <a name="multi-process"></a>Multi-process test execution
