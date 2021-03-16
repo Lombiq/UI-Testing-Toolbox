@@ -1,4 +1,5 @@
 using CliWrap.Builders;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
@@ -334,6 +335,12 @@ namespace Lombiq.Tests.UI.Services
             {
                 return;
             }
+
+            // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
+            // itself (which would be logical). Removing the volume directory instantly severs the connection between
+            // host and the container so that should be avoided at all costs.
+            docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotPath; // Always a Unix path.
+            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotPath);
 
             _dockerConfiguration = docker;
         }
