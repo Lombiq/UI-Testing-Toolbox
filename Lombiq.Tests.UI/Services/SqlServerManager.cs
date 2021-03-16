@@ -1,6 +1,5 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Dmf;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
@@ -90,7 +89,7 @@ namespace Lombiq.Tests.UI.Services
         /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
         /// <paramref name="snapshotDirectoryPathLocal"/> should be the same. If the server is on a remote location or
         /// within a container, then the <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
-        /// <see cref="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted volume
+        /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted volume
         /// on Docker or an (S)FTP network location mounted as a drive.
         /// </summary>
         /// <param name="snapshotDirectoryPathRemote">
