@@ -268,11 +268,11 @@ namespace Lombiq.Tests.UI.Services
         {
             var setupConfiguration = _configuration.SetupConfiguration;
 
-            SetupDocker();
-
             try
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
+
+                SetupDocker();
 
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
