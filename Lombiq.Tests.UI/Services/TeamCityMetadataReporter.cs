@@ -38,7 +38,9 @@ namespace Lombiq.Tests.UI.Services
             Report(testName, name, "video", PreparePath(videoArtifactPath));
 
         public static void Report(string testName, string name, string type, string value) =>
+            // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
+                Environment.NewLine +
                 $"##teamcity[testMetadata testName='{Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
