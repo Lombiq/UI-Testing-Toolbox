@@ -178,7 +178,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportImage("Screenshot", imagePath);
+                        TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink("PageSource", htmlPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "PageSource", htmlPath);
                     }
                 }
 
@@ -203,7 +203,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink("BrowserLog", browserLogPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "BrowserLog", browserLogPath);
                     }
                 }
 
@@ -242,7 +242,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink("TestOutput", testOutputPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "TestOutput", testOutputPath);
                     }
                 }
             }
@@ -574,7 +574,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                     {
-                        TeamCityMetadataReporter.ReportInt("TryCount", retryCount + 1);
+                        TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
                     }
                 }
 

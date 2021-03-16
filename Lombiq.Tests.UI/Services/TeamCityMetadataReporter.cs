@@ -16,22 +16,29 @@ namespace Lombiq.Tests.UI.Services
     /// </remarks>
     public static class TeamCityMetadataReporter
     {
-        public static void ReportInt(string name, int number) => ReportNumber(name, number.ToString(CultureInfo.InvariantCulture));
+        public static void ReportInt(string testName, string name, int number) =>
+            ReportNumber(testName, name, number.ToString(CultureInfo.InvariantCulture));
 
-        public static void ReportNumber(string name, string number) => Report(name, "number", number);
+        public static void ReportNumber(string testName, string name, string number) =>
+            Report(testName, name, "number", number);
 
-        public static void ReportText(string name, string text) => Report(name, "test", text);
+        public static void ReportText(string testName, string name, string text) =>
+            Report(testName, name, "test", text);
 
-        public static void ReportExternalLink(string name, string url) => Report(name, "link", url);
+        public static void ReportExternalLink(string testName, string name, string url) =>
+            Report(testName, name, "link", url);
 
-        public static void ReportArtifactLink(string name, string artifactPath) => Report(name, "artifact", PreparePath(artifactPath));
+        public static void ReportArtifactLink(string testName, string name, string artifactPath) =>
+            Report(testName, name, "artifact", PreparePath(artifactPath));
 
-        public static void ReportImage(string name, string imageArtifactPath) => Report(name, "image", PreparePath(imageArtifactPath));
+        public static void ReportImage(string testName, string name, string imageArtifactPath) =>
+            Report(testName, name, "image", PreparePath(imageArtifactPath));
 
-        public static void ReportVideo(string name, string videoArtifactPath) => Report(name, "video", PreparePath(videoArtifactPath));
+        public static void ReportVideo(string testName, string name, string videoArtifactPath) =>
+            Report(testName, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(string name, string type, string value) =>
-            Console.WriteLine($"##teamcity[testMetadata name='{name}' type='{type}' value='{value}']");
+        public static void Report(string testName, string name, string type, string value) =>
+            Console.WriteLine($"##teamcity[testMetadata testName='{testName}' name='{name}' type='{type}' value='{value}']");
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
