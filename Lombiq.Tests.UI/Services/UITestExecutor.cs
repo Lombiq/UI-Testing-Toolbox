@@ -267,15 +267,20 @@ namespace Lombiq.Tests.UI.Services
         {
             var setupConfiguration = _configuration.SetupConfiguration;
 
+            SetupDocker();
+
             try
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
-
-
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
+
+                    if (Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
+                    {
+                        Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
+                    }
 
                     if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
@@ -290,7 +295,6 @@ namespace Lombiq.Tests.UI.Services
                     // snapshot config to be available at startup too.
                     _context = await CreateContextAsync();
 
-                    SetupDocker();
                     SetupSqlServer();
                     SetupAzureBlobStorage();
 
@@ -330,13 +334,6 @@ namespace Lombiq.Tests.UI.Services
             {
                 return;
             }
-
-            var uniqueName = $"{DateTime.UtcNow.Ticks}_{_testManifest.Name.MakeFileSystemFriendly()}";
-            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, uniqueName);
-            docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{uniqueName}"; // Always Unix.
-
-            if (Directory.Exists(docker.HostSnapshotPath)) Directory.Delete(docker.HostSnapshotPath, true);
-            Directory.CreateDirectory(docker.HostSnapshotPath);
 
             _dockerConfiguration = docker;
         }

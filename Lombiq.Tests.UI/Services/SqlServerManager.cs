@@ -262,6 +262,8 @@ namespace Lombiq.Tests.UI.Services
         }
 
         private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
-            Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
+            snapshotDirectoryPath[0] == '/'
+                ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
+                : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
     }
 }
