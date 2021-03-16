@@ -48,6 +48,7 @@ namespace Lombiq.Tests.UI.Services
         // https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
         private static string Escape(string value) => value
             .Replace("|", "||", StringComparison.Ordinal)
+            // Apparently both single quotes should be escaped.
             .Replace("'", "|'", StringComparison.Ordinal)
             .Replace("’", "|’", StringComparison.Ordinal)
             .Replace("\n", "n", StringComparison.Ordinal)
