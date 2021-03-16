@@ -37,16 +37,11 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(string testName, string name, string videoArtifactPath) =>
             Report(testName, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(string testName, string name, string type, string value)
-        {
-            // TeamCity handles the funny apostrophes as simple ones so changing them just for the test name.
-            testName = Escape(testName.Replace("’", "'", StringComparison.Ordinal));
-
+        public static void Report(string testName, string name, string type, string value) =>
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='{testName}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
-        }
+                $"##teamcity[testMetadata testName='{Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
