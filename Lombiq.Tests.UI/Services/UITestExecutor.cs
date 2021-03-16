@@ -271,18 +271,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
-                if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is { } docker &&
-                    !string.IsNullOrEmpty(docker.HostSnapshotPath))
-                {
-                    var hashCode = GetSetupHashCode().ToString(CultureInfo.InvariantCulture);
-                    docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, hashCode);
-                    docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{hashCode}"; // Always Unix.
 
-                    if (Directory.Exists(docker.HostSnapshotPath)) Directory.Delete(docker.HostSnapshotPath, true);
-                    Directory.CreateDirectory(docker.HostSnapshotPath);
-
-                    _dockerConfiguration = docker;
-                }
 
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
@@ -301,6 +290,7 @@ namespace Lombiq.Tests.UI.Services
                     // snapshot config to be available at startup too.
                     _context = await CreateContextAsync();
 
+                    SetupDocker();
                     SetupSqlServer();
                     SetupAzureBlobStorage();
 
@@ -331,6 +321,24 @@ namespace Lombiq.Tests.UI.Services
 
                 throw;
             }
+        }
+
+        private void SetupDocker()
+        {
+            if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is not { } docker ||
+                string.IsNullOrEmpty(docker.HostSnapshotPath))
+            {
+                return;
+            }
+
+            var hashCode = GetSetupHashCode().ToString(CultureInfo.InvariantCulture);
+            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, hashCode);
+            docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{hashCode}"; // Always Unix.
+
+            if (Directory.Exists(docker.HostSnapshotPath)) Directory.Delete(docker.HostSnapshotPath, true);
+            Directory.CreateDirectory(docker.HostSnapshotPath);
+
+            _dockerConfiguration = docker;
         }
 
         private void SetupSqlServer()

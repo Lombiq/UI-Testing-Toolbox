@@ -85,6 +85,24 @@ namespace Lombiq.Tests.UI.Services
             return new SqlServerRunningContext(connectionString);
         }
 
+        /// <summary>
+        /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
+        /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
+        /// <paramref name="snapshotDirectoryPathLocal"/> should be the same. If the server is on a remote location or
+        /// within a container, then the <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
+        /// <see cref="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted volume
+        /// on Docker or an (S)FTP network location mounted as a drive.
+        /// </summary>
+        /// <param name="snapshotDirectoryPathRemote">
+        /// The location of the save directory on the SQL Server's machine.
+        /// </param>
+        /// <param name="snapshotDirectoryPathLocal">
+        /// The location of the directory where the saved database snapshot can be accessed from the local system.
+        /// </param>
+        /// <param name="useCompressionIfAvailable">
+        /// If set to <see langword="true"/> and the database engine supports it, then
+        /// <see cref="BackupCompressionOptions.On"/> will be used.
+        /// </param>
         public void TakeSnapshot(
             string snapshotDirectoryPathRemote,
             string snapshotDirectoryPathLocal,
@@ -130,7 +148,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 throw filePathLocal == filePathRemote
                     ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
-                    : new InvalidOperandException(
+                    : new FileNotFoundException(
                         $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
                         $"Are the two bound together? If you are using Docker, did you set up the local volume?");
             }
