@@ -39,8 +39,9 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         /// <remarks>
         /// <para>
-        /// For this to properly work the build artifacts should be configured to contain only the FailureDumps folder,
-        /// e.g.: <c>+:FailureDumps/**/* => FailureDumps.%build.vcs.number%.zip</c>.
+        /// For this to properly work the build artifacts should be configured to contain the FailureDumps folder (it
+        /// can also contain other folders but it must contain a folder called "FailureDumps", e.g.:
+        /// <c>+:FailureDumps => FailureDumps</c>.
         /// </para>
         /// </remarks>
         public bool ReportTeamCityMetadata { get; set; } =
