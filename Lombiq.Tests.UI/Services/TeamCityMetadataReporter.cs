@@ -47,11 +47,12 @@ namespace Lombiq.Tests.UI.Services
         // Escaping values for TeamCity, see:
         // https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
         private static string Escape(string value) => value
+            .Replace("|", "||", StringComparison.Ordinal)
             .Replace("'", "|'", StringComparison.Ordinal)
+            .Replace("’", "|’", StringComparison.Ordinal)
             .Replace("\n", "n", StringComparison.Ordinal)
             .Replace("\r", "|r", StringComparison.Ordinal)
             .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
-            .Replace("|", "||", StringComparison.Ordinal)
             .Replace("[", "|[", StringComparison.Ordinal)
             .Replace("]", "|]", StringComparison.Ordinal);
     }
