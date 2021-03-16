@@ -276,7 +276,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     var hashCode = GetSetupHashCode().ToString(CultureInfo.InvariantCulture);
                     docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, hashCode);
-                    docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{hashCode}"; // Always unix.
+                    docker.ContainerSnapshotPath = $"{docker.ContainerSnapshotPath}/{hashCode}"; // Always Unix.
 
                     if (Directory.Exists(docker.HostSnapshotPath)) Directory.Delete(docker.HostSnapshotPath, true);
                     Directory.CreateDirectory(docker.HostSnapshotPath);

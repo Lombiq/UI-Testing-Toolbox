@@ -132,7 +132,7 @@ namespace Lombiq.Tests.UI.Services
                     ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
                     : new InvalidOperandException(
                         $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
-                        $"Are the two bound together? If you are using docker, did you set up the local volume?");
+                        $"Are the two bound together? If you are using Docker, did you set up the local volume?");
             }
         }
 

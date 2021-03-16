@@ -49,7 +49,7 @@ UI tests are executed in parallel by default for the given test execution proces
 Supply the agent index in the `AgentIndex` configuration. It doesn't need to but is highly recommended to be zero-indexed (see the [docs on limits](Limits.md)) and it must be unique to each process. You can also use this to find a port interval where on your machine there are no other processes listening.
 
 
-## Using the Docker container
+## Using SQL Server from a Docker container
 
 ### Setup
 
@@ -66,16 +66,16 @@ Now log in as root using `docker exec -u 0 -it sql2019 bash` and give access to 
 You can use Docker Desktop to stop or start the container going forward. 
 
 
-### Extending the TestConfiguration.json
+### Extending TestConfiguration.json
 
-SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and HostSnapshotPath property as needed.
+SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and `HostSnapshotPath` property as needed.
 
-```
-      "SqlServerDatabaseConfiguration": {
-          "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
-      },
-      "DockerConfiguration": {
-        "ContainerSnapshotPath": "/data",
-        "HostSnapshotPath": "C:\\docker\\data"
-      }
+```json
+"SqlServerDatabaseConfiguration": {
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
+},
+"DockerConfiguration": {
+    "ContainerSnapshotPath": "/data",
+    "HostSnapshotPath": "C:\\docker\\data"
+}
 ```
