@@ -87,8 +87,9 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
         /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
-        /// <paramref name="snapshotDirectoryPathLocal"/> should be the same. If the server is on a remote location or
-        /// within a container, then the <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
+        /// <paramref name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default
+        /// <see langword="null"/> value. If the server is on a remote location or within a container, then the
+        /// <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
         /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted
         /// volume on Docker or an (S)FTP network location mounted as a drive.
         /// </summary>
@@ -96,7 +97,9 @@ namespace Lombiq.Tests.UI.Services
         /// The location of the save directory on the SQL Server's machine.
         /// </param>
         /// <param name="snapshotDirectoryPathLocal">
-        /// The location of the directory where the saved database snapshot can be accessed from the local system.
+        /// The location of the directory where the saved database snapshot can be accessed from the local system. If
+        /// <see langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if
+        /// for local server only calls.
         /// </param>
         /// <param name="useCompressionIfAvailable">
         /// If set to <see langword="true"/> and the database engine supports it, then
@@ -104,11 +107,11 @@ namespace Lombiq.Tests.UI.Services
         /// </param>
         public void TakeSnapshot(
             string snapshotDirectoryPathRemote,
-            string snapshotDirectoryPathLocal,
+            string snapshotDirectoryPathLocal = null,
             bool useCompressionIfAvailable = false)
         {
             var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
-            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal);
+            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
 
             if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
