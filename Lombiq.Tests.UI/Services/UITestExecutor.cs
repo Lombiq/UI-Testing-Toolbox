@@ -611,10 +611,7 @@ namespace Lombiq.Tests.UI.Services
                 try
                 {
                     await using var instance = new UITestExecutor(testManifest, configuration);
-                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath))
-                    {
-                        passed = true;
-                    }
+                    passed = await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath);
                 }
                 catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
                 {
