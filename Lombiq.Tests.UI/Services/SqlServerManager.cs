@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -41,6 +43,8 @@ namespace Lombiq.Tests.UI.Services
         private int _databaseId;
         private string _serverName;
         private string _databaseName;
+        private string _userId;
+        private string _password;
         private bool _isDisposed;
 
         // Not actually unnecessary.
@@ -65,9 +69,11 @@ namespace Lombiq.Tests.UI.Services
             var connectionString = _configuration.ConnectionStringTemplate
                 .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
 
-            using var connection = new SqlConnection(connectionString);
+            var connection = new SqlConnectionStringBuilder(connectionString);
             _serverName = connection.DataSource;
-            _databaseName = connection.Database;
+            _databaseName = connection.InitialCatalog;
+            _userId = connection.UserID;
+            _password = connection.Password;
 
             var server = CreateServer();
 
@@ -78,11 +84,36 @@ namespace Lombiq.Tests.UI.Services
             return new SqlServerRunningContext(connectionString);
         }
 
-        public void TakeSnapshot(string snapshotDirectoryPath, bool useCompressionIfAvailable = false)
+        /// <summary>
+        /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
+        /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
+        /// <paramref name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default
+        /// <see langword="null"/> value. If the server is on a remote location or within a container, then the
+        /// <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
+        /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted
+        /// volume on Docker or an (S)FTP network location mounted as a drive.
+        /// </summary>
+        /// <param name="snapshotDirectoryPathRemote">
+        /// The location of the save directory on the SQL Server's machine.
+        /// </param>
+        /// <param name="snapshotDirectoryPathLocal">
+        /// The location of the directory where the saved database snapshot can be accessed from the local system. If
+        /// <see langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if
+        /// for local server only calls.
+        /// </param>
+        /// <param name="useCompressionIfAvailable">
+        /// If set to <see langword="true"/> and the database engine supports it, then
+        /// <see cref="BackupCompressionOptions.On"/> will be used.
+        /// </param>
+        public void TakeSnapshot(
+            string snapshotDirectoryPathRemote,
+            string snapshotDirectoryPathLocal = null,
+            bool useCompressionIfAvailable = false)
         {
-            var filePath = GetSnapshotFilePath(snapshotDirectoryPath);
+            var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
 
-            if (File.Exists(filePath)) File.Delete(filePath);
+            if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
             var server = CreateServer();
 
@@ -109,11 +140,20 @@ namespace Lombiq.Tests.UI.Services
                 Database = _databaseName,
             };
 
-            var destination = new BackupDeviceItem(filePath, DeviceType.File);
+            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
             backup.Devices.Add(destination);
             // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
             // which is messy.
             backup.SqlBackup(server);
+
+            if (!File.Exists(filePathLocal))
+            {
+                throw filePathLocal == filePathRemote
+                    ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
+                    : new FileNotFoundException(
+                        $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
+                        $"Are the two bound together? If you are using Docker, did you set up the local volume?");
+            }
         }
 
         public void RestoreSnapshot(string snapshotDirectoryPath)
@@ -172,7 +212,10 @@ namespace Lombiq.Tests.UI.Services
 
         // It's easier to use the server name directly instead of the connection string as that also requires the
         // referenced database to exist.
-        private Server CreateServer() => new Server(_serverName);
+        private Server CreateServer() =>
+            string.IsNullOrWhiteSpace(_password)
+                ? new Server(_serverName)
+                : new Server(new ServerConnection(_serverName, _userId, _password));
 
         private void DropDatabaseIfExists(Server server)
         {
@@ -222,6 +265,8 @@ namespace Lombiq.Tests.UI.Services
         }
 
         private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
-            Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
+            snapshotDirectoryPath[0] == '/'
+                ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
+                : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
     }
 }

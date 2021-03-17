@@ -27,7 +27,7 @@ namespace Lombiq.Tests.UI.Services
         public static int? GetIntConfiguration(string key)
         {
             var config = GetConfiguration(key);
-            return string.IsNullOrEmpty(config) ? (int?)null : int.Parse(config, CultureInfo.InvariantCulture);
+            return string.IsNullOrEmpty(config) ? null : int.Parse(config, CultureInfo.InvariantCulture);
         }
 
         public static bool GetBoolConfiguration(string key, bool defaultValue) => GetBoolConfiguration(key) ?? defaultValue;
@@ -35,7 +35,7 @@ namespace Lombiq.Tests.UI.Services
         public static bool? GetBoolConfiguration(string key)
         {
             var config = GetConfiguration(key);
-            return string.IsNullOrEmpty(config) ? (bool?)null : bool.Parse(config);
+            return string.IsNullOrEmpty(config) ? null : bool.Parse(config);
         }
 
         // Default value should only be used on null value because an empty string is a valid existing configuration.
@@ -49,6 +49,17 @@ namespace Lombiq.Tests.UI.Services
             return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
                 ? throw new InvalidOperationException($"The configuration with the key {prefixedKey} was null or empty.")
                 : config;
+        }
+
+        public static T GetConfiguration<T>()
+            where T : new()
+        {
+            var result = new T();
+
+            var prefixedKey = "Lombiq_Tests_UI:" + typeof(T).Name;
+            _configuration.Bind(prefixedKey, result);
+
+            return result;
         }
 
         private static IConfiguration BuildConfiguration() =>
