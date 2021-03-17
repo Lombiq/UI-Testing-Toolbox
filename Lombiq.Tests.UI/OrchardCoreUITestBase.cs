@@ -34,8 +34,9 @@ namespace Lombiq.Tests.UI
             {
                 Name = (_testOutputHelper.GetType()
                     .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.FieldType == typeof(ITest))
-                    ?.GetValue(_testOutputHelper) as ITest)?.DisplayName,
+                    .FirstOrDefault(field => field.FieldType == typeof(ITest))
+                    ?.GetValue(_testOutputHelper) as ITest)
+                    ?.DisplayName,
                 Test = test,
             };
 
