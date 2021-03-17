@@ -32,12 +32,12 @@ namespace Lombiq.Tests.UI.Extensions
                     context.Driver.Navigate().GoToUrl(absoluteUri);
                 });
 
-        public static Uri GetCurrentUri(this UITestContext context) => new Uri(context.Driver.Url);
+        public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
 
         public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
-            new Uri(context.Scope.BaseUri, relativeUrl);
+            new(context.Scope.BaseUri, relativeUrl);
 
         public static void SignOutDirectlyThenSignInDirectlyAndGoToHomepage(
             this UITestContext context,
