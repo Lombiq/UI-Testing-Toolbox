@@ -16,7 +16,8 @@ Highlights:
 - Test e-mail sending with a local SMTP server too. Everything just works.
 - Check for web content accessibility so people with disabilities can user your app properly too. You can also create accessibility reports for all pages.
 - Reliability is built in, so you won't get false negatives.
-- Use shortcuts for common Orchard Core operations like login instead of going through the UI so you only test what you want, and it's also faster.
+- Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
+- Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in TeamCity.
 
 
 ## Table of contents
