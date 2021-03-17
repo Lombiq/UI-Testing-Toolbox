@@ -16,7 +16,7 @@ Certain test execution parameters can be configured externally too, the ones ret
 
 Here's a full *TestConfiguration.json* file example, something appropriate during development when you have a fast machine (probably faster then the one used to execute these tests) and want tests to fail fast instead of being reliable:
 
-```
+```json
 {
   "Lombiq_Tests_UI": {
     "AgentIndex": 3,
@@ -47,3 +47,35 @@ We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for y
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
 
 Supply the agent index in the `AgentIndex` configuration. It doesn't need to but is highly recommended to be zero-indexed (see the [docs on limits](Limits.md)) and it must be unique to each process. You can also use this to find a port interval where on your machine there are no other processes listening.
+
+
+## Using SQL Server from a Docker container
+
+### Setup
+
+You can learn more about the *microsoft-mssql-server* container [here](https://hub.docker.com/_/microsoft-mssql-server). You have to mount a local volume that can be shared between the host and the container. Update the values of `device` and `SA_PASSWORD` in the code below and execute it.
+
+```powershell
+docker pull mcr.microsoft.com/mssql/server
+docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data" data
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+```
+
+Now log in as root using `docker exec -u 0 -it sql2019 bash` and give access to the data directory with `chown 'mssql:root' /data`.
+
+You can use Docker Desktop to stop or start the container going forward. 
+
+
+### Extending TestConfiguration.json
+
+SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and `HostSnapshotPath` property as needed.
+
+```json
+"SqlServerDatabaseConfiguration": {
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
+},
+"DockerConfiguration": {
+    "ContainerSnapshotPath": "/data",
+    "HostSnapshotPath": "C:\\docker\\data"
+}
+```
