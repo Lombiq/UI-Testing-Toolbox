@@ -1,4 +1,5 @@
 using CliWrap.Builders;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
@@ -35,6 +36,7 @@ namespace Lombiq.Tests.UI.Services
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
         private List<BrowserLogMessage> _browserLogMessages;
+        private DockerConfiguration _dockerConfiguration;
 
         private UITestExecutor(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
         {
@@ -232,7 +234,14 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    _sqlServerManager.TakeSnapshot(appDumpPath, true);
+                    var remotePath = appDumpPath;
+                    if (_dockerConfiguration != null)
+                    {
+                        appDumpPath = _dockerConfiguration.HostSnapshotPath;
+                        remotePath = _dockerConfiguration.ContainerSnapshotPath;
+                    }
+
+                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, true);
                 }
                 catch (Exception failureException)
                 {
@@ -263,57 +272,32 @@ namespace Lombiq.Tests.UI.Services
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
+                SetupDocker();
+
                 var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
+                    if (Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
+                    {
+                        Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
+                    }
+
                     if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
-                    if (setupConfiguration.FastFailSetup)
+                    if (setupConfiguration.FastFailSetup &&
+                        _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
+                        failureCount > _configuration.MaxRetryCount)
                     {
-                        _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount);
-                        if (failureCount > _configuration.MaxRetryCount)
-                        {
-                            throw new SetupFailedFastException(failureCount);
-                        }
+                        throw new SetupFailedFastException(failureCount);
                     }
 
                     // Note that the context creation needs to be done here too because the Orchard app needs the
                     // snapshot config to be available at startup too.
                     _context = await CreateContextAsync();
 
-                    if (_configuration.UseSqlServer)
-                    {
-                        // This is only necessary for the setup snapshot.
-                        Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
-                        {
-                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
-                            _sqlServerManager.TakeSnapshot(snapshotDirectoryPath);
-                            return Task.CompletedTask;
-                        }
-
-                        // This is necessary because a simple subtraction wouldn't remove previous instances of the
-                        // local function. Thus if anything goes wrong between the below delegate registration and it
-                        // being called then it'll remain registered and later during a retry try to run (and fail on
-                        // the disposed SqlServerManager.
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
-                    }
-
-                    if (_configuration.UseAzureBlobStorage)
-                    {
-                        // This is only necessary for the setup snapshot.
-                        Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
-                        {
-                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
-                            return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
-                        }
-
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-                            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync);
-                        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
-                    }
+                    SetupSqlServer();
+                    SetupAzureBlobStorage();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
@@ -337,11 +321,76 @@ namespace Lombiq.Tests.UI.Services
             {
                 if (setupConfiguration.FastFailSetup)
                 {
-                    _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (key, value) => value + 1);
+                    _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (_, value) => value + 1);
                 }
 
                 throw;
             }
+        }
+
+        private void SetupDocker()
+        {
+            if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is not { } docker ||
+                string.IsNullOrEmpty(docker.HostSnapshotPath))
+            {
+                return;
+            }
+
+            // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
+            // itself (which would be logical). Removing the volume directory instantly severs the connection between
+            // host and the container so that should be avoided at all costs.
+            docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotPath; // Always a Unix path.
+            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotPath);
+
+            _dockerConfiguration = docker;
+        }
+
+        private void SetupSqlServer()
+        {
+            if (!_configuration.UseSqlServer) return;
+
+            // This is only necessary for the setup snapshot.
+            Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
+            {
+                _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -=
+                    SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+
+                var remotePath = snapshotDirectoryPath;
+                if (_dockerConfiguration != null)
+                {
+                    snapshotDirectoryPath = _dockerConfiguration.HostSnapshotPath;
+                    remotePath = _dockerConfiguration.ContainerSnapshotPath;
+                }
+
+                _sqlServerManager.TakeSnapshot(remotePath, snapshotDirectoryPath);
+                return Task.CompletedTask;
+            }
+
+            // This is necessary because a simple subtraction wouldn't remove previous instances of the
+            // local function. Thus if anything goes wrong between the below delegate registration and it
+            // being called then it'll remain registered and later during a retry try to run (and fail on
+            // the disposed SqlServerManager.
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(
+                    SqlServerManagerBeforeTakeSnapshotHandlerAsync);
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot +=
+                SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+        }
+
+        private void SetupAzureBlobStorage()
+        {
+            if (!_configuration.UseAzureBlobStorage) return;
+
+            // This is only necessary for the setup snapshot.
+            Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
+            {
+                _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
+                return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
+            }
+
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+                _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync);
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
         }
 
         private async Task<UITestContext> CreateContextAsync()
@@ -358,9 +407,11 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
-                    var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+                    var snapshotDirectoryPath =
+                        _dockerConfiguration?.ContainerSnapshotPath ??
+                        _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
 
-                    if (!Directory.Exists(snapshotDirectoryPath)) return;
+                    if (!Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath)) return;
 
                     _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
