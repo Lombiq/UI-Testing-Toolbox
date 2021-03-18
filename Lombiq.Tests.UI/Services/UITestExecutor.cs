@@ -170,28 +170,46 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_context == null) return;
 
-                if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
-
+                // Saving the screenshot and HTML output should be as early after the test fail as possible so they show
+                // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
                 if (_dumpConfiguration.CaptureScreenshot)
                 {
                     // Only PNG is supported on .NET Core.
-                    _context.Scope.Driver.GetScreenshot()
-                        .SaveAsFile(Path.Combine(debugInformationPath, "Screenshot.png"));
+                    var imagePath = Path.Combine(debugInformationPath, "Screenshot.png");
+                    _context.Scope.Driver.GetScreenshot().SaveAsFile(imagePath);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
+                    }
                 }
 
                 if (_dumpConfiguration.CaptureHtmlSource)
                 {
-                    await File.WriteAllTextAsync(
-                        Path.Combine(debugInformationPath, "PageSource.html"),
-                        _context.Scope.Driver.PageSource);
+                    var htmlPath = Path.Combine(debugInformationPath, "PageSource.html");
+                    await File.WriteAllTextAsync(htmlPath, _context.Scope.Driver.PageSource);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "PageSource", htmlPath);
+                    }
                 }
 
                 if (_dumpConfiguration.CaptureBrowserLog)
                 {
+                    var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
+
                     await File.WriteAllLinesAsync(
-                        Path.Combine(debugInformationPath, "BrowserLog.log"),
+                        browserLogPath,
                         (await GetBrowserLogAsync(_context.Scope.Driver)).Select(message => message.ToString()));
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "BrowserLog", browserLogPath);
+                    }
                 }
+
+                if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
                 if (ex is AccessibilityAssertionException accessibilityAssertionException
                     && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
@@ -206,7 +224,14 @@ namespace Lombiq.Tests.UI.Services
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     $"Creating the failure dump of the test failed with the following exception: {dumpException}");
             }
+            finally
+            {
+                await SaveTestOutputAsync(debugInformationPath);
+            }
+        }
 
+        private async Task SaveTestOutputAsync(string debugInformationPath)
+        {
             try
             {
                 if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
@@ -214,8 +239,13 @@ namespace Lombiq.Tests.UI.Services
                     // While this depends on the directory creation in the above try block it needs to come after the
                     // catch otherwise the message saved there wouldn't be included.
 
-                    await File.WriteAllTextAsync(
-                        Path.Combine(debugInformationPath, "TestOutput.log"), concreteTestOutputHelper.Output);
+                    var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
+                    await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "TestOutput", testOutputPath);
+                    }
                 }
             }
             catch (Exception testOutputHelperException)
@@ -575,17 +605,25 @@ namespace Lombiq.Tests.UI.Services
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
             var retryCount = 0;
-            while (true)
+            var passed = false;
+            while (!passed)
             {
                 try
                 {
                     await using var instance = new UITestExecutor(testManifest, configuration);
-                    if (await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath)) return;
+                    passed = await instance.ExecuteAsync(retryCount, runSetupOperation, dumpRootPath);
                 }
                 catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
                 {
                     configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                         $"Unhandled exception during text execution: {ex}.");
+                }
+                finally
+                {
+                    if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
+                    {
+                        TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
+                    }
                 }
 
                 retryCount++;
