@@ -23,6 +23,16 @@ namespace Lombiq.Tests.UI.Extensions
             context.FillInWithRetries(by, text, timeout, interval);
         }
 
+        public static void ClickAndFillInWithRetriesIfNotNullOrEmpty(
+            this UITestContext context,
+            By by,
+            string text,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
+        {
+            if (!string.IsNullOrEmpty(text)) ClickAndFillInWithRetries(context, by, text, timeout, interval);
+        }
+
         public static void ClickAndClear(this UITestContext context, By by) =>
             context.ExecuteLogged(
                 nameof(ClickAndClear),
