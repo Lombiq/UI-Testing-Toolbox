@@ -111,7 +111,8 @@ namespace Lombiq.Tests.UI.Extensions
         public static string GetSelectedTabText(
             this UITestContext context,
             string defaultTitle = "Content",
-            TimeSpan? timeout = null)
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
         {
             string title = defaultTitle;
 
@@ -121,7 +122,8 @@ namespace Lombiq.Tests.UI.Extensions
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
                     return title != defaultTitle;
                 },
-                timeout);
+                timeout,
+                interval);
 
             return title;
         }
