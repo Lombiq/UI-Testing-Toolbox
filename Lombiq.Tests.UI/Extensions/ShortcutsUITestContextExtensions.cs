@@ -38,13 +38,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         public static void SignInDirectlyAndGoToRelativeUrl(
             this UITestContext context,
+            string userName,
             string relativeUrl,
-            bool onlyIfNotAlreadyThere = true,
-            string userName = DefaultUser.UserName)
+            bool onlyIfNotAlreadyThere = true
+            )
         {
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" +
-                WebUtility.UrlEncode(userName));
-            context.GoToAbsoluteUrl(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
+            context.SignInDirectly(userName);
+            context.GoToRelativeUrl(relativeUrl, onlyIfNotAlreadyThere);
         }
 
         /// <summary>
