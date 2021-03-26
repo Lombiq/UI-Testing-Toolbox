@@ -475,7 +475,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (configuration.OrchardCoreConfiguration == null)
             {
-                throw new ArgumentNullException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
+                throw new ArgumentException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
             }
 
             return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
