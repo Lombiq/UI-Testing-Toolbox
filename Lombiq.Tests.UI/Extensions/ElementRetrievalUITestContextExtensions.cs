@@ -83,7 +83,7 @@ namespace Lombiq.Tests.UI.Extensions
         }
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
-            new ExtendedSearchContext<RemoteWebDriver>(
+            new(
                 context.Driver,
                 context.Configuration.TimeoutConfiguration.RetryTimeout,
                 context.Configuration.TimeoutConfiguration.RetryTimeout);

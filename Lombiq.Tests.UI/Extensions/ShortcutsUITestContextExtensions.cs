@@ -32,6 +32,22 @@ namespace Lombiq.Tests.UI.Extensions
                 WebUtility.UrlEncode(userName));
 
         /// <summary>
+        /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
+        /// anything else happening on the login page and going to a relative URL after login. The target app needs to
+        /// have Lombiq.Tests.UI.Shortcuts enabled.
+        /// </summary>
+        public static void SignInDirectlyAndGoToRelativeUrl(
+            this UITestContext context,
+            string userName,
+            string relativeUrl,
+            bool onlyIfNotAlreadyThere = true
+            )
+        {
+            context.SignInDirectly(userName);
+            context.GoToRelativeUrl(relativeUrl, onlyIfNotAlreadyThere);
+        }
+
+        /// <summary>
         /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the
         /// logoff page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
         /// </summary>
