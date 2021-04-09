@@ -13,8 +13,9 @@ namespace Lombiq.Tests.UI.Services
     {
         /// <summary>
         /// Gets or sets the Orchard setup operation so the result can be snapshot and used in subsequent tests.
-        /// WARNING: It's highly recommended to put assertions at the end of it to pinpoint setup issues. Also see
-        /// <see cref="FastFailSetup"/>.
+        /// WARNING: It's highly recommended to put assertions at the end to detect setup issues and fail tests early
+        /// (since they can't be reliable after an improper setup). If configured, automatic log assertions will be
+        /// executed after the setup operation too. Also see <see cref="FastFailSetup"/>.
         /// </summary>
         public Func<UITestContext, Uri> SetupOperation { get; set; }
 
