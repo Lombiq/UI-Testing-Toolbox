@@ -18,10 +18,10 @@ namespace Lombiq.Tests.UI.Helpers
                 .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonConvert.SerializeObject(text)})]")
                 .Within(TimeSpan.FromMinutes(2));
 
-        public static By Text(string text, string element = "*") =>
-            By.XPath($"//{element}[. = {JsonConvert.SerializeObject(text)}]");
+        public static By Text(string innerText, string element = "*") =>
+            By.XPath($"//{element}[. = {JsonConvert.SerializeObject(innerText)}]");
 
-        public static By TextContains(string text, string element = "*") =>
-            By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(text)})]");
+        public static By TextContains(string innerText, string element = "*") =>
+            By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(innerText)})]");
     }
 }
