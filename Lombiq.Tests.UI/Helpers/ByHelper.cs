@@ -18,9 +18,17 @@ namespace Lombiq.Tests.UI.Helpers
                 .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonConvert.SerializeObject(text)})]")
                 .Within(TimeSpan.FromMinutes(2));
 
+        /// <summary>
+        /// Returns an XPath selector that looks up an element with matching <paramref name="innerText"/> with optional
+        /// element name restriction.
+        /// </summary>
         public static By Text(string innerText, string element = "*") =>
             By.XPath($"//{element}[. = {JsonConvert.SerializeObject(innerText)}]");
 
+        /// <summary>
+        /// Returns an XPath selector that looks up an element with whose text contains <paramref name="innerText"/>
+        /// with optional element name restriction.
+        /// </summary>
         public static By TextContains(string innerText, string element = "*") =>
             By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(innerText)})]");
     }
