@@ -82,6 +82,18 @@ namespace Lombiq.Tests.UI.Extensions
             context.Missing(By.CssSelector(".message-error"));
         }
 
+        /// <summary>
+        /// Verifies that publishing a content item has succeeded, where warning or error messages are allowed to show.
+        /// </summary>
+        /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
+        public static void SucccessMessageExists(this UITestContext context, TimeSpan? within = null)
+        {
+            var by = By.CssSelector(".message-success");
+            if (within is { } timeSpan) by = by.Within(timeSpan);
+
+            context.Exists(by);
+        }
+
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new(
                 context.Driver,
