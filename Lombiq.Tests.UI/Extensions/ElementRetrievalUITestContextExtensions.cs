@@ -66,17 +66,11 @@ namespace Lombiq.Tests.UI.Extensions
             context.Missing(By.CssSelector(".validation-summary-errors li"));
 
         /// <summary>
-        /// Verifies that publishing a content item has succeeded.
+        /// Verifies that publishing a content item has succeeded. No warning or error messages are allowed.
         /// </summary>
-        /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
-        /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
-        public static void ShouldBeSuccess(this UITestContext context, string matchText = null, TimeSpan? within = null)
+        public static void ShouldBeSuccess(this UITestContext context)
         {
-            var by = By.CssSelector(".message-success");
-            if (within is { } timeSpan) by = by.Within(timeSpan);
-
-            var element = context.Get(by);
-            if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
+            context.SucccessMessageExists();
 
             context.Missing(By.CssSelector(".message-warning"));
             context.Missing(By.CssSelector(".message-error"));
@@ -85,13 +79,15 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Verifies that publishing a content item has succeeded, where warning or error messages are allowed to show.
         /// </summary>
+        /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
         /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
-        public static void SucccessMessageExists(this UITestContext context, TimeSpan? within = null)
+        public static void SucccessMessageExists(this UITestContext context, string matchText = null, TimeSpan? within = null)
         {
             var by = By.CssSelector(".message-success");
             if (within is { } timeSpan) by = by.Within(timeSpan);
 
-            context.Exists(by);
+            var element = context.Get(by);
+            if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
         }
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
