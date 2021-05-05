@@ -26,13 +26,13 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteSection(GetLogSection(operationName, objectOfOperation), function);
 
         private static LogSection GetLogSection(string operationName, IWebElement element) =>
-            new LogSection(GetSectionMessage(operationName, element.ToDetailedString()));
+            new(GetSectionMessage(operationName, element.ToDetailedString()));
 
         private static LogSection GetLogSection(string operationName, By by) =>
-            new LogSection(GetSectionMessage(operationName, by.ToString()));
+            new(GetSectionMessage(operationName, by.ToString()));
 
         private static LogSection GetLogSection(string operationName, string objectOfOperation) =>
-            new LogSection(GetSectionMessage(operationName, objectOfOperation));
+            new(GetSectionMessage(operationName, objectOfOperation));
 
         private static string GetSectionMessage(string operationName, string objectOfOperation) =>
             $"{operationName} applied to: {Environment.NewLine}{objectOfOperation}";
