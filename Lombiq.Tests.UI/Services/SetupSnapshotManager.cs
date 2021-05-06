@@ -4,7 +4,7 @@ namespace Lombiq.Tests.UI.Services
 {
     public static class SetupSnapshotManager
     {
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private static SynchronizingWebApplicationSnapshotManager _instance;
 
         public static SynchronizingWebApplicationSnapshotManager Instance

@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Services
     {
         private static readonly PortLeaseManager _smtpPortLeaseManager;
         private static readonly PortLeaseManager _webUIPortLeaseManager;
-        private static readonly SemaphoreSlim _restoreSemaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
 
         // Here for future use.
 #pragma warning disable IDE0052 // Remove unread private members

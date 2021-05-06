@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.Services
 {
     public class BrowserConfiguration
     {
-        public static readonly CultureInfo DefaultAcceptLanguage = new CultureInfo("en-US");
+        public static readonly CultureInfo DefaultAcceptLanguage = new("en-US");
 
         /// <summary>
         /// Gets or sets the browser to use for the current test.

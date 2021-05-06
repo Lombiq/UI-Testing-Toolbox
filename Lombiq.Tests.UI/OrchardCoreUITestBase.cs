@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI
 {
     public abstract class OrchardCoreUITestBase
     {
-        private static readonly object _snapshotCopyLock = new object();
+        private static readonly object _snapshotCopyLock = new();
 
         protected readonly ITestOutputHelper _testOutputHelper;
 

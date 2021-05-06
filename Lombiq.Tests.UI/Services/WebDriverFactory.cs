@@ -16,7 +16,7 @@ namespace Lombiq.Tests.UI.Services
 {
     public static class WebDriverFactory
     {
-        private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new ConcurrentDictionary<string, Lazy<bool>>();
+        private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
 
         public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
             CreateDriver(
