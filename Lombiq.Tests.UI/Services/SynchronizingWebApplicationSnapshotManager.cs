@@ -14,7 +14,7 @@ namespace Lombiq.Tests.UI.Services
     /// </summary>
     public class SynchronizingWebApplicationSnapshotManager
     {
-        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly string _snapshotDirectoryPath;
 
         private Uri _resultUri;

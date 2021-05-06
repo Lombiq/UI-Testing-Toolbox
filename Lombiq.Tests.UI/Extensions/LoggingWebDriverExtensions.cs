@@ -50,14 +50,14 @@ namespace Lombiq.Tests.UI.Extensions
 
     public static class LoggingWebDriverExtensions
     {
-        private static readonly Dictionary<string, BrowserLogMessage.MessageLevel> _levelMappings = new Dictionary<string, BrowserLogMessage.MessageLevel>
+        private static readonly Dictionary<string, BrowserLogMessage.MessageLevel> _levelMappings = new()
         {
             ["SEVERE"] = BrowserLogMessage.MessageLevel.Severe,
             ["WARNING"] = BrowserLogMessage.MessageLevel.Warning,
             ["INFO"] = BrowserLogMessage.MessageLevel.Info,
         };
 
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient = new();
 
         /// <summary>
         /// Retrieves the console logs from the browser. This log will contain all the log messages since the start of

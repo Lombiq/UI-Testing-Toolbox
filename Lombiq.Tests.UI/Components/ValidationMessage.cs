@@ -6,8 +6,7 @@ namespace Lombiq.Tests.UI.Components
     public class ValidationMessage<TOwner> : Text<TOwner>
         where TOwner : PageObject<TOwner>
     {
-        public new FieldVerificationProvider<string, ValidationMessage<TOwner>, TOwner> Should =>
-            new FieldVerificationProvider<string, ValidationMessage<TOwner>, TOwner>(this);
+        public new FieldVerificationProvider<string, ValidationMessage<TOwner>, TOwner> Should => new(this);
     }
 
     public static class ValidationMessageExtensions
