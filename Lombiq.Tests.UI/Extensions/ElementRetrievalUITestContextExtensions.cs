@@ -92,6 +92,10 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
         }
 
+        /// <summary>
+        /// Check if the commercial entity name is already in use. If It is, an error message should be shown.
+        /// </summary>
+        /// <param name="commercialEntityType">Commercial entity type, Team or Company.</param>
         public static void ErrorMessageIfCommercialEntityNameAlreadyExists(this UITestContext context, string commercialEntityType) =>
             context.Get(By.CssSelector(".validation-summary-errors li"))
                 .Text
