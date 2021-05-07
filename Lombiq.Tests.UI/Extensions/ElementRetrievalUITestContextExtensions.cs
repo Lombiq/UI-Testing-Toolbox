@@ -93,13 +93,13 @@ namespace Lombiq.Tests.UI.Extensions
         }
 
         /// <summary>
-        /// Check if the commercial entity name is already in use. If It is, an error message should be shown.
+        /// Check if error message is shown.
         /// </summary>
-        /// <param name="commercialEntityType">Commercial entity type, Team or Company.</param>
-        public static void ErrorMessageIfCommercialEntityNameAlreadyExists(this UITestContext context, string commercialEntityType) =>
+        /// <param name="errorMessage">Error message to look for.</param>
+        public static void ErrorMessageIfCommercialEntityNameAlreadyExists(this UITestContext context, string errorMessage) =>
             context.Get(By.CssSelector(".validation-summary-errors li"))
                 .Text
-                .ShouldBe($"{commercialEntityType} with the same name already exists.");
+                .ShouldBe(errorMessage);
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new(
