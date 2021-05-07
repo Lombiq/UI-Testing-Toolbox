@@ -96,7 +96,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Check if error message is shown.
         /// </summary>
         /// <param name="errorMessage">Error message to look for.</param>
-        public static void ErrorMessageIfCommercialEntityNameAlreadyExists(this UITestContext context, string errorMessage) =>
+        public static void ErrorMessageExists(this UITestContext context, string errorMessage) =>
             context.Get(By.CssSelector(".validation-summary-errors li"))
                 .Text
                 .ShouldBe(errorMessage);
