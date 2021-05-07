@@ -92,6 +92,11 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
         }
 
+        public static void ErrorMessageIfCommercialEntityNameAlreadyExists(this UITestContext context, string commercialEntityType) =>
+            context.Get(By.CssSelector(".validation-summary-errors li"))
+                .Text
+                .ShouldBe($"{commercialEntityType} with the same name already exists.");
+
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new(
                 context.Driver,
