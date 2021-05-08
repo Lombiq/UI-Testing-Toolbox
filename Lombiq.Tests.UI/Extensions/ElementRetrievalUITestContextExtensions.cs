@@ -92,6 +92,15 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
         }
 
+        /// <summary>
+        /// Check if error message is shown.
+        /// </summary>
+        /// <param name="errorMessage">Error message to look for.</param>
+        public static void ErrorMessageExists(this UITestContext context, string errorMessage) =>
+            context.Get(By.CssSelector(".validation-summary-errors li"))
+                .Text
+                .ShouldBe(errorMessage);
+
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new(
                 context.Driver,
