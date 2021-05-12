@@ -13,8 +13,8 @@ namespace Lombiq.Tests.UI.Services
     public class PortLeaseManager
     {
         private readonly IEnumerable<int> _availablePortsRange;
-        private readonly HashSet<int> _usedPorts = new HashSet<int>();
-        private readonly object _portAcquisitionLock = new object();
+        private readonly HashSet<int> _usedPorts = new();
+        private readonly object _portAcquisitionLock = new();
 
         public PortLeaseManager(int lowerBound, int upperBound) =>
             _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);

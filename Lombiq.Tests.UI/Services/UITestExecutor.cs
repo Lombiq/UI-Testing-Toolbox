@@ -1,4 +1,5 @@
 using CliWrap.Builders;
+using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
@@ -76,29 +77,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _testManifest.Test(_context);
 
-                try
-                {
-                    if (_configuration.AssertAppLogs != null) await _configuration.AssertAppLogs(_context.Application);
-                }
-                catch (Exception)
-                {
-                    _testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-                    _testOutputHelper.WriteLine(await _context.Application.GetLogOutputAsync());
-
-                    throw;
-                }
-
-                try
-                {
-                    _configuration.AssertBrowserLog?.Invoke(await GetBrowserLogAsync(_context.Scope.Driver));
-                }
-                catch (Exception)
-                {
-                    _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                    _testOutputHelper.WriteLine((await GetBrowserLogAsync(_context.Scope.Driver)).ToFormattedString());
-
-                    throw;
-                }
+                await AssertLogsAsync();
 
                 return true;
             }
@@ -330,6 +309,7 @@ namespace Lombiq.Tests.UI.Services
                     SetupAzureBlobStorage();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
+                    await AssertLogsAsync();
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
                     return result;
                 });
@@ -551,6 +531,33 @@ namespace Lombiq.Tests.UI.Services
         }
 
         private int GetSetupHashCode() => _configuration.SetupConfiguration.SetupOperation.GetHashCode();
+
+        private async Task AssertLogsAsync()
+        {
+            try
+            {
+                if (_configuration.AssertAppLogs != null) await _configuration.AssertAppLogs(_context.Application);
+            }
+            catch (Exception)
+            {
+                _testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
+                _testOutputHelper.WriteLine(await _context.Application.GetLogOutputAsync());
+
+                throw;
+            }
+
+            try
+            {
+                _configuration.AssertBrowserLog?.Invoke(await GetBrowserLogAsync(_context.Scope.Driver));
+            }
+            catch (Exception)
+            {
+                _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
+                _testOutputHelper.WriteLine((await GetBrowserLogAsync(_context.Scope.Driver)).ToFormattedString());
+
+                throw;
+            }
+        }
 
         /// <summary>
         /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
