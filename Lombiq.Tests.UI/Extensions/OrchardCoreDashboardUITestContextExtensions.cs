@@ -15,7 +15,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             if (withJavaScript)
             {
-                context.ExecuteScript($"document.getElementsByClassName('publish-button btn btn-success')[0].click()");
+                context.ExecuteScript($"document.querySelector('.publish-button').click()");
             }
             else
             {
