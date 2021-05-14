@@ -11,8 +11,17 @@ namespace Lombiq.Tests.UI.Extensions
         public static void GoToEditorTab(this UITestContext context, string tabText) =>
             context.ClickReliablyOn(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
 
-        public static void ClickPublish(this UITestContext context) =>
-            context.ClickReliablyOn(By.Name("submit.Publish"));
+        public static void ClickPublish(this UITestContext context, bool withJavaScript = false)
+        {
+            if (withJavaScript)
+            {
+                context.ExecuteScript($"document.querySelector('.publish-button').click()");
+            }
+            else
+            {
+                context.ClickReliablyOn(By.Name("submit.Publish"));
+            }
+        }
 
         public static void GoToContentItemList(this UITestContext context)
         {
