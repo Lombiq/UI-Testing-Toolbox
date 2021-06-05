@@ -17,6 +17,6 @@ namespace Lombiq.Tests.UI.Helpers
         // Note that this uses UTC, while Atata's log uses the local time zone:
         // https://github.com/atata-framework/atata/issues/483.
         public static string PrefixWithTimestamp(string message) =>
-            $"{DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)} - {message}";
+            $"{DateTime.UtcNow.ToString("yyyy-mm-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture)} - {message}";
     }
 }
