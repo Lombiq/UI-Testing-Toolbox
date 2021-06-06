@@ -25,6 +25,12 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public void SetContextAsCurrent() => AtataContext.Current = AtataContext;
 
-        public void Dispose() => AtataContext.Dispose();
+        public void Dispose()
+        {
+            // Necessary, otherwise the timezone wouldn't be as configured, see:
+            // https://github.com/atata-framework/atata/issues/501
+            AtataContext.Current = AtataContext;
+            AtataContext.Dispose();
+        }
     }
 }

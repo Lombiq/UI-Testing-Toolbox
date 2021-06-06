@@ -37,10 +37,20 @@ namespace Lombiq.Tests.UI.Extensions
         private static string GetSectionMessage(string operationName, string objectOfOperation) =>
             $"{operationName} applied to: {Environment.NewLine}{objectOfOperation}";
 
-        private static void ExecuteSection(this UITestContext context, LogSection section, Action action) =>
+        private static void ExecuteSection(this UITestContext context, LogSection section, Action action)
+        {
+            // Necessary, otherwise the timezone wouldn't be as configured, see:
+            // https://github.com/atata-framework/atata/issues/501
+            AtataContext.Current = context.Scope.AtataContext;
             context.Scope.AtataContext.Log.ExecuteSection(section, action);
+        }
 
-        private static TResult ExecuteSection<TResult>(this UITestContext context, LogSection section, Func<TResult> function) =>
-            context.Scope.AtataContext.Log.ExecuteSection(section, function);
+        private static TResult ExecuteSection<TResult>(this UITestContext context, LogSection section, Func<TResult> function)
+        {
+            // Necessary, otherwise the timezone wouldn't be as configured, see:
+            // https://github.com/atata-framework/atata/issues/501
+            AtataContext.Current = context.Scope.AtataContext;
+            return context.Scope.AtataContext.Log.ExecuteSection(section, function);
+        }
     }
 }
