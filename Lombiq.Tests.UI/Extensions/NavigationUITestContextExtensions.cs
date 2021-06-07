@@ -84,24 +84,14 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(GoToPage),
                 typeof(T).FullName,
-                () =>
-                {
-                    context.Scope.SetContextAsCurrent();
-                    return Go.To<T>();
-                });
+                () => context.Scope.AtataContext.Go.To<T>());
 
         public static T GoToPage<T>(this UITestContext context, string relativeUrl)
             where T : PageObject<T> =>
             context.ExecuteLogged(
                 nameof(GoToPage),
                 $"{typeof(T).FullName} - {relativeUrl}",
-                () =>
-                {
-                    var uri = context.GetAbsoluteUri(relativeUrl);
-
-                    context.Scope.SetContextAsCurrent();
-                    return Go.To<T>(url: uri.ToString());
-                });
+                () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
 
         public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
             context.GoToPage<OrchardCoreDashboardPage>();
