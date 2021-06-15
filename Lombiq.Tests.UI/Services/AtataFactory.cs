@@ -73,7 +73,8 @@ namespace Lombiq.Tests.UI.Services
                 .AddDebugLogging()
                 .AddLogConsumer(new TestOutputLogConsumer(testOutputHelper))
                 .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
-                .UseBaseRetryInterval(timeoutConfiguration.RetryInterval);
+                .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
+                .UseUtcTimeZone();
 
             configuration.AtataConfiguration.ContextBuilder?.Invoke(builder);
 
