@@ -190,12 +190,24 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
+                // Saving the accessibility and HTML validation reports to files should happen here and can't earlier
+                // since at that point there's no FailureDumps folder yet.
+
                 if (ex is AccessibilityAssertionException accessibilityAssertionException
                     && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
                 {
                     _context.Driver.CreateAxeHtmlReport(
                         accessibilityAssertionException.AxeResult,
                         Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                }
+
+                if (ex is HtmlValidationAssertionException htmlValidationAssertionException
+                    && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
+                {
+                    // Will need proper formatting, see: https://github.com/atata-framework/atata-htmlvalidation/issues/2
+                    await File.WriteAllTextAsync(
+                        Path.Combine(debugInformationPath, "HtmlValidationReport.txt"),
+                        htmlValidationAssertionException.HtmlValidationResult.Output);
                 }
             }
             catch (Exception dumpException)

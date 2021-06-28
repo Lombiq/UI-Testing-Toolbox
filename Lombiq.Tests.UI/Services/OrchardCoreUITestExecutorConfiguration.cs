@@ -63,6 +63,8 @@ namespace Lombiq.Tests.UI.Services
 
         public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new();
 
+        public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
+
         /// <summary>
         /// Gets or sets a value indicating whether to use SQL Server as the app's database instead of the default
         /// SQLite. See <see cref="SqlServerDatabaseConfiguration"/> on configuring this.
