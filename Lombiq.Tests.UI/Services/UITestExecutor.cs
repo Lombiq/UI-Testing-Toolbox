@@ -1,3 +1,4 @@
+using Atata.HtmlValidation;
 using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -190,7 +191,7 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
-                await CaptureMarkupValidationResultsAsync(ex, debugInformationPath);
+                CaptureMarkupValidationResults(ex, debugInformationPath);
             }
             catch (Exception dumpException)
             {
@@ -267,7 +268,7 @@ namespace Lombiq.Tests.UI.Services
             }
         }
 
-        private async Task CaptureMarkupValidationResultsAsync(Exception ex, string debugInformationPath)
+        private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
         {
             // Saving the accessibility and HTML validation reports to files should happen here and can't earlier
             // since at that point there's no FailureDumps folder yet.
@@ -283,10 +284,18 @@ namespace Lombiq.Tests.UI.Services
             if (ex is HtmlValidationAssertionException htmlValidationAssertionException
                 && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
             {
-                // Will need proper formatting, see: https://github.com/atata-framework/atata-htmlvalidation/issues/2
-                await File.WriteAllTextAsync(
-                    Path.Combine(debugInformationPath, "HtmlValidationReport.txt"),
-                    htmlValidationAssertionException.HtmlValidationResult.Output);
+                var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
+                if (!string.IsNullOrEmpty(resultFilePath))
+                {
+                    File.Move(resultFilePath, Path.Combine(debugInformationPath, "HtmlValidationReport.txt"));
+                }
+                else
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "While it was configured to create an HTML validation report on validation failure, there was " +
+                        $"no report generated due to {nameof(HtmlValidationOptions)}.{nameof(HtmlValidationOptions.SaveResultToFile)} " +
+                        "being false.");
+                }
             }
         }
 
