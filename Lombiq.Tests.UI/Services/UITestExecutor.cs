@@ -648,9 +648,7 @@ namespace Lombiq.Tests.UI.Services
                 // Incorrect suggestion.
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
                 // Incorrect suggestion.
-#pragma warning disable S1854 // Unused assignments should be removed
                 var dumpFolderNameBeginningIndex =
-#pragma warning restore S1854 // Unused assignments should be removed
                     dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)).LastIndexOf('.') + 1;
                 dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
 #pragma warning restore S4635 // String offset-based methods should be preferred for finding substrings from offsets
@@ -681,10 +679,8 @@ namespace Lombiq.Tests.UI.Services
                 // usually make it long.
 
                 // They're not actually unused.
-#pragma warning disable S1854 // Unused assignments should be removed
                 var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
                 var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
-#pragma warning restore S1854 // Unused assignments should be removed
 
                 // Can't use string.GetHasCode() because that varies between executions.
                 var hashedParameters = Sha256Helper
