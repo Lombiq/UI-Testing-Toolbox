@@ -26,7 +26,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public HtmlValidationOptions HtmlValidationOptions { get; set; } = new HtmlValidationOptions
         {
-            KeepHtmlFileWhenValid = false,
             SaveResultToFile = true,
         };
 
