@@ -647,7 +647,6 @@ namespace Lombiq.Tests.UI.Services
             {
                 // Incorrect suggestion.
 #pragma warning disable S4635 // String offset-based methods should be preferred for finding substrings from offsets
-                // Incorrect suggestion.
                 var dumpFolderNameBeginningIndex =
                     dumpFolderNameBase.Substring(0, dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)).LastIndexOf('.') + 1;
                 dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
@@ -678,7 +677,6 @@ namespace Lombiq.Tests.UI.Services
                 // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which
                 // usually make it long.
 
-                // They're not actually unused.
                 var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
                 var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
 
