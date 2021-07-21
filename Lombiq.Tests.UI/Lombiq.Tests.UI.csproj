@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".htmlvalidate.json" />
     <None Remove="SampleUploadFiles\Document.pdf" />
     <None Remove="SampleUploadFiles\Image.png" />
     <None Remove="SampleUploadFiles\UploadingTestFileXLSX.xlsx" />
@@ -22,6 +23,9 @@
 
   <ItemGroup>
     <Content Include=".config\dotnet-tools.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".htmlvalidate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleUploadFiles\Document.pdf">
@@ -48,7 +52,7 @@
   <ItemGroup>
     <PackageReference Include="Atata" Version="1.11.2" />
     <PackageReference Include="Atata.Bootstrap" Version="1.1.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="1.1.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="1.2.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="1.5.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.8.0" />
     <PackageReference Include="CliWrap" Version="3.3.2" />

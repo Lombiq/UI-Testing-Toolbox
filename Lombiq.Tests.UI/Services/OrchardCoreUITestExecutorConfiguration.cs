@@ -86,6 +86,11 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
 
+        /// <summary>
+        /// Gets the global events available during UI test execution.
+        /// </summary>
+        public UITestExecutionEvents Events { get; } = new();
+
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
             if (instance == null || AssertAppLogs == null) return;
@@ -129,21 +134,5 @@ namespace Lombiq.Tests.UI.Services
             messages => messages.ShouldNotContain(message =>
                 message.Source != BrowserLogMessage.Sources.Deprecation ||
                 !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase));
-    }
-
-    public class UITestExecutorFailureDumpConfiguration
-    {
-        /// <summary>
-        /// Gets or sets a value indicating whether the subfolder of each test's dumps will use a shortened name, only
-        /// containing the name of the test method, without the name of the test class and its namespace. This is to
-        /// overcome the 260 character path length limitations on Windows. Defaults to <see langword="true"/>.
-        /// </summary>
-        public bool UseShortNames { get; set; } = true;
-
-        public string DumpsDirectoryPath { get; set; } = "FailureDumps";
-        public bool CaptureAppSnapshot { get; set; } = true;
-        public bool CaptureScreenshot { get; set; } = true;
-        public bool CaptureHtmlSource { get; set; } = true;
-        public bool CaptureBrowserLog { get; set; } = true;
     }
 }

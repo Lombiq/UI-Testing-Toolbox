@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.Services
     /// Configuration for HTML markup validation. Note that since this uses the html-validate library under the hood
     /// further configuration is available via a .htmlvalidate.json file placed into the build output folder, see <see
     /// href="https://gitlab.com/html-validate/html-validate/-/tree/master/docs/usage#getting-started">the corresponding
-    /// docs</see>.
+    /// docs</see>. A file with recommended default settings is included.
     /// </summary>
     public class HtmlValidationConfiguration
     {
