@@ -2,6 +2,7 @@ using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -18,17 +19,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="htmlValidationOptionsAdjuster">
         /// A delegate to adjust the <see cref="HtmlValidationOptions"/> instance supplied in the context.
         /// </param>
-        public static void AssertHtmlValidity(
+        public static async Task AssertHtmlValidityAsync(
             this UITestContext context,
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-            Action<HtmlValidationResult> assertHtmlValidationResult = null)
+            Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
         {
             var validationResult = context.ValidateHtml(htmlValidationOptionsAdjuster);
             var htmlValidationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
             try
             {
-                (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?.Invoke(validationResult);
+                await (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?.Invoke(validationResult);
             }
             catch (Exception ex)
             {

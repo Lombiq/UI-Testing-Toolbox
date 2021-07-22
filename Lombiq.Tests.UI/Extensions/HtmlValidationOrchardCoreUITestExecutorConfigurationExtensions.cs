@@ -22,8 +22,10 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SetUpHtmlValidationAssertionOnPageChange(
             this OrchardCoreUITestExecutorConfiguration configuration,
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-            Action<HtmlValidationResult> assertHtmlValidationResult = null)
+            Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
         {
+            if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", true)) return;
+
             static bool ShouldRun(UITestContext context)
             {
                 var url = context.Driver.Url;
@@ -37,14 +39,12 @@ namespace Lombiq.Tests.UI.Extensions
 
             IWebElement html = null;
 
-            configuration.Events.AfterNavigation += (context, targetUri) =>
+            configuration.Events.AfterNavigation += async (context, targetUri) =>
             {
                 if (ShouldRun(context))
                 {
-                    context.AssertHtmlValidity(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
+                    await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
                 }
-
-                return Task.CompletedTask;
             };
 
             configuration.Events.BeforeClick += (context, targetElement) =>
@@ -53,7 +53,7 @@ namespace Lombiq.Tests.UI.Extensions
                 return Task.CompletedTask;
             };
 
-            configuration.Events.AfterClick += (context, targetElement) =>
+            configuration.Events.AfterClick += async (context, targetElement) =>
             {
                 if (ShouldRun(context))
                 {
@@ -65,11 +65,9 @@ namespace Lombiq.Tests.UI.Extensions
                     catch (StaleElementReferenceException)
                     {
                         // The page changed so time to run the validation.
-                        context.AssertHtmlValidity(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
+                        await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
                     }
                 }
-
-                return Task.CompletedTask;
             };
         }
     }

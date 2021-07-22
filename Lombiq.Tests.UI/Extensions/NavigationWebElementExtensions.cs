@@ -29,9 +29,9 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     try
                     {
-                        context.Configuration.Events.BeforeClick?.Invoke(context, element);
+                        context.Configuration.Events.BeforeClick?.Invoke(context, element).GetAwaiter().GetResult();
                         new Actions(context.Driver).MoveToElement(element).Click().Perform();
-                        context.Configuration.Events.AfterClick?.Invoke(context, element);
+                        context.Configuration.Events.AfterClick?.Invoke(context, element).GetAwaiter().GetResult();
                     }
                     catch (WebDriverException ex)
                         when (ex.Message.Contains(

@@ -1,6 +1,7 @@
 using Atata.HtmlValidation;
 using Shouldly;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -40,9 +41,19 @@ namespace Lombiq.Tests.UI.Services
         /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
         /// happens.
         /// </summary>
-        public Action<HtmlValidationResult> AssertHtmlValidationResult { get; set; } = AssertHtmlValidationOutputIsEmpty;
+        public Func<HtmlValidationResult, Task> AssertHtmlValidationResult { get; set; } = AssertHtmlValidationOutputIsEmpty;
 
-        public static readonly Action<HtmlValidationResult> AssertHtmlValidationOutputIsEmpty =
-            validationResult => validationResult.Output.ShouldBeEmpty();
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes
+        /// (either due to explicit navigation or clicks) and assert on the validation results.
+        /// </summary>
+        public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; }
+
+        public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmpty =
+            validationResult =>
+            {
+                validationResult.Output.ShouldBeEmpty();
+                return Task.CompletedTask;
+            };
     }
 }

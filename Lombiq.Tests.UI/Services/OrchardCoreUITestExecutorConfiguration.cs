@@ -91,6 +91,11 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public UITestExecutionEvents Events { get; } = new();
 
+        /// <summary>
+        /// Gets a dictionary storing some custom configuration data.
+        /// </summary>
+        public Dictionary<string, object> CustomConfiguration { get; } = new();
+
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
             if (instance == null || AssertAppLogs == null) return;
