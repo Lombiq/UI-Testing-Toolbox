@@ -66,6 +66,6 @@ namespace Lombiq.Tests.UI.Services
             };
 
         public static readonly Predicate<UITestContext> DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule =
-            context => !context.GetCurrentUri().AbsolutePath.StartsWith("/admin", StringComparison.OrdinalIgnoreCase);
+            context => !context.GetCurrentUri().AbsolutePath.StartsWithOrdinalIgnoreCase("/admin");
     }
 }
