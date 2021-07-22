@@ -24,11 +24,16 @@ namespace Lombiq.Tests.UI.Extensions
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
             Action<HtmlValidationResult> assertHtmlValidationResult = null)
         {
-            static bool ShouldRun(UITestContext context) =>
-                context.Driver.Url.Contains("localhost:", StringComparison.OrdinalIgnoreCase) &&
-                !context.Driver.Url.StartsWith(
-                    context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
-                    StringComparison.OrdinalIgnoreCase);
+            static bool ShouldRun(UITestContext context)
+            {
+                var url = context.Driver.Url;
+                return
+                    url.Contains("localhost:", StringComparison.OrdinalIgnoreCase) &&
+                    !url.StartsWith(
+                        context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
+                        StringComparison.OrdinalIgnoreCase) &&
+                    !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase);
+            }
 
             IWebElement html = null;
 
