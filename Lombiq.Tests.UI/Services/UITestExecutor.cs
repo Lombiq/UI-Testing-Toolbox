@@ -270,8 +270,8 @@ namespace Lombiq.Tests.UI.Services
 
         private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
         {
-            // Saving the accessibility and HTML validation reports to files should happen here and can't earlier
-            // since at that point there's no FailureDumps folder yet.
+            // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since
+            // at that point there's no FailureDumps folder yet.
 
             if (ex is AccessibilityAssertionException accessibilityAssertionException
                 && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
