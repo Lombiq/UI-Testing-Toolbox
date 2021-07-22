@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", true)) return;
 
-            static bool ShouldRun(UITestContext context)
+            bool ShouldRun(UITestContext context)
             {
                 var url = context.Driver.Url;
                 return
@@ -34,7 +34,8 @@ namespace Lombiq.Tests.UI.Extensions
                     !url.StartsWith(
                         context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
                         StringComparison.OrdinalIgnoreCase) &&
-                    !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase);
+                    !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase) &&
+                    configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true;
             }
 
             IWebElement html = null;

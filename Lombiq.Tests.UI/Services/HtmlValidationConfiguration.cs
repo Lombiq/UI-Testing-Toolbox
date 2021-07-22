@@ -1,4 +1,5 @@
 using Atata.HtmlValidation;
+using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
-        /// happens.
+        /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmpty"/>.
         /// </summary>
         public Func<HtmlValidationResult, Task> AssertHtmlValidationResult { get; set; } = AssertHtmlValidationOutputIsEmpty;
 
@@ -49,11 +50,22 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; }
 
+        /// <summary>
+        /// Gets or sets a predicate that determines whether HTML validation and asserting the results should run for
+        /// the current page. This is only used if <see cref="RunHtmlValidationAssertionOnAllPageChanges"/> is set to
+        /// <see langword="true"/>. Defaults to <see cref="DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule"/>.
+        /// </summary>
+        public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
+            DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule;
+
         public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmpty =
             validationResult =>
             {
                 validationResult.Output.ShouldBeEmpty();
                 return Task.CompletedTask;
             };
+
+        public static readonly Predicate<UITestContext> DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule =
+            context => !context.GetCurrentUri().AbsolutePath.StartsWith("/admin", StringComparison.OrdinalIgnoreCase);
     }
 }
