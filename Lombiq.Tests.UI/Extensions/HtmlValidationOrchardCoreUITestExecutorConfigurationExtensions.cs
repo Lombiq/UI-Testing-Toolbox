@@ -28,14 +28,25 @@ namespace Lombiq.Tests.UI.Extensions
 
             bool ShouldRun(UITestContext context)
             {
-                var url = context.Driver.Url;
-                return
-                    url.Contains("localhost:", StringComparison.OrdinalIgnoreCase) &&
-                    !url.StartsWith(
-                        context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase) &&
-                    configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true;
+                // If there's an alert (which can happen mostly after a click but also after navigating) then all other
+                // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we
+                // need to check if an alert is present and that's only possible by catching exceptions.
+                try
+                {
+                    context.Driver.SwitchTo().Alert();
+                    return false;
+                }
+                catch (NoAlertPresentException)
+                {
+                    var url = context.Driver.Url;
+                    return
+                        url.Contains("localhost:", StringComparison.OrdinalIgnoreCase) &&
+                        !url.StartsWith(
+                            context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
+                            StringComparison.OrdinalIgnoreCase) &&
+                        !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase) &&
+                        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true;
+                }
             }
 
             IWebElement html = null;
