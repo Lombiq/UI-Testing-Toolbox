@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -30,7 +31,14 @@ namespace Lombiq.Tests.UI.Extensions
                     if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
                     context.Configuration.Events.BeforeNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
-                    context.Driver.Navigate().GoToUrl(absoluteUri);
+
+                    // Sometimes navigation doesn't actually happen so we need to check.
+                    ReliabilityHelper.DoWithRetries(() =>
+                    {
+                        context.Driver.Navigate().GoToUrl(absoluteUri);
+                        return context.GetCurrentUri() == absoluteUri;
+                    });
+
                     context.Configuration.Events.AfterNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
                 });
 
