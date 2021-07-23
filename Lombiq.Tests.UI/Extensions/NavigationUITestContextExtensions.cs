@@ -1,6 +1,5 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -8,7 +7,6 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Globalization;
 using System.Linq;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -29,43 +27,10 @@ namespace Lombiq.Tests.UI.Extensions
                 $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
                 () =>
                 {
-                    var originalUri = context.GetCurrentUri();
-
-                    if (onlyIfNotAlreadyThere && originalUri == absoluteUri) return;
+                    if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
                     context.Configuration.Events.BeforeNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
-
-                    // Sometimes navigation doesn't actually happen so we need to check.
-                    ReliabilityHelper.DoWithRetries(
-                    () =>
-                    {
-                        context.Driver.Navigate().GoToUrl(absoluteUri);
-
-                        if (originalUri == absoluteUri)
-                        {
-                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                "Reloading the {0} page.", originalUri);
-                            return true;
-                        }
-
-                        var currentUri = context.GetCurrentUri();
-                        // The check shouldn't happen on absoluteUri because due to redirects requesting a URI might not
-                        // actually bring us to it.
-                        var urisDiffer = currentUri != originalUri;
-
-                        context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                            urisDiffer
-                                ? "Navigating away from {0} by requesting {1} succeeded. The current URI is {2}."
-                                : "Navigating away from {0} by requesting {1} failed and will be retried until the " +
-                                    "timeout passes. The current URI is {2}.",
-                            originalUri,
-                            absoluteUri,
-                            currentUri);
-
-                        return urisDiffer;
-                    },
-                    TimeSpan.FromSeconds(60));
-
+                    context.Driver.Navigate().GoToUrl(absoluteUri);
                     context.Configuration.Events.AfterNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
                 });
 
