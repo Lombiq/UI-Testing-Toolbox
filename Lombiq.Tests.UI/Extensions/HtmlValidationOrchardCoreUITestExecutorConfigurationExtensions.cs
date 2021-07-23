@@ -40,7 +40,7 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     var url = context.Driver.Url;
                     return
-                        url.Contains("localhost:", StringComparison.OrdinalIgnoreCase) &&
+                        url.Contains("://localhost:", StringComparison.OrdinalIgnoreCase) &&
                         !url.StartsWith(
                             context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
                             StringComparison.OrdinalIgnoreCase) &&
