@@ -8,6 +8,7 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Globalization;
 using System.Linq;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -33,11 +34,30 @@ namespace Lombiq.Tests.UI.Extensions
                     context.Configuration.Events.BeforeNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
 
                     // Sometimes navigation doesn't actually happen so we need to check.
-                    ReliabilityHelper.DoWithRetries(() =>
+                    ReliabilityHelper.DoWithRetries(
+                    () =>
                     {
                         context.Driver.Navigate().GoToUrl(absoluteUri);
-                        return context.GetCurrentUri() == absoluteUri;
-                    });
+
+                        var currentUri = context.GetCurrentUri();
+                        var urisMatch = currentUri == absoluteUri;
+
+                        if (urisMatch)
+                        {
+                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                "Navigating to {0} succeeded", currentUri);
+                        }
+                        else
+                        {
+                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                "Navigating to {0} failed and will be retried until the timeout passes. The current URI is {1}.",
+                                absoluteUri,
+                                currentUri);
+                        }
+
+                        return urisMatch;
+                    },
+                    TimeSpan.FromSeconds(60));
 
                     context.Configuration.Events.AfterNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
                 });
