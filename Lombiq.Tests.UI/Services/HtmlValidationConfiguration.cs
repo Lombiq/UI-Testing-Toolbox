@@ -30,6 +30,9 @@ namespace Lombiq.Tests.UI.Services
         {
             SaveHtmlToFile = HtmlSaveCondition.Never,
             SaveResultToFile = true,
+            // This is necessary so no long folder names will be generated, see:
+            // https://github.com/atata-framework/atata-htmlvalidation/issues/5
+            WorkingDirectory = "HtmlValidationTemp",
         };
 
         /// <summary>
