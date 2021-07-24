@@ -33,8 +33,6 @@ namespace Lombiq.Tests.UI.Services
             // This is necessary so no long folder names will be generated, see:
             // https://github.com/atata-framework/atata-htmlvalidation/issues/5
             WorkingDirectory = "HtmlValidationTemp",
-            // A slightly newer version that fixes https://gitlab.com/html-validate/html-validate/-/issues/128.
-            HtmlValidatePackageVersion = "5.2.0",
         };
 
         /// <summary>
