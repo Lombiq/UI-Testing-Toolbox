@@ -24,7 +24,8 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
-        /// anything else happening on the login page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
+        /// anything else happening on the login page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
+        /// enabled.
         /// </summary>
         public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
             context.GoToRelativeUrl(
@@ -34,7 +35,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
         /// anything else happening on the login page and going to a relative URL after login. The target app needs to
-        /// have Lombiq.Tests.UI.Shortcuts enabled.
+        /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void SignInDirectlyAndGoToRelativeUrl(
             this UITestContext context,
@@ -49,14 +50,14 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the
-        /// logoff page. The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
+        /// logoff page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void SignOutDirectly(this UITestContext context) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignOutDirectly");
 
         /// <summary>
         /// Retrieves the currently authenticated user's name, if any. The target app needs to have
-        /// Lombiq.Tests.UI.Shortcuts enabled.
+        /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
         public static string GetCurrentUserName(this UITestContext context) =>
@@ -65,14 +66,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Enables the feature with the given ID directly, without anything
         /// else happening on the admin Features page. The target app needs to
-        /// have Lombiq.Tests.UI.Shortcuts enabled.
+        /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
 
         /// <summary>
         /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
-        /// The target app needs to have Lombiq.Tests.UI.Shortcuts enabled.
+        /// The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
             context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
@@ -122,6 +123,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>Basic information about the Orchard Core application's executable.</returns>
         public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
             context.GetApi().GetApplicationInfoAsync();
+
+        /// <summary>
+        /// Executes a recipe identified by its name directly. The user must be logged in. The target app needs to have
+        /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+        /// </summary>
+        public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Recipe/Execute?recipeName=" + recipeName);
 
         private static IShortcutsApi GetApi(this UITestContext context) =>
             _apis.GetOrAdd(
