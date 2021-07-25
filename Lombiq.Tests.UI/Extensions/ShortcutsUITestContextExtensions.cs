@@ -125,7 +125,7 @@ namespace Lombiq.Tests.UI.Extensions
             context.GetApi().GetApplicationInfoAsync();
 
         /// <summary>
-        /// Executes a recipe identified by its name directly. The target app needs to have
+        /// Executes a recipe identified by its name directly. The user must be logged in. The target app needs to have
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>

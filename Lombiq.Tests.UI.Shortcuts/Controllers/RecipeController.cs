@@ -5,6 +5,7 @@ using OrchardCore.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
@@ -36,16 +37,15 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
             if (recipe == null) return NotFound();
 
             var site = await _siteService.GetSiteSettingsAsync();
-            await _recipeExecutor.ExecuteAsync(
-                Guid.NewGuid().ToString("N"),
-                recipe,
-                new
-                {
-                    site.SiteName,
-                    AdminUsername = site.SuperUser,
-                },
-                default);
+            var executionId = Guid.NewGuid().ToString("n");
+            var environment = new Dictionary<string, object>
+            {
+                { "SiteName", site.SiteName },
+                { "AdminUsername", User.Identity.Name },
+                { "AdminUserId", User.FindFirstValue(ClaimTypes.NameIdentifier) },
+            };
 
+            await _recipeExecutor.ExecuteAsync(executionId, recipe, environment, default);
             return Ok();
         }
     }
