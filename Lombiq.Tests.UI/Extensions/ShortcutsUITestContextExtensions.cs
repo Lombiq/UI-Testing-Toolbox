@@ -125,12 +125,11 @@ namespace Lombiq.Tests.UI.Extensions
             context.GetApi().GetApplicationInfoAsync();
 
         /// <summary>
-        /// Executes a recipe identified by its file name directly. The <paramref name="recipeFileName"/> may omit the
-        /// <c>.recipe.json</c> compound file extension. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
-        /// enabled.
+        /// Executes a recipe identified by its name directly. The target app needs to have
+        /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void ExecuteRecipeDirectly(this UITestContext context, string recipeFileName) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Recipe/Execute?fileName=" + recipeFileName);
+        public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Recipe/Execute?recipeName=" + recipeName);
 
         private static IShortcutsApi GetApi(this UITestContext context) =>
             _apis.GetOrAdd(

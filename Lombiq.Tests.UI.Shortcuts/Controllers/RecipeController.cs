@@ -26,17 +26,13 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
             _siteService = siteService;
         }
 
-        public async Task<ActionResult> Execute(string fileName, bool hidden = true)
+        public async Task<ActionResult> Execute(string recipeName)
         {
-            if (!fileName.EndsWith(".recipe.json", StringComparison.OrdinalIgnoreCase)) fileName += ".recipe.json";
-
             var recipeCollections = await _recipeHarvesters
                 .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
             var recipe = recipeCollections
                 .SelectMany(recipeCollection => recipeCollection)
-                .SingleOrDefault(recipeDescriptor =>
-                    recipeDescriptor.Tags.Contains("hidden", StringComparer.OrdinalIgnoreCase) == hidden &&
-                    recipeDescriptor.RecipeFileInfo.Name == fileName);
+                .SingleOrDefault(recipeDescriptor => recipeDescriptor.RecipeFileInfo.Name == recipeName);
             if (recipe == null) return NotFound();
 
             var site = await _siteService.GetSiteSettingsAsync();
