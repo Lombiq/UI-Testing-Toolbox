@@ -38,6 +38,10 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
 
             var site = await _siteService.GetSiteSettingsAsync();
             var executionId = Guid.NewGuid().ToString("n");
+
+            // This is how Orchard Core did it up until 2021-02-23 including the required version used by this project.
+            // Since then they've switched over to IRecipeEnvironmentProvider for environment building. This code should
+            // be updated accordingly during Orchard upgrade.
             var environment = new Dictionary<string, object>
             {
                 { "SiteName", site.SiteName },
