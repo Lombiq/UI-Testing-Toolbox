@@ -154,8 +154,13 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(By.XPath($"//select[@id='{selectId}']//option[contains(., '{value}')]")).Click();
         }
 
+        /// <summary>
+        /// Sets the value of the date picker via JavaScript and then fires the <c>change</c> event.
+        /// </summary>
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
-            context.ExecuteScript($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';");
+            context.ExecuteScript(
+                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';" +
+                "document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
         public static DateTime GetDatePicker(this UITestContext context, string id) =>
             DateTime.ParseExact(
