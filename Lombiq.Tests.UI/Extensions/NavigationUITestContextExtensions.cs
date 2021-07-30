@@ -160,7 +160,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
             context.ExecuteScript(
                 $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';" +
-                "document.getElementById('{id}').dispatchEvent(new Event('change'));");
+                $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
         public static DateTime GetDatePicker(this UITestContext context, string id) =>
             DateTime.ParseExact(
