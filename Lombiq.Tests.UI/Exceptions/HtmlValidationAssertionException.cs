@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Exceptions
             Exception innerException)
             : base(
                 "Asserting the HTML validation result failed." +
-                  (createReportOnFailure ? " Check the HTML validation report in the failure dump for details." : string.Empty),
+                    (createReportOnFailure ? " Check the HTML validation report in the failure dump for details." : string.Empty),
                 innerException) =>
             HtmlValidationResult = htmlValidationResult;
 
