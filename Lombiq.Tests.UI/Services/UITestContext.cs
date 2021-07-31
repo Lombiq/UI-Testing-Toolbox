@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium.Remote;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
@@ -46,6 +47,11 @@ namespace Lombiq.Tests.UI.Services
         /// Gets the context for the currently used Azure Blob Storage folder, if Blob Storage is used for the test.
         /// </summary>
         public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
+
+        /// <summary>
+        /// Gets a dictionary storing some custom contextual data.
+        /// </summary>
+        public Dictionary<string, object> CustomContext { get; } = new();
 
         public UITestContext(
             string testName,

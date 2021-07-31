@@ -1,3 +1,4 @@
+using Atata.HtmlValidation;
 using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -190,13 +191,7 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
-                if (ex is AccessibilityAssertionException accessibilityAssertionException
-                    && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
-                {
-                    _context.Driver.CreateAxeHtmlReport(
-                        accessibilityAssertionException.AxeResult,
-                        Path.Combine(debugInformationPath, "AccessibilityReport.html"));
-                }
+                CaptureMarkupValidationResults(ex, debugInformationPath);
             }
             catch (Exception dumpException)
             {
@@ -269,6 +264,37 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug(
                         $"Taking an Azure Blob Storage snapshot failed with the following exception: {failureException}");
+                }
+            }
+        }
+
+        private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
+        {
+            // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since
+            // at that point there's no FailureDumps folder yet.
+
+            if (ex is AccessibilityAssertionException accessibilityAssertionException
+                && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+            {
+                _context.Driver.CreateAxeHtmlReport(
+                    accessibilityAssertionException.AxeResult,
+                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+            }
+
+            if (ex is HtmlValidationAssertionException htmlValidationAssertionException
+                && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
+            {
+                var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
+                if (!string.IsNullOrEmpty(resultFilePath))
+                {
+                    File.Move(resultFilePath, Path.Combine(debugInformationPath, "HtmlValidationReport.txt"));
+                }
+                else
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "While it was configured to create an HTML validation report on validation failure, there was " +
+                        $"no report generated due to {nameof(HtmlValidationOptions)}.{nameof(HtmlValidationOptions.SaveResultToFile)} " +
+                        "being false.");
                 }
             }
         }
@@ -514,6 +540,11 @@ namespace Lombiq.Tests.UI.Services
 
             _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
             var uri = await _applicationInstance.StartUpAsync();
+
+            if (_configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
+            {
+                _configuration.SetUpHtmlValidationAssertionOnPageChange();
+            }
 
             var atataScope = AtataFactory.StartAtataScope(
                 _testOutputHelper,

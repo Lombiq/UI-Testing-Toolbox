@@ -29,7 +29,9 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
+                    context.Configuration.Events.BeforeNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
                     context.Driver.Navigate().GoToUrl(absoluteUri);
+                    context.Configuration.Events.AfterNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
                 });
 
         public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
