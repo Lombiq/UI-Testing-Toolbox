@@ -157,7 +157,7 @@ namespace Lombiq.Tests.UI.Extensions
         }
 
         /// <summary>
-        /// Sets the value of the date picker via JavaScript and then fires the <c>change</c> event.
+        /// Sets the value of the date picker via JavaScript and then raises the <c>change</c> event.
         /// </summary>
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
             context.ExecuteScript(
