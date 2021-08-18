@@ -40,7 +40,8 @@ namespace Lombiq.Tests.UI.Services
                             Browser.Chrome => WebDriverFactory.CreateChromeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                             Browser.Edge => WebDriverFactory.CreateEdgeDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                             Browser.Firefox => WebDriverFactory.CreateFirefoxDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
-                            Browser.InternetExplorer => WebDriverFactory.CreateInternetExplorerDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                            Browser.InternetExplorer =>
+                                WebDriverFactory.CreateInternetExplorerDriver(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
                             _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                         };
                     }
@@ -52,7 +53,8 @@ namespace Lombiq.Tests.UI.Services
                             i++;
                             // Not using parameters because the exception can throw off the string format.
                             testOutputHelper.WriteLineTimestampedAndDebug(
-                                $"While creating the web driver failed with the following exception, it'll be retried {maxTryCount - i} more time(s). Exception: {ex}");
+                                $"While creating the web driver failed with the following exception, it'll be " +
+                                $"retried {maxTryCount - i} more time(s). Exception: {ex}");
                         }
                         else
                         {
