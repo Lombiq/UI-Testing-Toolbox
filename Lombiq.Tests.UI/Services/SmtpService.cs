@@ -125,7 +125,8 @@ namespace Lombiq.Tests.UI.Services
                 .ExecuteDotNetApplicationAsync(
                     stdErr =>
                         throw new IOException(
-                            $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port {_webUIPort} due to the following error: " +
+                            $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port " +
+                                $"{_webUIPort} due to the following error: " +
                             Environment.NewLine +
                             stdErr.Text),
                     _cancellationTokenSource.Token);

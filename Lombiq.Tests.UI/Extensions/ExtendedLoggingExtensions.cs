@@ -10,7 +10,8 @@ namespace Lombiq.Tests.UI.Extensions
         public static void ExecuteLogged(this UITestContext context, string operationName, IWebElement element, Action action) =>
             context.ExecuteSection(GetLogSection(operationName, element), action);
 
-        public static TResult ExecuteLogged<TResult>(this UITestContext context, string operationName, IWebElement element, Func<TResult> function) =>
+        public static TResult ExecuteLogged<TResult>(
+            this UITestContext context, string operationName, IWebElement element, Func<TResult> function) =>
             context.ExecuteSection(GetLogSection(operationName, element), function);
 
         public static void ExecuteLogged(this UITestContext context, string operationName, By by, Action action) =>
@@ -22,7 +23,8 @@ namespace Lombiq.Tests.UI.Extensions
         public static void ExecuteLogged(this UITestContext context, string operationName, string objectOfOperation, Action action) =>
             context.ExecuteSection(GetLogSection(operationName, objectOfOperation), action);
 
-        public static TResult ExecuteLogged<TResult>(this UITestContext context, string operationName, string objectOfOperation, Func<TResult> function) =>
+        public static TResult ExecuteLogged<TResult>(
+            this UITestContext context, string operationName, string objectOfOperation, Func<TResult> function) =>
             context.ExecuteSection(GetLogSection(operationName, objectOfOperation), function);
 
         private static LogSection GetLogSection(string operationName, IWebElement element) =>

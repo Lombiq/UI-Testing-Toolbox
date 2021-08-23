@@ -12,7 +12,8 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = Default,
     Name = "Lombiq UI Testing Toolbox - Shortcuts",
     Category = "Development",
-    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcuts for common operations that UI tests might want to do or check.",
+    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcuts for common " +
+        "operations that UI tests might want to do or check.",
     Dependencies = new[]
     {
         "OrchardCore.ContentManagement",

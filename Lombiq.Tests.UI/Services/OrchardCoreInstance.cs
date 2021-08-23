@@ -119,7 +119,10 @@ namespace Lombiq.Tests.UI.Services
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
-            if (_configuration.BeforeTakeSnapshot != null) await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
+            if (_configuration.BeforeTakeSnapshot != null)
+            {
+                await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
+            }
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
         }
@@ -178,7 +181,8 @@ namespace Lombiq.Tests.UI.Services
                         Environment.NewLine +
                         stdErr.Text +
                         (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
-                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run or some other app is listening on the same port too."
+                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run " +
+                                "or some other app is listening on the same port too."
                             : string.Empty)),
                 _cancellationTokenSource.Token);
 

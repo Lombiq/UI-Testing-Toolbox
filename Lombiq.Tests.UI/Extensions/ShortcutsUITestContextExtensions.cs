@@ -153,7 +153,10 @@ namespace Lombiq.Tests.UI.Extensions
                     return RestClient.For<IShortcutsApi>(httpClient);
                 });
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Just maps to controller actions.")]
+        [SuppressMessage(
+            "StyleCop.CSharp.DocumentationRules",
+            "SA1600:Elements should be documented",
+            Justification = "Just maps to controller actions.")]
         public interface IShortcutsApi
         {
             [Get("api/ApplicationInfo")]
