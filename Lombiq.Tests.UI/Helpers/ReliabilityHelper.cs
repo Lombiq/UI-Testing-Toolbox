@@ -15,7 +15,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">The maximum time allowed for the process to complete.</param>
         /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
-        public static void DoWithRetries(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null)
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
+        /// or during retries, <see langword="false"/> otherwise.
+        /// </returns>
+        public static bool DoWithRetries(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null)
         {
             var wait = new SafeWait<object>(new object());
 
@@ -23,7 +27,7 @@ namespace Lombiq.Tests.UI.Helpers
             if (timeout != null) wait.Timeout = timeout.Value;
             if (interval != null) wait.PollingInterval = interval.Value;
 
-            wait.Until(_ => process());
+            return wait.Until(_ => process());
         }
 
         /// <summary>
@@ -40,7 +44,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">The maximum time allowed for the process to complete.</param>
         /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
-        public static void RetryIfStale(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
+        /// or during retries, <see langword="false"/> otherwise.
+        /// </returns>
+        public static bool RetryIfStale(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
             DoWithRetries(
                 () =>
                 {
@@ -68,7 +76,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">The maximum time allowed for the process to complete.</param>
         /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
-        public static void RetryIfNotStale(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
+        /// or during retries, <see langword="false"/> otherwise.
+        /// </returns>
+        public static bool RetryIfNotStale(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
             DoWithRetries(
                 () =>
                 {
