@@ -62,7 +62,7 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(FillInWithRetries),
                 $"{by} - \"{text}\"",
-                () => ReliabilityHelper.DoWithRetries(
+                () => ReliabilityHelper.DoWithRetriesOrFail(
                     () =>
                     {
                         var element = context.Get(by);
@@ -116,7 +116,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             string title = defaultTitle;
 
-            ReliabilityHelper.DoWithRetries(
+            ReliabilityHelper.DoWithRetriesOrFail(
                 () =>
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();

@@ -52,7 +52,7 @@ namespace Lombiq.Tests.UI.Extensions
             UITestContext context,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.RetryIfNotStale(
+            ReliabilityHelper.RetryIfNotStaleOrFail(
                 () =>
                 {
                     element.ClickReliably(context);

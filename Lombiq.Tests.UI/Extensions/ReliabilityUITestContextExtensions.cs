@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
-            ReliabilityHelper.DoWithRetries(
+            ReliabilityHelper.DoWithRetriesOrFail(
                 () =>
                 {
                     process();
@@ -50,7 +50,7 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
-            ReliabilityHelper.DoWithRetries(
+            ReliabilityHelper.DoWithRetriesOrFail(
                 () =>
                 {
                     process();
