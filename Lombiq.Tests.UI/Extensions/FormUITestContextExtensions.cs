@@ -49,6 +49,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <remarks>
         /// <para>
+        /// Use <see cref="FillInWithRetriesUntilNotBlank"/> instead if the field will contain a string different than
+        /// what's written to it, e.g. when it applies some formatting to numbers.
+        /// </para>
+        /// <para>
         /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
         /// true, sometimes filling form fields still fails. Go figure...
         /// </para>
@@ -63,27 +67,35 @@ namespace Lombiq.Tests.UI.Extensions
                 nameof(FillInWithRetries),
                 $"{by} - \"{text}\"",
                 () => ReliabilityHelper.DoWithRetriesOrFail(
-                    () =>
-                    {
-                        var element = context.Get(by);
+                    () => TryFillElement(context, by, text).GetValue() == text,
+                    timeout,
+                    interval));
 
-                        if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
-                        {
-                            element.Clear();
-
-                            // On some platforms, probably due to keyboard settings, the @ character can be missing from the
-                            // address when entered into a textfield so we need to use JS. The following solution doesn't
-                            // work: https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the
-                            // standard FillInWith() as without that some forms start to behave strange and not save values.
-                            new Actions(context.Driver).SendKeys(element, text).Perform();
-                        }
-                        else
-                        {
-                            element.FillInWith(text);
-                        }
-
-                        return element.GetValue() == text;
-                    },
+        /// <summary>
+        /// Fills a form field with the given text, and retries if the field is left blank (but doesn't check the
+        /// value).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Use this instead of <see cref="FillInWithRetries"/> if the field will contain a string different than what's
+        /// written to it, e.g. when it applies some formatting to numbers.
+        /// </para>
+        /// <para>
+        /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
+        /// true, sometimes filling form fields still fails. Go figure...
+        /// </para>
+        /// </remarks>
+        public static void FillInWithRetriesUntilNotBlank(
+            this UITestContext context,
+            By by,
+            string text,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
+            context.ExecuteLogged(
+                nameof(FillInWithRetriesUntilNotBlank),
+                $"{by} - \"{text}\"",
+                () => ReliabilityHelper.DoWithRetriesOrFail(
+                    () => !string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue()),
                     timeout,
                     interval));
 
@@ -126,6 +138,28 @@ namespace Lombiq.Tests.UI.Extensions
                 interval);
 
             return title;
+        }
+
+        private static IWebElement TryFillElement(UITestContext context, By by, string text)
+        {
+            var element = context.Get(by);
+
+            if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
+            {
+                element.Clear();
+
+                // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
+                // when entered into a textfield so we need to use JS. The following solution doesn't work:
+                // https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the standard
+                // FillInWith() as without that some forms start to behave strange and not save values.
+                new Actions(context.Driver).SendKeys(element, text).Perform();
+            }
+            else
+            {
+                element.FillInWith(text);
+            }
+
+            return element;
         }
     }
 }
