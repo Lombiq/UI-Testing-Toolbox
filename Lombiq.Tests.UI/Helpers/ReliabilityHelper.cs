@@ -40,8 +40,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
@@ -63,8 +69,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
         /// or during retries, <see langword="false"/> otherwise.
@@ -85,8 +97,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
@@ -105,8 +123,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
         /// or during retries, <see langword="false"/> otherwise.
@@ -124,8 +148,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
@@ -140,8 +170,14 @@ namespace Lombiq.Tests.UI.Helpers
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
         /// </param>
-        /// <param name="timeout">The maximum time allowed for the process to complete.</param>
-        /// <param name="interval">The polling interval used by <see cref="SafeWait{T}"/>.</param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to the default of <see
+        /// cref="SafeWait{T}.Timeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
+        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
         /// or during retries, <see langword="false"/> otherwise.

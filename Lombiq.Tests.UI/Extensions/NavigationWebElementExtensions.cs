@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
@@ -52,7 +51,7 @@ namespace Lombiq.Tests.UI.Extensions
             UITestContext context,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.RetryIfNotStaleOrFail(
+            context.RetryIfNotStaleOrFail(
                 () =>
                 {
                     element.ClickReliably(context);

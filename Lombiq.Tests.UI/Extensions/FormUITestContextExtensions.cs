@@ -1,6 +1,5 @@
 using AngleSharp.Text;
 using Atata;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
@@ -58,7 +57,7 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(ClickAndFillInTrumbowygEditorWithRetries),
                 $"{editorBy} - \"{text}\"",
-                () => ReliabilityHelper.DoWithRetriesOrFail(
+                () => context.DoWithRetriesOrFail(
                     () =>
                     {
                         TryFillElement(context, editorBy, text);
@@ -104,7 +103,7 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(FillInWithRetries),
                 $"{by} - \"{text}\"",
-                () => ReliabilityHelper.DoWithRetriesOrFail(
+                () => context.DoWithRetriesOrFail(
                     () => TryFillElement(context, by, text).GetValue() == text,
                     timeout,
                     interval));
@@ -132,7 +131,7 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(FillInWithRetriesUntilNotBlank),
                 $"{by} - \"{text}\"",
-                () => ReliabilityHelper.DoWithRetriesOrFail(
+                () => context.DoWithRetriesOrFail(
                     () => !string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue()),
                     timeout,
                     interval));
@@ -155,8 +154,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value
-        /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/> using
-        /// <see cref="ReliabilityHelper.DoWithRetries"/>.
+        /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/>.
         /// </summary>
         public static string GetSelectedTabText(
             this UITestContext context,
@@ -166,7 +164,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             string title = defaultTitle;
 
-            ReliabilityHelper.DoWithRetriesOrFail(
+            context.DoWithRetriesOrFail(
                 () =>
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
