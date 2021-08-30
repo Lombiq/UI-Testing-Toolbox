@@ -28,7 +28,7 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     process();
 
-                    existsTimeout ??= GetExistsTimeout(timeout);
+                    existsTimeout ??= GetExistsTimeout(context, timeout);
 
                     return ExistsWithin(context, elementToWaitFor, existsTimeout.Value, interval);
                 },
@@ -55,17 +55,17 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     process();
 
-                    existsTimeout ??= GetExistsTimeout(timeout);
+                    existsTimeout ??= GetExistsTimeout(context, timeout);
 
                     return MissingWithin(context, elementToWaitForGoMissing, existsTimeout.Value, interval);
                 },
                 timeout,
                 interval);
 
-        private static TimeSpan GetExistsTimeout(TimeSpan? timeout) =>
+        private static TimeSpan GetExistsTimeout(UITestContext context, TimeSpan? timeout) =>
             // The timeout for this existence check needs to be significantly smaller than the timeout of the
             // whole retry logic so actually multiple tries can happen.
-            (timeout ?? TimeoutConfiguration.Default.RetryTimeout) / 5;
+            (timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout) / 5;
 
         private static bool ExistsWithin(
             UITestContext context,
@@ -74,7 +74,7 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null) =>
             context.Exists(elementToWaitFor.Safely().Within(
                 existsTimeout,
-                interval ?? TimeoutConfiguration.Default.RetryInterval));
+                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval));
 
         private static bool MissingWithin(
             UITestContext context,
@@ -83,6 +83,6 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null) =>
             context.Missing(elementToWaitForGoMissing.Safely().Within(
                 existsTimeout,
-                interval ?? TimeoutConfiguration.Default.RetryInterval));
+                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval));
     }
 }
