@@ -47,9 +47,12 @@ namespace Lombiq.Tests.UI.Helpers
         /// </exception>
         public static void DoWithRetriesOrFail(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null)
         {
-            if (!DoWithRetries(process, timeout, interval))
+            var result = DoWithRetriesInternal(process, timeout, interval);
+            if (!result.IsSuccess)
             {
-                throw new TimeoutException("The process didn't succeed with retries before timing out.");
+                throw new TimeoutException(
+                    "The process didn't succeed with retries before timing out " +
+                    $"(timeout: {result.Wait.Timeout}, polling interval: {result.Wait.PollingInterval}).");
             }
         }
 
@@ -66,16 +69,8 @@ namespace Lombiq.Tests.UI.Helpers
         /// <see langword="true"/> if <paramref name="process"/> succeeded (regardless of it happening on the first try
         /// or during retries, <see langword="false"/> otherwise.
         /// </returns>
-        public static bool DoWithRetries(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null)
-        {
-            var wait = new SafeWait<object>(new object());
-
-            // If no values are supplied then the defaults specified in AtataFactory will be used.
-            if (timeout != null) wait.Timeout = timeout.Value;
-            if (interval != null) wait.PollingInterval = interval.Value;
-
-            return wait.Until(_ => process());
-        }
+        public static bool DoWithRetries(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
+            DoWithRetriesInternal(process, timeout, interval).IsSuccess;
 
         /// <summary>
         /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
@@ -153,5 +148,19 @@ namespace Lombiq.Tests.UI.Helpers
         /// </returns>
         public static bool RetryIfNotStale(Func<bool> process, TimeSpan? timeout = null, TimeSpan? interval = null) =>
             DoWithRetries(_retryIfNotStaleProcess(process), timeout, interval);
+
+        private static (bool IsSuccess, SafeWait<object> Wait) DoWithRetriesInternal(
+            Func<bool> process,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
+        {
+            var wait = new SafeWait<object>(new object());
+
+            // If no values are supplied then the defaults specified in AtataFactory will be used.
+            if (timeout != null) wait.Timeout = timeout.Value;
+            if (interval != null) wait.PollingInterval = interval.Value;
+
+            return (wait.Until(_ => process()), wait);
+        }
     }
 }
