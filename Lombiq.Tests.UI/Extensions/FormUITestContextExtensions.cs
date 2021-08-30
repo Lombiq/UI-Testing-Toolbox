@@ -44,6 +44,33 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(text)) ClickAndFillInWithRetries(context, by, text, timeout, interval);
         }
 
+        public static void ClickAndFillInTrumbowygEditorWithRetries(
+            this UITestContext context,
+            string editorContainerId,
+            string text,
+            string expectedHtml,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
+        {
+            var editorBy = By.CssSelector($"#{editorContainerId} > .trumbowyg-box > .trumbowyg-editor");
+            context.Get(editorBy).Click();
+
+            context.ExecuteLogged(
+                nameof(ClickAndFillInTrumbowygEditorWithRetries),
+                $"{editorBy} - \"{text}\"",
+                () => ReliabilityHelper.DoWithRetriesOrFail(
+                    () =>
+                    {
+                        TryFillElement(context, editorBy, text);
+
+                        return context
+                            .Get(By.CssSelector($"#{editorContainerId} .trumbowyg-textarea").OfAnyVisibility())
+                            .GetValue() == expectedHtml;
+                    },
+                    timeout,
+                    interval));
+        }
+
         public static void ClickAndClear(this UITestContext context, By by) =>
             context.ExecuteLogged(
                 nameof(ClickAndClear),
