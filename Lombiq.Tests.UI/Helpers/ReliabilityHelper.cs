@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Helpers
 {
     public static class ReliabilityHelper
     {
-        private static readonly Func<Func<bool>, Func<bool>> _retryIfStaleProcess = (innerProcess) => () =>
+        private static readonly Func<Func<bool>, Func<bool>> _retryIfStaleProcess = innerProcess => () =>
         {
             try
             {
@@ -20,7 +20,7 @@ namespace Lombiq.Tests.UI.Helpers
             }
         };
 
-        private static readonly Func<Func<bool>, Func<bool>> _retryIfNotStaleProcess = (innerProcess) => () =>
+        private static readonly Func<Func<bool>, Func<bool>> _retryIfNotStaleProcess = innerProcess => () =>
         {
             try
             {
