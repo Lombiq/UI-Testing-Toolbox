@@ -180,7 +180,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             var element = context.Get(by);
 
-            if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
+            if (text.Contains('@', StringComparison.Ordinal))
             {
                 element.Clear();
 
