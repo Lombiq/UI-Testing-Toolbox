@@ -45,13 +45,13 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static void ClickAndFillInTrumbowygEditorWithRetries(
             this UITestContext context,
-            string editorContainerId,
+            By by,
             string text,
             string expectedHtml,
             TimeSpan? timeout = null,
             TimeSpan? interval = null)
         {
-            var editorBy = By.CssSelector($"#{editorContainerId} > .trumbowyg-box > .trumbowyg-editor");
+            var editorBy = by.Then(By.CssSelector(".trumbowyg-box > .trumbowyg-editor"));
             context.Get(editorBy).Click();
 
             context.ExecuteLogged(
@@ -63,7 +63,7 @@ namespace Lombiq.Tests.UI.Extensions
                         TryFillElement(context, editorBy, text);
 
                         return context
-                            .Get(By.CssSelector($"#{editorContainerId} .trumbowyg-textarea").OfAnyVisibility())
+                            .Get(by.Then(By.CssSelector(".trumbowyg-textarea")).OfAnyVisibility())
                             .GetValue() == expectedHtml;
                     },
                     timeout,
