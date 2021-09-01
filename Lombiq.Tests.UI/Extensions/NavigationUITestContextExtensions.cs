@@ -156,7 +156,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SetDropdownByText(this UITestContext context, By selectBy, string value)
         {
             context.ClickReliablyOn(selectBy);
-            context.Get(selectBy.Then(By.XPath($".//option[contains(., '{value}')]"))).Click();
+            context.Get(selectBy).Get(By.XPath($".//option[contains(., '{value}')]")).Click();
         }
 
         /// <summary>
