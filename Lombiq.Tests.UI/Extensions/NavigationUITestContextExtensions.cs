@@ -150,10 +150,13 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
         }
 
-        public static void SetDropdownByText(this UITestContext context, string selectId, string value)
+        public static void SetDropdownByText(this UITestContext context, string selectId, string value) =>
+            SetDropdownByText(context, By.Id(selectId), value);
+
+        public static void SetDropdownByText(this UITestContext context, By selectBy, string value)
         {
-            context.ClickReliablyOn(By.Id(selectId));
-            context.Get(By.XPath($"//select[@id='{selectId}']//option[contains(., '{value}')]")).Click();
+            context.ClickReliablyOn(selectBy);
+            context.Get(selectBy.Then(By.XPath($".//option[contains(., '{value}')]"))).Click();
         }
 
         /// <summary>
