@@ -1,3 +1,5 @@
+using AngleSharp.Text;
+using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 
@@ -8,8 +10,20 @@ namespace Lombiq.Tests.UI.Extensions
         public static void FillContentItemTitle(this UITestContext context, string title) =>
             context.ClickAndFillInWithRetries(By.Id("TitlePart_Title"), title);
 
-        public static void GoToEditorTab(this UITestContext context, string tabText) =>
+        public static void GoToEditorTab(this UITestContext context, string tabText)
+        {
             context.ClickReliablyOn(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
+            var tabId = context.Get(By.XPath("//a[contains(@class,'nav-item nav-link active')]"))
+                .GetAttribute("aria-controls");
+
+            // If there is a datatable on the tab, then wait to load all the items on the first page.
+            var info = context.Get(By.XPath($"//div[contains(@id,'{tabId}')]//div[contains(@class,'dataTables_info')]").Safely());
+            if (info == null) return;
+
+            var itemsOnThePage = info.Text.Trim().Split(' ')[3].ToInteger(0);
+
+            context.WaitUntilExists(By.XPath($"//div[contains(@id,'{tabId}')]//tbody//tr[{itemsOnThePage}]"));
+        }
 
         public static void ClickPublish(this UITestContext context, bool withJavaScript = false)
         {
