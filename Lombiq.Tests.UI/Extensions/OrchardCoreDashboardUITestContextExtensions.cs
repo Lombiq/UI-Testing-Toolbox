@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Extensions
 
             var itemsOnThePage = info.Text.Trim().Split(' ')[3].ToInteger(0);
 
-            context.WaitUntilExists(By.XPath($"//div[contains(@id,'{tabId}')]//tbody//tr[{itemsOnThePage}]"));
+            context.WaitUntilExists(By.XPath($"id('{tabId}')//tbody//tr[{itemsOnThePage}]"));
         }
 
         public static void ClickPublish(this UITestContext context, bool withJavaScript = false)
