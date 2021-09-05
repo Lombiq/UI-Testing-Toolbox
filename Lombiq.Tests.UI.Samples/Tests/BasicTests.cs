@@ -56,8 +56,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.FillInWithRetries(By.Id("UserName"), DefaultUser.UserName);
                     context.FillInWithRetries(By.Id("Password"), DefaultUser.Password);
 
-                    // Even clicking can be reliable thus we have a helper for that too.
-                    context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
+                    // Even clicking can be unreliable thus we have a helper for that too.
+                    context.ClickReliablyOnSubmit();
 
                     // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
                     // module) to see if it indeed happened.

@@ -17,6 +17,7 @@ namespace Lombiq.Tests.UI.Services
     public class SmtpServiceRunningContext
     {
         public int Port { get; }
+        public string Host => "localhost:" + Port;
         public Uri WebUIUri { get; }
 
         public SmtpServiceRunningContext(int port, Uri webUIUri)
