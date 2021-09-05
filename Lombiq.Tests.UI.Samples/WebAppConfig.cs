@@ -25,4 +25,4 @@ namespace Lombiq.Tests.UI.Samples
     }
 }
 
-// NEXT STATION: UITestBase.cs.
+// NEXT STATION: Let's configure how tests should work. Head over to UITestBase.cs.
