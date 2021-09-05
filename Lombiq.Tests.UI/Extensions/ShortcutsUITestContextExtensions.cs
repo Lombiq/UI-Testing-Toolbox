@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Models;
+using OpenQA.Selenium;
 using RestEase;
 using Shouldly;
 using System.Collections.Concurrent;
@@ -60,8 +60,12 @@ namespace Lombiq.Tests.UI.Extensions
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
-        public static string GetCurrentUserName(this UITestContext context) =>
-            context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
+        public static string GetCurrentUserName(this UITestContext context)
+        {
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/CurrentUser/Index");
+            var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+            return userNameContainer["UserName: ".Length..];
+        }
 
         /// <summary>
         /// Enables the feature with the given ID directly, without anything
