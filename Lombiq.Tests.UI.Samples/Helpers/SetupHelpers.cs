@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -11,6 +12,8 @@ namespace Lombiq.Tests.UI.Samples.Helpers
     {
         public static Uri RunSetup(UITestContext context)
         {
+            context.SetStandardBrowserSize();
+
             var uri = context
                 .GoToSetupPage()
                 .SetupOrchardCore(
