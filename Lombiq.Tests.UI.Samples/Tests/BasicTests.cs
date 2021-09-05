@@ -62,6 +62,16 @@ namespace Lombiq.Tests.UI.Samples.Tests
                                 OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                             }
                             );
+
+        [Theory, Chrome]
+        public Task ApplicationInsightsTrackingShouldBePresent(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    var appInsightsExist = context
+                        .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
+                    appInsightsExist.ShouldBe(true);
+                },
                 browser);
     }
 }
