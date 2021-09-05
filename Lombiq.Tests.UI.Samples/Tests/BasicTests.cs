@@ -48,13 +48,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 browser);
 
         [Theory, Chrome]
-        public Task FeatureTogglingShouldntCauseError(Browser browser) =>
+        public Task TogglingFeaturesShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
-                {
-                    context.EnableFeatureDirectly("OrchardCore.BackgroundTasks");
-                    context.DisableFeatureDirectly("OrchardCore.BackgroundTasks");
-                },
+                context => context.ExecuteAndAssertTestFeatureToggle(),
                 browser);
     }
 }
