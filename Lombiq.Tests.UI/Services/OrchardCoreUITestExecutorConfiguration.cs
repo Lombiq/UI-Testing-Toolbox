@@ -137,7 +137,9 @@ namespace Lombiq.Tests.UI.Services
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
             messages => messages.ShouldNotContain(message =>
-                message.Source != BrowserLogMessage.Sources.Deprecation ||
-                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase));
+                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase) &&
+                // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared
+                // to be under a different URL.
+                !message.IsNotFoundMessage("/favicon.ico"));
     }
 }
