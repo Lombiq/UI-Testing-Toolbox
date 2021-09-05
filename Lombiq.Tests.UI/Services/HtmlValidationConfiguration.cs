@@ -56,10 +56,10 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets or sets a predicate that determines whether HTML validation and asserting the results should run for
         /// the current page. This is only used if <see cref="RunHtmlValidationAssertionOnAllPageChanges"/> is set to
-        /// <see langword="true"/>. Defaults to <see cref="DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule"/>.
+        /// <see langword="true"/>. Defaults to <see cref="DisableOnOrchardPagesHtmlValidationAndAssertionOnPageChangeRule"/>.
         /// </summary>
         public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
-            DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule;
+            DisableOnOrchardPagesHtmlValidationAndAssertionOnPageChangeRule;
 
         public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmpty =
             validationResult =>
@@ -68,7 +68,15 @@ namespace Lombiq.Tests.UI.Services
                 return Task.CompletedTask;
             };
 
-        public static readonly Predicate<UITestContext> DisableOnAdminHtmlValidationAndAssertionOnPageChangeRule =
-            context => !context.GetCurrentUri().AbsolutePath.StartsWithOrdinalIgnoreCase("/admin");
+        public static readonly Predicate<UITestContext> DisableOnOrchardPagesHtmlValidationAndAssertionOnPageChangeRule =
+            context =>
+            {
+                var path = context.GetCurrentUri().PathAndQuery;
+
+                return !path.StartsWithOrdinalIgnoreCase("/admin") &&
+                    !path.StartsWithOrdinalIgnoreCase("/Login") &&
+                    !path.StartsWithOrdinalIgnoreCase("/ChangePassword") &&
+                    !path.StartsWithOrdinalIgnoreCase("/ExternalLogins");
+            };
     }
 }
