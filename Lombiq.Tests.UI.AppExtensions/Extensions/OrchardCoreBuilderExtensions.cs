@@ -9,6 +9,16 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OrchardCoreBuilderExtensions
     {
+        /// <summary>
+        /// Sets up everything for UI testing in the app if it was started during a test.
+        /// </summary>
+        /// <param name="configuration">
+        /// The <see cref="IConfiguration"/> instance of the app where configuration options will be loaded from.
+        /// </param>
+        /// <param name="enableShortcutsDuringUITesting">
+        /// A value indicating whether to enable the Lombiq.Tests.UI.Shortcuts module. If set to <see langword="true"/>
+        /// it'll only take effect if the web project references the Shortcuts project.
+        /// </param>
         public static OrchardCoreBuilder ConfigureUITesting(
             this OrchardCoreBuilder builder,
             IConfiguration configuration,
