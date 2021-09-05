@@ -110,3 +110,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.
+// NEXT STATION: Head over to Tests/EmailTests.cs.
