@@ -21,7 +21,7 @@ Highlights:
 - Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in TeamCity.
 
 
-## Table of contents
+## Documentation
 
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Making an Orchard Core app testable](Lombiq.Tests.UI/Docs/TestableOrchardCoreApps.md)
@@ -29,3 +29,10 @@ Highlights:
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
+
+
+## Contributing and support
+
+Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.
+
+This project is developed by [Lombiq Technologies](https://lombiq.com/). Commercial-grade support is available through Lombiq.
