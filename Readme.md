@@ -25,12 +25,14 @@ Do you want to quickly try out this project and see it in action? Check it out i
 
 ## Documentation
 
-- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+
+- [Projects in the UI Testing Toolbox](Lombiq.Tests.UI/Docs/Projects.md)
 - [Making an Orchard Core app testable](Lombiq.Tests.UI/Docs/TestableOrchardCoreApps.md)
 - [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
+- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 
 
 ## Contributing and support
