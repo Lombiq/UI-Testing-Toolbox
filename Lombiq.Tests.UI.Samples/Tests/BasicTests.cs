@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -51,6 +52,16 @@ namespace Lombiq.Tests.UI.Samples.Tests
         public Task TogglingFeaturesShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context => context.ExecuteAndAssertTestFeatureToggle(),
+                browser,
+                configuration =>
+                    configuration.AssertBrowserLog =
+                        messages =>
+                            {
+                                var messagesWithoutToggle = messages.Where(message =>
+                                    !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                                OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
+                            }
+                            );
                 browser);
     }
 }
