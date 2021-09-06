@@ -29,12 +29,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // Let's go to the e-mail admin page.
                     context.GoToRelativeUrl("/Admin/Settings/email");
 
-                    // Adding the default sender will bring up the e-mail test feature.
-                    context.FillInWithRetries(By.Id("ISite_DefaultSender"), "sender@example.com");
-                    context.FillInWithRetries(By.Id("ISite_Host"), context.SmtpServiceRunningContext.Host);
-                    context.ClickReliablyOnSubmit();
-
-                    // Now we can use the test feature.
+                    // The default sender is configured in the test recipe so we can use the test feature.
                     context.ClickReliablyOnUntilPageLeave(By.LinkText("Test settings"));
 
                     // Let's send a basic e-mail.
