@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Helpers;
 using Selenium.Axe;
 using Shouldly;
 using System;
@@ -32,6 +33,21 @@ namespace Lombiq.Tests.UI.Services
         public Action<AxeBuilder> AxeBuilderConfigurator { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to automatically run accessibility checks every time a page changes
+        /// (either due to explicit navigation or clicks) and assert on the validation results.
+        /// </summary>
+        public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run
+        /// for the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is
+        /// set to <see langword="true"/>. Defaults to <see
+        /// cref="EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule"/>.
+        /// </summary>
+        public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
+            EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule;
+
+        /// <summary>
         /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking
         /// happens.
         /// </summary>
@@ -42,5 +58,8 @@ namespace Lombiq.Tests.UI.Services
             axeResult.Violations.ShouldBeEmpty();
             axeResult.Incomplete.ShouldBeEmpty();
         };
+
+        public static readonly Predicate<UITestContext> EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule =
+            UrlCheckHelper.IsValidatablePage;
     }
 }

@@ -8,6 +8,8 @@ namespace Lombiq.Tests.UI.Services
 
     public delegate Task ClickEventHandler(UITestContext context, IWebElement targeElement);
 
+    public delegate Task PageChangeEventHandler(UITestContext context);
+
     public class UITestExecutionEvents
     {
         /// <summary>
@@ -29,6 +31,11 @@ namespace Lombiq.Tests.UI.Services
         /// Gets or sets the event raised after clicking an element.
         /// </summary>
         public ClickEventHandler AfterClick { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event raised after the current page changes.
+        /// </summary>
+        public PageChangeEventHandler AfterPageChange { get; set; }
 
         internal UITestExecutionEvents()
         {

@@ -1,6 +1,5 @@
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
 
@@ -26,59 +25,11 @@ namespace Lombiq.Tests.UI.Extensions
         {
             if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", true)) return;
 
-            bool ShouldRun(UITestContext context)
+            configuration.Events.AfterPageChange += async context =>
             {
-                // If there's an alert (which can happen mostly after a click but also after navigating) then all other
-                // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we
-                // need to check if an alert is present and that's only possible by catching exceptions.
-                try
-                {
-                    context.Driver.SwitchTo().Alert();
-                    return false;
-                }
-                catch (NoAlertPresentException)
-                {
-                    var url = context.Driver.Url;
-                    return
-                        url.Contains("://localhost:", StringComparison.OrdinalIgnoreCase) &&
-                        !url.StartsWith(
-                            context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://",
-                            StringComparison.OrdinalIgnoreCase) &&
-                        !url.Contains("Lombiq.Tests.UI.Shortcuts", StringComparison.OrdinalIgnoreCase) &&
-                        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true;
-                }
-            }
-
-            IWebElement html = null;
-
-            configuration.Events.AfterNavigation += async (context, targetUri) =>
-            {
-                if (ShouldRun(context))
+                if (configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true)
                 {
                     await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
-                }
-            };
-
-            configuration.Events.BeforeClick += (context, targetElement) =>
-            {
-                html = context.Get(By.TagName("html"));
-                return Task.CompletedTask;
-            };
-
-            configuration.Events.AfterClick += async (context, targetElement) =>
-            {
-                if (ShouldRun(context))
-                {
-                    try
-                    {
-                        // A dummy access just to make Text throw an exception if the element is stale.
-                        html.Text?.StartsWith("a", StringComparison.InvariantCulture);
-                    }
-                    catch (StaleElementReferenceException)
-                    {
-                        // The page changed so time to run the validation.
-                        await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
-                    }
                 }
             };
         }

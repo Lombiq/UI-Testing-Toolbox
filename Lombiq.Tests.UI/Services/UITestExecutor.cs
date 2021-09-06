@@ -541,6 +541,13 @@ namespace Lombiq.Tests.UI.Services
             _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
             var uri = await _applicationInstance.StartUpAsync();
 
+            _configuration.SetUpEvents();
+
+            if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
+            {
+                _configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
+            }
+
             if (_configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
             {
                 _configuration.SetUpHtmlValidationAssertionOnPageChange();
