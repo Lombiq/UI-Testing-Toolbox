@@ -27,7 +27,10 @@ namespace Lombiq.Tests.UI.Services
 
         private static readonly object _setupSnapshotManangerLock = new();
         private static readonly ConcurrentDictionary<int, int> _setupOperationFailureCount = new();
+        private static readonly object _dockerSetupLock = new();
+
         private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
+        private static bool _dockerIsSetup;
 
         private SqlServerManager _sqlServerManager;
         private SmtpService _smtpService;
@@ -319,11 +322,6 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    if (Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
-                    {
-                        Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
-                    }
-
                     if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
 
                     if (setupConfiguration.FastFailSetup &&
@@ -348,7 +346,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished waiting for the setup operation.");
 
-                // Restart the app after even a fresh setup so all tests run with an app newly started from a snapshot.
+                // Restart the app even after a fresh setup so all tests run with an app newly started from a snapshot.
                 if (_context != null)
                 {
                     await ShutdownAsync();
@@ -385,6 +383,17 @@ namespace Lombiq.Tests.UI.Services
             docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotPath);
 
             _dockerConfiguration = docker;
+
+            lock (_dockerSetupLock)
+            {
+                if (!_dockerIsSetup && Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
+                {
+                    Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
+                }
+
+                // Outside of the previous if so it'll be set even if there's no host snapshot.
+                _dockerIsSetup = true;
+            }
         }
 
         private void SetupSqlServerSnapshot()
