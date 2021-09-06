@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         }
 
         [Theory, Chrome]
-        public Task SendTestEmail(Browser browser) =>
+        public Task SendingTestEmailShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
