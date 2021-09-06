@@ -27,8 +27,11 @@ namespace Lombiq.Tests.UI.Samples.Helpers
                     {
                         SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
                         // Note how we use a recipe just for UI testing. This is recommended so you can do some testing-
-                        // specific configuration. If you use a setup recipe for local development then you can execute
-                        // that from this test recipe.
+                        // specific configuration. Check it out if you're interested. Notably, it turns off CDN usage
+                        // and configures culture settings to make test execution consistent regardless of the host
+                        // settings.
+                        // If you use a setup recipe for local development then you can execute that from this test
+                        // recipe.
                         RecipeId = "Lombiq.OSOCE.Tests.recipe",
                         // Taking care to support both SQL flavors.
                         DatabaseProvider = context.Configuration.UseSqlServer
