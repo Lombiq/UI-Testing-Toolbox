@@ -17,7 +17,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
             services.AddOrchardCms(builder => builder.ConfigureUITesting(_configuration));
         }
         ``` 
-- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project as a reference to the root app project and enable it during UI testing by modifying the startup code as below:
+- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project as a reference to the root app project and enable it during UI testing by modifying the startup code as below (note the second `true` parameter):
     ```csharp
     public void ConfigureServices(IServiceCollection services)
     {
