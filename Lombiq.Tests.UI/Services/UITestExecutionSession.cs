@@ -337,8 +337,8 @@ namespace Lombiq.Tests.UI.Services
                     // snapshot config to be available at startup too.
                     _context = await CreateContextAsync();
 
-                    SetupSqlServer();
-                    SetupAzureBlobStorage();
+                    SetupSqlServerSnapshot();
+                    SetupAzureBlobStorageSnapshot();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
                     await AssertLogsAsync();
@@ -387,7 +387,7 @@ namespace Lombiq.Tests.UI.Services
             _dockerConfiguration = docker;
         }
 
-        private void SetupSqlServer()
+        private void SetupSqlServerSnapshot()
         {
             if (!_configuration.UseSqlServer) return;
 
@@ -419,7 +419,7 @@ namespace Lombiq.Tests.UI.Services
                 SqlServerManagerBeforeTakeSnapshotHandlerAsync;
         }
 
-        private void SetupAzureBlobStorage()
+        private void SetupAzureBlobStorageSnapshot()
         {
             if (!_configuration.UseAzureBlobStorage) return;
 
