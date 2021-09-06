@@ -13,14 +13,15 @@ namespace Lombiq.Tests.UI.Services
     {
         /// <summary>
         /// Gets or sets the Azure Blob Storage connection string. Defaults to local development storage (Storage
-        /// Emulator).
+        /// Emulator). This configuration will automatically passed to the tested app.
         /// </summary>
         public string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
 
         /// <summary>
         /// Gets or sets the Azure Blob Storage container name where all the test apps' files will be stored in
         /// subfolders. Defaults to <c>"LombiqUITestingToolbox"</c>. Ff you want to clean up residual files after an
-        /// interrupted test execution you can just delete the container (it'll be created if it doesn't exist).
+        /// interrupted test execution you can just delete the container (it'll be created if it doesn't exist). This
+        /// configuration will automatically passed to the tested app.
         /// </summary>
         public string ContainerName { get; set; } = "lombiquitestingtoolbox";
     }

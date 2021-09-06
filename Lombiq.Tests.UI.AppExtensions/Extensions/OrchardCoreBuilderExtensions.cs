@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OrchardCore.Email;
-using OrchardCore.Media.Azure;
 using OrchardCore.Modules;
 using System.Linq;
 
@@ -44,10 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email");
 
-            var blobStorageConnectionString = configuration
-                .GetValue<string>("Lombiq_Tests_UI:MediaBlobStorageOptions:ConnectionString");
-
-            if (!string.IsNullOrEmpty(blobStorageConnectionString))
+            if (configuration.GetValue<bool>("Lombiq_Tests_UI:UseAzureBlobStorage"))
             {
                 builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
             }
@@ -55,9 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder.ConfigureServices(
                 services => services
                     .PostConfigure<SmtpSettings>(settings =>
-                        configuration.GetSection("Lombiq_Tests_UI:SmtpSettings").Bind(settings))
-                    .PostConfigure<MediaBlobStorageOptions>(options =>
-                        configuration.GetSection("Lombiq_Tests_UI:MediaBlobStorageOptions").Bind(options)));
+                        configuration.GetSection("Lombiq_Tests_UI:SmtpSettings").Bind(settings)));
         }
     }
 }

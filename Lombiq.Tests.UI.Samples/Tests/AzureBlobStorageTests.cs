@@ -10,22 +10,20 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests
 {
-    // By default, tests are executed with SQLite. However, you can also run them against a full SQL Server instance and
-    // tests will get their DBs there (if you run your app with SQL Server in production then it's recommended to also
-    // test with it, should there be any incompatibilities). Note that for this, you need an SQL Server instance
-    // running; by default, this will be attempted under the default localhost server name. If you're using anything
-    // else, check out the settings in SqlServerConfiguration.
-    public class SqlServerTests : UITestBase
+    // Up until now the Orchard app always used the default local Media storage for managing Media files. However, you
+    // may use Azure Blob Storage in production. You can also test your app with it!
+    public class AzureBlobStorageTests : UITestBase
     {
-        public SqlServerTests(ITestOutputHelper testOutputHelper)
+        public AzureBlobStorageTests(ITestOutputHelper testOutputHelper)
             : base(testOutputHelper)
         {
         }
 
-        // Here we have basically two of the same tests as in BasicTests but now we're using SQL Server as the site's
-        // database. If they still work and there are no errors in the log then the app works with SQL Server too.
+        // Here we have basically two of the same tests as in BasicTests but now we're using Azure Blob Storage as the
+        // site's Media storage. If they still work and there are no errors in the log then the app works with Azure
+        // Blob Storage too.
         [Theory, Chrome]
-        public Task AnonymousHomePageShouldExistWithSqlServer(Browser browser) =>
+        public Task AnonymousHomePageShouldExistWithAzureBlobStorage(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context => context
                     .Get(By.ClassName("navbar-brand"))
@@ -33,7 +31,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing"),
                 browser,
                 // Note the configuration! We could also set this globally in UITestBase.
-                configuration => configuration.UseSqlServer = true);
+                configuration => configuration.UseAzureBlobStorage = true);
 
         [Theory, Chrome]
         public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
@@ -42,7 +40,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 browser,
                 configuration =>
                 {
-                    configuration.UseSqlServer = true;
+                    configuration.UseAzureBlobStorage = true;
 
                     configuration.AssertBrowserLog =
                         messages =>
@@ -55,5 +53,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
     }
 }
 
-// END OF TRAINING SECTION: Using SQL Server.
-// NEXT STATION: Head over to Tests/AzureBlobStorageTests.cs.
+// END OF TRAINING SECTION: Using Azure Blob Storage.

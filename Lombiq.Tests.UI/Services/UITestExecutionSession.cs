@@ -596,15 +596,19 @@ namespace Lombiq.Tests.UI.Services
             {
                 _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
+                // These need to be configured directly, since that module reads the configuration directly instead of
+                // allowing post-configuration.
                 argumentsBuilder
-                    .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:BasePath")
+                    .Add("--OrchardCore:OrchardCore_Media_Azure:BasePath")
                     .Add(azureBlobStorageContext.BasePath);
                 argumentsBuilder
-                    .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ConnectionString")
+                    .Add("--OrchardCore:OrchardCore_Media_Azure:ConnectionString")
                     .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
                 argumentsBuilder
-                    .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ContainerName")
+                    .Add("--OrchardCore:OrchardCore_Media_Azure:ContainerName")
                     .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
+                argumentsBuilder.Add("--OrchardCore:OrchardCore_Media_Azure:CreateContainer").Add("true");
+                argumentsBuilder.Add("--Lombiq_Tests_UI:UseAzureBlobStorage").Add("true");
 
                 if (!Directory.Exists(_snapshotDirectoryPath)) return;
 
