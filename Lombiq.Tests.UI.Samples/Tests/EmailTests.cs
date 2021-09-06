@@ -58,3 +58,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
 }
 
 // END OF TRAINING SECTION: E-mail tests.
+// NEXT STATION: Head over to Tests/AccessibilityTest.cs.

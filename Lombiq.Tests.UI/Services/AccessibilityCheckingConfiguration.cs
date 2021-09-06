@@ -28,9 +28,10 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility
         /// checking. For more information on the various options see <see
-        /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>.
+        /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>. Defaults to
+        /// <see cref="ConfigureWcag21aa"/>.
         /// </summary>
-        public Action<AxeBuilder> AxeBuilderConfigurator { get; set; }
+        public Action<AxeBuilder> AxeBuilderConfigurator { get; set; } = axeBuilder => ConfigureWcag21aa(axeBuilder);
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically run accessibility checks every time a page changes
@@ -49,9 +50,13 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking
-        /// happens.
+        /// happens. Defaults to <see cref="AssertAxeResultIsEmpty"/>.
         /// </summary>
         public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
+
+        // Returns AxeBuilder so it can be chained.
+        public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag21aa = axeBuilder =>
+            axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa");
 
         public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
         {
