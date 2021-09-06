@@ -85,7 +85,7 @@ namespace Lombiq.Tests.UI
                 null,
                 configuration =>
                 {
-                    configuration.SetupConfiguration.SetupSnapshotPath = appFolder;
+                    configuration.SetupConfiguration.SetupSnapshotDirectoryPath = appFolder;
                     changeConfiguration?.Invoke(configuration);
                 });
         }

@@ -86,8 +86,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                                 var messagesWithoutToggle = messages.Where(message =>
                                     !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                                 OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
-                            }
-                            );
+                            });
 
         // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry
         // in Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during

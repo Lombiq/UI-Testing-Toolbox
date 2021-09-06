@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public bool FastFailSetup { get; set; } = true;
 
-        public string SetupSnapshotPath { get; set; } = Snapshots.DefaultSetupSnapshotPath;
+        public string SetupSnapshotDirectoryPath { get; set; } = Snapshots.DefaultSetupSnapshotDirectoryPath;
 
         public BeforeSetupHandler BeforeSetup { get; set; }
     }

@@ -25,13 +25,15 @@ namespace Lombiq.Tests.UI.Services
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private static readonly object _setupSnapshotManangerLock = new();
-        private static readonly ConcurrentDictionary<int, int> _setupOperationFailureCount = new();
+        // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
+        private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
+        private static readonly ConcurrentDictionary<string, int> _setupOperationFailureCount = new();
         private static readonly object _dockerSetupLock = new();
 
-        private static SynchronizingWebApplicationSnapshotManager _setupSnapshotManangerInstance;
         private static bool _dockerIsSetup;
 
+        private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
+        private string _snapshotDirectoryPath;
         private SqlServerManager _sqlServerManager;
         private SmtpService _smtpService;
         private AzureBlobStorageManager _azureBlobStorageManager;
@@ -59,15 +61,29 @@ namespace Lombiq.Tests.UI.Services
             try
             {
                 var setupConfiguration = _configuration.SetupConfiguration;
-                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotPath;
-                var runSetupOperation = setupConfiguration.SetupOperation != null;
+                var hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-                if (runSetupOperation)
+                var snapshotSubdirectory = "Default";
+                if (_configuration.UseSqlServer)
                 {
-                    lock (_setupSnapshotManangerLock)
-                    {
-                        _setupSnapshotManangerInstance ??= new SynchronizingWebApplicationSnapshotManager(setupConfiguration.SetupSnapshotPath);
-                    }
+                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                        ? "SqlServer-AzureBlob"
+                        : "SqlServer";
+                }
+                else if (_configuration.UseAzureBlobStorage)
+                {
+                    snapshotSubdirectory = "AzureBlob";
+                }
+
+                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
+                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
+
+                if (hasSetupOperation)
+                {
+                    _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
+                        _snapshotDirectoryPath,
+                        path => new SynchronizingWebApplicationSnapshotManager(path));
 
                     await SetupAsync();
                 }
@@ -318,7 +334,7 @@ namespace Lombiq.Tests.UI.Services
 
                 SetupDocker();
 
-                var resultUri = await _setupSnapshotManangerInstance.RunOperationAndSnapshotIfNewAsync(async () =>
+                var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
@@ -379,8 +395,8 @@ namespace Lombiq.Tests.UI.Services
             // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
             // itself (which would be logical). Removing the volume directory instantly severs the connection between
             // host and the container so that should be avoided at all costs.
-            docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotPath; // Always a Unix path.
-            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotPath);
+            docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotDirectoryPath; // Always a Unix path.
+            docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotDirectoryPath);
 
             _dockerConfiguration = docker;
 
@@ -452,7 +468,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (_configuration.UseSqlServer) sqlServerContext = SetUpSqlServer();
             if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
-            if (_configuration.UseSmtpService) smtpContext = await SetUpSmtpServiceAsync();
+            if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
             Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
             {
@@ -502,7 +518,10 @@ namespace Lombiq.Tests.UI.Services
                 azureBlobStorageContext);
         }
 
-        private int GetSetupHashCode() => _configuration.SetupConfiguration.SetupOperation.GetHashCode();
+        private string GetSetupHashCode() =>
+            _configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
+            _configuration.UseSqlServer +
+            _configuration.UseAzureBlobStorage;
 
         private async Task AssertLogsAsync()
         {
@@ -542,7 +561,7 @@ namespace Lombiq.Tests.UI.Services
 
                 var snapshotDirectoryPath =
                     _dockerConfiguration?.ContainerSnapshotPath ??
-                    _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
+                    _snapshotDirectoryPath;
 
                 if (!Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath)) return;
 
@@ -577,8 +596,6 @@ namespace Lombiq.Tests.UI.Services
             {
                 _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
-                var snapshotDirectoryPath = _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath;
-
                 argumentsBuilder
                     .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:BasePath")
                     .Add(azureBlobStorageContext.BasePath);
@@ -589,9 +606,9 @@ namespace Lombiq.Tests.UI.Services
                     .Add("--Lombiq_Tests_UI:MediaBlobStorageOptions:ContainerName")
                     .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
 
-                if (!Directory.Exists(snapshotDirectoryPath)) return;
+                if (!Directory.Exists(_snapshotDirectoryPath)) return;
 
-                await _azureBlobStorageManager.RestoreSnapshotAsync(snapshotDirectoryPath);
+                await _azureBlobStorageManager.RestoreSnapshotAsync(_snapshotDirectoryPath);
             }
 
             _configuration.OrchardCoreConfiguration.BeforeAppStart =
@@ -601,7 +618,7 @@ namespace Lombiq.Tests.UI.Services
             return azureBlobStorageContext;
         }
 
-        private async Task<SmtpServiceRunningContext> SetUpSmtpServiceAsync()
+        private async Task<SmtpServiceRunningContext> StartSmtpServiceAsync()
         {
             _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
             var smtpContext = await _smtpService.StartAsync();
