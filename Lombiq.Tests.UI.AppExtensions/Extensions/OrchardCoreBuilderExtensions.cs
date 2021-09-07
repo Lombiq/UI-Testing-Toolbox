@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// The <see cref="IConfiguration"/> instance of the app where configuration options will be loaded from.
         /// </param>
         /// <param name="enableShortcutsDuringUITesting">
-        /// A value indicating whether to enable the Lombiq.Tests.UI.Shortcuts module. If set to <see langword="true"/>
-        /// it'll only take effect if the web project references the Shortcuts project.
+        /// A value indicating whether to enable the Lombiq.Tests.UI.Shortcuts feature. If set to <see langword="true"/>
+        /// the feature will only be enabled if the web project references the Shortcuts module.
         /// </param>
         public static OrchardCoreBuilder ConfigureUITesting(
             this OrchardCoreBuilder builder,

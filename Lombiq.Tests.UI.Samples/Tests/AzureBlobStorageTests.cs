@@ -31,6 +31,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing"),
                 browser,
                 // Note the configuration! We could also set this globally in UITestBase.
+                // You'll need an accessible Azure Blob Storage account. For testing we recommend the Azurite emulator
+                // (https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite) that can be used from
+                // tests without any further configuration.
                 configuration => configuration.UseAzureBlobStorage = true);
 
         [Theory, Chrome]
