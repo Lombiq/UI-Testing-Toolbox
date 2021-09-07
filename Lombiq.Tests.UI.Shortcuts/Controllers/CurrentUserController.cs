@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
 {
-    // This needs to be consumed directly from the brow
+    // This needs to be consumed directly from the browser.
     [DevelopmentAndLocalhostOnly]
     public class CurrentUserController : Controller
     {

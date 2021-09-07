@@ -34,7 +34,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                         .Text
                         .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing");
 
-                    // Are logged out?
+                    // Are we logged out?
                     context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 },
                 browser);
@@ -51,7 +51,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.GoToRelativeUrl("/Login");
 
                     // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
-                    // actually sure that the values are indeed there! To make things more reliably, we've added a lot
+                    // actually sure that the values are indeed there! To make things more reliable, we've added a lot
                     // of useful methods like FillInWithRetries().
                     context.FillInWithRetries(By.Id("UserName"), DefaultUser.UserName);
                     context.FillInWithRetries(By.Id("Password"), DefaultUser.Password);
