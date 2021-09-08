@@ -1,6 +1,5 @@
 using AngleSharp.Text;
 using Atata;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
@@ -23,6 +22,17 @@ namespace Lombiq.Tests.UI.Extensions
             context.FillInWithRetries(by, text, timeout, interval);
         }
 
+        public static void ClickAndFillInWithRetriesUntilNotBlank(
+            this UITestContext context,
+            By by,
+            string text,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
+        {
+            context.Get(by).Click();
+            context.FillInWithRetriesUntilNotBlank(by, text, timeout, interval);
+        }
+
         public static void ClickAndFillInWithRetriesIfNotNullOrEmpty(
             this UITestContext context,
             By by,
@@ -31,6 +41,33 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null)
         {
             if (!string.IsNullOrEmpty(text)) ClickAndFillInWithRetries(context, by, text, timeout, interval);
+        }
+
+        public static void ClickAndFillInTrumbowygEditorWithRetries(
+            this UITestContext context,
+            By by,
+            string text,
+            string expectedHtml,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
+        {
+            var editorBy = by.Then(By.CssSelector(".trumbowyg-box > .trumbowyg-editor"));
+            context.Get(editorBy).Click();
+
+            context.ExecuteLogged(
+                nameof(ClickAndFillInTrumbowygEditorWithRetries),
+                $"{editorBy} - \"{text}\"",
+                () => context.DoWithRetriesOrFail(
+                    () =>
+                    {
+                        TryFillElement(context, editorBy, text);
+
+                        return context
+                            .Get(by.Then(By.CssSelector(".trumbowyg-textarea")).OfAnyVisibility())
+                            .GetValue() == expectedHtml;
+                    },
+                    timeout,
+                    interval));
         }
 
         public static void ClickAndClear(this UITestContext context, By by) =>
@@ -49,6 +86,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <remarks>
         /// <para>
+        /// Use <see cref="FillInWithRetriesUntilNotBlank"/> instead if the field will contain a string different than
+        /// what's written to it, e.g. when it applies some formatting to numbers.
+        /// </para>
+        /// <para>
         /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
         /// true, sometimes filling form fields still fails. Go figure...
         /// </para>
@@ -62,28 +103,36 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteLogged(
                 nameof(FillInWithRetries),
                 $"{by} - \"{text}\"",
-                () => ReliabilityHelper.DoWithRetries(
-                    () =>
-                    {
-                        var element = context.Get(by);
+                () => context.DoWithRetriesOrFail(
+                    () => TryFillElement(context, by, text).GetValue() == text,
+                    timeout,
+                    interval));
 
-                        if (text.Contains('@', StringComparison.OrdinalIgnoreCase))
-                        {
-                            element.Clear();
-
-                            // On some platforms, probably due to keyboard settings, the @ character can be missing from the
-                            // address when entered into a textfield so we need to use JS. The following solution doesn't
-                            // work: https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the
-                            // standard FillInWith() as without that some forms start to behave strange and not save values.
-                            new Actions(context.Driver).SendKeys(element, text).Perform();
-                        }
-                        else
-                        {
-                            element.FillInWith(text);
-                        }
-
-                        return element.GetValue() == text;
-                    },
+        /// <summary>
+        /// Fills a form field with the given text, and retries if the field is left blank (but doesn't check the
+        /// value).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Use this instead of <see cref="FillInWithRetries"/> if the field will contain a string different than what's
+        /// written to it, e.g. when it applies some formatting to numbers.
+        /// </para>
+        /// <para>
+        /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
+        /// true, sometimes filling form fields still fails. Go figure...
+        /// </para>
+        /// </remarks>
+        public static void FillInWithRetriesUntilNotBlank(
+            this UITestContext context,
+            By by,
+            string text,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
+            context.ExecuteLogged(
+                nameof(FillInWithRetriesUntilNotBlank),
+                $"{by} - \"{text}\"",
+                () => context.DoWithRetriesOrFail(
+                    () => !string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue()),
                     timeout,
                     interval));
 
@@ -105,8 +154,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value
-        /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/> using
-        /// <see cref="ReliabilityHelper.DoWithRetries"/>.
+        /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/>.
         /// </summary>
         public static string GetSelectedTabText(
             this UITestContext context,
@@ -116,7 +164,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             string title = defaultTitle;
 
-            ReliabilityHelper.DoWithRetries(
+            context.DoWithRetriesOrFail(
                 () =>
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
@@ -126,6 +174,28 @@ namespace Lombiq.Tests.UI.Extensions
                 interval);
 
             return title;
+        }
+
+        private static IWebElement TryFillElement(UITestContext context, By by, string text)
+        {
+            var element = context.Get(by);
+
+            if (text.Contains('@', StringComparison.Ordinal))
+            {
+                element.Clear();
+
+                // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
+                // when entered into a text field so we need to use Actions. The following solution doesn't work:
+                // https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the standard
+                // FillInWith() as without that some forms start to behave strange and not save values.
+                new Actions(context.Driver).SendKeys(element, text).Perform();
+            }
+            else
+            {
+                element.FillInWith(text);
+            }
+
+            return element;
         }
     }
 }
