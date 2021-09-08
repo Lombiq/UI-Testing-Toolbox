@@ -1,10 +1,9 @@
 using Atata;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 
-namespace Finitive.Platform.Tests.UI
+namespace Lombiq.Tests.UI.Extensions
 {
     public static class FileUploadUITestContextExtensions
     {

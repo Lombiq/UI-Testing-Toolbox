@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Pages
     using _ = OrchardCoreSetupPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-    [VerifyTitle("Orchard Setup", Format = "{0}")]
+    [VerifyTitle("Setup", Format = "{0}")]
     [VerifyH1("Setup")]
     public sealed class OrchardCoreSetupPage : Page<_>
     {

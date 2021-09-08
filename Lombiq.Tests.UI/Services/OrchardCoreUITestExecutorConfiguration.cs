@@ -56,7 +56,8 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets a value indicating whether to launch and use a local SMTP service to test sending out e-mails.
-        /// See <see cref="SmtpServiceConfiguration"/> on configuring this.
+        /// When enabled, the necessary configuration will be automatically passed to the tested app. See <see
+        /// cref="SmtpServiceConfiguration"/> on configuring this.
         /// </summary>
         public bool UseSmtpService { get; set; }
         public SmtpServiceConfiguration SmtpServiceConfiguration { get; set; } = new();
@@ -74,8 +75,8 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets a value indicating whether to use Azure Blob Storage as the app's file storage instead of the
-        /// default local file system.
-        /// See <see cref="AzureBlobStorageConfiguration"/> on configuring this.
+        /// default local file system. When enabled, the necessary configuration will be automatically passed to the
+        /// tested app. See <see cref="AzureBlobStorageConfiguration"/> on configuring this.
         /// </summary>
         public bool UseAzureBlobStorage { get; set; }
         public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
@@ -137,7 +138,9 @@ namespace Lombiq.Tests.UI.Services
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
             messages => messages.ShouldNotContain(message =>
-                message.Source != BrowserLogMessage.Sources.Deprecation ||
-                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase));
+                !message.Message.Contains("HTML Imports is deprecated", StringComparison.InvariantCultureIgnoreCase) &&
+                // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared
+                // to be under a different URL.
+                !message.IsNotFoundMessage("/favicon.ico"));
     }
 }

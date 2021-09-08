@@ -34,6 +34,21 @@ namespace Lombiq.Tests.UI.Helpers
             {
                 File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
             }
+
+            var recipesSourceFolderPath = Path.Combine(sourcePath, "Recipes");
+            if (Directory.Exists(recipesSourceFolderPath))
+            {
+                var recipesDestinationFolderPath = Path.Combine(destinationPath, "Recipes");
+
+                DirectoryHelper.CreateDirectoryIfNotExists(recipesDestinationFolderPath);
+
+                var recipePaths = Directory.EnumerateFiles(recipesSourceFolderPath);
+
+                foreach (var filePath in recipePaths)
+                {
+                    File.Copy(filePath, Path.Combine(recipesDestinationFolderPath, Path.GetFileName(filePath)));
+                }
+            }
         }
 
         public static string GetAppRootPath(string appAssemblyPath) =>

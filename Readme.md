@@ -20,17 +20,21 @@ Highlights:
 - Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
 - Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in TeamCity.
 
+Also see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox).
+
 Do you want to quickly try out this project and see it in action? Check it out in our [Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions) full Orchard Core solution and also see our other useful Orchard Core-related open-source projects!
 
 
 ## Documentation
 
-- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+
+- [Projects in the UI Testing Toolbox](Lombiq.Tests.UI/Docs/Projects.md)
 - [Making an Orchard Core app testable](Lombiq.Tests.UI/Docs/TestableOrchardCoreApps.md)
 - [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
+- [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 
 
 ## Contributing and support

@@ -190,6 +190,12 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
 
         /// <summary>
+        /// Finds the first submit button and clicks on it reliably.
+        /// </summary>
+        public static void ClickReliablyOnSubmit(this UITestContext context) =>
+            context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
+
+        /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
         /// </summary>
         public static void AcceptAlert(this UITestContext context)
