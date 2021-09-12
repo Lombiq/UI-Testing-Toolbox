@@ -29,12 +29,15 @@ namespace Lombiq.Tests.UI.Extensions
 
             try
             {
-                await (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?.Invoke(validationResult);
+                var assertTask = (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?
+                    .Invoke(validationResult);
+                await (assertTask ?? Task.CompletedTask);
             }
             catch (Exception ex)
             {
                 throw new HtmlValidationAssertionException(
                     validationResult,
+                    context,
                     htmlValidationConfiguration.CreateReportOnFailure,
                     ex);
             }
