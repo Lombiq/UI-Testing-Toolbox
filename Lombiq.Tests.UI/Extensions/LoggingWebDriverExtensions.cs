@@ -32,9 +32,8 @@ namespace Lombiq.Tests.UI.Extensions
             $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
 
         public bool IsNotFoundMessage(string url) =>
-            Message.Contains(
-                @$"{url} - Failed to load resource: the server responded with a status of 404",
-                StringComparison.InvariantCultureIgnoreCase);
+            Message.ContainsOrdinalIgnoreCase(
+                @$"{url} - Failed to load resource: the server responded with a status of 404");
 
         public enum MessageLevel
         {

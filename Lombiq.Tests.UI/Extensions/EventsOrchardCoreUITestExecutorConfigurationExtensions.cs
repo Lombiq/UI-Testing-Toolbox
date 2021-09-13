@@ -47,7 +47,7 @@ namespace Lombiq.Tests.UI.Extensions
                     try
                     {
                         // A dummy access just to make Text throw an exception if the element is stale.
-                        html.Text?.StartsWith("a", StringComparison.InvariantCulture);
+                        html.Text?.StartsWithOrdinalIgnoreCase("a");
                     }
                     catch (StaleElementReferenceException)
                     {
