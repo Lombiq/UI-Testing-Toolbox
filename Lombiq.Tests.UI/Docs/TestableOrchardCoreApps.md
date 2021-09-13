@@ -46,6 +46,22 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ]
     ```
   For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe.
+- By default, the culture settings used when setting up an Orchard site depend on the host machine's culture. You want to make these settings consistent across all environments though so e.g. datetime and number formatting will be consistent. You can do this by configuring the culture in site settings from the setup recipe:
+    ```json
+    "steps": [
+        {
+            "name": "settings",
+            // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify
+            // the culture too.
+            "LocalizationSettings": {
+                "DefaultCulture": "en-US",
+                "SupportedCultures": [
+                    "en-US"
+                ]
+            }
+        }
+    ]
+    ```
 - Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI. The `OrchardCore.Email` feature will be automatically enabled, as well as the rest of the configuration applied.
 - If you want the site to use Azure Blob Storage then you have to do the following:
   - The `OrchardCore.Media.Azure` feature will be automatically enabled, as well as the rest of the configuration applied.
