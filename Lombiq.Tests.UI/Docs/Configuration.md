@@ -9,6 +9,8 @@ All the necessary aspects of the Toolbox can be configured from code. Look for s
 
 ## External configuration
 
+Note that since the tests are xUnit tests you can configure general parameters of test execution, including the level or parallelization, with [an xUnit configuration file](https://xunit.net/docs/configuration-files) (a default one is included in the UI Testing Toolbox).
+
 Certain test execution parameters can be configured externally too, the ones retrieved via the `TestConfigurationManager` class. All configuration options are basic key-value pairs and can be provided in one of the two ways:
 
 - Key-value pairs in a *TestConfiguration.json* file. Note that this file needs to be in the folder where the UI tests execute. By default this is the build output folder of the given test project, i.e. where the projects's DLL is generated  (e.g. *bin/Debug/netcoreapp3.1*).

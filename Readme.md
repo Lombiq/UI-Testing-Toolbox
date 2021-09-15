@@ -32,6 +32,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Making an Orchard Core app testable](Lombiq.Tests.UI/Docs/TestableOrchardCoreApps.md)
 - [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
+- [Executing tests](Lombiq.Tests.UI/Docs/ExecutingTests.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
