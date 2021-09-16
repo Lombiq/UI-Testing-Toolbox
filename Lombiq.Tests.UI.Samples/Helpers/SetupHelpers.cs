@@ -69,6 +69,10 @@ namespace Lombiq.Tests.UI.Samples.Helpers
         // When using the Auto Setup feature (https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) you
         // don't need to run the setup like RunSetup() above. Instead, substitute the setup operation with one that just
         // opens the app and checks if the setup was successful, like you can see here.
+        // Do note that this way you can't really use a different recipe for testing (that can, in addition to the dev
+        // recipe, contain testing-specific content and configuration). So it's still better to not use Auto Setup for
+        // test execution even if you use it for development: To achieve this, in your web app's Startup class you can
+        // only conditionally run AddSetupFeatures("OrchardCore.AutoSetup"), based on  IConfiguration.IsUITesting().
         public static Uri RunAutoSetup(UITestContext context)
         {
             context.GoToHomePage();
