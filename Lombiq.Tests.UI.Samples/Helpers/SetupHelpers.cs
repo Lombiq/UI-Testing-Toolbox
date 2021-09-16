@@ -32,7 +32,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
                         // settings.
                         // If you use a setup recipe for local development then you can execute that from this test
                         // recipe.
-                        RecipeId = "Lombiq.OSOCE.Tests.recipe",
+                        RecipeId = "Lombiq.OSOCE.Tests",
                         // Taking care to support both SQL flavors. We'll see tests using both.
                         DatabaseProvider = context.Configuration.UseSqlServer
                             ? OrchardCoreSetupPage.DatabaseType.SqlServer
