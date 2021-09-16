@@ -22,6 +22,7 @@ namespace Lombiq.Tests.UI.Samples
         // Two usual overloads. Note that we reference SetupHelpers.RunSetup as the setup operation: That's what will be
         // run when the first test executes. Until the setup is done, all other tests wait; then, they'll use the
         // snapshot created from the setup.
+        // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
         // NEXT STATION: Check out SetupHelpers, then come back here!
         protected Task ExecuteTestAfterSetupAsync(
             Action<UITestContext> test,

@@ -54,7 +54,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             // here quickly also allows to the UI Testing Toolbox not to run all the other tests (since without a
             // working setup that would be pointless). Check out OrchardCoreSetupConfiguration.FastFailSetup if you're
             // interested how that works.
-            context.Exists(By.Id("navbarResponsive"));
+            AssertSetupSuccessful(context);
 
             return uri;
         }
@@ -65,5 +65,17 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             RunSetup(context);
             context.SignInDirectly(userName);
         }
+
+        // When using the Auto Setup feature (https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) you
+        // don't need to run the setup like RunSetup() above. Instead, substitute the setup operation with one that just
+        // opens the app and checks if the setup was successful, like you can see here.
+        public static Uri RunAutoSetup(UITestContext context)
+        {
+            context.GoToHomePage();
+            AssertSetupSuccessful(context);
+            return context.GetCurrentUri();
+        }
+
+        private static void AssertSetupSuccessful(UITestContext context) => context.Exists(By.Id("navbarResponsive"));
     }
 }
