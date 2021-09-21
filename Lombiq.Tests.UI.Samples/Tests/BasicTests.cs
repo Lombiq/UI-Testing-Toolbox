@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 {
                     // Is the title correct?
                     context
-                        .Get(By.ClassName("navbar-brandsdf"))
+                        .Get(By.ClassName("navbar-brand"))
                         .Text
                         .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing");
 
