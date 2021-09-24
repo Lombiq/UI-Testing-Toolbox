@@ -38,16 +38,7 @@ namespace Lombiq.Tests.UI.Helpers
             var recipesSourceFolderPath = Path.Combine(sourcePath, "Recipes");
             if (Directory.Exists(recipesSourceFolderPath))
             {
-                var recipesDestinationFolderPath = Path.Combine(destinationPath, "Recipes");
-
-                DirectoryHelper.CreateDirectoryIfNotExists(recipesDestinationFolderPath);
-
-                var recipePaths = Directory.EnumerateFiles(recipesSourceFolderPath);
-
-                foreach (var filePath in recipePaths)
-                {
-                    File.Copy(filePath, Path.Combine(recipesDestinationFolderPath, Path.GetFileName(filePath)));
-                }
+                FileSystem.CopyDirectory(recipesSourceFolderPath, Path.Combine(destinationPath, "Recipes"), true);
             }
         }
 
