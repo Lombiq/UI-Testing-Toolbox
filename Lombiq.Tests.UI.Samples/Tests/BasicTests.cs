@@ -63,9 +63,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // module) to see if it indeed happened.
                     context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
 
-                    // Note that if you want the user to be logged in for the test, you don't need to log in via the
-                    // login form every time: That would be slow and you'd test the login process multiple times. Use
-                    // context.SignInDirectly() instead.
+                    // Note that if you want the user to be logged in for the test (instead of testing the login feature
+                    // itself), you don't need to log in via the login form every time: That would be slow and you'd
+                    // test the login process multiple times. Use context.SignInDirectly() instead.
                 },
                 browser);
 
