@@ -1,6 +1,8 @@
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
+using Shouldly;
 using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -78,11 +80,32 @@ namespace Lombiq.Tests.UI.Samples
                     // for HTML validation are most possibly suitable for your projects, check out the
                     // HtmlValidationConfiguration class for what else you can configure. We've also added a
                     // .htmlvalidate.json file (note the Content Build Action) to further configure it.
+                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = true;
+
                     // The UI Testing Toolbox can run several checks for the app even if you don't add explicit
                     // assertions: By default, the Orchard logs and the browser logs (where e.g. JavaScript errors show
                     // up) are checked and if there are any errors, the test will fail. You can also enable the checking
                     // of accessibility rules as we'll see later.
-                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = true;
+                    // Maybe not all of the default checks are suitable for you. Then it's simple to override them; here
+                    // we change which log entries cause the tests to fail. We use the trick of making expected error
+                    // messages not look like real errors.
+                    configuration.AssertAppLogs = async webApplicationInstance =>
+                        (await webApplicationInstance.GetLogOutputAsync())
+                        .ReplaceOrdinalIgnoreCase(
+                            "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|ERROR|Expected non-error",
+                            "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
+                        .ShouldNotContain("|ERROR|");
+
+                    // You can adjust how HTML validation assertion works too.
+                    configuration.HtmlValidationConfiguration.AssertHtmlValidationResult =
+                        async validationResult =>
+                        {
+                            var errors = await validationResult.GetErrorsAsync();
+                            errors.ShouldNotContain(error =>
+                                // This is due to TheTheme. Only necessary until we get this fix:
+                                // https://github.com/OrchardCMS/OrchardCore/pull/10292
+                                !error.ContainsOrdinalIgnoreCase("Redundant role \"main\" on <main> (no-redundant-role)"));
+                        };
 
                     changeConfiguration?.Invoke(configuration);
                 });
