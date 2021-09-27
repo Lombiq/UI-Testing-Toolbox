@@ -80,6 +80,6 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             return context.GetCurrentUri();
         }
 
-        private static void AssertSetupSuccessful(UITestContext context) => context.Exists(By.Id("navbarResponsive"));
+        private static void AssertSetupSuccessful(UITestContext context) => context.Exists(By.Id("navbar"));
     }
 }
