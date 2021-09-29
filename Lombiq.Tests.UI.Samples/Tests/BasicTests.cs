@@ -102,7 +102,10 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // JavaScript in the browser.
                     var appInsightsExist = context
                         .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
-                    appInsightsExist.ShouldBe(true);
+
+                    // Our custom message helps debugging, otherwise from the test output you could only tell that a
+                    // a value should be true but is false which is less than helpful.
+                    appInsightsExist.ShouldBe(true, "The Application Insights module is not working or is not in offline mode.");
                 },
                 browser);
     }
