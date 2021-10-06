@@ -101,6 +101,9 @@ namespace Lombiq.Tests.UI.Extensions
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
 
+        public static OrchardCoreLoginPage GoToLoginPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreLoginPage>();
+
         public static void GoToSmtpWebUI(this UITestContext context)
         {
             if (context.SmtpServiceRunningContext == null)

@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,11 +20,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
         [Theory, Chrome]
         public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
-            ExecuteTestAfterSetupAsync(
-                context =>
-                {
-                    // Write the test here.
-                },
+            ExecuteTestAsync(
+                context => context.TestBasicOrchardFeatures(),
                 browser);
     }
 }
