@@ -218,5 +218,10 @@ namespace Lombiq.Tests.UI.Extensions
             context.Driver.SwitchTo().Alert().Dismiss();
             context.Driver.SwitchTo().DefaultContent();
         }
+
+        /// <summary>
+        /// Refreshes (reloads) the current page.
+        /// </summary>
+        public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
     }
 }

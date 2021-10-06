@@ -4,10 +4,11 @@
 
 ## About
 
-Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing for an Orchard app is here.
+Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here.
 
 Highlights:
 
+- Builds on proven libraries like Selenium, Atata, and xUnit. See all the tools we use [here](Lombiq.Tests.UI/Docs/Tools.md).
 - Execute fully self-contained, repeatable, parallelizable automated UI tests on Orchard Core apps.
 - Do cross-browser testing with all current browsers, both in normal and headless modes.
 - Check the HTML structure and behavior of the app, check for errors in the Orchard logs and browser logs. Start troubleshooting from the detailed full application dumps and test logs if a test fails.
@@ -18,9 +19,9 @@ Highlights:
 - Check for the validity of the HTML markup either explicitly or automatically on all page changes.
 - Reliability is built in, so you won't get false negatives.
 - Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
-- Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in TeamCity.
+- Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in a TeamCity CI/CD server.
 
-Also see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox).
+See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
 Do you want to quickly try out this project and see it in action? Check it out in our [Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions) full Orchard Core solution and also see our other useful Orchard Core-related open-source projects!
 
