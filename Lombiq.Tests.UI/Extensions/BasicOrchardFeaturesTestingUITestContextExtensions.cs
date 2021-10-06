@@ -14,7 +14,8 @@ namespace Lombiq.Tests.UI.Extensions
                 .TestSetupNegatively()
                 .TestSetup()
                 .TestLoginNegatively()
-                .TestLogin();
+                .TestLogin()
+                .TestLogout();
 
         public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
@@ -60,6 +61,19 @@ namespace Lombiq.Tests.UI.Extensions
                         .ShouldLeaveLoginPage();
 
                     context.GetCurrentUserName().ShouldBe(userName);
+                });
+
+        public static UITestContext TestLogout(this UITestContext context)
+            =>
+            context.ExecuteTest(
+                "Test logout",
+                () =>
+                {
+                    context.GoToDashboard()
+                        .TopNavbar.Account.LogOff.Click()
+                        .ShouldLeaveAdminPage();
+
+                    context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 });
 
         public static UITestContext TestLoginNegatively(
