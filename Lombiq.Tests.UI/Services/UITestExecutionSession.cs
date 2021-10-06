@@ -355,8 +355,12 @@ namespace Lombiq.Tests.UI.Services
                     SetupAzureBlobStorageSnapshot();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
+
                     await AssertLogsAsync();
+                    // Clearing the cache so the first test after the setup will assert correctly too.
+                    _browserLogMessages = null;
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
+
                     return result;
                 });
 
