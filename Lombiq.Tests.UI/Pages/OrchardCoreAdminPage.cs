@@ -11,6 +11,8 @@ namespace Lombiq.Tests.UI.Pages
 
         public OrchardCoreAdminTopNavbar<TOwner> TopNavbar { get; private set; }
 
+        public ControlList<AlertMessage<TOwner>, TOwner> AlertMessages { get; private set; }
+
         public TOwner ShouldStayOnAdminPage() =>
             AdminMenu.Should.Exist();
 
