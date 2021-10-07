@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Pages
         public string ConnectionString { get; set; }
         public string TablePrefix { get; set; }
         public string UserName { get; set; } = DefaultUser.UserName;
-        public string Email { get; set; } = DefaultUser.UserName + "@admin.com";
+        public string Email { get; set; } = DefaultUser.Email;
         public string Password { get; set; } = DefaultUser.Password;
     }
 }
