@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Attributes.Behaviors
                 // when entered into a text field so we need to use Actions. The following solution doesn't work:
                 // https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the standard
                 // FillInWith() as without that some forms start to behave strange and not save values.
-                AtataContext.Current.Driver.Perform(x => x.SendKeys(element, text));
+                AtataContext.Current.Driver.Perform(actions => actions.SendKeys(element, text));
             }
             else
             {
