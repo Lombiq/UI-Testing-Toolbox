@@ -1,5 +1,7 @@
+using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -21,6 +23,25 @@ namespace Lombiq.Tests.UI.Extensions
             {
                 context.ClickReliablyOn(By.Name("submit.Publish"));
             }
+        }
+
+        /// <summary>
+        /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
+        /// second interval between attempts. This should grant enough time to execute the publish action if the button
+        /// actually got pressed.
+        /// </summary>
+        public static void ClickPublishReliably(this UITestContext context, bool withJavaScript = false)
+        {
+            var byMarker = context.AddPageMarker();
+
+            context.DoWithRetriesOrFail(
+                () =>
+                {
+                    ClickPublish(context, withJavaScript);
+                    return context.Missing(byMarker.Safely());
+                },
+                timeout: TimeSpan.FromSeconds(30),
+                interval: TimeSpan.FromMinutes(2));
         }
 
         public static void GoToContentItemList(this UITestContext context)
