@@ -6,10 +6,9 @@ namespace Lombiq.Tests.UI.Pages
     public abstract class OrchardCoreAdminPage<TOwner> : Page<TOwner>
         where TOwner : OrchardCoreAdminPage<TOwner>
     {
-        [FindByClass("menu-admin")]
-        public Control<TOwner> AdminMenu { get; private set; }
-
         public OrchardCoreAdminTopNavbar<TOwner> TopNavbar { get; private set; }
+
+        public OrchardCoreAdminMenu<TOwner> AdminMenu { get; private set; }
 
         public ControlList<AlertMessage<TOwner>, TOwner> AlertMessages { get; private set; }
 
@@ -24,5 +23,8 @@ namespace Lombiq.Tests.UI.Pages
             base.OnVerify();
             ShouldStayOnAdminPage();
         }
+
+        public TOwner ShouldContainSuccessAlertMessage(TermMatch expectedMatch, string expectedText) =>
+            AlertMessages.Should.Contain(x => x.IsSuccess && expectedMatch.IsMatch(x.Text.Value, expectedText));
     }
 }

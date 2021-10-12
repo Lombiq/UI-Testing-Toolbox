@@ -1,4 +1,6 @@
 using Atata;
+using Atata.Bootstrap;
+using Lombiq.Tests.UI.Components;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -13,27 +15,31 @@ namespace Lombiq.Tests.UI.Pages
         [FindById]
         public SearchInput<_> SearchBox { get; private set; }
 
-        public ControlList<FeatureItem, _> Features { get; private set; }
+        [FindById("bulk-action-menu-button")]
+        public BulkActionsDropdown BulkActions { get; private set; }
 
-        public _ EnsureFeatureIsEnabled(string featureName)
+        public FeatureItemList Features { get; private set; }
+
+        public FeatureItem SearchForFeature(string featureName) =>
+            SearchBox.Set(featureName)
+                .Features[featureName];
+
+        public sealed class BulkActionsDropdown : BSDropdownToggle<_>
         {
-            SearchBox.Set(featureName);
+            public Link<_> Enable { get; private set; }
 
-            var feature = Features[x => x.Name == featureName];
+            public Link<_> Disable { get; private set; }
 
-            if (!feature.IsEnabled)
-            {
-                feature.Enable.Click();
-
-                AlertMessages.Should.Contain(x => x.IsSuccess && x.Text.Value.Contains(featureName));
-            }
-
-            return this;
+            public Link<_> Toggle { get; private set; }
         }
 
-        [ControlDefinition("li", ContainingClass = "list-group-item")]
+        [ControlDefinition("li[not(contains(@class, 'd-none'))]", ContainingClass = "list-group-item", ComponentTypeName = "feature")]
         public sealed class FeatureItem : Control<_>
         {
+            [FindFirst(Visibility = Visibility.Any)]
+            [ClicksUsingActions]
+            public CheckBox<_> CheckBox { get; private set; }
+
             [FindByXPath("h6", "label")]
             public Text<_> Name { get; private set; }
 
@@ -41,10 +47,21 @@ namespace Lombiq.Tests.UI.Pages
             public Link<_> Enable { get; private set; }
 
             [FindById(TermMatch.StartsWith, "btn-disable")]
-            public Link<_> Disable { get; private set; }
+            [GoTemporarily]
+            public Link<ConfirmationModal<_>, _> Disable { get; private set; }
+
+            public _ DisableWithConfirmation() =>
+                Disable.ClickAndGo()
+                    .Yes.ClickAndGo();
 
             protected override bool GetIsEnabled() =>
                 !Enable.IsVisible;
+        }
+
+        public sealed class FeatureItemList : ControlList<FeatureItem, _>
+        {
+            public FeatureItem this[string featureName] =>
+                GetItem(featureName, x => x.Name == featureName);
         }
     }
 }

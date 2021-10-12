@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
@@ -11,15 +12,22 @@ namespace Lombiq.Tests.UI.Extensions
     {
         public static UITestContext TestBasicOrchardFeatures(this UITestContext context) =>
             context
-                .TestSetupNegatively()
+                .TestSetupWithInvalidData()
                 .TestSetup()
-                .TestLoginNegatively()
+                .TestRegistrationWithInvalidData()
+                .TestRegistration()
+                .TestRegistrationWithAlreadyRegisteredEmail()
+                .TestLoginWithInvalidData()
                 .TestLogin()
+                .TestTurningFeatureOnAndOff()
                 .TestLogout();
 
         public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters();
+            parameters ??= new OrchardCoreSetupParameters
+            {
+                RecipeId = "Lombiq.OSOCE.BasicOrchardFeaturesTests",
+            };
 
             return context.ExecuteTest(
                 "Test setup",
@@ -29,7 +37,7 @@ namespace Lombiq.Tests.UI.Extensions
                     .ShouldLeaveSetupPage());
         }
 
-        public static UITestContext TestSetupNegatively(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static UITestContext TestSetupWithInvalidData(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters
             {
@@ -40,7 +48,7 @@ namespace Lombiq.Tests.UI.Extensions
             };
 
             return context.ExecuteTest(
-                "Test setup negatively",
+                "Test setup with invalid data",
                 () =>
                 context.GoToSetupPage()
                     .SetupOrchardCore(parameters)
@@ -63,6 +71,23 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBe(userName);
                 });
 
+        public static UITestContext TestLoginWithInvalidData(
+            this UITestContext context,
+            string userName = DefaultUser.UserName,
+            string password = "WrongPass!")
+            =>
+            context.ExecuteTest(
+                "Test login with invalid data",
+                () =>
+                {
+                    context.GoToLoginPage()
+                        .LogInWith(userName, password)
+                        .ShouldStayOnLoginPage()
+                        .ValidationSummaryErrors.Should.Not.BeEmpty();
+
+                    context.GetCurrentUserName().ShouldNotBe(userName);
+                });
+
         public static UITestContext TestLogout(this UITestContext context)
             =>
             context.ExecuteTest(
@@ -76,21 +101,78 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 });
 
-        public static UITestContext TestLoginNegatively(
-            this UITestContext context,
-            string userName = DefaultUser.UserName,
-            string password = "WrongPass!")
-            =>
-            context.ExecuteTest(
-                "Test login negatively",
+        public static UITestContext TestRegistration(this UITestContext context, UserRegistrationModel model = null)
+        {
+            model ??= UserRegistrationModel.CreateDefault();
+
+            return context.ExecuteTest(
+                "Test registration",
                 () =>
                 {
                     context.GoToLoginPage()
-                        .LogInWith(userName, password)
-                        .ShouldStayOnLoginPage();
+                        .RegisterAsNewUser.Should.BeVisible();
 
-                    context.GetCurrentUserName().ShouldNotBe(userName);
+                    context.GoToRegistrationPage()
+                        .RegisterWith(model)
+                        .ShouldLeaveRegistrationPage();
+
+                    context.GetCurrentUserName().ShouldBe(model.UserName);
                 });
+        }
+
+        public static UITestContext TestRegistrationWithInvalidData(this UITestContext context, UserRegistrationModel model = null)
+        {
+            model ??= new()
+            {
+                UserName = "InvalidUser",
+                Email = Randomizer.GetString("{0}@example.org", 25),
+                Password = "short",
+                ConfirmPassword = "short",
+            };
+
+            return context.ExecuteTest(
+                "Test registration with invalid data",
+                () =>
+                context.GoToRegistrationPage()
+                    .RegisterWith(model)
+                    .ShouldStayOnRegistrationPage()
+                    .ValidationMessages.Should.Not.BeEmpty());
+        }
+
+        public static UITestContext TestRegistrationWithAlreadyRegisteredEmail(this UITestContext context, UserRegistrationModel model = null)
+        {
+            model ??= UserRegistrationModel.CreateDefault();
+
+            return context.ExecuteTest(
+                "Test registration with already registered email",
+                () =>
+                context.GoToRegistrationPage()
+                    .RegisterWith(model)
+                    .ShouldStayOnRegistrationPage()
+                    .ValidationMessages[x => x.Email].Should.BeVisible());
+        }
+
+        public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks")
+            =>
+            context.ExecuteTest(
+                "Test turning feature on and off",
+                () =>
+                context.GoToFeaturesPage()
+                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
+                    .Features[featureName].CheckBox.Check()
+                    .BulkActions.Toggle.Click()
+
+                    .AggregateAssert(x => x
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
+                    .Features[featureName].CheckBox.Check()
+                    .BulkActions.Toggle.Click()
+
+                    .AggregateAssert(x => x
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState)));
 
         public static UITestContext ExecuteTest(this UITestContext context, string testName, Action testAction)
         {

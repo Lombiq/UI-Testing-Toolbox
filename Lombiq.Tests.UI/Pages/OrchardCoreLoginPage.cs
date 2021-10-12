@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.Tests.UI.Components;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -21,6 +22,11 @@ namespace Lombiq.Tests.UI.Pages
 
         [FindByAttribute("type", "submit")]
         public Button<_> LogIn { get; private set; }
+
+        [FindByAttribute("href", TermMatch.StartsWith, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
+        public Link<OrchardCoreRegistrationPage, _> RegisterAsNewUser { get; private set; }
+
+        public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
 
         public _ ShouldStayOnLoginPage() =>
             PageUrl.Should.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);

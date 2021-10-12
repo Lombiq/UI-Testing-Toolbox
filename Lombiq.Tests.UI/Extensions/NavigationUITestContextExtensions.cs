@@ -98,11 +98,17 @@ namespace Lombiq.Tests.UI.Extensions
         public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
             context.GoToPage<OrchardCoreDashboardPage>();
 
+        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreFeaturesPage>();
+
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
 
         public static OrchardCoreLoginPage GoToLoginPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreLoginPage>();
+
+        public static OrchardCoreRegistrationPage GoToRegistrationPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreRegistrationPage>();
 
         public static void GoToSmtpWebUI(this UITestContext context)
         {
