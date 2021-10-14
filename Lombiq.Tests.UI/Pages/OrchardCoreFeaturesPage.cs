@@ -61,7 +61,7 @@ namespace Lombiq.Tests.UI.Pages
         public sealed class FeatureItemList : ControlList<FeatureItem, _>
         {
             public FeatureItem this[string featureName] =>
-                GetItem(featureName, x => x.Name == featureName);
+                GetItem(featureName, item => item.Name == featureName);
         }
     }
 }

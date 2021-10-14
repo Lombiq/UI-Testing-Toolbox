@@ -32,8 +32,8 @@ namespace Lombiq.Tests.UI.Extensions
 
             return context.ExecuteTest(
                 "Test setup",
-                () =>
-                context.GoToSetupPage()
+                () => context
+                    .GoToSetupPage()
                     .SetupOrchardCore(parameters)
                     .ShouldLeaveSetupPage());
         }
@@ -50,8 +50,8 @@ namespace Lombiq.Tests.UI.Extensions
 
             return context.ExecuteTest(
                 "Test setup with invalid data",
-                () =>
-                context.GoToSetupPage()
+                () => context
+                    .GoToSetupPage()
                     .SetupOrchardCore(parameters)
                     .ShouldStayOnSetupPage());
         }
@@ -133,8 +133,8 @@ namespace Lombiq.Tests.UI.Extensions
 
             return context.ExecuteTest(
                 "Test registration with invalid data",
-                () =>
-                context.GoToRegistrationPage()
+                () => context
+                    .GoToRegistrationPage()
                     .RegisterWith(model)
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages.Should.Not.BeEmpty());
@@ -146,11 +146,11 @@ namespace Lombiq.Tests.UI.Extensions
 
             return context.ExecuteTest(
                 "Test registration with already registered email",
-                () =>
-                context.GoToRegistrationPage()
+                () => context
+                    .GoToRegistrationPage()
                     .RegisterWith(model)
                     .ShouldStayOnRegistrationPage()
-                    .ValidationMessages[x => x.Email].Should.BeVisible());
+                    .ValidationMessages[page => page.Email].Should.BeVisible());
         }
 
         public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page")
@@ -163,7 +163,7 @@ namespace Lombiq.Tests.UI.Extensions
                         .New.Page.ClickAndGo()
                             .Title.Set(pageTitle)
                             .Publish.ClickAndGo()
-                        .AlertMessages.Should.Contain(x => x.IsSuccess)
+                        .AlertMessages.Should.Contain(message => message.IsSuccess)
                         .Items[item => item.Title == pageTitle].View.Click();
 
                     context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
@@ -173,24 +173,23 @@ namespace Lombiq.Tests.UI.Extensions
                         .CloseWindow();
                 });
 
-        public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks")
-            =>
+        public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks") =>
             context.ExecuteTest(
                 "Test turning feature on and off",
-                () =>
-                context.GoToFeaturesPage()
+                () => context
+                    .GoToFeaturesPage()
                     .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
                     .Features[featureName].CheckBox.Check()
                     .BulkActions.Toggle.Click()
 
-                    .AggregateAssert(x => x
+                    .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
                         .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
                         .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
                     .Features[featureName].CheckBox.Check()
                     .BulkActions.Toggle.Click()
 
-                    .AggregateAssert(x => x
+                    .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
                         .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
                         .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState)));

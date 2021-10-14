@@ -25,6 +25,6 @@ namespace Lombiq.Tests.UI.Pages
         }
 
         public TOwner ShouldContainSuccessAlertMessage(TermMatch expectedMatch, string expectedText) =>
-            AlertMessages.Should.Contain(x => x.IsSuccess && expectedMatch.IsMatch(x.Text.Value, expectedText));
+            AlertMessages.Should.Contain(message => message.IsSuccess && expectedMatch.IsMatch(message.Text.Value, expectedText));
     }
 }
