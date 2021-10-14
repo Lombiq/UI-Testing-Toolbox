@@ -1,0 +1,35 @@
+using Atata;
+using Atata.Bootstrap;
+
+namespace Lombiq.Tests.UI.Pages
+{
+    // Atata convention.
+#pragma warning disable IDE0065 // Misplaced using directive
+    using _ = OrchardCoreContentItemsPage;
+#pragma warning restore IDE0065 // Misplaced using directive
+
+    [Url("Admin/Contents/ContentItems")]
+    public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
+    {
+        [FindById("new-dropdown")]
+        public NewItemDropdown New { get; private set; }
+
+        [FindById("items-form")]
+        public UnorderedList<ContentListItem, _> Items { get; private set; }
+
+        public sealed class NewItemDropdown : BSDropdownToggle<_>
+        {
+            public Link<OrchardCoreNewPageItemPage, _> Page { get; private set; }
+        }
+
+        [ControlDefinition("li[position() > 1]", ComponentTypeName = "item")]
+        public sealed class ContentListItem : ListItem<_>
+        {
+            [FindByXPath("a")]
+            public Text<_> Title { get; private set; }
+
+            [FindByClass]
+            public Link<_> View { get; private set; }
+        }
+    }
+}

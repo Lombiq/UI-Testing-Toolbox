@@ -95,12 +95,6 @@ namespace Lombiq.Tests.UI.Extensions
                 $"{typeof(T).FullName} - {relativeUrl}",
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
 
-        public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
-            context.GoToPage<OrchardCoreDashboardPage>();
-
-        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreFeaturesPage>();
-
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
 
@@ -109,6 +103,15 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static OrchardCoreRegistrationPage GoToRegistrationPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreRegistrationPage>();
+
+        public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
+            context.GoToPage<OrchardCoreDashboardPage>();
+
+        public static OrchardCoreContentItemsPage GoToContentItemsPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreContentItemsPage>();
+
+        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreFeaturesPage>();
 
         public static void GoToSmtpWebUI(this UITestContext context)
         {

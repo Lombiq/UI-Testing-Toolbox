@@ -19,6 +19,7 @@ namespace Lombiq.Tests.UI.Extensions
                 .TestRegistrationWithAlreadyRegisteredEmail()
                 .TestLoginWithInvalidData()
                 .TestLogin()
+                .TestContentOperations()
                 .TestTurningFeatureOnAndOff()
                 .TestLogout();
 
@@ -151,6 +152,26 @@ namespace Lombiq.Tests.UI.Extensions
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages[x => x.Email].Should.BeVisible());
         }
+
+        public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page")
+            =>
+            context.ExecuteTest(
+                "Test content operations",
+                () =>
+                {
+                    context.GoToContentItemsPage()
+                        .New.Page.ClickAndGo()
+                            .Title.Set(pageTitle)
+                            .Publish.ClickAndGo()
+                        .AlertMessages.Should.Contain(x => x.IsSuccess)
+                        .Items[item => item.Title == pageTitle].View.Click();
+
+                    context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
+                        .AggregateAssert(page => page
+                            .PageTitle.Should.Contain(pageTitle)
+                            .Controls.Create<H1<OrdinaryPage>>("Main").Should.Equal(pageTitle))
+                        .CloseWindow();
+                });
 
         public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks")
             =>
