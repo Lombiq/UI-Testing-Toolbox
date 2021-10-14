@@ -111,13 +111,18 @@ namespace Lombiq.Tests.UI.Extensions
                 () =>
                 {
                     context.GoToLoginPage()
-                        .RegisterAsNewUser.Should.BeVisible();
-
-                    context.GoToRegistrationPage()
-                        .RegisterWith(parameters)
-                        .ShouldLeaveRegistrationPage();
+                        .RegisterAsNewUser.Should.BeVisible()
+                        .RegisterAsNewUser.ClickAndGo()
+                            .RegisterWith(parameters)
+                            .ShouldLeaveRegistrationPage();
 
                     context.GetCurrentUserName().ShouldBe(parameters.UserName);
+                    context.SignOutDirectly();
+
+                    context.GoToLoginPage()
+                        .LogInWith(parameters.UserName, parameters.Password);
+                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
+                    context.SignOutDirectly();
                 });
         }
 
