@@ -43,12 +43,12 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveRegistrationPage() =>
             PageUrl.Should.Not.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);
 
-        public _ RegisterWith(UserRegistrationModel model)
+        public _ RegisterWith(UserRegistrationParameters parameters)
         {
-            UserName.Set(model.UserName);
-            Email.Set(model.Email);
-            Password.Set(model.Password);
-            ConfirmPassword.Set(model.ConfirmPassword);
+            UserName.Set(parameters.UserName);
+            Email.Set(parameters.Email);
+            Password.Set(parameters.Password);
+            ConfirmPassword.Set(parameters.ConfirmPassword);
             Register.Click();
 
             return this;

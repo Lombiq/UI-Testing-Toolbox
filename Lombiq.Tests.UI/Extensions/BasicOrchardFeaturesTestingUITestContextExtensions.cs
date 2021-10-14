@@ -102,9 +102,9 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 });
 
-        public static UITestContext TestRegistration(this UITestContext context, UserRegistrationModel model = null)
+        public static UITestContext TestRegistration(this UITestContext context, UserRegistrationParameters parameters = null)
         {
-            model ??= UserRegistrationModel.CreateDefault();
+            parameters ??= UserRegistrationParameters.CreateDefault();
 
             return context.ExecuteTest(
                 "Test registration",
@@ -114,16 +114,16 @@ namespace Lombiq.Tests.UI.Extensions
                         .RegisterAsNewUser.Should.BeVisible();
 
                     context.GoToRegistrationPage()
-                        .RegisterWith(model)
+                        .RegisterWith(parameters)
                         .ShouldLeaveRegistrationPage();
 
-                    context.GetCurrentUserName().ShouldBe(model.UserName);
+                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
                 });
         }
 
-        public static UITestContext TestRegistrationWithInvalidData(this UITestContext context, UserRegistrationModel model = null)
+        public static UITestContext TestRegistrationWithInvalidData(this UITestContext context, UserRegistrationParameters parameters = null)
         {
-            model ??= new()
+            parameters ??= new()
             {
                 UserName = "InvalidUser",
                 Email = Randomizer.GetString("{0}@example.org", 25),
@@ -135,20 +135,22 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test registration with invalid data",
                 () => context
                     .GoToRegistrationPage()
-                    .RegisterWith(model)
+                    .RegisterWith(parameters)
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages.Should.Not.BeEmpty());
         }
 
-        public static UITestContext TestRegistrationWithAlreadyRegisteredEmail(this UITestContext context, UserRegistrationModel model = null)
+        public static UITestContext TestRegistrationWithAlreadyRegisteredEmail(
+            this UITestContext context,
+            UserRegistrationParameters parameters = null)
         {
-            model ??= UserRegistrationModel.CreateDefault();
+            parameters ??= UserRegistrationParameters.CreateDefault();
 
             return context.ExecuteTest(
                 "Test registration with already registered email",
                 () => context
                     .GoToRegistrationPage()
-                    .RegisterWith(model)
+                    .RegisterWith(parameters)
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages[page => page.Email].Should.BeVisible());
         }
