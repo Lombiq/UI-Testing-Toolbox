@@ -4,7 +4,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
-    public static class BasicWebDriverExtensions
+    public static class FormWebDriverExtensions
     {
         public static IWebElement TryFillElement(this IWebDriver driver, IWebElement element, string value)
         {
