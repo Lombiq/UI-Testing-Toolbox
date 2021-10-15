@@ -10,10 +10,10 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class BasicOrchardFeaturesTestingUITestContextExtensions
     {
-        public static UITestContext TestBasicOrchardFeatures(this UITestContext context) =>
+        public static UITestContext TestBasicOrchardFeatures(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
             context
                 .TestSetupWithInvalidData()
-                .TestSetup()
+                .TestSetup(setupParameters)
                 .TestRegistrationWithInvalidData()
                 .TestRegistration()
                 .TestRegistrationWithAlreadyRegisteredEmail()
@@ -25,10 +25,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters
-            {
-                RecipeId = "Lombiq.OSOCE.BasicOrchardFeaturesTests",
-            };
+            parameters ??= new OrchardCoreSetupParameters();
 
             return context.ExecuteTest(
                 "Test setup",
