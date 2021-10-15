@@ -78,12 +78,14 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test login with invalid data",
                 () =>
                 {
+                    context.SignOutDirectly();
+
                     context.GoToLoginPage()
                         .LogInWith(userName, password)
                         .ShouldStayOnLoginPage()
                         .ValidationSummaryErrors.Should.Not.BeEmpty();
 
-                    context.GetCurrentUserName().ShouldNotBe(userName);
+                    context.GetCurrentUserName().ShouldBeEmpty();
                 });
 
         public static UITestContext TestLogout(this UITestContext context)
