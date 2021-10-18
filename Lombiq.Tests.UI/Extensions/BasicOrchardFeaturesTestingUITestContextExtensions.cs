@@ -56,8 +56,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static UITestContext TestLogin(
             this UITestContext context,
             string userName = DefaultUser.UserName,
-            string password = DefaultUser.Password)
-            =>
+            string password = DefaultUser.Password) =>
             context.ExecuteTest(
                 "Test login",
                 () =>
@@ -72,8 +71,7 @@ namespace Lombiq.Tests.UI.Extensions
         public static UITestContext TestLoginWithInvalidData(
             this UITestContext context,
             string userName = DefaultUser.UserName,
-            string password = "WrongPass!")
-            =>
+            string password = "WrongPass!") =>
             context.ExecuteTest(
                 "Test login with invalid data",
                 () =>
@@ -88,8 +86,7 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBeEmpty();
                 });
 
-        public static UITestContext TestLogout(this UITestContext context)
-            =>
+        public static UITestContext TestLogout(this UITestContext context) =>
             context.ExecuteTest(
                 "Test logout",
                 () =>
@@ -159,8 +156,7 @@ namespace Lombiq.Tests.UI.Extensions
                     .ValidationMessages[page => page.Email].Should.BeVisible());
         }
 
-        public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page")
-            =>
+        public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page") =>
             context.ExecuteTest(
                 "Test content operations",
                 () =>
