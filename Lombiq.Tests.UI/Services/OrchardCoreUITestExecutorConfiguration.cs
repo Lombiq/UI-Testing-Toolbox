@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -137,10 +138,15 @@ namespace Lombiq.Tests.UI.Services
         public static readonly Action<IEnumerable<BrowserLogMessage>> AssertBrowserLogIsEmpty =
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            messages => messages.ShouldNotContain(message =>
+            messages => messages.ShouldNotContain(
+                message => IsValidBrowserLogMessage(message),
+                string.Join(Environment.NewLine, messages.Where(IsValidBrowserLogMessage).Select(message => message.Message)));
+
+        public static readonly Func<BrowserLogMessage, bool> IsValidBrowserLogMessage =
+            message =>
                 !message.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
                 // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared
                 // to be under a different URL.
-                !message.IsNotFoundMessage("/favicon.ico"));
+                !message.IsNotFoundMessage("/favicon.ico");
     }
 }
