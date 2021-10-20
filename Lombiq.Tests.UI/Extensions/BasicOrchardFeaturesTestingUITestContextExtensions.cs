@@ -8,8 +8,25 @@ using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
+    /// <summary>
+    /// Provides a set of extension methods for basic Orchard features testing.
+    /// </summary>
     public static class BasicOrchardFeaturesTestingUITestContextExtensions
     {
+        /// <summary>
+        /// <para>
+        /// Tests all the basic Orchard features.
+        /// At first sets up Orchard with optionally specified <paramref name="setupParameters"/>.
+        /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
+        /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+        /// </para>
+        /// <para>
+        /// The test method assumes that site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="setupParameters">The setup parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestBasicOrchardFeatures(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
             context
                 .TestSetupWithInvalidData()
@@ -23,6 +40,19 @@ namespace Lombiq.Tests.UI.Extensions
                 .TestTurningFeatureOnAndOff()
                 .TestLogout();
 
+        /// <summary>
+        /// <para>
+        /// Tests the site setup with optionally set <paramref name="parameters"/>.
+        /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
+        /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+        /// </para>
+        /// <para>
+        /// The test method assumes that site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parameters">The setup parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
@@ -35,6 +65,21 @@ namespace Lombiq.Tests.UI.Extensions
                     .ShouldLeaveSetupPage());
         }
 
+        /// <summary>
+        /// <para>
+        /// Tests negatively the site setup with optionally set <paramref name="parameters"/>.
+        /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
+        /// with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>,
+        /// <see cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/>
+        /// and <see cref="OrchardCoreSetupParameters.Password"/>.
+        /// </para>
+        /// <para>
+        /// The test method assumes that site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parameters">The setup parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestSetupWithInvalidData(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters
@@ -53,6 +98,18 @@ namespace Lombiq.Tests.UI.Extensions
                     .ShouldStayOnSetupPage());
         }
 
+        /// <summary>
+        /// <para>
+        /// Tests the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
+        /// </para>
+        /// <para>
+        /// The test method assumes that there is a registered user with the given credentials.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="userName">The user name.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestLogin(
             this UITestContext context,
             string userName = DefaultUser.UserName,
@@ -68,6 +125,18 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBe(userName);
                 });
 
+        /// <summary>
+        /// <para>
+        /// Tests negatively the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
+        /// </para>
+        /// <para>
+        /// The test method assumes that there is no registered user with the given credentials.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="userName">The user name.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestLoginWithInvalidData(
             this UITestContext context,
             string userName = DefaultUser.UserName,
@@ -86,6 +155,16 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBeEmpty();
                 });
 
+        /// <summary>
+        /// <para>
+        /// Tests the logout.
+        /// </para>
+        /// <para>
+        /// The test method assumes that there is currently a logged in admin user session.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestLogout(this UITestContext context) =>
             context.ExecuteTest(
                 "Test logout",
@@ -98,6 +177,19 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 });
 
+        /// <summary>
+        /// <para>
+        /// Tests the user registration with optionally specified <paramref name="parameters"/>.
+        /// After the user is registered, the test performs login with the user credentials, then logout.
+        /// </para>
+        /// <para>
+        /// The test method assumes that "Users Registration" Orchard feature is enabled
+        /// and there is no registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parameters">The user registration parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestRegistration(this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= UserRegistrationParameters.CreateDefault();
@@ -122,6 +214,19 @@ namespace Lombiq.Tests.UI.Extensions
                 });
         }
 
+        /// <summary>
+        /// <para>
+        /// Tests negatively the user registration with optionally specified invalid <paramref name="parameters"/>.
+        /// Fills user registration fields with <paramref name="parameters"/> on registration page,
+        /// clicks "Register" button and verifies that there are validation messages on the page.
+        /// </para>
+        /// <para>
+        /// The test method assumes that "Users Registration" Orchard feature is enabled.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parameters">The user registration parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestRegistrationWithInvalidData(this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= new()
@@ -141,6 +246,21 @@ namespace Lombiq.Tests.UI.Extensions
                     .ValidationMessages.Should.Not.BeEmpty());
         }
 
+        /// <summary>
+        /// <para>
+        /// Tests negatively the user registration with optionally specified <paramref name="parameters"/>
+        /// that uses email of the already registered user.
+        /// Fills user registration fields with <paramref name="parameters"/> on registration page,
+        /// clicks "Register" button and verifies that there is a validation message near "Email" field on the page.
+        /// </para>
+        /// <para>
+        /// The test method assumes that "Users Registration" Orchard feature is enabled
+        /// and there is already registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parameters">The user registration parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestRegistrationWithAlreadyRegisteredEmail(
             this UITestContext context,
             UserRegistrationParameters parameters = null)
@@ -156,6 +276,25 @@ namespace Lombiq.Tests.UI.Extensions
                     .ValidationMessages[page => page.Email].Should.BeVisible());
         }
 
+        /// <summary>
+        /// <para>
+        /// Tests content operations. The test executes the following steps:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Navigate to "Content / Content Items" page.</description></item>
+        /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
+        /// <item><description>Publish the page.</description></item>
+        /// <item><description>Verify that the page is created.</description></item>
+        /// <item><description>Navigate to view the published page.</description></item>
+        /// <item><description>Verify the page title and header.</description></item>
+        /// </list>
+        /// <para>
+        /// The test method assumes that there is currently a logged in admin user session.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="pageTitle">The page title to enter.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page") =>
             context.ExecuteTest(
                 "Test content operations",
@@ -175,6 +314,26 @@ namespace Lombiq.Tests.UI.Extensions
                         .CloseWindow();
                 });
 
+        /// <summary>
+        /// <para>
+        /// Tests turning feature on and off. The test executes the following steps:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Navigate to "Configuration / Features" page.</description></item>
+        /// <item><description>Search the feature with the given <paramref name="featureName"/>.</description></item>
+        /// <item><description>Read current feature enabled/disabled state.</description></item>
+        /// <item><description>Toggle the feature state.</description></item>
+        /// <item><description>Verify that the feature state is changed.</description></item>
+        /// <item><description>Toggle the feature state again.</description></item>
+        /// <item><description>Verify that the feature state is changed to the original.</description></item>
+        /// </list>
+        /// <para>
+        /// The test method assumes that there is currently a logged in admin user session.
+        /// </para>
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="featureName">The name of the feature to use.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks") =>
             context.ExecuteTest(
                 "Test turning feature on and off",
@@ -196,6 +355,13 @@ namespace Lombiq.Tests.UI.Extensions
                         .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
                         .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState)));
 
+        /// <summary>
+        /// Executes the <paramref name="testAction"/> with the specified <paramref name="testName"/>.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="testName">The test name.</param>
+        /// <param name="testAction">The test action.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext ExecuteTest(this UITestContext context, string testName, Action testAction)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
