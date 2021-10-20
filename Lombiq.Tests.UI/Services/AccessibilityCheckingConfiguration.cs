@@ -2,6 +2,8 @@ using Lombiq.Tests.UI.Helpers;
 using Selenium.Axe;
 using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -60,9 +62,16 @@ namespace Lombiq.Tests.UI.Services
 
         public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
         {
-            axeResult.Violations.ShouldBeEmpty();
-            axeResult.Incomplete.ShouldBeEmpty();
+            axeResult.Violations.ShouldBeEmpty(AxeResultItemsToString(axeResult.Violations));
+            axeResult.Incomplete.ShouldBeEmpty(AxeResultItemsToString(axeResult.Incomplete));
         };
+
+        public static readonly Func<IEnumerable<AxeResultItem>, string> AxeResultItemsToString =
+            items =>
+                string.Join(
+                    Environment.NewLine,
+                    items.Select(item =>
+                        $"{item.Help}: {Environment.NewLine}{string.Join(Environment.NewLine, item.Nodes.Select(node => "    " + node.Html))}"));
 
         public static readonly Predicate<UITestContext> EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule =
             UrlCheckHelper.IsValidatablePage;
