@@ -31,7 +31,10 @@ namespace Lombiq.Tests.UI.Extensions
 
             configuration.Events.AfterNavigation += async (context, targetUri) =>
             {
-                if (IsNoAlert(context)) await configuration.Events.AfterPageChange?.Invoke(context);
+                if (IsNoAlert(context) && configuration.Events.AfterPageChange != null)
+                {
+                    await configuration.Events.AfterPageChange.Invoke(context);
+                }
             };
 
             configuration.Events.BeforeClick += (context, targetElement) =>
@@ -51,7 +54,10 @@ namespace Lombiq.Tests.UI.Extensions
                     }
                     catch (StaleElementReferenceException)
                     {
-                        await configuration.Events.AfterPageChange?.Invoke(context);
+                        if (configuration.Events.AfterPageChange != null)
+                        {
+                            await configuration.Events.AfterPageChange.Invoke(context);
+                        }
                     }
                 }
             };
