@@ -301,9 +301,13 @@ namespace Lombiq.Tests.UI.Services
             if (ex is AccessibilityAssertionException accessibilityAssertionException
                 && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
             {
-                _context.Driver.CreateAxeHtmlReport(
-                    accessibilityAssertionException.AxeResult,
-                    Path.Combine(debugInformationPath, "AccessibilityReport.html"));
+                var accessbilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
+                _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessbilityReportPath);
+
+                if (_configuration.ReportTeamCityMetadata)
+                {
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "AccessibilityReport", accessbilityReportPath);
+                }
             }
 
             if (ex is HtmlValidationAssertionException htmlValidationAssertionException
@@ -312,7 +316,13 @@ namespace Lombiq.Tests.UI.Services
                 var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
                 if (!string.IsNullOrEmpty(resultFilePath))
                 {
-                    File.Move(resultFilePath, Path.Combine(debugInformationPath, "HtmlValidationReport.txt"));
+                    var htmlValidationReportPath = Path.Combine(debugInformationPath, "HtmlValidationReport.txt");
+                    File.Move(resultFilePath, htmlValidationReportPath);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "HtmlValidationReport", htmlValidationReportPath);
+                    }
                 }
                 else
                 {
