@@ -122,7 +122,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests negatively the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
+        /// Tests the login negatively with the specified <paramref name="userName"/> and <paramref name="password"/> values.
         /// </para>
         /// <para>
         /// The test method assumes that there is no registered user with the given credentials.
