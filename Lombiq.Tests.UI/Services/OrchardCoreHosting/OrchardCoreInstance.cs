@@ -1,6 +1,7 @@
 using CliWrap;
 using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace Lombiq.Tests.UI.Services
+namespace Lombiq.Tests.UI.Services.OrchardCoreHosting
 {
     public delegate Task BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
 
@@ -37,7 +38,7 @@ namespace Lombiq.Tests.UI.Services
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
-        private Command _command;
+        private CustomWebApplicationFactory<Startup> _app;
         private CancellationTokenSource _cancellationTokenSource;
         private int _port;
         private string _contentRootPath;
@@ -65,6 +66,14 @@ namespace Lombiq.Tests.UI.Services
         public async Task<Uri> StartUpAsync()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
+            // The public URL can be get via:
+            var url = _app.GetServerAddress();
+            // An HttpClient that goes to the app directly and not via a public URL can be retrieved with:
+            var client = _app.CreateClient();
+            // And then:
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
             var url = UrlPrefix + _port;
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
@@ -83,24 +92,38 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            _command = Cli.Wrap("dotnet.exe")
-                .WithArguments(argumentsBuilder =>
-                {
-                    var builder = argumentsBuilder
-                        .Add(_configuration.AppAssemblyPath)
-                        .Add("--urls").Add(url)
-                        .Add("--contentRoot").Add(_contentRootPath)
-                        .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
-                        .Add("--environment").Add("Development");
+            // This needs to use the Startup class of the web app and thus supplied from the outside.
+            _app = new CustomWebApplicationFactory<Startup>();
 
-                    // There is no other option here than to wait for the invoked Tasks.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
+            // With type replacements what we now have in Lombiq.Tests.UI.AppExtensions can be substituted and thus e.g.
+            // automatically turn on Lombiq.Tests.UI.Shortcuts without modifying the app.
+            _app = new CustomWebApplicationFactory<Startup>(addDevelopmentConfigurations: builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddTransient<IUsefulService, FakeUsefulService>();
                 });
+            });
+
+            // How will we handle content roots and snapshots?
+            //            _app = Cli.Wrap("dotnet.exe")
+            //                .WithArguments(argumentsBuilder =>
+            //                {
+            //                    var builder = argumentsBuilder
+            //                        .Add(_configuration.AppAssemblyPath)
+            //                        .Add("--urls").Add(url)
+            //                        .Add("--contentRoot").Add(_contentRootPath)
+            //                        .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
+            //                        .Add("--environment").Add("Development");
+
+            //                    // There is no other option here than to wait for the invoked Tasks.
+            //#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
+            //                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
+            //#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
+            //                });
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
-                "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
+                "The Orchard Core instance will be launched with the following command: \"{0}\".", _app);
 
             await StartOrchardAppAsync();
 
@@ -165,7 +188,7 @@ namespace Lombiq.Tests.UI.Services
         {
             _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
 
-            if (_command == null)
+            if (_app == null)
             {
                 throw new InvalidOperationException("The app needs to be started up first.");
             }
@@ -174,7 +197,7 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            await _command.ExecuteDotNetApplicationAsync(
+            await _app.ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
                         "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
