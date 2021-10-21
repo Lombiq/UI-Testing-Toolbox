@@ -300,7 +300,7 @@ namespace Lombiq.Tests.UI.Extensions
                     context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
                         .AggregateAssert(page => page
                             .PageTitle.Should.Contain(pageTitle)
-                            .Controls.Create<H1<OrdinaryPage>>("Main").Should.Equal(pageTitle))
+                            .Find<H1<OrdinaryPage>>().Should.Equal(pageTitle))
                         .CloseWindow();
                 });
 

@@ -29,10 +29,10 @@ namespace Lombiq.Tests.UI.Pages
         public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
 
         public _ ShouldStayOnLoginPage() =>
-            PageUrl.Should.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);
+            PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
 
         public _ ShouldLeaveLoginPage() =>
-            PageUrl.Should.Not.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);
+            PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
         public _ LogInWith(string userName, string password) =>
             UserName.Set(userName)

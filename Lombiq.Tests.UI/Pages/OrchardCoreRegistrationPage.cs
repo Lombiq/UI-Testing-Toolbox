@@ -38,10 +38,10 @@ namespace Lombiq.Tests.UI.Pages
         public ValidationMessageList<_> ValidationMessages { get; private set; }
 
         public _ ShouldStayOnRegistrationPage() =>
-            PageUrl.Should.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);
+            PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
 
         public _ ShouldLeaveRegistrationPage() =>
-            PageUrl.Should.Not.StartWith(AtataContext.Current.BaseUrl + DefaultUrl);
+            PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
         public _ RegisterWith(UserRegistrationParameters parameters)
         {

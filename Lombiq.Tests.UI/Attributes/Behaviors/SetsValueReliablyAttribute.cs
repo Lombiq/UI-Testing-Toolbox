@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Attributes.Behaviors
         public override void Execute<TOwner>(IUIComponent<TOwner> component, string value)
         {
             var element = component.Scope;
-            var driver = AtataContext.Current.Driver;
+            var driver = component.Context.Driver;
 
             ReliabilityHelper.DoWithRetriesOrFail(
                 () => driver.TryFillElement(element, value).GetValue() == value);

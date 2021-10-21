@@ -84,7 +84,7 @@ namespace Lombiq.Tests.UI.Pages
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
-            Recipe.Controls.CreateLink(parameters.RecipeId, new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click();
+            Recipe.Find<Link<_>>(parameters.RecipeId, new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click();
             DatabaseProvider.Set(parameters.DatabaseProvider);
 
             if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
