@@ -15,9 +15,8 @@ namespace Lombiq.Tests.UI.Extensions
     {
         /// <summary>
         /// <para>
-        /// Tests all the basic Orchard features.
-        /// At first sets up Orchard with optionally specified <paramref name="setupParameters"/>.
-        /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
+        /// Tests all the basic Orchard features. At first sets up Orchard with optionally specified
+        /// <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/> instance
         /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
         /// </para>
         /// <para>
@@ -179,12 +178,12 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests the user registration with optionally specified <paramref name="parameters"/>.
-        /// After the user is registered, the test performs login with the user credentials, then logout.
+        /// Tests the user registration with optionally specified <paramref name="parameters"/>. After the user is
+        /// registered, the test performs login with the user credentials, then logout.
         /// </para>
         /// <para>
-        /// The test method assumes that the "Users Registration" Orchard feature is enabled
-        /// and there is no registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
+        /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is no registered
+        /// user with the given <see cref="UserRegistrationParameters.Email"/> value.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
@@ -217,8 +216,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// <para>
         /// Tests negatively the user registration with optionally specified invalid <paramref name="parameters"/>.
-        /// Fills user registration fields with <paramref name="parameters"/> on registration page,
-        /// clicks "Register" button and verifies that there are validation messages on the page.
+        /// Fills user registration fields with <paramref name="parameters"/> on registration page, clicks "Register"
+        /// button and verifies that there are validation messages on the page.
         /// </para>
         /// <para>
         /// The test method assumes that the "Users Registration" Orchard feature is enabled.
@@ -248,14 +247,14 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests the user registration negatively with optionally specified <paramref name="parameters"/>
-        /// that uses email of the already registered user.
-        /// Fills user registration fields with <paramref name="parameters"/> on registration page,
-        /// clicks "Register" button and verifies that there is a validation message near "Email" field on the page.
+        /// Tests the user registration negatively with optionally specified <paramref name="parameters"/> that uses
+        /// email of the already registered user. Fills user registration fields with <paramref name="parameters"/> on
+        /// registration page, clicks "Register" button and verifies that there is a validation message near "Email"
+        /// field on the page.
         /// </para>
         /// <para>
-        /// The test method assumes that the "Users Registration" Orchard feature is enabled
-        /// and there is an already registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
+        /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is an already
+        /// registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
