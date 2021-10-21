@@ -21,7 +21,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
         /// </para>
         /// <para>
-        /// The test method assumes that site is not set up.
+        /// The test method assumes that the site is not set up.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
