@@ -254,7 +254,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// clicks "Register" button and verifies that there is a validation message near "Email" field on the page.
         /// </para>
         /// <para>
-        /// The test method assumes that "Users Registration" Orchard feature is enabled
+        /// The test method assumes that the "Users Registration" Orchard feature is enabled
         /// and there is already registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
         /// </para>
         /// </summary>
