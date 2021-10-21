@@ -248,7 +248,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests negatively the user registration with optionally specified <paramref name="parameters"/>
+        /// Tests the user registration negatively with optionally specified <paramref name="parameters"/>
         /// that uses email of the already registered user.
         /// Fills user registration fields with <paramref name="parameters"/> on registration page,
         /// clicks "Register" button and verifies that there is a validation message near "Email" field on the page.
