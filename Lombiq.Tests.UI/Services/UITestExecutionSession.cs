@@ -77,10 +77,10 @@ namespace Lombiq.Tests.UI.Services
 
                 _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
 
-                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
-
                 if (hasSetupOperation)
                 {
+                    _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
+
                     _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
                         _snapshotDirectoryPath,
                         path => new SynchronizingWebApplicationSnapshotManager(path));
