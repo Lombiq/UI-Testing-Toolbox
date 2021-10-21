@@ -281,7 +281,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Tests content operations. The test executes the following steps:
         /// </para>
         /// <list type="number">
-        /// <item><description>Navigate to "Content / Content Items" page.</description></item>
+        /// <item><description>Navigate to the "Content / Content Items" page.</description></item>
         /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
         /// <item><description>Publish the page.</description></item>
         /// <item><description>Verify that the page is created.</description></item>
