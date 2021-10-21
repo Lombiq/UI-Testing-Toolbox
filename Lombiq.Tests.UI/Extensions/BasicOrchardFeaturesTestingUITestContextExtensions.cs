@@ -208,7 +208,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests negatively the user registration with optionally specified invalid <paramref name="parameters"/>.
+        /// Tests the user registration negatively with optionally specified invalid <paramref name="parameters"/>.
         /// Fills user registration fields with <paramref name="parameters"/> on registration page, clicks "Register"
         /// button and verifies that there are validation messages on the page.
         /// </para>
