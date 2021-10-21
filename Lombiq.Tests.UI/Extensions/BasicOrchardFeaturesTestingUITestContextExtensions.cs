@@ -177,7 +177,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// </para>
         /// <para>
         /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is no registered
-        /// user with the given <see cref="UserRegistrationParameters.Email"/> value.
+        /// user with the given values of <see cref="UserRegistrationParameters.Email"/> or <see
+        /// cref="UserRegistrationParameters.UserName"/>.
         /// </para>
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
