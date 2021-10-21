@@ -52,7 +52,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters();
+            parameters ??= new OrchardCoreSetupParameters(context);
 
             return context.ExecuteTest(
                 "Test setup",
@@ -78,7 +78,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestSetupWithInvalidData(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters
+            parameters ??= new OrchardCoreSetupParameters(context)
             {
                 SiteName = string.Empty,
                 UserName = string.Empty,
