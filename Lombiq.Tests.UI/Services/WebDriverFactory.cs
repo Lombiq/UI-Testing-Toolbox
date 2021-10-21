@@ -139,7 +139,7 @@ namespace Lombiq.Tests.UI.Services
                 // https://stackoverflow.com/a/31637510/220230
                 _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
                 {
-                    // Version selection based on the locally installed version if only available for Chrome, see:
+                    // Version selection based on the locally installed version is only available for Chrome, see:
                     // https://github.com/rosolko/WebDriverManager.Net/pull/91.
                     if (driverConfig is ChromeConfig)
                     {
