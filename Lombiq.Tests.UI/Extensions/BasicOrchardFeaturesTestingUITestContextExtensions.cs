@@ -319,7 +319,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Tests turning feature on and off. The test executes the following steps:
         /// </para>
         /// <list type="number">
-        /// <item><description>Navigate to "Configuration / Features" page.</description></item>
+        /// <item><description>Navigate to the "Configuration / Features" page.</description></item>
         /// <item><description>Search the feature with the given <paramref name="featureName"/>.</description></item>
         /// <item><description>Read current feature enabled/disabled state.</description></item>
         /// <item><description>Toggle the feature state.</description></item>
