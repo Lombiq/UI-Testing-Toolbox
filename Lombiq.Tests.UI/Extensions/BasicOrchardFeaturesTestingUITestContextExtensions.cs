@@ -67,7 +67,7 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests negatively the site setup with optionally set <paramref name="parameters"/>.
+        /// Tests the site setup negatively with optionally set <paramref name="parameters"/>.
         /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
         /// with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>,
         /// <see cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/>
