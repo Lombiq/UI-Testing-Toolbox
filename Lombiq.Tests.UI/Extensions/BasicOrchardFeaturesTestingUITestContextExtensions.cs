@@ -47,7 +47,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
         /// </para>
         /// <para>
-        /// The test method assumes that site is not set up.
+        /// The test method assumes that the site is not set up.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
@@ -74,7 +74,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// and <see cref="OrchardCoreSetupParameters.Password"/>.
         /// </para>
         /// <para>
-        /// The test method assumes that site is not set up.
+        /// The test method assumes that the site is not set up.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
@@ -221,7 +221,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// clicks "Register" button and verifies that there are validation messages on the page.
         /// </para>
         /// <para>
-        /// The test method assumes that "Users Registration" Orchard feature is enabled.
+        /// The test method assumes that the "Users Registration" Orchard feature is enabled.
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
