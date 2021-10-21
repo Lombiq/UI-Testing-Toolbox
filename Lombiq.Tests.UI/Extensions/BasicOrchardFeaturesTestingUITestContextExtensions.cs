@@ -183,7 +183,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// After the user is registered, the test performs login with the user credentials, then logout.
         /// </para>
         /// <para>
-        /// The test method assumes that "Users Registration" Orchard feature is enabled
+        /// The test method assumes that the "Users Registration" Orchard feature is enabled
         /// and there is no registered user with the given <see cref="UserRegistrationParameters.Email"/> value.
         /// </para>
         /// </summary>
