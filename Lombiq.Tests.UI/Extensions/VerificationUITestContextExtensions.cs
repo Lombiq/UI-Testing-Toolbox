@@ -11,7 +11,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// Adds a unique empty element to the page. It can be used to indicate if there has been any navigation since
         /// this method has been called.
         /// </summary>
-        /// <returns>The query which indicates this unique element alone.</returns>
+        /// <returns>
+        /// The query which indicates this unique element alone. This can be used to check if the page has changed
+        /// without causing a <see cref="StaleElementReferenceException"/>.
+        /// </returns>
         public static By AddPageMarker(this UITestContext context)
         {
             var id = Guid.NewGuid().ToString("N");
