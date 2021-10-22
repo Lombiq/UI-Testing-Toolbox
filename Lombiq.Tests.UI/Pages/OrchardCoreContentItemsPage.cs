@@ -12,14 +12,20 @@ namespace Lombiq.Tests.UI.Pages
     public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
     {
         [FindById("new-dropdown")]
-        public NewItemDropdown New { get; private set; }
+        public NewItemDropdown NewDropdown { get; private set; }
+
+        public Link<_> NewPageLink { get; private set; }
 
         [FindById("items-form")]
         public UnorderedList<ContentListItem, _> Items { get; private set; }
 
+        public OrchardCoreNewPageItemPage CreateNewPage() =>
+            (NewPageLink.IsVisible ? NewPageLink : NewDropdown.Page)
+                .ClickAndGo<OrchardCoreNewPageItemPage>();
+
         public sealed class NewItemDropdown : BSDropdownToggle<_>
         {
-            public Link<OrchardCoreNewPageItemPage, _> Page { get; private set; }
+            public Link<_> Page { get; private set; }
         }
 
         [ControlDefinition("li[position() > 1]", ComponentTypeName = "item")]
