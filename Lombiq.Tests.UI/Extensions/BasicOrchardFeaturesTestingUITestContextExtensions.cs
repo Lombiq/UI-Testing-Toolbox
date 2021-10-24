@@ -291,7 +291,7 @@ namespace Lombiq.Tests.UI.Extensions
                 () =>
                 {
                     context.GoToContentItemsPage()
-                        .New.Page.ClickAndGo()
+                        .CreateNewPage()
                             .Title.Set(pageTitle)
                             .Publish.ClickAndGo()
                         .AlertMessages.Should.Contain(message => message.IsSuccess)
