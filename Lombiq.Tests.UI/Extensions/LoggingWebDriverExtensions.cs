@@ -31,6 +31,10 @@ namespace Lombiq.Tests.UI.Extensions
         public override string ToString() =>
             $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
 
+        public bool IsNotFoundMessage(string url) =>
+            Message.ContainsOrdinalIgnoreCase(
+                @$"{url} - Failed to load resource: the server responded with a status of 404");
+
         public enum MessageLevel
         {
             Severe,

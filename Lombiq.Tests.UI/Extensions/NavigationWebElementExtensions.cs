@@ -1,6 +1,6 @@
+using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using System;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -29,13 +29,12 @@ namespace Lombiq.Tests.UI.Extensions
                     try
                     {
                         context.Configuration.Events.BeforeClick?.Invoke(context, element).GetAwaiter().GetResult();
-                        new Actions(context.Driver).MoveToElement(element).Click().Perform();
+                        context.Driver.Perform(actions => actions.MoveToElement(element).Click());
                         context.Configuration.Events.AfterClick?.Invoke(context, element).GetAwaiter().GetResult();
                     }
                     catch (WebDriverException ex)
-                        when (ex.Message.Contains(
-                            "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite.",
-                            StringComparison.InvariantCultureIgnoreCase))
+                        when (ex.Message.ContainsOrdinalIgnoreCase(
+                            "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
                     {
                         throw new NotSupportedException(
                             "For this element use the standard Click() method. Add the element as an exception to the documentation.");

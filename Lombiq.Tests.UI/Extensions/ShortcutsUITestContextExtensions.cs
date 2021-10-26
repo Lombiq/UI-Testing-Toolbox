@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Models;
+using OpenQA.Selenium;
 using RestEase;
 using Shouldly;
 using System.Collections.Concurrent;
@@ -33,16 +33,26 @@ namespace Lombiq.Tests.UI.Extensions
                 WebUtility.UrlEncode(userName));
 
         /// <summary>
-        /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
-        /// anything else happening on the login page and going to a relative URL after login. The target app needs to
-        /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+        /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
+        /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
+        /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+        /// </summary>
+        public static void SignInDirectlyAndGoToRelativeUrl(
+            this UITestContext context,
+            string relativeUrl,
+            bool onlyIfNotAlreadyThere = true)
+            => context.SignInDirectlyAndGoToRelativeUrl(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
+
+        /// <summary>
+        /// Authenticates the client with the given user account and navigates to the given URL. Note that this will
+        /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
+        /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void SignInDirectlyAndGoToRelativeUrl(
             this UITestContext context,
             string userName,
             string relativeUrl,
-            bool onlyIfNotAlreadyThere = true
-            )
+            bool onlyIfNotAlreadyThere = true)
         {
             context.SignInDirectly(userName);
             context.GoToRelativeUrl(relativeUrl, onlyIfNotAlreadyThere);
@@ -60,8 +70,12 @@ namespace Lombiq.Tests.UI.Extensions
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
-        public static string GetCurrentUserName(this UITestContext context) =>
-            context.GoToPage<CurrentUserPage>().LoggedInUser.Value;
+        public static string GetCurrentUserName(this UITestContext context)
+        {
+            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/CurrentUser/Index");
+            var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+            return userNameContainer["UserName: ".Length..];
+        }
 
         /// <summary>
         /// Enables the feature with the given ID directly, without anything

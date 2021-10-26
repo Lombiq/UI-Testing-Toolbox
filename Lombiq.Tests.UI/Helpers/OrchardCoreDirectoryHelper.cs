@@ -27,12 +27,18 @@ namespace Lombiq.Tests.UI.Helpers
             var configFilePaths = Directory
                 .EnumerateFiles(sourcePath)
                 .Where(filePath =>
-                    filePath.EndsWith(".config", StringComparison.InvariantCultureIgnoreCase) ||
-                    filePath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase));
+                    filePath.EndsWithOrdinalIgnoreCase(".config") ||
+                    filePath.EndsWithOrdinalIgnoreCase(".json"));
 
             foreach (var filePath in configFilePaths)
             {
                 File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+            }
+
+            var recipesSourceFolderPath = Path.Combine(sourcePath, "Recipes");
+            if (Directory.Exists(recipesSourceFolderPath))
+            {
+                FileSystem.CopyDirectory(recipesSourceFolderPath, Path.Combine(destinationPath, "Recipes"), true);
             }
         }
 

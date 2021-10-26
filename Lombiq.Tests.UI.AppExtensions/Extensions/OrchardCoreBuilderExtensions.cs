@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OrchardCore.Email;
-using OrchardCore.Media.Azure;
 using OrchardCore.Modules;
 using System.Linq;
 
@@ -9,6 +8,16 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OrchardCoreBuilderExtensions
     {
+        /// <summary>
+        /// Sets up everything for UI testing in the app if it was started during a test.
+        /// </summary>
+        /// <param name="configuration">
+        /// The <see cref="IConfiguration"/> instance of the app where configuration options will be loaded from.
+        /// </param>
+        /// <param name="enableShortcutsDuringUITesting">
+        /// A value indicating whether to enable the Lombiq.Tests.UI.Shortcuts feature. If set to <see langword="true"/>
+        /// the feature will only be enabled if the web project references the Shortcuts module.
+        /// </param>
         public static OrchardCoreBuilder ConfigureUITesting(
             this OrchardCoreBuilder builder,
             IConfiguration configuration,
@@ -34,10 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email");
 
-            var blobStorageConnectionString = configuration
-                .GetValue<string>("Lombiq_Tests_UI:MediaBlobStorageOptions:ConnectionString");
-
-            if (!string.IsNullOrEmpty(blobStorageConnectionString))
+            if (configuration.GetValue<bool>("Lombiq_Tests_UI:UseAzureBlobStorage"))
             {
                 builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
             }
@@ -45,9 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder.ConfigureServices(
                 services => services
                     .PostConfigure<SmtpSettings>(settings =>
-                        configuration.GetSection("Lombiq_Tests_UI:SmtpSettings").Bind(settings))
-                    .PostConfigure<MediaBlobStorageOptions>(options =>
-                        configuration.GetSection("Lombiq_Tests_UI:MediaBlobStorageOptions").Bind(options)));
+                        configuration.GetSection("Lombiq_Tests_UI:SmtpSettings").Bind(settings)));
         }
     }
 }

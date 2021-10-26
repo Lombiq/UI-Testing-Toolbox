@@ -1,6 +1,9 @@
+using Lombiq.Tests.UI.Helpers;
 using Selenium.Axe;
 using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -27,20 +30,50 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility
         /// checking. For more information on the various options see <see
-        /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>.
+        /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>. Defaults to
+        /// <see cref="ConfigureWcag21aa"/>.
         /// </summary>
-        public Action<AxeBuilder> AxeBuilderConfigurator { get; set; }
+        public Action<AxeBuilder> AxeBuilderConfigurator { get; set; } = axeBuilder => ConfigureWcag21aa(axeBuilder);
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically run accessibility checks every time a page changes
+        /// (either due to explicit navigation or clicks) and assert on the validation results.
+        /// </summary>
+        public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run
+        /// for the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is
+        /// set to <see langword="true"/>. Defaults to <see
+        /// cref="EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule"/>.
+        /// </summary>
+        public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
+            EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule;
 
         /// <summary>
         /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking
-        /// happens.
+        /// happens. Defaults to <see cref="AssertAxeResultIsEmpty"/>.
         /// </summary>
         public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 
+        // Returns AxeBuilder so it can be chained.
+        public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag21aa = axeBuilder =>
+            axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa");
+
         public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
         {
-            axeResult.Violations.ShouldBeEmpty();
-            axeResult.Incomplete.ShouldBeEmpty();
+            axeResult.Violations.ShouldBeEmpty(AxeResultItemsToString(axeResult.Violations));
+            axeResult.Incomplete.ShouldBeEmpty(AxeResultItemsToString(axeResult.Incomplete));
         };
+
+        public static readonly Func<IEnumerable<AxeResultItem>, string> AxeResultItemsToString =
+            items =>
+                string.Join(
+                    Environment.NewLine,
+                    items.Select(item =>
+                        $"{item.Help}: {Environment.NewLine}{string.Join(Environment.NewLine, item.Nodes.Select(node => "    " + node.Html))}"));
+
+        public static readonly Predicate<UITestContext> EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule =
+            UrlCheckHelper.IsValidatablePage;
     }
 }

@@ -12,10 +12,6 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class NavigationUITestContextExtensions
     {
-        // The context is passed in to every method so they're future-proof in the case Atata won't be fully static.
-        // Also, with async code it's also necessary to re-set AtataContext.Current now, see:
-        // https://github.com/atata-framework/atata/issues/364
-
         public static void GoToHomePage(this UITestContext context) => context.GoToRelativeUrl("/");
 
         public static void GoToRelativeUrl(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
@@ -81,6 +77,10 @@ namespace Lombiq.Tests.UI.Extensions
             context.SignInDirectly(email);
         }
 
+        // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
+        // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
+        // https://github.com/atata-framework/atata/issues/364
+
         public static T GoToPage<T>(this UITestContext context)
             where T : PageObject<T> =>
             context.ExecuteLogged(
@@ -95,11 +95,23 @@ namespace Lombiq.Tests.UI.Extensions
                 $"{typeof(T).FullName} - {relativeUrl}",
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
 
+        public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreSetupPage>();
+
+        public static OrchardCoreLoginPage GoToLoginPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreLoginPage>();
+
+        public static OrchardCoreRegistrationPage GoToRegistrationPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreRegistrationPage>();
+
         public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
             context.GoToPage<OrchardCoreDashboardPage>();
 
-        public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreSetupPage>();
+        public static OrchardCoreContentItemsPage GoToContentItemsPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreContentItemsPage>();
+
+        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
+            context.GoToPage<OrchardCoreFeaturesPage>();
 
         public static void GoToSmtpWebUI(this UITestContext context)
         {
@@ -193,6 +205,12 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
 
         /// <summary>
+        /// Finds the first submit button and clicks on it reliably.
+        /// </summary>
+        public static void ClickReliablyOnSubmit(this UITestContext context) =>
+            context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
+
+        /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
         /// </summary>
         public static void AcceptAlert(this UITestContext context)
@@ -209,5 +227,10 @@ namespace Lombiq.Tests.UI.Extensions
             context.Driver.SwitchTo().Alert().Dismiss();
             context.Driver.SwitchTo().DefaultContent();
         }
+
+        /// <summary>
+        /// Refreshes (reloads) the current page.
+        /// </summary>
+        public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
     }
 }
