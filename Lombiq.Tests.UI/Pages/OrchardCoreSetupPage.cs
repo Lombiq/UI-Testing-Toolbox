@@ -114,7 +114,7 @@ namespace Lombiq.Tests.UI.Pages
             return this;
         }
 
-        private bool IsExpectedTitle(string title) =>
+        private static bool IsExpectedTitle(string title) =>
             title.EqualsOrdinalIgnoreCase(DefaultPageTitle) || title.EqualsOrdinalIgnoreCase(OlderPageTitle);
     }
 }
