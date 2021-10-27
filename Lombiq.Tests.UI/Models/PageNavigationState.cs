@@ -28,7 +28,7 @@ namespace Lombiq.Tests.UI.Models
             }
             catch (StaleElementReferenceException)
             {
-                return false;
+                return true;
             }
         }
     }
