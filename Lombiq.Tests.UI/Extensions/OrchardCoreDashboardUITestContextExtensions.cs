@@ -1,4 +1,3 @@
-using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -32,13 +31,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         public static void ClickPublishReliably(this UITestContext context, bool withJavaScript = false)
         {
-            var byMarker = context.AddPageMarker();
+            var navigationState = context.AsPageNavigationState();
 
             context.DoWithRetriesOrFail(
                 () =>
                 {
                     ClickPublish(context, withJavaScript);
-                    return context.Missing(byMarker.Safely());
+                    return navigationState.CheckIfNavigationHasOccurred();
                 },
                 timeout: TimeSpan.FromSeconds(30),
                 interval: TimeSpan.FromMinutes(2));

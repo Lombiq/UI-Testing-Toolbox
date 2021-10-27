@@ -1,6 +1,6 @@
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using System;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -27,9 +27,9 @@ namespace Lombiq.Tests.UI.Extensions
                 }
             }
 
-            IWebElement html = null;
+            PageNavigationState navigationState = null;
 
-            configuration.Events.AfterNavigation += async (context, targetUri) =>
+            configuration.Events.AfterNavigation += async (context, _) =>
             {
                 if (IsNoAlert(context) && configuration.Events.AfterPageChange != null)
                 {
@@ -37,28 +37,19 @@ namespace Lombiq.Tests.UI.Extensions
                 }
             };
 
-            configuration.Events.BeforeClick += (context, targetElement) =>
+            configuration.Events.BeforeClick += (context, _) =>
             {
-                html = context.Get(By.TagName("html"));
+                navigationState = context.AsPageNavigationState();
                 return Task.CompletedTask;
             };
 
-            configuration.Events.AfterClick += async (context, targetElement) =>
+            configuration.Events.AfterClick += async (context, _) =>
             {
-                if (IsNoAlert(context))
+                if (IsNoAlert(context) &&
+                    navigationState.CheckIfNavigationHasOccurred() &&
+                    configuration.Events.AfterPageChange != null)
                 {
-                    try
-                    {
-                        // A dummy access just to make Text throw an exception if the element is stale.
-                        html.Text?.StartsWithOrdinalIgnoreCase("a");
-                    }
-                    catch (StaleElementReferenceException)
-                    {
-                        if (configuration.Events.AfterPageChange != null)
-                        {
-                            await configuration.Events.AfterPageChange.Invoke(context);
-                        }
-                    }
+                    await configuration.Events.AfterPageChange.Invoke(context);
                 }
             };
         }
