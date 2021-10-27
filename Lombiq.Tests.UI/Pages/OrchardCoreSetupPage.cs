@@ -74,7 +74,7 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveSetupPage() =>
             PageTitle.Should.Not.Equal(DefaultPageTitle);
 
-        [Obsolete("Use another overloaded " + nameof(SetupOrchardCore) + " method without UITestContext parameter.")]
+        [Obsolete("Use another overload of this method without a " + nameof(UITestContext) + " parameter.")]
         public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
             SetupOrchardCore(parameters);
 
