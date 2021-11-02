@@ -83,15 +83,22 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            _command = Cli.Wrap("dotnet.exe")
+            // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
+            // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
+            // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
+            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
+            var useExeToExecuteApp = File.Exists(exePath);
+
+            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
                 .WithArguments(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
-                        .Add(_configuration.AppAssemblyPath)
                         .Add("--urls").Add(url)
                         .Add("--contentRoot").Add(_contentRootPath)
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
+
+                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
 
                     // There is no other option here than to wait for the invoked Tasks.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
