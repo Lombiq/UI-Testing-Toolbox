@@ -25,13 +25,39 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestBasicOrchardFeatures(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
+        public static UITestContext TestBasicOrchardFeatures(
+            this UITestContext context,
+            OrchardCoreSetupParameters setupParameters = null) =>
             context
                 .TestSetupWithInvalidData()
                 .TestSetup(setupParameters)
                 .TestRegistrationWithInvalidData()
                 .TestRegistration()
                 .TestRegistrationWithAlreadyRegisteredEmail()
+                .TestLoginWithInvalidData()
+                .TestLogin()
+                .TestContentOperations()
+                .TestTurningFeatureOnAndOff()
+                .TestLogout();
+
+        /// <summary>
+        /// <para>
+        /// Tests all the basic Orchard features except for registration. At first sets up Orchard with optionally
+        /// specified <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/>
+        /// instance with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+        /// </para>
+        /// <para>
+        /// The test method assumes that the site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="setupParameters">The setup parameters.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+        public static UITestContext TestBasicOrchardFeaturesExceptRegistration(
+            this UITestContext context,
+            OrchardCoreSetupParameters setupParameters = null) =>
+            context
+                .TestSetupWithInvalidData()
+                .TestSetup(setupParameters)
                 .TestLoginWithInvalidData()
                 .TestLogin()
                 .TestContentOperations()
