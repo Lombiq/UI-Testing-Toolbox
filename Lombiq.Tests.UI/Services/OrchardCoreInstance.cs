@@ -3,6 +3,7 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -34,6 +35,7 @@ namespace Lombiq.Tests.UI.Services
         private const string UrlPrefix = "https://localhost:";
 
         private static readonly PortLeaseManager _portLeaseManager;
+        private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -88,6 +90,31 @@ namespace Lombiq.Tests.UI.Services
             // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
             var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
             var useExeToExecuteApp = File.Exists(exePath);
+
+            // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
+            // test execution. So using a unified name pattern for such exes.
+            if (useExeToExecuteApp)
+            {
+                _exeCopyMarkers.GetOrAdd(
+                    exePath,
+                    key =>
+                    {
+                        var copyExePath = Path.Combine(
+                            Path.GetDirectoryName(exePath),
+                            "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+
+                        if (File.Exists(copyExePath) && File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                        {
+                            File.Delete(copyExePath);
+                        }
+
+                        if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+
+                        exePath = copyExePath;
+
+                        return true;
+                    });
+            }
 
             _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
                 .WithArguments(argumentsBuilder =>
