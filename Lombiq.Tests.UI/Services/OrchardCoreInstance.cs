@@ -36,6 +36,7 @@ namespace Lombiq.Tests.UI.Services
 
         private static readonly PortLeaseManager _portLeaseManager;
         private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
+        private static readonly object _exeCopyLock = new();
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -99,20 +100,26 @@ namespace Lombiq.Tests.UI.Services
                     exePath,
                     key =>
                     {
-                        var copyExePath = Path.Combine(
-                            Path.GetDirectoryName(exePath),
-                            "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
-
-                        if (File.Exists(copyExePath) && File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                        // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
+                        // run for the same key.
+                        lock (_exeCopyLock)
                         {
-                            File.Delete(copyExePath);
+                            var copyExePath = Path.Combine(
+                                Path.GetDirectoryName(exePath),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+
+                            if (File.Exists(copyExePath) &&
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                            {
+                                File.Delete(copyExePath);
+                            }
+
+                            if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+
+                            exePath = copyExePath;
+
+                            return true;
                         }
-
-                        if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
-
-                        exePath = copyExePath;
-
-                        return true;
                     });
             }
 
