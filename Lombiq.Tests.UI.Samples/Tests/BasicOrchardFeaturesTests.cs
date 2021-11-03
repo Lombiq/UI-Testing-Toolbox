@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
-using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 using Xunit;
@@ -26,8 +25,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context => context.TestBasicOrchardFeatures(
                     new OrchardCoreSetupParameters
                     {
-                        // Reusing the previously specified const.
-                        RecipeId = SetupHelpers.RecipeId,
+                        // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a
+                        // different recipe for this tests.
+                        RecipeId = "Lombiq.OSOCE.BasicOrchardFeaturesTests",
                     }),
                 browser);
     }
