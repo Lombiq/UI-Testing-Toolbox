@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
@@ -13,8 +14,10 @@ namespace Lombiq.Tests.UI.Samples
     // Inheriting test classes is not mandatory but the approach is simple and effective.
     public class UITestBase : OrchardCoreUITestBase
     {
-        // Note how we use the previously implemented app assembly finding logic.
-        protected override string AppAssemblyPath => WebAppConfig.GetAbsoluteApplicationAssemblyPath();
+        // We somehow need to tell the UI Testing Toolbox where the assemblies of the app under test is (since it'll run
+        // the app from the command line). We use a helper for that.
+        protected override string AppAssemblyPath => WebAppConfigHelper
+            .GetAbsoluteApplicationAssemblyPath("Lombiq.OSOCE.Web", "netcoreapp3.1");
 
         protected UITestBase(ITestOutputHelper testOutputHelper)
             : base(testOutputHelper)

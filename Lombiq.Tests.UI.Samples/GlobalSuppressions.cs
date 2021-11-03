@@ -12,4 +12,5 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "Assertions are made implicitly in UI tests.",
     Scope = "module")]
 
-// NEXT STATION: Let's start doing something with testing, actually. Head over to WebAppConfig.cs.
+// NEXT STATION: Let's start doing something with testing, actually, and configure how tests should work. Head over to
+// UITestBase.cs.

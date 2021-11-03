@@ -11,6 +11,13 @@ namespace Lombiq.Tests.UI.Samples.Helpers
     // Some logic to run the Orchard setup is here.
     public static class SetupHelpers
     {
+        // Specifying the recipe used for setup (it's in a const since we'll use it later too).
+        // Note how we use a recipe just for UI testing. This is recommended so you can do some testing-specific
+        // configuration. Check it out if you're interested. Notably, it turns off CDN usage and configures culture
+        // settings to make test execution consistent regardless of the host settings.
+        // If you use a setup recipe for local development then you can execute that from this test recipe.
+        public const string RecipeId = "Lombiq.OSOCE.Tests";
+
         public static Uri RunSetup(UITestContext context)
         {
             // You should always explicitly set the window size of the browser, otherwise the size will be random based
@@ -21,27 +28,15 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             // Running the setup.
             var uri = context
                 .GoToSetupPage()
+                // OrchardCoreSetupParameters will initialize some basic settings from the context.
                 .SetupOrchardCore(
-                    new OrchardCoreSetupParameters
+                    new OrchardCoreSetupParameters(context)
                     {
                         SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
-                        // Note how we use a recipe just for UI testing. This is recommended so you can do some testing-
-                        // specific configuration. Check it out if you're interested. Notably, it turns off CDN usage
-                        // and configures culture settings to make test execution consistent regardless of the host
-                        // settings.
-                        // If you use a setup recipe for local development then you can execute that from this test
-                        // recipe.
-                        RecipeId = "Lombiq.OSOCE.Tests",
-                        // Taking care to support both SQL flavors. We'll see tests using both.
-                        DatabaseProvider = context.Configuration.UseSqlServer
-                            ? OrchardCoreSetupPage.DatabaseType.SqlServer
-                            : OrchardCoreSetupPage.DatabaseType.Sqlite,
+                        RecipeId = RecipeId,
                         // A table prefix is not really needed but this way we also check whether we've written any SQL
                         // that doesn't support prefixes.
                         TablePrefix = "OSOCE",
-                        ConnectionString = context.Configuration.UseSqlServer
-                            ? context.SqlServerRunningContext.ConnectionString
-                            : null,
                         // Where else would we be?!
                         SiteTimeZoneValue = "Europe/Budapest",
                     })
