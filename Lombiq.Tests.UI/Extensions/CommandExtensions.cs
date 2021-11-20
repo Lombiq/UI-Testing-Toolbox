@@ -1,3 +1,4 @@
+using CliWrap.Builders;
 using CliWrap.EventStream;
 using System;
 using System.Threading;
@@ -30,6 +31,18 @@ namespace CliWrap
                     stdErrHandler?.Invoke(stdErr);
                 }
             }
+        }
+
+        /// <summary>
+        /// Same as <see cref="Command.WithArguments(Action{ArgumentsBuilder})"/>, but the configuration delegate is
+        /// asynchronous.
+        /// </summary>
+        public static async Task<Command> WithArgumentsAsync(this Command command, Func<ArgumentsBuilder, Task> configureAsync)
+        {
+            var builder = new ArgumentsBuilder();
+            await configureAsync(builder);
+
+            return command.WithArguments(builder.Build());
         }
     }
 }

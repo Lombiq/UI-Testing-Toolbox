@@ -103,14 +103,14 @@ namespace Lombiq.Tests.UI.Services
             {
                 _exeCopyMarkers.GetOrAdd(
                     executablePath,
-                    key =>
+                    _ =>
                     {
                         // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
                         // run for the same key.
                         lock (_exeCopyLock)
                         {
                             var copyExePath = Path.Combine(
-                                Path.GetDirectoryName(executablePath),
+                                Path.GetDirectoryName(executablePath)!,
                                 "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(executablePath));
 
                             if (File.Exists(copyExePath) &&
@@ -128,8 +128,8 @@ namespace Lombiq.Tests.UI.Services
                     });
             }
 
-            _command = Cli.Wrap(useExecutable ? executablePath : $"dotnet{ExecutableExtension}")
-                .WithArguments(argumentsBuilder =>
+            _command = await Cli.Wrap(useExecutable ? executablePath : $"dotnet{ExecutableExtension}")
+                .WithArgumentsAsync(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
                         .Add("--urls").Add(url)
@@ -139,10 +139,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (!useExecutable) builder = builder.Add(_configuration.AppAssemblyPath);
 
-                    // There is no other option here than to wait for the invoked Tasks.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
+                    return _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder) ?? Task.CompletedTask;
                 });
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
