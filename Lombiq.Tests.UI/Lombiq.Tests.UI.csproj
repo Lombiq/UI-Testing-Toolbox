@@ -10,6 +10,7 @@
     <PublishGeckoDriver>true</PublishGeckoDriver>
     <PublishIEDriver>true</PublishIEDriver>
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
