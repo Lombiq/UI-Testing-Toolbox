@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -37,6 +38,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _portLeaseManager;
         private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
+        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -45,6 +47,8 @@ namespace Lombiq.Tests.UI.Services
         private int _port;
         private string _contentRootPath;
         private bool _isDisposed;
+
+        private string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
 
         // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -86,18 +90,19 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
-            // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
-            // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
-            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
-            var useExeToExecuteApp = File.Exists(exePath);
+            // If you try to use dotnet command to run a DLL published for a different platform then you'll get an error
+            // (seen this with running win10-x86 DLLs on an x64 Windows machine saying "Failed to load the dll from
+            // hostpolicy.dll HRESULT: 0x800700C1") even if the executable will run without issues. So, we prefer to run
+            // the executable if it exist.
+            var executablePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ExecutableExtension);
+            var useExecutable = File.Exists(executablePath);
 
-            // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
-            // test execution. So using a unified name pattern for such exes.
-            if (useExeToExecuteApp)
+            // Running randomly named executables will make it harder to kill leftover processes in the event of an
+            // interrupted test. So using a unified name pattern for such executables.
+            if (useExecutable)
             {
                 _exeCopyMarkers.GetOrAdd(
-                    exePath,
+                    executablePath,
                     key =>
                     {
                         // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
@@ -105,25 +110,25 @@ namespace Lombiq.Tests.UI.Services
                         lock (_exeCopyLock)
                         {
                             var copyExePath = Path.Combine(
-                                Path.GetDirectoryName(exePath),
-                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+                                Path.GetDirectoryName(executablePath),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(executablePath));
 
                             if (File.Exists(copyExePath) &&
-                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(executablePath))
                             {
                                 File.Delete(copyExePath);
                             }
 
-                            if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+                            if (!File.Exists(copyExePath)) File.Copy(executablePath, copyExePath);
 
-                            exePath = copyExePath;
+                            executablePath = copyExePath;
 
                             return true;
                         }
                     });
             }
 
-            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
+            _command = Cli.Wrap(useExecutable ? executablePath : $"dotnet{ExecutableExtension}")
                 .WithArguments(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
@@ -132,7 +137,7 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
+                    if (!useExecutable) builder = builder.Add(_configuration.AppAssemblyPath);
 
                     // There is no other option here than to wait for the invoked Tasks.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
@@ -215,16 +220,17 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
+            var dotnet = $"dotnet{ExecutableExtension}";
             await _command.ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
-                        "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                        Environment.NewLine +
-                        stdErr.Text +
-                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
-                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run " +
-                                "or some other app is listening on the same port too."
-                            : string.Empty)),
+                        $"Starting the Orchard Core application via {dotnet} failed with the following output:" +
+                         Environment.NewLine +
+                         stdErr.Text +
+                         (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
+                             ? $" This can happen when there are leftover {dotnet} processes after an aborted test run " +
+                               "or some other app is listening on the same port too."
+                             : string.Empty)),
                 _cancellationTokenSource.Token);
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
