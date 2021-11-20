@@ -1,3 +1,5 @@
+using CliWrap;
+using CliWrap.Buffered;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -7,6 +9,9 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
@@ -18,8 +23,8 @@ namespace Lombiq.Tests.UI.Services
     {
         private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
 
-        public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-            CreateDriver(
+        public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+            CreateDriverAsync(
                 () =>
                 {
                     var options = new ChromeOptions().SetCommonOptions();
@@ -41,8 +46,8 @@ namespace Lombiq.Tests.UI.Services
                 },
                 new ChromeConfig());
 
-        public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-            CreateDriver(
+        public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+            CreateDriverAsync(
                 () =>
                 {
                     // This workaround is necessary for Edge, see:
@@ -80,7 +85,7 @@ namespace Lombiq.Tests.UI.Services
                 },
                 new StaticVersionEdgeConfig());
 
-        public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+        public static Task<FirefoxDriver> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
         {
             var options = new FirefoxOptions().SetCommonOptions();
 
@@ -89,13 +94,13 @@ namespace Lombiq.Tests.UI.Services
             if (configuration.Headless) options.AddArgument("--headless");
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return CreateDriver(
+            return CreateDriverAsync(
                 () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
                 new FirefoxConfig());
         }
 
-        public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-            CreateDriver(
+        public static Task<InternetExplorerDriver> CreateInternetExplorerDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+            CreateDriverAsync(
                 () =>
                 {
                     var options = new InternetExplorerOptions().SetCommonOptions();
@@ -129,27 +134,18 @@ namespace Lombiq.Tests.UI.Services
             return driver;
         }
 
-        private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
+        private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
             where TDriver : RemoteWebDriver
         {
             try
             {
+                var version = await TryFindVersionAsync(driverConfig);
                 // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup
                 // was already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
                 // https://stackoverflow.com/a/31637510/220230
                 _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
                 {
-                    // Version selection based on the locally installed version is only available for Chrome, see:
-                    // https://github.com/rosolko/WebDriverManager.Net/pull/91.
-                    if (driverConfig is ChromeConfig chromeConfig)
-                    {
-                        new DriverManager().SetUpDriver(chromeConfig, VersionResolveStrategy.MatchingBrowser);
-                    }
-                    else
-                    {
-                        new DriverManager().SetUpDriver(driverConfig);
-                    }
-
+                    new DriverManager().SetUpDriver(driverConfig, version);
                     return true;
                 })).Value;
 
@@ -167,6 +163,42 @@ namespace Lombiq.Tests.UI.Services
         private class StaticVersionEdgeConfig : EdgeConfig
         {
             public override string GetLatestVersion() => "83.0.478.37";
+        }
+
+        private static async Task<string> TryFindVersionAsync(IDriverConfig driverConfig)
+        {
+            const string versionArgument = "--version";
+
+            var (executableName, arguments) = driverConfig switch
+            {
+                ChromeConfig =>
+                    (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "chromium" : "chrome", versionArgument),
+                FirefoxConfig => ("firefox", versionArgument),
+                EdgeConfig => ("powershell", "(Get-AppxPackage Microsoft.MicrosoftEdge).Version"),
+                InternetExplorerConfig =>
+                    ("reg", @"query HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer /v svcVersion"),
+                _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, null),
+            };
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) executableName += ".exe";
+
+            // Version selection based on the locally installed version is only available for Chrome, see:
+            // https://github.com/rosolko/WebDriverManager.Net/pull/91.
+            var fallbackVersion = driverConfig is ChromeConfig
+                ? VersionResolveStrategy.MatchingBrowser
+                : VersionResolveStrategy.Latest;
+
+            try
+            {
+                var result = await Cli
+                    .Wrap(executableName)
+                    .WithArguments(arguments)
+                    .ExecuteBufferedAsync();
+                return result.StandardOutput.Split().FirstOrDefault(word => Version.TryParse(word, out _)) ?? fallbackVersion;
+            }
+            catch
+            {
+                return fallbackVersion;
+            }
         }
     }
 }

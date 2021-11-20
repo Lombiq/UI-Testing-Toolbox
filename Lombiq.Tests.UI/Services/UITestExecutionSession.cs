@@ -517,7 +517,7 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.SetUpHtmlValidationAssertionOnPageChange();
             }
 
-            var atataScope = AtataFactory.StartAtataScope(
+            var atataScope = await AtataFactory.StartAtataScopeAsync(
                 _testOutputHelper,
                 uri,
                 _configuration);
