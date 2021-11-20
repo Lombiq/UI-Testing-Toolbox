@@ -58,7 +58,7 @@ namespace Lombiq.Tests.UI.Services
                     var options = new EdgeOptions().SetCommonOptions();
 
                     // Will be available with Selenium 4: https://stackoverflow.com/a/60894335/220230.
-                    if (configuration.AcceptLanguage != BrowserConfiguration.DefaultAcceptLanguage)
+                    if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
                     {
                         throw new NotSupportedException("Edge doesn't support configuring Accept Language.");
                     }
@@ -141,9 +141,9 @@ namespace Lombiq.Tests.UI.Services
                 {
                     // Version selection based on the locally installed version is only available for Chrome, see:
                     // https://github.com/rosolko/WebDriverManager.Net/pull/91.
-                    if (driverConfig is ChromeConfig)
+                    if (driverConfig is ChromeConfig chromeConfig)
                     {
-                        new DriverManager().SetUpDriver(driverConfig, VersionResolveStrategy.MatchingBrowser);
+                        new DriverManager().SetUpDriver(chromeConfig, VersionResolveStrategy.MatchingBrowser);
                     }
                     else
                     {
