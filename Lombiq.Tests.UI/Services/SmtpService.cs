@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,6 +33,8 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _smtpPortLeaseManager;
         private static readonly PortLeaseManager _webUIPortLeaseManager;
         private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
+        private static readonly string _executableExtension =
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
 
         private readonly SmtpServiceConfiguration _configuration;
 
@@ -90,7 +93,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     // Running dotnet tool restore the first time to make sure smtp4dev is installed.
                     var restoreResult = await Cli
-                        .Wrap("dotnet.exe")
+                        .Wrap("dotnet" + _executableExtension)
                         .WithArguments(a => a.Add("tool").Add("restore"))
                         .ExecuteBufferedAsync();
 
@@ -112,11 +115,11 @@ namespace Lombiq.Tests.UI.Services
             var webUIUri = new Uri("http://localhost:" + _webUIPort);
 
             // Starting smtp4dev with a command like this:
-            // dotnet.exe tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
+            // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
             // For the possible command line arguments see:
             // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
             await Cli
-                .Wrap("dotnet.exe")
+                .Wrap("dotnet" + _executableExtension)
                 .WithArguments(a => a
                     .Add("tool").Add("run").Add("smtp4dev")
                     // An empty db parameter means an in-memory DB.
