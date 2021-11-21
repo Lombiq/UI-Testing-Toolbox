@@ -57,15 +57,24 @@ Supply the agent index in the `AgentIndex` configuration. It doesn't need to but
 
 You can learn more about the *microsoft-mssql-server* container [here](https://hub.docker.com/_/microsoft-mssql-server). You have to mount a local volume that can be shared between the host and the container. Update the values of `device` and `SA_PASSWORD` in the code below and execute it.
 
+On Windows:
 ```powershell
 docker pull mcr.microsoft.com/mssql/server
-docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data" data
-docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data\mssql" mssql-data
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+```
+
+On Linux you need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
+```shell
+mkdir -p "$HOME/.local/docker/mssql/data"
+docker pull mcr.microsoft.com/mssql/server
+docker volume create --driver local -o o=bind -o type=none -o device="$HOME/.local/docker/mssql/data" mssql-data
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 ```
 
 Now log in as root using `docker exec -u 0 -it sql2019 bash` and give access to the data directory with `chown 'mssql:root' /data`.
 
-You can use Docker Desktop to stop or start the container going forward. 
+You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
 
 
 ### Extending TestConfiguration.json
@@ -81,3 +90,5 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
     "HostSnapshotPath": "C:\\docker\\data"
 }
 ```
+
+On Linux replace the `"C:\\docker\\data"` with `"~/.local/docker/mssql/data/"` or similar.
