@@ -112,7 +112,9 @@ namespace Lombiq.Tests.UI.Services
         {
             var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
             var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
+            var directoryPathLocal = Path.GetDirectoryName(filePathLocal);
 
+            if (!Directory.Exists(directoryPathLocal)) Directory.CreateDirectory(directoryPathLocal);
             if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
             var server = CreateServer();
@@ -265,8 +267,16 @@ namespace Lombiq.Tests.UI.Services
         }
 
         private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
-            snapshotDirectoryPath[0] == '/'
-                ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
-                : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
+            snapshotDirectoryPath[0] switch
+            {
+                // Extract "~" home character when working with Unix path from Unix host.
+                '~' => Path.Combine(
+                    Environment.GetEnvironmentVariable("HOME"),
+                    snapshotDirectoryPath[2..],
+                    DbSnasphotName),
+                // Ensure proper Unix path in Windows host.
+                '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}",
+                _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName),
+            };
     }
 }
