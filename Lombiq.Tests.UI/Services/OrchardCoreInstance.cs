@@ -1,6 +1,7 @@
 using CliWrap;
 using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
+using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Concurrent;
@@ -128,6 +129,7 @@ namespace Lombiq.Tests.UI.Services
                     });
             }
 
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
             _command = await Cli.Wrap(useExecutable ? executablePath : $"dotnet{ExecutableExtension}")
                 .WithArgumentsAsync(argumentsBuilder =>
                 {
