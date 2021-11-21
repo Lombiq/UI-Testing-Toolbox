@@ -1,11 +1,11 @@
 using CliWrap;
 using CliWrap.Buffered;
+using Lombiq.Tests.UI.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,8 +33,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _smtpPortLeaseManager;
         private static readonly PortLeaseManager _webUIPortLeaseManager;
         private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
-        private static readonly string _executableExtension =
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+        private static readonly string _executableExtension = OperatingSystemHelpers.GetExecutableExtension();
 
         private readonly SmtpServiceConfiguration _configuration;
 

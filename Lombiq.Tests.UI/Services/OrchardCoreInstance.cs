@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -39,7 +38,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _portLeaseManager;
         private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
-        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly string _executableExtension = OperatingSystemHelpers.GetExecutableExtension();
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -49,7 +48,6 @@ namespace Lombiq.Tests.UI.Services
         private string _contentRootPath;
         private bool _isDisposed;
 
-        private string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
 
         // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -95,7 +93,7 @@ namespace Lombiq.Tests.UI.Services
             // (seen this with running win10-x86 DLLs on an x64 Windows machine saying "Failed to load the dll from
             // hostpolicy.dll HRESULT: 0x800700C1") even if the executable will run without issues. So, we prefer to run
             // the executable if it exist.
-            var executablePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ExecutableExtension);
+            var executablePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", _executableExtension);
             var useExecutable = File.Exists(executablePath);
 
             // Running randomly named executables will make it harder to kill leftover processes in the event of an
@@ -130,7 +128,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
-            _command = await Cli.Wrap(useExecutable ? executablePath : $"dotnet{ExecutableExtension}")
+            _command = await Cli.Wrap(useExecutable ? executablePath : $"dotnet{_executableExtension}")
                 .WithArgumentsAsync(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
@@ -219,7 +217,7 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            var dotnet = $"dotnet{ExecutableExtension}";
+            var dotnet = $"dotnet{_executableExtension}";
             await _command.ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(

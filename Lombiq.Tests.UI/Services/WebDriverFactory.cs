@@ -1,5 +1,6 @@
 using CliWrap;
 using CliWrap.Buffered;
+using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -179,7 +180,7 @@ namespace Lombiq.Tests.UI.Services
                     ("reg", @"query HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer /v svcVersion"),
                 _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, null),
             };
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) executableName += ".exe";
+            executableName += OperatingSystemHelpers.GetExecutableExtension();
 
             // Version selection based on the locally installed version is only available for Chrome, see:
             // https://github.com/rosolko/WebDriverManager.Net/pull/91.
