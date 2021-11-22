@@ -47,7 +47,7 @@ namespace Lombiq.Tests.UI.Services
                     }
                     catch (WebDriverException ex)
                     {
-                        if (ex.Message.Contains("Cannot start the driver service on", StringComparison.InvariantCulture) &&
+                        if (ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") &&
                             i < maxTryCount - 1)
                         {
                             i++;

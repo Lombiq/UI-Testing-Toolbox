@@ -13,14 +13,15 @@ namespace Lombiq.Tests.UI.Services
     {
         /// <summary>
         /// Gets or sets the Azure Blob Storage connection string. Defaults to local development storage (Storage
-        /// Emulator).
+        /// Emulator). This configuration will be automatically passed to the tested app.
         /// </summary>
         public string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
 
         /// <summary>
         /// Gets or sets the Azure Blob Storage container name where all the test apps' files will be stored in
         /// subfolders. Defaults to <c>"LombiqUITestingToolbox"</c>. Ff you want to clean up residual files after an
-        /// interrupted test execution you can just delete the container (it'll be created if it doesn't exist).
+        /// interrupted test execution you can just delete the container (it'll be created if it doesn't exist). This
+        /// configuration will be automatically passed to the tested app.
         /// </summary>
         public string ContainerName { get; set; } = "lombiquitestingtoolbox";
     }
@@ -80,7 +81,7 @@ namespace Lombiq.Tests.UI.Services
                 blobClient =>
                 {
                     var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
-                    var blobPath = blobUrl.Replace("/", Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase);
+                    var blobPath = blobUrl.ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
                     var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
                     DirectoryHelper.CreateDirectoryIfNotExists(Path.GetDirectoryName(blobFullPath));
                     return blobClient.DownloadToAsync(blobFullPath);
@@ -92,8 +93,8 @@ namespace Lombiq.Tests.UI.Services
             var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
             foreach (var filePath in Directory.EnumerateFiles(mediaFolderPath, "*.*", SearchOption.AllDirectories))
             {
-                var relativePath = filePath.Replace(mediaFolderPath, string.Empty, StringComparison.InvariantCultureIgnoreCase);
-                var relativeBlobUrl = relativePath.Replace(Path.DirectorySeparatorChar.ToString(), "/", StringComparison.OrdinalIgnoreCase);
+                var relativePath = filePath.ReplaceOrdinalIgnoreCase(mediaFolderPath, string.Empty);
+                var relativeBlobUrl = relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
                 var blobClient = _blobContainer.GetBlobClient(_basePath + relativeBlobUrl);
                 await blobClient.UploadAsync(filePath);
             }

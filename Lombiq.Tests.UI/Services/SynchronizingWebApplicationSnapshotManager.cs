@@ -14,7 +14,7 @@ namespace Lombiq.Tests.UI.Services
     /// </summary>
     public class SynchronizingWebApplicationSnapshotManager
     {
-        private static readonly SemaphoreSlim _semaphore = new(1, 1);
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly string _snapshotDirectoryPath;
 
         private Uri _resultUri;
@@ -24,7 +24,7 @@ namespace Lombiq.Tests.UI.Services
 
         public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
         {
-            DebugHelper.WriteLineTimestamped("Entering SynchronizingWebApplicationSnapshotManager semaphore.");
+            DebugHelper.WriteLineTimestamped($"Entering SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
 
             await _semaphore.WaitAsync();
             try
@@ -49,7 +49,7 @@ namespace Lombiq.Tests.UI.Services
             }
             finally
             {
-                DebugHelper.WriteLineTimestamped("Exiting SynchronizingWebApplicationSnapshotManager semaphore.");
+                DebugHelper.WriteLineTimestamped($"Exiting SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
                 _semaphore.Release();
             }
         }
