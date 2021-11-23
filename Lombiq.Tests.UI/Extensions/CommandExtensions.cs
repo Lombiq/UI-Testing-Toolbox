@@ -21,7 +21,7 @@ namespace CliWrap
             while (await enumerator.MoveNextAsync())
             {
                 if (enumerator.Current is StandardOutputCommandEvent stdOut &&
-                    stdOut.Text.Contains("Application started. Press Ctrl+C to shut down.", StringComparison.InvariantCulture))
+                    stdOut.Text.ContainsOrdinalIgnoreCase("Application started. Press Ctrl+C to shut down."))
                 {
                     return;
                 }

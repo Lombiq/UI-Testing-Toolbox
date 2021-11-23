@@ -31,7 +31,10 @@ namespace Lombiq.Tests.UI.Extensions
 
             configuration.Events.AfterNavigation += async (context, targetUri) =>
             {
-                if (IsNoAlert(context)) await configuration.Events.AfterPageChange?.Invoke(context);
+                if (IsNoAlert(context) && configuration.Events.AfterPageChange != null)
+                {
+                    await configuration.Events.AfterPageChange.Invoke(context);
+                }
             };
 
             configuration.Events.BeforeClick += (context, targetElement) =>
@@ -47,11 +50,14 @@ namespace Lombiq.Tests.UI.Extensions
                     try
                     {
                         // A dummy access just to make Text throw an exception if the element is stale.
-                        html.Text?.StartsWith("a", StringComparison.InvariantCulture);
+                        html.Text?.StartsWithOrdinalIgnoreCase("a");
                     }
                     catch (StaleElementReferenceException)
                     {
-                        await configuration.Events.AfterPageChange?.Invoke(context);
+                        if (configuration.Events.AfterPageChange != null)
+                        {
+                            await configuration.Events.AfterPageChange.Invoke(context);
+                        }
                     }
                 }
             };

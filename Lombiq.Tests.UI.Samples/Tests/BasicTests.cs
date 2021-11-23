@@ -63,9 +63,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // module) to see if it indeed happened.
                     context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
 
-                    // Note that if you want the user to be logged in for the test, you don't need to log in via the
-                    // login form every time: That would be slow and you'd test the login process multiple times. Use
-                    // context.SignInDirectly() instead.
+                    // Note that if you want the user to be logged in for the test (instead of testing the login feature
+                    // itself), you don't need to log in via the login form every time: That would be slow and you'd
+                    // test the login process multiple times. Use context.SignInDirectly() instead.
                 },
                 browser);
 
@@ -98,15 +98,24 @@ namespace Lombiq.Tests.UI.Samples.Tests
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
+                    // Now there's a bit of a pickle though: The Lombiq Privacy module is also enable from the test
+                    // recipe and shows its privacy consent banner. For tracking to be enabled, even in offline mode,
+                    // the user needs to give consent. This is what we do now:
+                    context.ClickReliablyOn(By.Id("privacy-consent-accept-button"));
+                    context.Refresh();
+
                     // In offline mode, the module adds an appInsights variable that we can check. So let's execute some
                     // JavaScript in the browser.
                     var appInsightsExist = context
                         .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
-                    appInsightsExist.ShouldBe(true);
+
+                    // Our custom message helps debugging, otherwise from the test output you could only tell that a
+                    // a value should be true but is false which is less than helpful.
+                    appInsightsExist.ShouldBe(true, "The Application Insights module is not working or is not in offline mode.");
                 },
                 browser);
     }
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.
-// NEXT STATION: Head over to Tests/EmailTests.cs.
+// NEXT STATION: Head over to Tests/BasicOrchardFeaturesTests.cs.

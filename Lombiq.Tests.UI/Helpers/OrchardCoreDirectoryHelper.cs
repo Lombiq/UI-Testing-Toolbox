@@ -27,8 +27,8 @@ namespace Lombiq.Tests.UI.Helpers
             var configFilePaths = Directory
                 .EnumerateFiles(sourcePath)
                 .Where(filePath =>
-                    filePath.EndsWith(".config", StringComparison.InvariantCultureIgnoreCase) ||
-                    filePath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase));
+                    filePath.EndsWithOrdinalIgnoreCase(".config") ||
+                    filePath.EndsWithOrdinalIgnoreCase(".json"));
 
             foreach (var filePath in configFilePaths)
             {
@@ -38,16 +38,7 @@ namespace Lombiq.Tests.UI.Helpers
             var recipesSourceFolderPath = Path.Combine(sourcePath, "Recipes");
             if (Directory.Exists(recipesSourceFolderPath))
             {
-                var recipesDestinationFolderPath = Path.Combine(destinationPath, "Recipes");
-
-                DirectoryHelper.CreateDirectoryIfNotExists(recipesDestinationFolderPath);
-
-                var recipePaths = Directory.EnumerateFiles(recipesSourceFolderPath);
-
-                foreach (var filePath in recipePaths)
-                {
-                    File.Copy(filePath, Path.Combine(recipesDestinationFolderPath, Path.GetFileName(filePath)));
-                }
+                FileSystem.CopyDirectory(recipesSourceFolderPath, Path.Combine(destinationPath, "Recipes"), true);
             }
         }
 

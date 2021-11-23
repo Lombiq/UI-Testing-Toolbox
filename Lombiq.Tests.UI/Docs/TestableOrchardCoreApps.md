@@ -6,7 +6,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
 **Note** that certain features of the Lombiq UI Testing Toolbox need to be enabled from test code in addition to making the app testable. Check out `OrchardCoreUITestExecutorConfiguration` for that part of the configuration; this page is only about changes necessary in the app.
 
-- Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time.
+- Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following:
   1. Add a reference to `Lombiq.Tests.UI.AppExtensions`.
   2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Startup` class:
@@ -36,7 +36,8 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
-- Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app completely offline. For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
+- Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app completely offline.
+    - For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
     ```json
     "steps": [
         {
@@ -45,7 +46,23 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
-  For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe.
+    - For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe. An alternative is to use a tool that provides fake APIs like [JSON Server](https://github.com/typicode/json-server) or [Fake JSON Server](https://github.com/ttu/dotnet-fake-json-server). You can run such tools from the command line in the test's code, e.g. with the excellent [CliWrap](https://github.com/Tyrrrz/CliWrap) that the UI Testing Toolbox uses too.
+- By default, the culture settings used when setting up an Orchard site depend on the host machine's culture. You want to make these settings consistent across all environments though so e.g. datetime and number formatting will be consistent. You can do this by enabling `OrchardCore.Localization` and configuring the culture in site settings from the setup recipe:
+    ```json
+    "steps": [
+        {
+            "name": "settings",
+            // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify the
+            // culture too.
+            "LocalizationSettings": {
+                "DefaultCulture": "en-US",
+                "SupportedCultures": [
+                    "en-US"
+                ]
+            }
+        }
+    ]
+    ```
 - Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI. The `OrchardCore.Email` feature will be automatically enabled, as well as the rest of the configuration applied.
 - If you want the site to use Azure Blob Storage then you have to do the following:
   - The `OrchardCore.Media.Azure` feature will be automatically enabled, as well as the rest of the configuration applied.

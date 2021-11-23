@@ -3,6 +3,7 @@ using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -34,6 +35,8 @@ namespace Lombiq.Tests.UI.Services
         private const string UrlPrefix = "https://localhost:";
 
         private static readonly PortLeaseManager _portLeaseManager;
+        private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
+        private static readonly object _exeCopyLock = new();
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -83,15 +86,53 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            _command = Cli.Wrap("dotnet.exe")
+            // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
+            // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
+            // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
+            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
+            var useExeToExecuteApp = File.Exists(exePath);
+
+            // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
+            // test execution. So using a unified name pattern for such exes.
+            if (useExeToExecuteApp)
+            {
+                _exeCopyMarkers.GetOrAdd(
+                    exePath,
+                    key =>
+                    {
+                        // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
+                        // run for the same key.
+                        lock (_exeCopyLock)
+                        {
+                            var copyExePath = Path.Combine(
+                                Path.GetDirectoryName(exePath),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+
+                            if (File.Exists(copyExePath) &&
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                            {
+                                File.Delete(copyExePath);
+                            }
+
+                            if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+
+                            exePath = copyExePath;
+
+                            return true;
+                        }
+                    });
+            }
+
+            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
                 .WithArguments(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
-                        .Add(_configuration.AppAssemblyPath)
                         .Add("--urls").Add(url)
                         .Add("--contentRoot").Add(_contentRootPath)
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
+
+                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
 
                     // There is no other option here than to wait for the invoked Tasks.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method

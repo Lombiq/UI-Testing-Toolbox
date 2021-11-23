@@ -2,7 +2,6 @@ using AngleSharp.Text;
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using System;
 
 // Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenium not
@@ -180,22 +179,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             var element = context.Get(by);
 
-            if (text.Contains('@', StringComparison.Ordinal))
-            {
-                element.Clear();
-
-                // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
-                // when entered into a text field so we need to use Actions. The following solution doesn't work:
-                // https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the standard
-                // FillInWith() as without that some forms start to behave strange and not save values.
-                new Actions(context.Driver).SendKeys(element, text).Perform();
-            }
-            else
-            {
-                element.FillInWith(text);
-            }
-
-            return element;
+            return context.Driver.TryFillElement(element, text);
         }
     }
 }

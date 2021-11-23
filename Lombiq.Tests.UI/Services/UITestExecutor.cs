@@ -111,8 +111,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex) when (
                 (ex is IOException &&
-                    ex.Message.Contains(
-                        "The filename, directory name, or volume label syntax is incorrect.", StringComparison.InvariantCultureIgnoreCase))
+                    ex.Message.ContainsOrdinalIgnoreCase("The filename, directory name, or volume label syntax is incorrect."))
                 || ex is PathTooLongException)
             {
                 // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which

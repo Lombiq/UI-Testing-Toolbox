@@ -81,7 +81,7 @@ namespace Lombiq.Tests.UI.Services
                 blobClient =>
                 {
                     var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
-                    var blobPath = blobUrl.Replace("/", Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase);
+                    var blobPath = blobUrl.ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
                     var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
                     DirectoryHelper.CreateDirectoryIfNotExists(Path.GetDirectoryName(blobFullPath));
                     return blobClient.DownloadToAsync(blobFullPath);
@@ -93,8 +93,8 @@ namespace Lombiq.Tests.UI.Services
             var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
             foreach (var filePath in Directory.EnumerateFiles(mediaFolderPath, "*.*", SearchOption.AllDirectories))
             {
-                var relativePath = filePath.Replace(mediaFolderPath, string.Empty, StringComparison.InvariantCultureIgnoreCase);
-                var relativeBlobUrl = relativePath.Replace(Path.DirectorySeparatorChar.ToString(), "/", StringComparison.OrdinalIgnoreCase);
+                var relativePath = filePath.ReplaceOrdinalIgnoreCase(mediaFolderPath, string.Empty);
+                var relativeBlobUrl = relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
                 var blobClient = _blobContainer.GetBlobClient(_basePath + relativeBlobUrl);
                 await blobClient.UploadAsync(filePath);
             }
