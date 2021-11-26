@@ -11,8 +11,8 @@ namespace Lombiq.Tests.UI.Pages
     using _ = OrchardCoreSetupPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-    [VerifyTitle(DefaultPageTitle, Format = "{0}")]
-    [VerifyH1(DefaultPageTitle)]
+    [VerifyTitle(values: new[] { DefaultPageTitle, OlderPageTitle }, Format = "{0}")]
+    [VerifyH1(values: new[] { DefaultPageTitle, OlderPageTitle })]
     [TermFindSettings(
         Case = TermCase.Pascal,
         TargetAllChildren = true,
@@ -20,6 +20,7 @@ namespace Lombiq.Tests.UI.Pages
     public sealed class OrchardCoreSetupPage : Page<_>
     {
         public const string DefaultPageTitle = "Setup";
+        public const string OlderPageTitle = "Orchard Setup";
 
         public enum DatabaseType
         {
@@ -68,13 +69,11 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ ShouldStayOnSetupPage() =>
-            PageTitle.Should.Equal(DefaultPageTitle);
+        public _ ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
 
-        public _ ShouldLeaveSetupPage() =>
-            PageTitle.Should.Not.Equal(DefaultPageTitle);
+        public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        [Obsolete("Use another overloaded " + nameof(SetupOrchardCore) + " method without UITestContext parameter.")]
+        [Obsolete("Use another overload of this method without a " + nameof(UITestContext) + " parameter.")]
         public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
             SetupOrchardCore(parameters);
 
@@ -114,5 +113,8 @@ namespace Lombiq.Tests.UI.Pages
 
             return this;
         }
+
+        private static bool IsExpectedTitle(string title) =>
+            title.EqualsOrdinalIgnoreCase(DefaultPageTitle) || title.EqualsOrdinalIgnoreCase(OlderPageTitle);
     }
 }
