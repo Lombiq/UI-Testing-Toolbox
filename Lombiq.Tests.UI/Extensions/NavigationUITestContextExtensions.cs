@@ -211,6 +211,36 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
 
         /// <summary>
+        /// Clicks on the <paramref name="byDropdownButton"/> until the dropdown menu appears (up to 3 tries) and then
+        /// clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
+        /// </summary>
+        /// <param name="context">The current UI test context.</param>
+        /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
+        /// <param name="byLocalMenuItem">The path inside the dropdown menu.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
+        /// </exception>
+        public static void SelectFromDropdownReliably(this UITestContext context, By byDropdownButton, By byLocalMenuItem)
+        {
+            var dropdownButton = context.Get(byDropdownButton);
+            var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
+
+            for (var i = 0; i < 3; i++)
+            {
+                dropdownButton.ClickReliably(context);
+
+                var dropdownMenu = dropdownButton.GetAll(byDropdownMenu).SingleOrDefault();
+                if (dropdownMenu != null)
+                {
+                    dropdownMenu.Get(byLocalMenuItem).ClickReliably(context);
+                    return;
+                }
+            }
+
+            throw new InvalidOperationException($"Couldn't open dropdown menu with {byDropdownButton} in 3 tries.");
+        }
+
+        /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
         /// </summary>
         public static void AcceptAlert(this UITestContext context)

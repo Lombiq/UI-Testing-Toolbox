@@ -24,6 +24,8 @@ namespace Lombiq.Tests.UI.Extensions
             }
         }
 
+        public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOn(By.Id("modalOkButton"));
+
         /// <summary>
         /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
         /// second interval between attempts. This should grant enough time to execute the publish action if the button
