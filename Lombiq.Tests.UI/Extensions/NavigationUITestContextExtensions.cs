@@ -211,8 +211,8 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
 
         /// <summary>
-        /// Clicks on the <paramref name="byDropdownButton"/> until the dropdown menu appears (up to 3 tries) and then
-        /// clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
+        /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
+        /// and then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
         /// </summary>
         /// <param name="context">The current UI test context.</param>
         /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
@@ -220,7 +220,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// <exception cref="InvalidOperationException">
         /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
         /// </exception>
-        public static void SelectFromDropdownReliably(this UITestContext context, By byDropdownButton, By byLocalMenuItem)
+        public static void SelectFromBootstrapDropdownReliably(
+            this UITestContext context,
+            By byDropdownButton,
+            By byLocalMenuItem)
         {
             var dropdownButton = context.Get(byDropdownButton);
             var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
@@ -239,6 +242,20 @@ namespace Lombiq.Tests.UI.Extensions
 
             throw new InvalidOperationException($"Couldn't open dropdown menu with {byDropdownButton} in 3 tries.");
         }
+
+        /// <summary>
+        /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
+        /// and then clicks on the menu item with the <paramref name="menuItemLinkText"/> within the dropdown menu's
+        /// context.
+        /// </summary>
+        /// <param name="context">The current UI test context.</param>
+        /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
+        /// <param name="menuItemLinkText">The text of the dropdown menu item.</param>
+        public static void SelectFromBootstrapDropdownReliably(
+            this UITestContext context,
+            By byDropdownButton,
+            string menuItemLinkText) =>
+            SelectFromBootstrapDropdownReliably(context, byDropdownButton, By.LinkText(menuItemLinkText));
 
         /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
