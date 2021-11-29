@@ -211,11 +211,11 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
 
         /// <summary>
-        /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
+        /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
         /// and then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
         /// </summary>
         /// <param name="context">The current UI test context.</param>
-        /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
+        /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
         /// <param name="byLocalMenuItem">The path inside the dropdown menu.</param>
         /// <exception cref="InvalidOperationException">
         /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
