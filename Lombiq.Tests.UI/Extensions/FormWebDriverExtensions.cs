@@ -13,7 +13,8 @@ namespace Lombiq.Tests.UI.Extensions
 
             if (value.Contains('@', StringComparison.Ordinal))
             {
-                // This should prevent OpenQA.Selenium.WebDriverException: move target out of bounds error.
+                // Scrolls the element into view. This should prevent the "OpenQA.Selenium.WebDriverException: move
+                // target out of bounds" error.
                 var actions = new Actions(driver);
                 actions.MoveToElement(element);
                 actions.Perform();
