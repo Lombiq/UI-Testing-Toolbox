@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using System;
 
@@ -80,6 +81,10 @@ namespace Lombiq.Tests.UI.Pages
         public _ SetupOrchardCore(OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
+
+            // Set the setup page window size to avoid the "OpenQA.Selenium.WebDriverException: move target out of
+            // bounds" that may happen in headless mode due to low default window size.
+            Driver.Manage().Window.Size = CommonDisplayResolutions.Fhd;
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
