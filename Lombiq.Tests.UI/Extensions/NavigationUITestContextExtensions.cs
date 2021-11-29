@@ -222,10 +222,9 @@ namespace Lombiq.Tests.UI.Extensions
         /// </exception>
         public static void SelectFromBootstrapDropdownReliably(
             this UITestContext context,
-            By byDropdownButton,
+            IWebElement dropdownButton,
             By byLocalMenuItem)
         {
-            var dropdownButton = context.Get(byDropdownButton);
             var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
 
             for (var i = 0; i < 3; i++)
@@ -240,7 +239,7 @@ namespace Lombiq.Tests.UI.Extensions
                 }
             }
 
-            throw new InvalidOperationException($"Couldn't open dropdown menu with {byDropdownButton} in 3 tries.");
+            throw new InvalidOperationException($"Couldn't open dropdown menu in 3 tries.");
         }
 
         /// <summary>
@@ -255,7 +254,7 @@ namespace Lombiq.Tests.UI.Extensions
             this UITestContext context,
             By byDropdownButton,
             string menuItemLinkText) =>
-            SelectFromBootstrapDropdownReliably(context, byDropdownButton, By.LinkText(menuItemLinkText));
+            SelectFromBootstrapDropdownReliably(context, context.Get(byDropdownButton), By.LinkText(menuItemLinkText));
 
         /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
