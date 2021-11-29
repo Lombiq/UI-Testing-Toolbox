@@ -45,17 +45,17 @@ namespace Lombiq.Tests.UI.Extensions
                 interval: TimeSpan.FromMinutes(2));
         }
 
-        public static void GoToContentItemList(this UITestContext context)
-        {
-            context.ClickReliablyOn(By.CssSelector("#content"));
-            context.ClickReliablyOn(By.LinkText("Content Items"));
-        }
+        public static void GoToContentItemList(this UITestContext context) =>
+            context.GoToRelativeUrl("/Admin/Contents/ContentItems");
 
-        public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentType)
+        public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentTypeText)
         {
             context.GoToContentItemList();
-            context.ClickNewContentItem(contentType);
+            context.ClickNewContentItem(contentTypeText);
         }
+
+        public static void CreateNewContentItem(this UITestContext context, string contentType) =>
+            context.GoToRelativeUrl($"/Admin/Contents/ContentTypes/{contentType}/Create");
 
         public static void ClickNewContentItem(this UITestContext context, string contentItemName, bool dropdown = true)
         {
