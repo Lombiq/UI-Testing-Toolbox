@@ -1,5 +1,6 @@
 using Atata;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using System;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -12,6 +13,11 @@ namespace Lombiq.Tests.UI.Extensions
 
             if (value.Contains('@', StringComparison.Ordinal))
             {
+                // This should prevent OpenQA.Selenium.WebDriverException: move target out of bounds error.
+                var actions = new Actions(driver);
+                actions.MoveToElement(element);
+                actions.Perform();
+
                 // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
                 // when entered into a text field so we need to use Actions. The following solution doesn't work:
                 // https://stackoverflow.com/a/52202594/220230. This needs to be done in addition to the standard
