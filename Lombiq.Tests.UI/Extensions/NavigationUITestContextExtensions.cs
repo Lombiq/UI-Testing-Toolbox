@@ -211,6 +211,15 @@ namespace Lombiq.Tests.UI.Extensions
             context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
 
         /// <summary>
+        /// Finds the "Add New" button.
+        /// </summary>
+        public static IWebElement GetAddNewButton(this UITestContext context) =>
+            context.Get(By.XPath("//button[contains(.,'Add New')]"));
+
+        public static void SelectAddNewDropdown(this UITestContext context, By byLocalMenuItem = null) =>
+            context.SelectFromBootstrapDropdownReliably(GetAddNewButton(context), byLocalMenuItem);
+
+        /// <summary>
         /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
         /// and then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
         /// </summary>
