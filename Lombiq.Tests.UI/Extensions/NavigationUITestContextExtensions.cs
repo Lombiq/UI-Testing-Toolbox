@@ -216,7 +216,10 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="context">The current UI test context.</param>
         /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
-        /// <param name="byLocalMenuItem">The path inside the dropdown menu.</param>
+        /// <param name="byLocalMenuItem">
+        /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and
+        /// the dropdown is left open.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
         /// </exception>
@@ -234,7 +237,7 @@ namespace Lombiq.Tests.UI.Extensions
                 var dropdownMenu = dropdownButton.GetAll(byDropdownMenu).SingleOrDefault();
                 if (dropdownMenu != null)
                 {
-                    dropdownMenu.Get(byLocalMenuItem).ClickReliably(context);
+                    if (byLocalMenuItem != null) dropdownMenu.Get(byLocalMenuItem).ClickReliably(context);
                     return;
                 }
             }
