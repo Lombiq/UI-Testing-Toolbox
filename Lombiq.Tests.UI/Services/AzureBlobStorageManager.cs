@@ -64,7 +64,7 @@ namespace Lombiq.Tests.UI.Services
             await CreateContainerIfNotExistsAsync();
 
             _folderId = _portLeaseManager.LeaseAvailableRandomPort();
-            _basePath = _folderId.ToString(CultureInfo.InvariantCulture);
+            _basePath = _folderId.ToTechnicalString();
 
             await DropFolderIfExistsAsync();
 
