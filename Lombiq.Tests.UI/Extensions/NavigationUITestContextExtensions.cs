@@ -216,6 +216,10 @@ namespace Lombiq.Tests.UI.Extensions
         public static IWebElement GetAddNewButton(this UITestContext context) =>
             context.Get(By.XPath("//button[contains(.,'Add New')]"));
 
+        /// <summary>
+        /// Opens the dropdown belonging to the "Add New" button. If <paramref name="byLocalMenuItem"/> is not <see
+        /// langword="null"/> it will click on that element within the dropdown context as well.
+        /// </summary>
         public static void SelectAddNewDropdown(this UITestContext context, By byLocalMenuItem = null) =>
             context.SelectFromBootstrapDropdownReliably(GetAddNewButton(context), byLocalMenuItem);
 

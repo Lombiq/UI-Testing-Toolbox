@@ -24,6 +24,9 @@ namespace Lombiq.Tests.UI.Extensions
             }
         }
 
+        /// <summary>
+        /// Clicks on the "Ok" button on the Bootstrap modal window.
+        /// </summary>
         public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOn(By.Id("modalOkButton"));
 
         /// <summary>
