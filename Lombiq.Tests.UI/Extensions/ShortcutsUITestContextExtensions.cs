@@ -163,7 +163,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.Net
         /// Core to display an error page.
         /// </summary>
-        public static void ThrowErrorDirectly(this UITestContext context) => GoTo<ErrorController>(context);
+        public static void GoToErrorPageDirectly(this UITestContext context) => GoTo<ErrorController>(context);
 
         private static void GoTo<TController>(
             UITestContext context,
