@@ -34,7 +34,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// second interval between attempts. This should grant enough time to execute the publish action if the button
         /// actually got pressed.
         /// </summary>
-        public static void ClickPublishReliably(this UITestContext context, bool withJavaScript = false)
+        public static void ClickPublishUntilNavigation(this UITestContext context, bool withJavaScript = false)
         {
             var navigationState = context.AsPageNavigationState();
 
