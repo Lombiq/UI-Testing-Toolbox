@@ -160,7 +160,7 @@ namespace Lombiq.Tests.UI.Extensions
                 (nameof(recipeName), recipeName));
 
         /// <summary>
-        /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.Net
+        /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET
         /// Core to display an error page.
         /// </summary>
         public static void GoToErrorPageDirectly(this UITestContext context) => GoTo<ErrorController>(context);
