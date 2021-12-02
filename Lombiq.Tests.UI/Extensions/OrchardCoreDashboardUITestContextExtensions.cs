@@ -34,7 +34,11 @@ namespace Lombiq.Tests.UI.Extensions
         /// second interval between attempts. This should grant enough time to execute the publish action if the button
         /// actually got pressed.
         /// </summary>
-        public static void ClickPublishUntilNavigation(this UITestContext context, bool withJavaScript = false)
+        public static void ClickPublishUntilNavigation(
+            this UITestContext context,
+            bool withJavaScript = false,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
         {
             var navigationState = context.AsPageNavigationState();
 
@@ -44,8 +48,8 @@ namespace Lombiq.Tests.UI.Extensions
                     ClickPublish(context, withJavaScript);
                     return navigationState.CheckIfNavigationHasOccurred();
                 },
-                timeout: TimeSpan.FromSeconds(30),
-                interval: TimeSpan.FromMinutes(2));
+                timeout ?? TimeSpan.FromSeconds(30),
+                interval ?? TimeSpan.FromMinutes(2));
         }
 
         public static void GoToContentItemList(this UITestContext context) =>
