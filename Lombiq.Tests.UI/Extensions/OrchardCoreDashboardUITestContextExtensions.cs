@@ -34,6 +34,11 @@ namespace Lombiq.Tests.UI.Extensions
         /// second interval between attempts. This should grant enough time to execute the publish action if the button
         /// actually got pressed.
         /// </summary>
+        /// <remarks><para>
+        /// The <paramref name="timeout"/> and <paramref name="interval"/> have different default values from other
+        /// similar methods that get theirs from the test configuration. These defaults are set to minimize the chance
+        /// of an unintended early timeout or bounce effect because the publishing may take a longer time.
+        /// </para></remarks>
         public static void ClickPublishUntilNavigation(
             this UITestContext context,
             bool withJavaScript = false,
