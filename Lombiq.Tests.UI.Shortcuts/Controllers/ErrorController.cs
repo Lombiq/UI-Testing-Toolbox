@@ -8,9 +8,10 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
     [DevelopmentAndLocalhostOnly]
     public class ErrorController : Controller
     {
+        public const string ExceptionMessage = "This action causes an exception!";
 
         [AllowAnonymous]
         public IActionResult Index() =>
-            throw new InvalidOperationException("This action causes an exception!");
+            throw new InvalidOperationException(ExceptionMessage);
     }
 }
