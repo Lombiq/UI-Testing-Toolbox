@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 
 namespace Lombiq.Tests.UI.Services
@@ -17,7 +16,7 @@ namespace Lombiq.Tests.UI.Services
     public static class TeamCityMetadataReporter
     {
         public static void ReportInt(string testName, string name, int number) =>
-            ReportNumber(testName, name, number.ToString(CultureInfo.InvariantCulture));
+            ReportNumber(testName, name, number.ToTechnicalString());
 
         public static void ReportNumber(string testName, string name, string number) =>
             Report(testName, name, "number", number);
