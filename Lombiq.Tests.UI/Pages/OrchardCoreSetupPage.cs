@@ -82,10 +82,6 @@ namespace Lombiq.Tests.UI.Pages
         {
             parameters ??= new OrchardCoreSetupParameters();
 
-            // Set the setup page window size to avoid the "OpenQA.Selenium.WebDriverException: move target out of
-            // bounds" that may happen in headless mode due to low default window size.
-            Driver.Manage().Window.Size = CommonDisplayResolutions.Fhd;
-
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
             Recipe.Find<Link<_>>(parameters.RecipeId, new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click();
