@@ -98,6 +98,12 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
+                if (ex is PageChangeAssertionException pageChangeAssertionException)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                    ex = pageChangeAssertionException.InnerException;
+                }
+
                 _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
 
                 if (ex is SetupFailedFastException) throw;
@@ -310,10 +316,10 @@ namespace Lombiq.Tests.UI.Services
                 }
             }
 
-            if (ex is HtmlValidationAssertionException htmlValidationAssertionException
+            if (ex is HtmlValidationResultException htmlValidationResultException
                 && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
             {
-                var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
+                var resultFilePath = htmlValidationResultException.HtmlValidationResult.ResultFilePath;
                 if (!string.IsNullOrEmpty(resultFilePath))
                 {
                     var htmlValidationReportPath = Path.Combine(debugInformationPath, "HtmlValidationReport.txt");

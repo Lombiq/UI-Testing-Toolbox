@@ -1,6 +1,8 @@
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -43,9 +45,20 @@ namespace Lombiq.Tests.UI.Extensions
             }
         }
 
-        private static Task OnEventsAfterNavigationAsync(UITestContext context) =>
-            IsNoAlert(context) && context.Configuration.Events.AfterPageChange is { } afterPageChange
-                ? afterPageChange.Invoke(context)
-                : Task.CompletedTask;
+        private static async Task OnEventsAfterNavigationAsync(UITestContext context)
+        {
+            if (IsNoAlert(context) &&
+                context.Configuration.Events.AfterPageChange is { } afterPageChange)
+            {
+                try
+                {
+                    await afterPageChange.Invoke(context);
+                }
+                catch (Exception exception)
+                {
+                    throw new PageChangeAssertionException(context, exception);
+                }
+            }
+        }
     }
 }
