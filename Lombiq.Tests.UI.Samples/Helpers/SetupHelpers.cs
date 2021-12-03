@@ -29,6 +29,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
                 .GoToSetupPage()
                 // OrchardCoreSetupParameters will initialize some basic settings from the context.
                 .SetupOrchardCore(
+                    context,
                     new OrchardCoreSetupParameters(context)
                     {
                         SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
