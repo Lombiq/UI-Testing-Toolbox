@@ -1,7 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
-using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
 
@@ -74,13 +74,16 @@ namespace Lombiq.Tests.UI.Pages
 
         public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        [Obsolete("Use another overload of this method without a " + nameof(UITestContext) + " parameter.")]
-        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
-            SetupOrchardCore(parameters);
+        public _ SetupOrchardCore(OrchardCoreSetupParameters parameters = null) => SetupOrchardCore(null, parameters);
 
-        public _ SetupOrchardCore(OrchardCoreSetupParameters parameters = null)
+        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
+
+            if (context != null && context.Configuration.SetupConfiguration.UseStandardBrowserSizeDuringSetup)
+            {
+                context.SetStandardBrowserSize();
+            }
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
