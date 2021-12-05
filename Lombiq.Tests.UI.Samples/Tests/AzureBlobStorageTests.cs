@@ -57,3 +57,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
 }
 
 // END OF TRAINING SECTION: Using Azure Blob Storage.
+// NEXT STATION: Head over to Tests/ErrorHandlingtests.cs.
