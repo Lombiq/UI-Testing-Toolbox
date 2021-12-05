@@ -1,7 +1,6 @@
 ﻿using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Lombiq.HelpfulLibraries.Libraries.Mvc
@@ -17,10 +16,7 @@ namespace Lombiq.HelpfulLibraries.Libraries.Mvc
             Expression<Action<TController>> actionExpression,
             params (string Key, object Value)[] additionalArguments) =>
             context.GoToRelativeUrl(RouteModel
-                .CreateFromExpression(
-                    actionExpression,
-                    additionalArguments
-                        .Select((key, value) => new KeyValuePair<string, string>(key, value.ToString())))
+                .CreateFromExpression(actionExpression, additionalArguments)
                 .ToString(context.TenantName));
     }
 }
