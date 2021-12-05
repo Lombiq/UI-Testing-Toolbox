@@ -53,6 +53,11 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public Dictionary<string, object> CustomContext { get; } = new();
 
+        /// <summary>
+        /// Gets or sets the current tenant name when testing multi-tenancy.
+        /// </summary>
+        public string TenantName { get; set; }
+
         public UITestContext(
             string testName,
             OrchardCoreUITestExecutorConfiguration configuration,
