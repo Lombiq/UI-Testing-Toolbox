@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
 
@@ -5,13 +6,15 @@ namespace Lombiq.Tests.UI.Exceptions
 {
     public class PageChangeAssertionException : Exception
     {
-        public Uri Address { get; set; }
-        public string Title { get; set; }
+        public Uri Address { get; }
+        public string Title { get; }
 
         public PageChangeAssertionException(
             UITestContext context,
             Exception innerException)
-            : base(CreateErrorMessage(context), innerException)
+            : base(
+                $"An assertion during the page change event has failed on page {context.GetPageTitleAndAddress()}.",
+                innerException)
         {
             Address = new Uri(context.Driver.Url);
             Title = context.Driver.Title;
@@ -29,14 +32,6 @@ namespace Lombiq.Tests.UI.Exceptions
         public PageChangeAssertionException(string message, Exception innerException)
             : base(message, innerException)
         {
-        }
-
-        private static string CreateErrorMessage(UITestContext context)
-        {
-            var url = context.Driver.Url;
-            var title = context.Driver.Title ?? url;
-
-            return $"An assertion during the page change event has failed on page {url}({title}).";
         }
     }
 }

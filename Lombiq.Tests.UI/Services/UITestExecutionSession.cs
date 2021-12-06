@@ -145,6 +145,11 @@ namespace Lombiq.Tests.UI.Services
                         "Check the HTML validation report in the failure dump for details.");
                 }
             }
+            else
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}.");
+            }
 
             _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {exception}");
 
