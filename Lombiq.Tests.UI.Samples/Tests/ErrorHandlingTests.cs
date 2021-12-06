@@ -1,4 +1,5 @@
 ﻿using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
@@ -32,7 +33,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                         // This point should be unreachable because logs are automatically asserted after a page load.
                         throw new InvalidOperationException("The log assertion didn't happen after page load!");
                     }
-                    catch (ShouldAssertException assertException)
+                    catch (PageChangeAssertionException assertException)
                         when (assertException.Message.Contains("|ERROR|", StringComparison.Ordinal))
                     {
                         // Remove logs to have a clean slate.
