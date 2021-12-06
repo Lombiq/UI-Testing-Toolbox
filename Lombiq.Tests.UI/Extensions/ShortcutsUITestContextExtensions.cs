@@ -1,17 +1,14 @@
+using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
-using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
-using OrchardCore.Mvc.Core.Utilities;
 using RestEase;
 using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -23,9 +20,7 @@ namespace Lombiq.Tests.UI.Extensions
     /// </summary>
     public static class ShortcutsUITestContextExtensions
     {
-        private const string AreaUrl = "/Lombiq.Tests.UI.Shortcuts/";
-
-        public const string FeatureToggleTestBenchUrl = AreaUrl + "FeatureToggleTestBench/Index";
+        public const string FeatureToggleTestBenchUrl = "/Lombiq.Tests.UI.Shortcuts/FeatureToggleTestBench/Index";
 
         private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
 
@@ -35,7 +30,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// enabled.
         /// </summary>
         public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
-                GoTo<AccountController>(context, nameof(AccountController.SignInDirectly), (nameof(userName), userName));
+            context.GoTo<AccountController>(controller => controller.SignInDirectly(userName));
 
         /// <summary>
         /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
@@ -68,7 +63,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// logoff page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void SignOutDirectly(this UITestContext context) =>
-            GoTo<AccountController>(context, nameof(SignOutDirectly));
+            context.GoTo<AccountController>(controller => controller.SignOutDirectly());
 
         /// <summary>
         /// Retrieves the currently authenticated user's name, if any. The target app needs to have
@@ -77,7 +72,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
         public static string GetCurrentUserName(this UITestContext context)
         {
-            GoTo<CurrentUserController>(context);
+            context.GoTo<CurrentUserController>(controller => controller.Index());
             var userNameContainer = context.Get(By.CssSelector("pre")).Text;
             return userNameContainer["UserName: ".Length..];
         }
@@ -88,20 +83,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
-            GoTo<ShellFeaturesController>(
-                context,
-                nameof(ShellFeaturesController.EnableFeatureDirectly),
-                (nameof(featureId), featureId));
+            context.GoTo<ShellFeaturesController>(controller => controller.EnableFeatureDirectly(featureId));
 
         /// <summary>
         /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
         /// The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
-            GoTo<ShellFeaturesController>(
-                context,
-                nameof(ShellFeaturesController.DisableFeatureDirectly),
-                (nameof(featureId), featureId));
+            context.GoTo<ShellFeaturesController>(controller => controller.DisableFeatureDirectly(featureId));
 
         /// <summary>
         /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
@@ -132,7 +121,7 @@ namespace Lombiq.Tests.UI.Extensions
                 context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
             }
 
-            GoTo<MediaCachePurgeController>(context, nameof(MediaCachePurgeController.PurgeMediaCacheDirectly));
+            context.GoTo<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
             if (toggleTheFeature)
             {
@@ -154,28 +143,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>
-            GoTo<RecipeController>(
-                context,
-                nameof(RecipeController.Execute),
-                (nameof(recipeName), recipeName));
+            context.GoTo<RecipeController>(controller => controller.Execute(recipeName));
 
         /// <summary>
         /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET
         /// Core to display an error page.
         /// </summary>
-        public static void GoToErrorPageDirectly(this UITestContext context) => GoTo<ErrorController>(context);
-
-        private static void GoTo<TController>(
-            UITestContext context,
-            string action = "Index",
-            params (string Key, string Value)[] arguments)
-            where TController : Controller
-        {
-            var query = arguments?.Any() == true
-                ? "?" + string.Join("&", arguments.Select(argument => $"{argument.Key}={WebUtility.UrlEncode(argument.Value)}"))
-                : string.Empty;
-            context.GoToRelativeUrl($"{AreaUrl}{typeof(TController).ControllerName()}/{action}{query}");
-        }
+        public static void GoToErrorPageDirectly(this UITestContext context) =>
+            context.GoTo<ErrorController>(controller => controller.Index());
 
         private static IShortcutsApi GetApi(this UITestContext context) =>
             _apis.GetOrAdd(
