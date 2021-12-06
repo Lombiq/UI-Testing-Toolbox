@@ -54,11 +54,12 @@ namespace Lombiq.Tests.UI.Samples
                 {
                     // In headless mode, the browser's UI is not showing, it just runs in the background. This is what
                     // you want to use when running all tests, especially in a CI environment. During local
-                    // troubleshooting you may want to turn this off so you can see in the browser what's happening:
+                    // troubleshooting you may want to turn this off so you can see in the browser what's happening.
+                    // Hence the override of the default here.
                     // Apart from changing the code here, you can use a configuration file or environment variables, see
                     // the docs.
                     configuration.BrowserConfiguration.Headless =
-                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", true);
+                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", false);
 
                     // There are event handlers that you can hook into. This is just one but check out the others in
                     // OrchardCoreConfiguration if you're interested.
