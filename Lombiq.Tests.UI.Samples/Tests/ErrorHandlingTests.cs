@@ -17,8 +17,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
         {
         }
 
-        // It's easier to diagnose a test failure if you know whether something is missing because there something is
-        // actually missing or there was a server side error. The below test visits a page where the action method
+        // It's easier to diagnose a test failure if you know whether an element is missing because there something is
+        // actually missing or there was a server-side error. The below test visits a page where the action method
         // throws an exception.
         [Theory, Chrome]
         public Task ErrorOnLoadedPageShouldHaltTest(Browser browser) =>
@@ -29,7 +29,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     {
                         context.GoToErrorPageDirectly();
 
-                        // This point should be unreachable.
+                        // This point should be unreachable because logs are automatically asserted after a page load.
                         throw new InvalidOperationException("The log assertion didn't happen after page load!");
                     }
                     catch (ShouldAssertException assertException)
