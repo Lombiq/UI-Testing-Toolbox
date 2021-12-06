@@ -78,12 +78,13 @@ namespace Lombiq.Tests.UI.Samples
                             return Task.CompletedTask;
                         };
 
-                    // Enabling automatic HTML markup validation on every page change. With this, you can make sure that
-                    // the HTML markup the app generates (also from content items) is valid. While the default settings
-                    // for HTML validation are most possibly suitable for your projects, check out the
-                    // HtmlValidationConfiguration class for what else you can configure. We've also added a
-                    // .htmlvalidate.json file (note the Content Build Action) to further configure it.
-                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = true;
+                    // Note that automatic HTML markup validation is enabled on every page change by default (you can
+                    // disable it with the below config). With this, you can make sure that the HTML markup the app
+                    // generates (also from content items) is valid. While the default settings for HTML validation are
+                    // most possibly suitable for your projects, check out the HtmlValidationConfiguration class for
+                    // what else you can configure. We've also added a .htmlvalidate.json file (note the Content Build
+                    // Action) to further configure it.
+                    ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
                     // The UI Testing Toolbox can run several checks for the app even if you don't add explicit
                     // assertions: By default, the Orchard logs and the browser logs (where e.g. JavaScript errors show
