@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.Exceptions
             var url = context.Driver.Url;
             var title = context.Driver.Title ?? url;
 
-            return $"Asserting the HTML validation result on page {url}({title}) failed.";
+            return $"An assertion during the page change event has failed on page {url}({title}).";
         }
     }
 }
