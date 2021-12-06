@@ -25,17 +25,17 @@ namespace Lombiq.Tests.UI.Extensions
             Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
         {
             var validationResult = context.ValidateHtml(htmlValidationOptionsAdjuster);
-            var htmlValidationConfiguration = context.Configuration.HtmlValidationConfiguration;
+            var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
             try
             {
-                var assertTask = (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?
+                var assertTask = (assertHtmlValidationResult ?? validationConfiguration.AssertHtmlValidationResult)?
                     .Invoke(validationResult);
                 await (assertTask ?? Task.CompletedTask);
             }
             catch (Exception exception)
             {
-                throw new HtmlValidationResultException(validationResult, exception);
+                throw new HtmlValidationAssertionException(validationResult, validationConfiguration, exception);
             }
         }
 

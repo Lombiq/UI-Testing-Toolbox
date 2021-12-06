@@ -98,16 +98,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                if (ex is PageChangeAssertionException pageChangeAssertionException)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
-                    ex = pageChangeAssertionException.InnerException;
-                }
-
-                _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
-
-                if (ex is SetupFailedFastException) throw;
-
+                ex = ProcessException(ex);
                 await CreateFailureDumpAsync(ex, dumpRootPath, retryCount);
 
                 if (retryCount == _configuration.MaxRetryCount)
@@ -138,6 +129,28 @@ namespace Lombiq.Tests.UI.Services
             }
 
             return false;
+        }
+
+        private Exception ProcessException(Exception exception)
+        {
+            if (exception is PageChangeAssertionException pageChangeAssertionException)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                exception = pageChangeAssertionException.InnerException;
+
+                if (exception is HtmlValidationAssertionException htmlValidationAssertionException &&
+                    htmlValidationAssertionException.HtmlValidationConfiguration.CreateReportOnFailure)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "Check the HTML validation report in the failure dump for details.");
+                }
+            }
+
+            _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {exception}");
+
+            if (exception is SetupFailedFastException) throw exception;
+
+            return exception;
         }
 
         private async ValueTask ShutdownAsync()
@@ -316,10 +329,10 @@ namespace Lombiq.Tests.UI.Services
                 }
             }
 
-            if (ex is HtmlValidationResultException htmlValidationResultException
+            if (ex is HtmlValidationAssertionException htmlValidationAssertionException
                 && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
             {
-                var resultFilePath = htmlValidationResultException.HtmlValidationResult.ResultFilePath;
+                var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
                 if (!string.IsNullOrEmpty(resultFilePath))
                 {
                     var htmlValidationReportPath = Path.Combine(debugInformationPath, "HtmlValidationReport.txt");
