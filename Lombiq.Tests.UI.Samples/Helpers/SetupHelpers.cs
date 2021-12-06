@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
-using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -20,16 +19,17 @@ namespace Lombiq.Tests.UI.Samples.Helpers
 
         public static Uri RunSetup(UITestContext context)
         {
-            // You should always explicitly set the window size of the browser, otherwise the size will be random based
-            // on the settings of the given machine. This is especially true when running tests in headless mode. So, we
-            // set it to full HD here.
-            context.SetStandardBrowserSize();
+            // You should always set the window size of the browser, otherwise the size will be random based on the
+            // settings of the given machine. However this is already handled as long as the context.Configuration
+            // .SetupConfiguration.UseStandardBrowserSizeDuringSetup variable remains at its default true value. If you
+            // need a custom screen size during setup make sure to disable that first.
 
             // Running the setup.
             var uri = context
                 .GoToSetupPage()
                 // OrchardCoreSetupParameters will initialize some basic settings from the context.
                 .SetupOrchardCore(
+                    context,
                     new OrchardCoreSetupParameters(context)
                     {
                         SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",

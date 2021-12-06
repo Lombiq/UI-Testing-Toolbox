@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
@@ -64,7 +63,7 @@ namespace Lombiq.Tests.UI.Samples
                     // There are event handlers that you can hook into. This is just one but check out the others in
                     // OrchardCoreConfiguration if you're interested.
                     configuration.OrchardCoreConfiguration.BeforeAppStart +=
-                        (contentRootPath, argumentsBuilder) =>
+                        (_, argumentsBuilder) =>
                         {
                             // This is quite handy! We're adding a configuration parameter when launching the app. This
                             // can be used to set configuration for configuration providers, see the docs:

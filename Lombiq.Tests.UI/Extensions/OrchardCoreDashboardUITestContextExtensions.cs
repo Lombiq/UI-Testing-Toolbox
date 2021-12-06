@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -15,7 +16,7 @@ namespace Lombiq.Tests.UI.Extensions
         {
             if (withJavaScript)
             {
-                context.ExecuteScript($"document.querySelector('.publish-button').click()");
+                context.ExecuteScript("document.querySelector('.publish-button, .publish.btn').click();");
             }
             else
             {
@@ -23,17 +24,50 @@ namespace Lombiq.Tests.UI.Extensions
             }
         }
 
-        public static void GoToContentItemList(this UITestContext context)
+        /// <summary>
+        /// Clicks on the "Ok" button on the Bootstrap modal window.
+        /// </summary>
+        public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOn(By.Id("modalOkButton"));
+
+        /// <summary>
+        /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
+        /// second interval between attempts. This should grant enough time to execute the publish action if the button
+        /// actually got pressed.
+        /// </summary>
+        /// <remarks><para>
+        /// The <paramref name="timeout"/> and <paramref name="interval"/> have different default values from other
+        /// similar methods that get theirs from the test configuration. These defaults are set to minimize the chance
+        /// of an unintended early timeout or bounce effect because the publishing may take a longer time.
+        /// </para></remarks>
+        public static void ClickPublishUntilNavigation(
+            this UITestContext context,
+            bool withJavaScript = false,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null)
         {
-            context.ClickReliablyOn(By.CssSelector("#content"));
-            context.ClickReliablyOn(By.LinkText("Content Items"));
+            var navigationState = context.AsPageNavigationState();
+
+            context.DoWithRetriesOrFail(
+                () =>
+                {
+                    ClickPublish(context, withJavaScript);
+                    return navigationState.CheckIfNavigationHasOccurred();
+                },
+                timeout ?? TimeSpan.FromSeconds(30),
+                interval ?? TimeSpan.FromMinutes(2));
         }
 
-        public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentType)
+        public static void GoToContentItemList(this UITestContext context) =>
+            context.GoToRelativeUrl("/Admin/Contents/ContentItems");
+
+        public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentTypeText)
         {
             context.GoToContentItemList();
-            context.ClickNewContentItem(contentType);
+            context.ClickNewContentItem(contentTypeText);
         }
+
+        public static void CreateNewContentItem(this UITestContext context, string contentType) =>
+            context.GoToRelativeUrl($"/Admin/Contents/ContentTypes/{contentType}/Create");
 
         public static void ClickNewContentItem(this UITestContext context, string contentItemName, bool dropdown = true)
         {

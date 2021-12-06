@@ -98,6 +98,17 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
+                if (ex is PageChangeAssertionException pageChangeAssertionException)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                    ex = pageChangeAssertionException.InnerException;
+                }
+                else
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}.");
+                }
+
                 _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
 
                 if (ex is SetupFailedFastException) throw;
