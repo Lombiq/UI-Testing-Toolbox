@@ -54,5 +54,10 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         /// <returns>The contents.</returns>
         Task<string> GetContentAsync();
+
+        /// <summary>
+        /// Removes the log if possible.
+        /// </summary>
+        void Remove();
     }
 }

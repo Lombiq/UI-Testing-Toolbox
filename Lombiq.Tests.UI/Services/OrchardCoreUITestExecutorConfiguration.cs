@@ -68,6 +68,13 @@ namespace Lombiq.Tests.UI.Services
         public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets a value indicating whether the test should verify the Orchard Core logs and the Browser logs
+        /// for errors after every page load. When enabled and there is an error the test is failed immediately which
+        /// prevents false errors related to some expected web element not being present on the error page.
+        /// </summary>
+        public bool RunAssertLogsOnAllPageChanges { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether to use SQL Server as the app's database instead of the default
         /// SQLite. See <see cref="SqlServerDatabaseConfiguration"/> on configuring this.
         /// </summary>

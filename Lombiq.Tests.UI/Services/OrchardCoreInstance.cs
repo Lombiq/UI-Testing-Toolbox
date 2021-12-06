@@ -177,6 +177,7 @@ namespace Lombiq.Tests.UI.Services
                     .Select(filePath => (IApplicationLog)new ApplicationLog
                     {
                         Name = Path.GetFileName(filePath),
+                        FullName = Path.GetFullPath(filePath),
                         ContentLoader = () => File.ReadAllTextAsync(filePath),
                     }) :
                 Enumerable.Empty<IApplicationLog>();
@@ -250,9 +251,15 @@ namespace Lombiq.Tests.UI.Services
         private class ApplicationLog : IApplicationLog
         {
             public string Name { get; set; }
+            public string FullName { get; set; }
             public Func<Task<string>> ContentLoader { get; set; }
 
             public Task<string> GetContentAsync() => ContentLoader();
+
+            public void Remove()
+            {
+                if (File.Exists(FullName)) File.Delete(FullName);
+            }
         }
     }
 }
