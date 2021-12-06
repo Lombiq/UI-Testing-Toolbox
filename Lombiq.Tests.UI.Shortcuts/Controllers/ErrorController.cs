@@ -11,6 +11,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
     {
         public const string ExceptionMessage = "This action causes an exception!";
 
+        // This only happens in the CI for some reason.
         [SuppressMessage("Usage", "CA1822:Mark members as static", Justification = "It's a controller action.")]
         [AllowAnonymous]
         public IActionResult Index() =>
