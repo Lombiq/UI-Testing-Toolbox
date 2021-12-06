@@ -2,7 +2,6 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
-using Shouldly;
 using System;
 using System.Threading.Tasks;
 using Xunit;
