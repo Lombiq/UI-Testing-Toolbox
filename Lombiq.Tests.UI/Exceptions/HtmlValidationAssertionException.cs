@@ -13,7 +13,11 @@ namespace Lombiq.Tests.UI.Exceptions
             HtmlValidationResult validationResult,
             HtmlValidationConfiguration validationConfiguration,
             Exception inner)
-            : base(inner.Message, inner)
+            : base(
+                validationConfiguration.CreateReportOnFailure
+                    ? $"{inner.Message} Check the HTML validation report in the failure dump for details."
+                    : inner.Message,
+                inner)
         {
             HtmlValidationResult = validationResult;
             HtmlValidationConfiguration = validationConfiguration;
