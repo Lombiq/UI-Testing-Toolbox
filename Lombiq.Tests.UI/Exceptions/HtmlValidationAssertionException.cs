@@ -1,4 +1,4 @@
-﻿using Atata.HtmlValidation;
+using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Services;
 using System;
 
@@ -10,16 +10,16 @@ namespace Lombiq.Tests.UI.Exceptions
         public HtmlValidationConfiguration HtmlValidationConfiguration { get; }
 
         public HtmlValidationAssertionException(
-            HtmlValidationResult validationResult,
+            HtmlValidationResult htmlValidationResult,
             HtmlValidationConfiguration validationConfiguration,
-            Exception inner)
+            Exception innerException)
             : base(
                 validationConfiguration.CreateReportOnFailure
-                    ? $"{inner.Message} Check the HTML validation report in the failure dump for details."
-                    : inner.Message,
-                inner)
+                    ? $"{innerException.Message} Check the HTML validation report in the failure dump for details."
+                    : innerException.Message,
+                innerException)
         {
-            HtmlValidationResult = validationResult;
+            HtmlValidationResult = htmlValidationResult;
             HtmlValidationConfiguration = validationConfiguration;
         }
 
