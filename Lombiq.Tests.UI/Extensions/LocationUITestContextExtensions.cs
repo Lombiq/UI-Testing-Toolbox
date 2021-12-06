@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Extensions
 
             return string.IsNullOrEmpty(title)
                 ? url
-                : $"{url}({title})";
+                : $"{url} ({title})";
         }
     }
 }
