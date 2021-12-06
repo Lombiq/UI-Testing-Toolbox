@@ -1,4 +1,6 @@
+using Lombiq.Tests.UI.Constants;
 using System;
+using System.Drawing;
 using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services
@@ -29,5 +31,11 @@ namespace Lombiq.Tests.UI.Services
         /// requests. Defaults to <see cref="DefaultAcceptLanguage"/>.
         /// </summary>
         public CultureInfo AcceptLanguage { get; set; } = DefaultAcceptLanguage;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the resolution should be changed to <see
+        /// cref="CommonDisplayResolutions.Standard"/> when the setup is loaded.
+        /// </summary>
+        public Size DefaultBrowserSize { get; set; } = CommonDisplayResolutions.Standard;
     }
 }

@@ -90,6 +90,8 @@ namespace Lombiq.Tests.UI.Services
 
                 _context ??= await CreateContextAsync();
 
+                _context.SetDefaultBrowserSize();
+
                 _testManifest.Test(_context);
 
                 await AssertLogsAsync();
@@ -374,6 +376,8 @@ namespace Lombiq.Tests.UI.Services
 
                     SetupSqlServerSnapshot();
                     SetupAzureBlobStorageSnapshot();
+
+                    _context.SetDefaultBrowserSize();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
 

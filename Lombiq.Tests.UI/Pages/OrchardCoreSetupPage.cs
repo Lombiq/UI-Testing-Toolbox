@@ -1,9 +1,9 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -74,16 +74,10 @@ namespace Lombiq.Tests.UI.Pages
 
         public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        public _ SetupOrchardCore(OrchardCoreSetupParameters parameters = null) => SetupOrchardCore(null, parameters);
-
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "For future use.")]
         public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
-
-            if (context != null && context.Configuration.SetupConfiguration.UseStandardBrowserSizeDuringSetup)
-            {
-                context.SetStandardBrowserSize();
-            }
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);

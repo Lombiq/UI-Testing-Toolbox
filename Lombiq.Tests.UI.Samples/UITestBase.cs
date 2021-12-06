@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Samples.Helpers;
@@ -34,24 +35,25 @@ namespace Lombiq.Tests.UI.Samples
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             ExecuteTestAsync(test, browser, SetupHelpers.RunSetup, changeConfiguration);
 
+        // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync()
+        // and do something before or after they're executed but this is not always necessary.
         protected override Task ExecuteTestAsync(
             Action<UITestContext> test,
             Browser browser,
             Func<UITestContext, Uri> setupOperation = null,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             base.ExecuteTestAsync(
-                context =>
-                {
-                    // Setting the browser size at the beginning of each test. As mentioned in SetupHelpers, this is
-                    // quite important for reproducible results.
-                    context.SetStandardBrowserSize();
-
-                    test(context);
-                },
+                test,
                 browser,
                 setupOperation,
                 configuration =>
                 {
+                    // You should always set the window size of the browser, otherwise the size will be random based on
+                    // the settings of the given machine. However this is already handled as long as the
+                    // context.Configuration.BrowserConfiguration.DefaultBrowserSize option is properly set. You can
+                    // change it here but usually the default full HD is suitable.
+                    configuration.BrowserConfiguration.DefaultBrowserSize = CommonDisplayResolutions.HdPlus;
+
                     // In headless mode, the browser's UI is not showing, it just runs in the background. This is what
                     // you want to use when running all tests, especially in a CI environment. During local
                     // troubleshooting you may want to turn this off so you can see in the browser what's happening.

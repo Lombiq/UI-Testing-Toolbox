@@ -19,11 +19,6 @@ namespace Lombiq.Tests.UI.Samples.Helpers
 
         public static Uri RunSetup(UITestContext context)
         {
-            // You should always set the window size of the browser, otherwise the size will be random based on the
-            // settings of the given machine. However this is already handled as long as the context.Configuration
-            // .SetupConfiguration.UseStandardBrowserSizeDuringSetup variable remains at its default true value. If you
-            // need a custom screen size during setup make sure to disable that first.
-
             // Running the setup.
             var uri = context
                 .GoToSetupPage()

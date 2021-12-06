@@ -30,12 +30,6 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public bool FastFailSetup { get; set; } = true;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the resolution should be changed to <see
-        /// cref="CommonDisplayResolutions.Fhd"/> when the setup is loaded.
-        /// </summary>
-        public bool UseStandardBrowserSizeDuringSetup { get; set; } = true;
-
         public string SetupSnapshotDirectoryPath { get; set; } = Snapshots.DefaultSetupSnapshotDirectoryPath;
 
         public BeforeSetupHandler BeforeSetup { get; set; }
