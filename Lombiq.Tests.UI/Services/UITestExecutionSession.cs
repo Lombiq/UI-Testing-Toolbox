@@ -517,6 +517,12 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.SetUpHtmlValidationAssertionOnPageChange();
             }
 
+            if (_configuration.RunAssertLogsOnAllPageChanges &&
+                _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", true))
+            {
+                _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
+            }
+
             var atataScope = AtataFactory.StartAtataScope(
                 _testOutputHelper,
                 uri,
