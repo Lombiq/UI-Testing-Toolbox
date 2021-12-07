@@ -4,9 +4,9 @@ namespace Lombiq.Tests.UI.Constants
 {
     /// <summary>
     /// Some common display resolutions to be used when setting browser window sizes with <see
-    /// cref="Extensions.VisibilityUITestContextExtensions.SetBrowserSize(Services.UITestContext, Size)"/>. Generally
-    /// it's better to test the given app's responsive breakpoints specifically though instead of using such standard
-    /// resolutions.
+    /// cref="Extensions.ResponsivenessUITestContextExtensions.SetBrowserSize(Services.UITestContext, Size)"/>.
+    /// Generally it's better to test the given app's responsive breakpoints specifically though instead of using such
+    /// standard resolutions.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -37,5 +37,7 @@ namespace Lombiq.Tests.UI.Constants
         public static readonly Size FourKUhd = new(3840, 3160);
         public static readonly Size FiveK = new(5120, 2880);
         public static readonly Size EightKUhd = new(7680, 4320);
+
+        public static readonly Size Standard = Fhd;
     }
 }

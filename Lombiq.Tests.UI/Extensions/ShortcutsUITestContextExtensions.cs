@@ -1,12 +1,14 @@
+using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
 using OpenQA.Selenium;
 using RestEase;
 using Shouldly;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -28,9 +30,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// enabled.
         /// </summary>
         public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
-            context.GoToRelativeUrl(
-                "/Lombiq.Tests.UI.Shortcuts/Account/SignInDirectly?userName=" +
-                WebUtility.UrlEncode(userName));
+            context.GoTo<AccountController>(controller => controller.SignInDirectly(userName));
 
         /// <summary>
         /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
@@ -63,7 +63,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// logoff page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void SignOutDirectly(this UITestContext context) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Account/SignOutDirectly");
+            context.GoTo<AccountController>(controller => controller.SignOutDirectly());
 
         /// <summary>
         /// Retrieves the currently authenticated user's name, if any. The target app needs to have
@@ -72,7 +72,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
         public static string GetCurrentUserName(this UITestContext context)
         {
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/CurrentUser/Index");
+            context.GoTo<CurrentUserController>(controller => controller.Index());
             var userNameContainer = context.Get(By.CssSelector("pre")).Text;
             return userNameContainer["UserName: ".Length..];
         }
@@ -83,14 +83,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/EnableFeatureDirectly?featureId=" + featureId);
+            context.GoTo<ShellFeaturesController>(controller => controller.EnableFeatureDirectly(featureId));
 
         /// <summary>
         /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
         /// The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/ShellFeatures/DisableFeatureDirectly?featureId=" + featureId);
+            context.GoTo<ShellFeaturesController>(controller => controller.DisableFeatureDirectly(featureId));
 
         /// <summary>
         /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
@@ -121,7 +121,7 @@ namespace Lombiq.Tests.UI.Extensions
                 context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
             }
 
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/MediaCachePurge/PurgeMediaCacheDirectly");
+            context.GoTo<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
             if (toggleTheFeature)
             {
@@ -143,12 +143,19 @@ namespace Lombiq.Tests.UI.Extensions
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>
-            context.GoToRelativeUrl("/Lombiq.Tests.UI.Shortcuts/Recipe/Execute?recipeName=" + recipeName);
+            context.GoTo<RecipeController>(controller => controller.Execute(recipeName));
+
+        /// <summary>
+        /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET
+        /// Core to display an error page.
+        /// </summary>
+        public static void GoToErrorPageDirectly(this UITestContext context) =>
+            context.GoTo<ErrorController>(controller => controller.Index());
 
         private static IShortcutsApi GetApi(this UITestContext context) =>
             _apis.GetOrAdd(
                 context.Scope.BaseUri.ToString(),
-                key =>
+                _ =>
                 {
                     // To allow self-signed development certificates.
 

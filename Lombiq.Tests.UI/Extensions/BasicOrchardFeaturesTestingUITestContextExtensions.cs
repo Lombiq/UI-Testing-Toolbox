@@ -84,7 +84,7 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test setup",
                 () => context
                     .GoToSetupPage()
-                    .SetupOrchardCore(parameters)
+                    .SetupOrchardCore(context, parameters)
                     .ShouldLeaveSetupPage());
         }
 
@@ -116,7 +116,7 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test setup with invalid data",
                 () => context
                     .GoToSetupPage()
-                    .SetupOrchardCore(parameters)
+                    .SetupOrchardCore(context, parameters)
                     .ShouldStayOnSetupPage());
         }
 
