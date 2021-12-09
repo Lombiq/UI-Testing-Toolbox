@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ namespace Lombiq.HelpfulLibraries.Libraries.Mvc
         public static void GoTo<TController>(
             this UITestContext context,
             Expression<Action<TController>> actionExpression,
-            params (string Key, object Value)[] additionalArguments) =>
+            params (string Key, object Value)[] additionalArguments)
+            where TController : ControllerBase =>
             context.GoToRelativeUrl(TypedRoute
                 .CreateFromExpression(actionExpression, additionalArguments)
                 .ToString(context.TenantName));
@@ -27,7 +29,8 @@ namespace Lombiq.HelpfulLibraries.Libraries.Mvc
         public static void GoTo<TController>(
             this UITestContext context,
             Expression<Func<TController, Task>> actionExpression,
-            params (string Key, object Value)[] additionalArguments) =>
+            params (string Key, object Value)[] additionalArguments)
+            where TController : ControllerBase =>
             context.GoToRelativeUrl(TypedRoute
                 .CreateFromExpression(actionExpression.StripResult(), additionalArguments)
                 .ToString(context.TenantName));
