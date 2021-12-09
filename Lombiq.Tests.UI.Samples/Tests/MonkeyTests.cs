@@ -14,9 +14,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
         private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
         {
             PageTestTime = TimeSpan.FromSeconds(10),
-            BaseRandonSeed = 1234,
+            BaseRandomSeed = 1234,
             RunAccessibilityCheckingAssertion = false,
-            RunHtmlValidationEnabledAssertion = false,
+            RunHtmlValidationAssertion = false,
         };
 
         public MonkeyTests(ITestOutputHelper testOutputHelper)

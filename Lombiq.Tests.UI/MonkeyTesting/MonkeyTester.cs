@@ -28,7 +28,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? new MonkeyTestingOptions();
-            _random = new Random(_options.BaseRandonSeed);
+            _random = new Random(_options.BaseRandomSeed);
         }
 
         private ILogManager Log => _context.Scope.AtataContext.Log;
@@ -38,6 +38,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                 new LogSection($"Execute monkey testing"),
                 () =>
                 {
+                    WriteOptionsToLog();
+
                     var pageTestInfo = GetCurrentPageTestInfo();
                     TestCurrentPage(pageTestInfo);
 
@@ -61,6 +63,18 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                         }
                     }
                 });
+
+        private void WriteOptionsToLog() =>
+            Log.Trace(@$"Monkey testing options:
+- {nameof(MonkeyTestingOptions.BaseRandomSeed)}={_options.BaseRandomSeed}
+- {nameof(MonkeyTestingOptions.PageTestTime)}={_options.PageTestTime.ToShortIntervalString()}
+- {nameof(MonkeyTestingOptions.PageMarkerPollingInterval)}={_options.PageMarkerPollingInterval.ToShortIntervalString()}
+- {nameof(MonkeyTestingOptions.RunAccessibilityCheckingAssertion)}={_options.RunAccessibilityCheckingAssertion}
+- {nameof(MonkeyTestingOptions.RunHtmlValidationAssertion)}={_options.RunHtmlValidationAssertion}
+- {nameof(MonkeyTestingOptions.RunBrowserLogAssertion)}={_options.RunBrowserLogAssertion}
+- {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(',', _options.GremlinsSpecies)}
+- {nameof(MonkeyTestingOptions.GremlinsMogwais)}={string.Join(',', _options.GremlinsMogwais)}
+- {nameof(MonkeyTestingOptions.GremlinsAttackDelay)}={_options.GremlinsAttackDelay.ToShortIntervalString()}");
 
         private bool CanTestPage(PageMonkeyTestInfo pageTestInfo)
         {
@@ -111,18 +125,34 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             int randomSeed = GetRandomSeed();
 
-            Log.ExecuteSection(
-                new LogSection(
+            try
+            {
+                Log.ExecuteSection(
+                    new LogSection(
 #pragma warning disable S103 // Lines should not be too long
-                    $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed"),
+                       $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed"),
 #pragma warning restore S103 // Lines should not be too long
-                () =>
-                {
-                    var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
-                    pageTestInfo.TimeToTest = pageTestTimeLeft;
-                    if (!_pageTestInfoList.Contains(pageTestInfo))
-                        _pageTestInfoList.Add(pageTestInfo);
-                });
+                    () =>
+                    {
+                        if (_options.RunAccessibilityCheckingAssertion)
+                            _context.AssertAccessibility();
+
+                        if (_options.RunHtmlValidationAssertion)
+                            _context.AssertHtmlValidityAsync().GetAwaiter().GetResult();
+
+                        var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
+                        pageTestInfo.TimeToTest = pageTestTimeLeft;
+                        if (!_pageTestInfoList.Contains(pageTestInfo))
+                            _pageTestInfoList.Add(pageTestInfo);
+
+                        if (_options.RunBrowserLogAssertion)
+                            _context.AssertBrowserLogAsync().GetAwaiter().GetResult();
+                    });
+            }
+            catch (Exception exception)
+            {
+                throw new AssertionException($"Failure on \"{pageTestInfo.CleanUrl}\" page", exception);
+            }
         }
 
         [SuppressMessage("Security", "SCS0005:Weak random number generator.", Justification = "For current purpose it should not be secured.")]
@@ -132,12 +162,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {
-            if (_options.RunAccessibilityCheckingAssertion)
-                _context.AssertAccessibility();
-
-            if (_options.RunHtmlValidationEnabledAssertion)
-                _context.AssertHtmlValidityAsync().GetAwaiter().GetResult();
-
             _context.Driver.ExecuteScript(SetIsMonkeyTestRunningScript);
 
             string gremlinsScript = BuildGremlinsScript(testTime, randomSeed);

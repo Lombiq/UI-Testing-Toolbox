@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     public sealed class MonkeyTestingOptions
     {
-        public int BaseRandonSeed { get; set; } = RandomNumberGenerator.GetInt32(100_000);
+        public int BaseRandomSeed { get; set; } = RandomNumberGenerator.GetInt32(100_000);
 
         public TimeSpan PageTestTime { get; set; } = TimeSpan.FromSeconds(60);
 
@@ -14,7 +14,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         public bool RunAccessibilityCheckingAssertion { get; set; } = true;
 
-        public bool RunHtmlValidationEnabledAssertion { get; set; } = true;
+        public bool RunHtmlValidationAssertion { get; set; } = true;
+
+        public bool RunBrowserLogAssertion { get; set; } = true;
 
         public List<string> GremlinsSpecies { get; } = new()
         {
@@ -32,7 +34,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             "gizmo",
         };
 
-        internal TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
+        public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
         public List<IMonkeyTestingUrlCleaner> UrlCleaners { get; } = new()
         {
