@@ -25,22 +25,32 @@ namespace Lombiq.Tests.UI.Samples.Tests
         }
 
         [Theory, Chrome]
-        public Task TestWithMonkeyShouldWorkWithAnonymousUser(Browser browser) =>
+        public Task TestCurrentPageAsMonkeyShouldWorkWithRandomSeed(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
                     context.GoToHomePage();
-                    context.TestCurrentPageAsMonkey(_monkeyTestingOptions);
+                    context.TestCurrentPageAsMonkey(_monkeyTestingOptions, 12345);
                 },
                 browser);
 
         [Theory, Chrome]
-        public Task TestWithMonkeyShouldWorkWithAdminUser(Browser browser) =>
+        public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    context.GoToHomePage();
+                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                },
+                browser);
+
+        [Theory, Chrome]
+        public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
                     context.SignInDirectlyAndGoToDashboard();
-                    context.TestCurrentPageAsMonkey(_monkeyTestingOptions);
+                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
                 },
                 browser);
     }

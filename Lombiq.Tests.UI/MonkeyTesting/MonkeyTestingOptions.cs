@@ -16,6 +16,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         public bool RunHtmlValidationAssertion { get; set; } = true;
 
+        public bool RunAppLogAssertion { get; set; } = true;
+
         public bool RunBrowserLogAssertion { get; set; } = true;
 
         public List<string> GremlinsSpecies { get; } = new()

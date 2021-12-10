@@ -88,5 +88,14 @@ namespace Lombiq.Tests.UI.Services
             var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
             Configuration.AssertBrowserLog?.Invoke(browserLog);
         }
+
+        /// <summary>
+        /// Run an assertion on the application logs of the current tab with the delegate configured in <see
+        /// cref="Configuration"/>.
+        /// </summary>
+        public async Task AssertAppLogAsync()
+        {
+            if (Configuration.AssertAppLogs != null) await Configuration.AssertAppLogs(Application);
+        }
     }
 }

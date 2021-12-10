@@ -33,9 +33,24 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private ILogManager Log => _context.Scope.AtataContext.Log;
 
-        public void Test() =>
+        public void TestOnePage(int? randomSeed = null) =>
             Log.ExecuteSection(
-                new LogSection($"Execute monkey testing"),
+                new LogSection("Execute monkey testing against one page"),
+                () =>
+                {
+                    WriteOptionsToLog();
+
+                    var pageTestInfo = GetCurrentPageTestInfo();
+
+                    if (randomSeed is null)
+                        TestCurrentPage(pageTestInfo);
+                    else
+                        TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed.Value);
+                });
+
+        public void TestRecursively() =>
+            Log.ExecuteSection(
+                new LogSection($"Execute monkey testing recursively"),
                 () =>
                 {
                     WriteOptionsToLog();
@@ -71,6 +86,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 - {nameof(MonkeyTestingOptions.PageMarkerPollingInterval)}={_options.PageMarkerPollingInterval.ToShortIntervalString()}
 - {nameof(MonkeyTestingOptions.RunAccessibilityCheckingAssertion)}={_options.RunAccessibilityCheckingAssertion}
 - {nameof(MonkeyTestingOptions.RunHtmlValidationAssertion)}={_options.RunHtmlValidationAssertion}
+- {nameof(MonkeyTestingOptions.RunAppLogAssertion)}={_options.RunAppLogAssertion}
 - {nameof(MonkeyTestingOptions.RunBrowserLogAssertion)}={_options.RunBrowserLogAssertion}
 - {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(',', _options.GremlinsSpecies)}
 - {nameof(MonkeyTestingOptions.GremlinsMogwais)}={string.Join(',', _options.GremlinsMogwais)}
@@ -125,6 +141,11 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             int randomSeed = GetRandomSeed();
 
+            TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed);
+        }
+
+        private void TestCurrentPageWithRandomSeed(PageMonkeyTestInfo pageTestInfo, int randomSeed)
+        {
             try
             {
                 Log.ExecuteSection(
@@ -134,25 +155,34 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 #pragma warning restore S103 // Lines should not be too long
                     () =>
                     {
-                        if (_options.RunAccessibilityCheckingAssertion)
-                            _context.AssertAccessibility();
-
-                        if (_options.RunHtmlValidationAssertion)
-                            _context.AssertHtmlValidityAsync().GetAwaiter().GetResult();
+                        ExecutePreAssertions();
 
                         var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
                         pageTestInfo.TimeToTest = pageTestTimeLeft;
                         if (!_pageTestInfoList.Contains(pageTestInfo))
                             _pageTestInfoList.Add(pageTestInfo);
 
-                        if (_options.RunBrowserLogAssertion)
-                            _context.AssertBrowserLogAsync().GetAwaiter().GetResult();
+                        ExecutePostAssertions();
                     });
             }
             catch (Exception exception)
             {
                 throw new AssertionException($"Failure on \"{pageTestInfo.CleanUrl}\" page", exception);
             }
+        }
+
+        private void ExecutePreAssertions()
+        {
+            if (_options.RunAccessibilityCheckingAssertion) _context.AssertAccessibility();
+
+            if (_options.RunHtmlValidationAssertion) _context.AssertHtmlValidityAsync().GetAwaiter().GetResult();
+        }
+
+        private void ExecutePostAssertions()
+        {
+            if (_options.RunAppLogAssertion) _context.AssertAppLogAsync().GetAwaiter().GetResult();
+
+            if (_options.RunBrowserLogAssertion) _context.AssertBrowserLogAsync().GetAwaiter().GetResult();
         }
 
         [SuppressMessage("Security", "SCS0005:Weak random number generator.", Justification = "For current purpose it should not be secured.")]
