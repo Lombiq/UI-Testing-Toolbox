@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
-    public sealed class MonkeyTester
+    internal sealed class MonkeyTester
     {
         private const string SetIsMonkeyTestRunningScript = "window.isMonkeyTestRunning = true;";
 
@@ -24,7 +24,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private readonly List<PageMonkeyTestInfo> _pageTestInfoList = new();
 
-        public MonkeyTester(UITestContext context, MonkeyTestingOptions options = null)
+        internal MonkeyTester(UITestContext context, MonkeyTestingOptions options = null)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? new MonkeyTestingOptions();
@@ -33,7 +33,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private ILogManager Log => _context.Scope.AtataContext.Log;
 
-        public void TestOnePage(int? randomSeed = null) =>
+        internal void TestOnePage(int? randomSeed = null) =>
             Log.ExecuteSection(
                 new LogSection("Execute monkey testing against one page"),
                 () =>
@@ -48,7 +48,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                         TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed.Value);
                 });
 
-        public void TestRecursively() =>
+        internal void TestRecursively() =>
             Log.ExecuteSection(
                 new LogSection($"Execute monkey testing recursively"),
                 () =>
