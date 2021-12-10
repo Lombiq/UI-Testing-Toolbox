@@ -66,12 +66,11 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         /// <summary>
         /// Gets the gremlins mogwais.
-        /// By default contains: <c>"alert"</c>, <c>"fps"</c>, <c>"gizmo"</c>.
+        /// By default contains: <c>"alert"</c>, <c>"gizmo"</c>.
         /// </summary>
         public List<string> GremlinsMogwais { get; } = new()
         {
             "alert",
-            "fps",
             "gizmo",
         };
 
