@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
     internal sealed class GremlinsScriptBuilder
@@ -16,13 +14,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         internal string Build()
         {
-            string speciesPart = Species != null
-                ? string.Join(", ", Species.Select(specie => $"gremlins.species.{specie}()"))
-                : null;
+            string speciesPart = Species != null ? string.Join(", ", Species) : null;
 
-            string mogwaisPart = Mogwais != null
-                ? string.Join(", ", Mogwais.Select(mogwai => $"gremlins.mogwais.{mogwai}()"))
-                : null;
+            string mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
 
             return
 @$"(function() {{

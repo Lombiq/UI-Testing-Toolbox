@@ -52,26 +52,37 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public bool RunBrowserLogAssertion { get; set; } = true;
 
         /// <summary>
-        /// Gets the gremlins species.
-        /// By default contains: <c>"clicker"</c>, <c>"toucher"</c>, <c>"formFiller"</c>, <c>"scroller"</c>, <c>"typer"</c>.
+        /// <para>Gets the gremlins' species.</para>
+        /// <para>By default contains:</para>
+        /// <list type="number">
+        /// <item><description><c>"gremlins.species.clicker()"</c></description></item>
+        /// <item><description><c>"gremlins.species.toucher()"</c></description></item>
+        /// <item><description><c>"gremlins.species.formFiller()"</c></description></item>
+        /// <item><description><c>"gremlins.species.scroller()"</c></description></item>
+        /// <item><description><c>"gremlins.species.typer()"</c></description></item>
+        /// </list>
         /// </summary>
         public List<string> GremlinsSpecies { get; } = new()
         {
-            "clicker",
-            "toucher",
-            "formFiller",
-            "scroller",
-            "typer",
+            "gremlins.species.clicker()",
+            "gremlins.species.toucher()",
+            "gremlins.species.formFiller()",
+            "gremlins.species.scroller()",
+            "gremlins.species.typer()",
         };
 
         /// <summary>
-        /// Gets the gremlins mogwais.
-        /// By default contains: <c>"alert"</c>, <c>"gizmo"</c>.
+        /// <para>Gets the gremlins' mogwais.</para>
+        /// <para>By default contains:</para>
+        /// <list type="number">
+        /// <item><description><c>"gremlins.mogwais.alert()"</c></description></item>
+        /// <item><description><c>"gremlins.mogwais.gizmo()"</c></description></item>
+        /// </list>
         /// </summary>
         public List<string> GremlinsMogwais { get; } = new()
         {
-            "alert",
-            "gizmo",
+            "gremlins.mogwais.alert()",
+            "gremlins.mogwais.gizmo()",
         };
 
         /// <summary>
@@ -81,12 +92,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
         /// <summary>
-        /// <para>
-        /// Gets the URL cleaners.
-        /// </para>
-        /// <para>
-        /// By default contains:
-        /// </para>
+        /// <para>Gets the URL cleaners.</para>
+        /// <para>By default contains:</para>
         /// <list type="number">
         /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlCleaner"/> instance.</description></item>
         /// <item><description><see cref="RemovesBaseUrlMonkeyTestingUrlCleaner"/> instance.</description></item>
@@ -104,12 +111,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// <para>
-        /// Gets the URL filters.
-        /// </para>
-        /// <para>
-        /// By default contains:
-        /// </para>
+        /// <para>Gets the URL filters.</para>
+        /// <para>By default contains:</para>
         /// <list type="number">
         /// <item><description><see cref="StartsWithBaseUrlMonkeyTestingUrlFilter"/> instance.</description></item>
         /// </list>
