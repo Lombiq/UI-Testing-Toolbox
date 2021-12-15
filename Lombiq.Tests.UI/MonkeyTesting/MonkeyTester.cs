@@ -126,7 +126,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         private string CleanUrl(string url)
         {
             var uri = new Uri(url);
-            foreach (var cleaner in _options.UrlCleaners) uri = cleaner.Clean(_context, uri);
+            foreach (var cleaner in _options.UrlSanitizers) uri = cleaner.Clean(_context, uri);
 
             return uri.OriginalString;
         }

@@ -3,7 +3,10 @@ using System;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
-    public sealed class RemovesBaseUrlMonkeyTestingUrlCleaner : IMonkeyTestingUrlCleaner
+    /// <summary>
+    /// Represents the URL sanitizer that removes an <see cref="UITestContext"/> base URL part if it is present.
+    /// </summary>
+    public sealed class RemovesBaseUrlMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
         public Uri Clean(UITestContext context, Uri url)
         {

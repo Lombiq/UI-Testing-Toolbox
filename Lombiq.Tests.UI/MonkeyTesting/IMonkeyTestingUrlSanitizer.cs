@@ -4,9 +4,9 @@ using System;
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
     /// <summary>
-    /// An URL cleaner that is used in monkey testing.
+    /// An URL sanitizer that is used in monkey testing.
     /// </summary>
-    public interface IMonkeyTestingUrlCleaner
+    public interface IMonkeyTestingUrlSanitizer
     {
         /// <summary>
         /// Cleans the specified URL.

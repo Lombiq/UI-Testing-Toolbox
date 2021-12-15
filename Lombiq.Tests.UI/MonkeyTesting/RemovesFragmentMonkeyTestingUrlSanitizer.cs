@@ -3,7 +3,10 @@ using System;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
-    public sealed class RemovesFragmentMonkeyTestingUrlCleaner : IMonkeyTestingUrlCleaner
+    /// <summary>
+    /// Represents the URL sanitizer that removes a fragment part of an URL.
+    /// </summary>
+    public sealed class RemovesFragmentMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
         public Uri Clean(UITestContext context, Uri url)
         {

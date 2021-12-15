@@ -4,16 +4,19 @@ using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
-    public class RemovesByRegexMonkeyTestingUrlCleaner : IMonkeyTestingUrlCleaner
+    /// <summary>
+    /// Represents the URL sanitizer that removes parts that match the specific regex pattern.
+    /// </summary>
+    public class RemovesByRegexMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
         private readonly Regex _regex;
 
-        public RemovesByRegexMonkeyTestingUrlCleaner(string regexPattern)
-            : this(new Regex(regexPattern))
+        public RemovesByRegexMonkeyTestingUrlSanitizer(string regexPattern)
+            : this(new Regex(regexPattern, RegexOptions.Compiled))
         {
         }
 
-        public RemovesByRegexMonkeyTestingUrlCleaner(Regex regex) =>
+        public RemovesByRegexMonkeyTestingUrlSanitizer(Regex regex) =>
             _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
         public Uri Clean(UITestContext context, Uri url)

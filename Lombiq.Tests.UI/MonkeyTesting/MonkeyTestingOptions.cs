@@ -89,24 +89,24 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
         /// <summary>
-        /// <para>Gets the URL cleaners.</para>
+        /// <para>Gets the URL sanitizers.</para>
         /// <para>By default contains:</para>
         /// <list type="number">
-        /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlCleaner"/> instance.</description></item>
-        /// <item><description><see cref="RemovesBaseUrlMonkeyTestingUrlCleaner"/> instance.</description></item>
-        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with <c>"admin"</c>
+        /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlSanitizer"/> instance.</description></item>
+        /// <item><description><see cref="RemovesBaseUrlMonkeyTestingUrlSanitizer"/> instance.</description></item>
+        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with <c>"admin"</c>
         /// argument.</description></item>
-        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with
+        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with
         /// <c>"returnUrl"</c> argument.</description>
         /// </item>
         /// </list>
         /// </summary>
-        public List<IMonkeyTestingUrlCleaner> UrlCleaners { get; } = new()
+        public List<IMonkeyTestingUrlSanitizer> UrlSanitizers { get; } = new()
         {
-            new RemovesFragmentMonkeyTestingUrlCleaner(),
-            new RemovesBaseUrlMonkeyTestingUrlCleaner(),
-            new RemovesQueryParameterMonkeyTestingUrlCleaner("admin"),
-            new RemovesQueryParameterMonkeyTestingUrlCleaner("returnUrl"),
+            new RemovesFragmentMonkeyTestingUrlSanitizer(),
+            new RemovesBaseUrlMonkeyTestingUrlSanitizer(),
+            new RemovesQueryParameterMonkeyTestingUrlSanitizer("admin"),
+            new RemovesQueryParameterMonkeyTestingUrlSanitizer("returnUrl"),
         };
 
         /// <summary>
