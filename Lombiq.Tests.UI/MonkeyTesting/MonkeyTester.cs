@@ -13,16 +13,14 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     internal sealed class MonkeyTester
     {
         private const string SetIsMonkeyTestRunningScript = "window.isMonkeyTestRunning = true;";
-
         private const string GetIsMonkeyTestRunningScript = "return !!window.isMonkeyTestRunning;";
 
         private readonly UITestContext _context;
-
         private readonly MonkeyTestingOptions _options;
-
         private readonly Random _random;
-
         private readonly List<PageMonkeyTestInfo> _pageTestInfoList = new();
+
+        private ILogManager Log => _context.Scope.AtataContext.Log;
 
         internal MonkeyTester(UITestContext context, MonkeyTestingOptions options = null)
         {
@@ -30,8 +28,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             _options = options ?? new MonkeyTestingOptions();
             _random = new Random(_options.BaseRandomSeed);
         }
-
-        private ILogManager Log => _context.Scope.AtataContext.Log;
 
         internal void TestOnePage(int? randomSeed = null) =>
             Log.ExecuteSection(
