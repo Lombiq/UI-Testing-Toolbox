@@ -153,8 +153,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
                         var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
                         pageTestInfo.TimeToTest = pageTestTimeLeft;
-                        if (!_pageTestInfoList.Contains(pageTestInfo))
-                            _pageTestInfoList.Add(pageTestInfo);
+                        if (!_pageTestInfoList.Contains(pageTestInfo))  _pageTestInfoList.Add(pageTestInfo);
 
                         ExecutePostAssertions();
                     });
