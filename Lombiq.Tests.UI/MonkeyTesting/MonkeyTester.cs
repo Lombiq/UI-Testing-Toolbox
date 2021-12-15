@@ -151,7 +151,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                 Log.ExecuteSection(
                     new LogSection(
 #pragma warning disable S103 // Lines should not be too long
-                       $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed"),
+                       $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
 #pragma warning restore S103 // Lines should not be too long
                     () =>
                     {
