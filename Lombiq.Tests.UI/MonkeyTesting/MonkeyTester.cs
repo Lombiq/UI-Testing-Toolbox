@@ -138,31 +138,22 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed);
         }
 
-        private void TestCurrentPageWithRandomSeed(PageMonkeyTestInfo pageTestInfo, int randomSeed)
-        {
-            try
-            {
-                Log.ExecuteSection(
-                    new LogSection(
+        private void TestCurrentPageWithRandomSeed(PageMonkeyTestInfo pageTestInfo, int randomSeed) =>
+            Log.ExecuteSection(
+                new LogSection(
 #pragma warning disable S103 // Lines should not be too long
-                       $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
+                    $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
 #pragma warning restore S103 // Lines should not be too long
-                    () =>
-                    {
-                        ExecutePreAssertions();
+                () =>
+                {
+                    ExecutePreAssertions();
 
-                        var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
-                        pageTestInfo.TimeToTest = pageTestTimeLeft;
-                        if (!_pageTestInfoList.Contains(pageTestInfo)) _pageTestInfoList.Add(pageTestInfo);
+                    var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
+                    pageTestInfo.TimeToTest = pageTestTimeLeft;
+                    if (!_pageTestInfoList.Contains(pageTestInfo)) _pageTestInfoList.Add(pageTestInfo);
 
-                        ExecutePostAssertions();
-                    });
-            }
-            catch (Exception exception)
-            {
-                throw new AssertionException($"Failure on \"{pageTestInfo.CleanUrl}\" page", exception);
-            }
-        }
+                    ExecutePostAssertions();
+                });
 
         private void ExecutePreAssertions()
         {
