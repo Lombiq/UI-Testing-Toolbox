@@ -118,7 +118,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             var pageTestInfo = _pageTestInfoList.FirstOrDefault(x => x.CleanUrl == cleanUrl)
                 ?? new PageMonkeyTestInfo(url, cleanUrl, _options.PageTestTime);
 
-            Log.Info($"Current page is \"{pageTestInfo.CleanUrl}\"");
+            Log.Info($"Current page is \"{pageTestInfo.CleanUrl}\".");
 
             return pageTestInfo;
         }
