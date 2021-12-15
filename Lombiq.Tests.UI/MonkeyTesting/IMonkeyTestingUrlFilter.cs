@@ -12,9 +12,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="context">The context.</param>
-        /// <returns>
-        ///   <see langword="true"/> if URL passes the filter; otherwise, <see langword="false"/>.
-        /// </returns>
+        /// <returns><see langword="true"/> if URL passes the filter; otherwise, <see langword="false"/>.</returns>
         bool CanHandle(string url, UITestContext context);
     }
 }
