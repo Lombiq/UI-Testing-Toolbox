@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         }
 
         [Theory, Chrome]
-        public Task TestCurrentPageAsMonkeyShouldWorkWithRandomSeed(Browser browser) =>
+        public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
