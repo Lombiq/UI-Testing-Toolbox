@@ -12,7 +12,6 @@ namespace Lombiq.Tests.UI.Extensions
         /// Tests the current page as monkey.
         /// Test finishes by timeout or when the current page is left during testing.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="options">The options.</param>
         /// <param name="randomSeed">The random seed.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -27,7 +26,6 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Tests the current page as monkey recursively.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="options">The options.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestCurrentPageAsMonkeyRecursively(this UITestContext context, MonkeyTestingOptions options = null)
