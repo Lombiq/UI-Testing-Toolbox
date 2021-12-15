@@ -82,8 +82,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 - {nameof(MonkeyTestingOptions.RunHtmlValidationAssertion)}={_options.RunHtmlValidationAssertion}
 - {nameof(MonkeyTestingOptions.RunAppLogAssertion)}={_options.RunAppLogAssertion}
 - {nameof(MonkeyTestingOptions.RunBrowserLogAssertion)}={_options.RunBrowserLogAssertion}
-- {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(',', _options.GremlinsSpecies)}
-- {nameof(MonkeyTestingOptions.GremlinsMogwais)}={string.Join(',', _options.GremlinsMogwais)}
+- {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(", ", _options.GremlinsSpecies)}
+- {nameof(MonkeyTestingOptions.GremlinsMogwais)}={string.Join(", ", _options.GremlinsMogwais)}
 - {nameof(MonkeyTestingOptions.GremlinsAttackDelay)}={_options.GremlinsAttackDelay.ToShortIntervalString()}");
 
         private bool CanTestPage(PageMonkeyTestInfo pageTestInfo)
