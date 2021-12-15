@@ -5,16 +5,16 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     public sealed class RemovesBaseUrlMonkeyTestingUrlCleaner : IMonkeyTestingUrlCleaner
     {
-        public string Handle(string url, UITestContext context)
+        public Uri Clean(UITestContext context, Uri url)
         {
             string baseUrl = context.Scope.BaseUri.AbsoluteUri;
+            string urlAsString = url.OriginalString;
 
-            if (!string.IsNullOrEmpty(baseUrl) && url.StartsWith(baseUrl, StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(baseUrl) && urlAsString.StartsWith(baseUrl, StringComparison.Ordinal))
             {
-                url = url[baseUrl.Length..];
-                return !url.StartsWith('/')
-                    ? '/' + url
-                    : url;
+                urlAsString = urlAsString[baseUrl.Length..];
+                if (!urlAsString.StartsWith('/')) urlAsString = '/' + urlAsString;
+                return new Uri(urlAsString, UriKind.RelativeOrAbsolute);
             }
 
             return url;

@@ -16,7 +16,17 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public RemovesByRegexMonkeyTestingUrlCleaner(Regex regex) =>
             _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
-        public string Handle(string url, UITestContext context) =>
-            _regex.Replace(url, string.Empty);
+        public Uri Clean(UITestContext context, Uri url)
+        {
+            string urlAsString = url.OriginalString;
+
+            if (_regex.IsMatch(urlAsString))
+            {
+                string processedUrl = _regex.Replace(urlAsString, string.Empty);
+                return new(processedUrl, UriKind.RelativeOrAbsolute);
+            }
+
+            return url;
+        }
     }
 }

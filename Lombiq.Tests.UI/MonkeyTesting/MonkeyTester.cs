@@ -106,7 +106,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private bool TryGetLeftPageToTest(out PageMonkeyTestInfo pageTestInfo)
         {
-            pageTestInfo = _pageTestInfoList.FirstOrDefault(x => x.HasTimeToTest);
+            pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.HasTimeToTest);
             return pageTestInfo != null;
         }
 
@@ -115,7 +115,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             var url = _context.Driver.Url;
             var cleanUrl = CleanUrl(url);
 
-            var pageTestInfo = _pageTestInfoList.FirstOrDefault(x => x.CleanUrl == cleanUrl)
+            var pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.CleanUrl == cleanUrl)
                 ?? new PageMonkeyTestInfo(url, cleanUrl, _options.PageTestTime);
 
             Log.Info($"Current page is \"{pageTestInfo.CleanUrl}\".");
@@ -125,9 +125,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private string CleanUrl(string url)
         {
-            foreach (var cleaner in _options.UrlCleaners) url = cleaner.Handle(url, _context);
+            var uri = new Uri(url);
+            foreach (var cleaner in _options.UrlCleaners) uri = cleaner.Clean(_context, uri);
 
-            return url;
+            return uri.OriginalString;
         }
 
         private void TestCurrentPage(PageMonkeyTestInfo pageTestInfo)

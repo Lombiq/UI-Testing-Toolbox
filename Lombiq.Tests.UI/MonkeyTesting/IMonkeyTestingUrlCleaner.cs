@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Services;
+using System;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
@@ -10,9 +11,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <summary>
         /// Cleans the specified URL.
         /// </summary>
-        /// <param name="url">The URL.</param>
         /// <param name="context">The context.</param>
+        /// <param name="url">The URL.</param>
         /// <returns>A cleaned or original URL.</returns>
-        string Handle(string url, UITestContext context);
+        Uri Clean(UITestContext context, Uri url);
     }
 }

@@ -5,8 +5,16 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     public sealed class RemovesFragmentMonkeyTestingUrlCleaner : IMonkeyTestingUrlCleaner
     {
-        public string Handle(string url, UITestContext context) =>
-            new Uri(url, UriKind.RelativeOrAbsolute)
-                .GetComponents(UriComponents.HttpRequestUrl, UriFormat.Unescaped);
+        public Uri Clean(UITestContext context, Uri url)
+        {
+            if (!string.IsNullOrEmpty(url.Fragment))
+            {
+                string processedUrl = url.GetComponents(UriComponents.HttpRequestUrl, UriFormat.Unescaped);
+
+                return new(processedUrl, UriKind.RelativeOrAbsolute);
+            }
+
+            return url;
+        }
     }
 }
