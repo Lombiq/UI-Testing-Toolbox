@@ -125,7 +125,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private string CleanUrl(string url)
         {
-            foreach (var cleaner in _options.UrlCleaners)  url = cleaner.Handle(url, _context);
+            foreach (var cleaner in _options.UrlCleaners) url = cleaner.Handle(url, _context);
 
             return url;
         }
@@ -152,7 +152,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
                         var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
                         pageTestInfo.TimeToTest = pageTestTimeLeft;
-                        if (!_pageTestInfoList.Contains(pageTestInfo))  _pageTestInfoList.Add(pageTestInfo);
+                        if (!_pageTestInfoList.Contains(pageTestInfo)) _pageTestInfoList.Add(pageTestInfo);
 
                         ExecutePostAssertions();
                     });
