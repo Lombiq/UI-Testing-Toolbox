@@ -10,9 +10,10 @@ namespace Lombiq.Tests.UI.Extensions
     {
         /// <summary>
         /// Tests the current page as monkey. Test finishes by timeout or when the current page is left during testing.
+        /// Can optionally take <paramref name="randomSeed"/> value to reproduce a test with a same randomization.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="randomSeed">The random seed.</param>
+        /// <param name="randomSeed">The random seed that is used by Gremlins.js script.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static UITestContext TestCurrentPageAsMonkey(
             this UITestContext context,

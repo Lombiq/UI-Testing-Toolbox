@@ -10,44 +10,42 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     public sealed class MonkeyTestingOptions
     {
         /// <summary>
-        /// Gets or sets the base random seed.
-        /// The default value is random.
+        /// Gets or sets the base random seed. The default value is random. Can be used to reproduce a test with a same
+        /// randomization.
         /// </summary>
         public int BaseRandomSeed { get; set; } = RandomNumberGenerator.GetInt32(100_000);
 
         /// <summary>
-        /// Gets or sets the page test time.
-        /// The default value is 60 seconds.
+        /// Gets or sets the page test time. The default value is 60 seconds.
         /// </summary>
         public TimeSpan PageTestTime { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
-        /// Gets or sets the page marker polling interval.
-        /// The default value is 200 milliseconds.
+        /// Gets or sets the page marker polling interval. The default value is 200 milliseconds.
         /// </summary>
         public TimeSpan PageMarkerPollingInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
         /// <summary>
-        /// Gets or sets a value indicating whether to run accessibility checking assertion.
-        /// The default value is <see langword="true"/>.
+        /// Gets or sets a value indicating whether to run accessibility checking assertion. The default value is <see
+        /// langword="true"/>.
         /// </summary>
         public bool RunAccessibilityCheckingAssertion { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to run HTML validation assertion.
-        /// The default value is <see langword="true"/>.
+        /// Gets or sets a value indicating whether to run HTML validation assertion. The default value is <see
+        /// langword="true"/>.
         /// </summary>
         public bool RunHtmlValidationAssertion { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to run application log assertion.
-        /// The default value is <see langword="true"/>.
+        /// Gets or sets a value indicating whether to run application log assertion. The default value is <see
+        /// langword="true"/>.
         /// </summary>
         public bool RunAppLogAssertion { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to run browser log assertion.
-        /// The default value is <see langword="true"/>.
+        /// Gets or sets a value indicating whether to run browser log assertion. The default value is <see
+        /// langword="true"/>.
         /// </summary>
         public bool RunBrowserLogAssertion { get; set; } = true;
 
@@ -86,8 +84,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// Gets or sets the gremlins attack delay.
-        /// The default value is 10 milliseconds.
+        /// Gets or sets the gremlins attack delay. The default value is 10 milliseconds.
         /// </summary>
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
@@ -97,8 +94,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <list type="number">
         /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlCleaner"/> instance.</description></item>
         /// <item><description><see cref="RemovesBaseUrlMonkeyTestingUrlCleaner"/> instance.</description></item>
-        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with <c>"admin"</c> argument.</description></item>
-        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with <c>"returnUrl"</c> argument.</description>
+        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with <c>"admin"</c>
+        /// argument.</description></item>
+        /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlCleaner"/> instance with
+        /// <c>"returnUrl"</c> argument.</description>
         /// </item>
         /// </list>
         /// </summary>
