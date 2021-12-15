@@ -42,10 +42,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
                     var pageTestInfo = GetCurrentPageTestInfo();
 
-                    if (randomSeed is null)
-                        TestCurrentPage(pageTestInfo);
-                    else
-                        TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed.Value);
+                    if (randomSeed is null) TestCurrentPage(pageTestInfo);
+                    else TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed.Value);
                 });
 
         internal void TestRecursively() =>
