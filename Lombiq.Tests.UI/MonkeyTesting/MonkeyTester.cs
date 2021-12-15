@@ -94,8 +94,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             {
                 Log.Info(
                     !pageTestInfo.HasTimeToTest
-                    ? $"\"{pageTestInfo.CleanUrl}\" is tested completely"
-                    : $"Navigated to \"{pageTestInfo.Url}\" that should not be tested");
+                    ? $"Available monkey testing time for \"{pageTestInfo.CleanUrl}\" is up and thus testing is complete."
+                    : $"Navigated to \"{pageTestInfo.Url}\" that should not be tested.");
             }
 
             return canTest;
