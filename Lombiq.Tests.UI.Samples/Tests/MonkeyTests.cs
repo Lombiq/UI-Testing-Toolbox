@@ -9,6 +9,8 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests
 {
+    // It's possible to execute monkey tests that walk through site pages and do random interactions with pages, like
+    // click, scrolling, form filling, etc. Such random actions can uncover bugs that are difficult to find.
     public class MonkeyTests : UITestBase
     {
         private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
@@ -55,3 +57,5 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 browser);
     }
 }
+
+// END OF TRAINING SECTION: Monkey tests.

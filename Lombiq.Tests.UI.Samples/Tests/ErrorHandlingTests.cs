@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
@@ -43,3 +43,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
 }
 
 // END OF TRAINING SECTION: Error Handling.
+// NEXT STATION: Head over to Tests/MonkeyTests.cs.

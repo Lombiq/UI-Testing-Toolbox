@@ -16,6 +16,7 @@ Highlights:
 - Use local file storage or Azure Blob Storage for Media.
 - Test e-mail sending with a local SMTP server too. Everything just works.
 - Built-in tests to check that basic Orchard Core features work, like login, registration, and content management.
+- Built-in monkey testing functionality using Gremlins.js library.
 - Check for web content accessibility so people with disabilities can user your app properly too. You can also create accessibility reports for all pages.
 - Check for the validity of the HTML markup either explicitly or automatically on all page changes.
 - Reliability is built in, so you won't get false negatives.

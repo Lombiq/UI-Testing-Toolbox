@@ -53,3 +53,9 @@
 
     EXEC sp_executesql @sql 
     ```
+
+
+## Monkey testing
+
+- Errors uncovered by monkey testing functionality can be reproduced locally by executing the same test with the same random seed by setting `MonkeyTestingOptions.BaseRandomSeed` with the value the test failed.
+- If you want to test the failed page granularly, you can write a test that navigates to that page and executes `context.TestCurrentPageAsMonkey(_monkeyTestingOptions, 12345);`, where `12345` is the random seed number that can be found in a failed test log.
