@@ -1,11 +1,11 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
@@ -17,7 +17,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private readonly UITestContext _context;
         private readonly MonkeyTestingOptions _options;
-        private readonly Random _random;
+        private readonly NonSecurityRandomizer _randomizer;
         private readonly List<PageMonkeyTestInfo> _visitedPages = new();
 
         private ILogManager Log => _context.Scope.AtataContext.Log;
@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? new MonkeyTestingOptions();
-            _random = new Random(_options.BaseRandomSeed);
+            _randomizer = new NonSecurityRandomizer(_options.BaseRandomSeed);
         }
 
         internal void TestOnePage(int? randomSeed = null) =>
@@ -169,10 +169,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             if (_options.RunBrowserLogAssertion) _context.AssertBrowserLogAsync().GetAwaiter().GetResult();
         }
 
-        [SuppressMessage("Security", "SCS0005:Weak random number generator.", Justification = "For current purpose it should not be secured.")]
-        [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "For current purpose it should not be secured.")]
         private int GetRandomSeed() =>
-            _random.Next();
+            _randomizer.Get();
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {
