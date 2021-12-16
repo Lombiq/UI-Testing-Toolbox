@@ -18,7 +18,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         private readonly UITestContext _context;
         private readonly MonkeyTestingOptions _options;
         private readonly Random _random;
-        private readonly List<PageMonkeyTestInfo> _pageTestInfoList = new();
+        private readonly List<PageMonkeyTestInfo> _visitedPages = new();
 
         private ILogManager Log => _context.Scope.AtataContext.Log;
 
@@ -60,11 +60,11 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                         {
                             TestCurrentPage(pageTestInfo);
                         }
-                        else if (TryGetLeftPageToTest(out var leftPageToTest))
+                        else if (TryGetAvailablePageToTest(out var availablePageToTest))
                         {
-                            _context.Scope.AtataContext.Go.ToUrl(leftPageToTest.Url);
+                            _context.Scope.AtataContext.Go.ToUrl(availablePageToTest.Url);
 
-                            TestCurrentPage(leftPageToTest);
+                            TestCurrentPage(availablePageToTest);
                         }
                         else
                         {
@@ -104,9 +104,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         private bool ShouldTestPageUrl(Uri url) =>
             _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
 
-        private bool TryGetLeftPageToTest(out PageMonkeyTestInfo pageTestInfo)
+        private bool TryGetAvailablePageToTest(out PageMonkeyTestInfo pageTestInfo)
         {
-            pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.HasTimeToTest);
+            pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.HasTimeToTest);
             return pageTestInfo != null;
         }
 
@@ -115,7 +115,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             var url = _context.Driver.Url;
             var cleanUrl = CleanUrl(url);
 
-            var pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == cleanUrl)
+            var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == cleanUrl)
                 ?? new PageMonkeyTestInfo(url, cleanUrl, _options.PageTestTime);
 
             Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
@@ -150,7 +150,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
                     var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
                     pageTestInfo.TimeToTest = pageTestTimeLeft;
-                    if (!_pageTestInfoList.Contains(pageTestInfo)) _pageTestInfoList.Add(pageTestInfo);
+                    if (!_visitedPages.Contains(pageTestInfo)) _visitedPages.Add(pageTestInfo);
 
                     ExecutePostAssertions();
                 });
