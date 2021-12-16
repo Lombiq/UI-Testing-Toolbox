@@ -95,9 +95,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlSanitizer"/> instance.</description></item>
         /// <item><description><see cref="RemovesBaseUrlMonkeyTestingUrlSanitizer"/> instance.</description></item>
         /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with <c>"admin"</c>
-        /// argument.</description></item>
+        /// argument, because this argument varies on admin pages.</description></item>
         /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with
-        /// <c>"returnUrl"</c> argument.</description>
+        /// <c>"returnUrl"</c> argument, because this argument varies on login page.</description>
         /// </item>
         /// </list>
         /// </summary>
