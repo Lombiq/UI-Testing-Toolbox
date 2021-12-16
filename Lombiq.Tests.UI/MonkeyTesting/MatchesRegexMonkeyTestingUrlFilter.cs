@@ -9,14 +9,14 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         private readonly Regex _regex;
 
         public MatchesRegexMonkeyTestingUrlFilter(string regexPattern)
-            : this(new Regex(regexPattern))
+            : this(new Regex(regexPattern, RegexOptions.Compiled))
         {
         }
 
         public MatchesRegexMonkeyTestingUrlFilter(Regex regex) =>
             _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
-        public bool CanHandle(string url, UITestContext context) =>
-            _regex.IsMatch(url);
+        public bool AllowUrl(UITestContext context, Uri url) =>
+            _regex.IsMatch(url.AbsoluteUri);
     }
 }

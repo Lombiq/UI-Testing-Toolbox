@@ -88,21 +88,21 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private bool CanTestPage(PageMonkeyTestInfo pageTestInfo)
         {
-            bool canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(pageTestInfo.Url);
+            bool canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(new Uri(pageTestInfo.Url));
 
             if (!canTest)
             {
                 Log.Info(
                     !pageTestInfo.HasTimeToTest
-                    ? $"Available monkey testing time for \"{pageTestInfo.CleanUrl}\" is up and thus testing is complete."
+                    ? $"Available monkey testing time for \"{pageTestInfo.SanitizedUrl}\" is up and thus testing is complete."
                     : $"Navigated to \"{pageTestInfo.Url}\" that should not be tested.");
             }
 
             return canTest;
         }
 
-        private bool ShouldTestPageUrl(string url) =>
-            _options.UrlFilters.All(filter => filter.CanHandle(url, _context));
+        private bool ShouldTestPageUrl(Uri url) =>
+            _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
 
         private bool TryGetLeftPageToTest(out PageMonkeyTestInfo pageTestInfo)
         {
@@ -115,10 +115,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             var url = _context.Driver.Url;
             var cleanUrl = CleanUrl(url);
 
-            var pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.CleanUrl == cleanUrl)
+            var pageTestInfo = _pageTestInfoList.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == cleanUrl)
                 ?? new PageMonkeyTestInfo(url, cleanUrl, _options.PageTestTime);
 
-            Log.Info($"Current page is \"{pageTestInfo.CleanUrl}\".");
+            Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
 
             return pageTestInfo;
         }
@@ -142,7 +142,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             Log.ExecuteSection(
                 new LogSection(
 #pragma warning disable S103 // Lines should not be too long
-                    $"Monkey test \"{pageTestInfo.CleanUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
+                    $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
 #pragma warning restore S103 // Lines should not be too long
                 () =>
                 {

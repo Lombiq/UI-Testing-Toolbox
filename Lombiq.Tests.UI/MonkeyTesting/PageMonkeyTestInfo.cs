@@ -4,16 +4,16 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     internal sealed class PageMonkeyTestInfo
     {
-        internal PageMonkeyTestInfo(string url, string cleanUrl, TimeSpan timeToTest)
+        internal PageMonkeyTestInfo(string url, string sanitizedUrl, TimeSpan timeToTest)
         {
             Url = url;
-            CleanUrl = cleanUrl;
+            SanitizedUrl = sanitizedUrl;
             TimeToTest = timeToTest;
         }
 
         internal string Url { get; }
 
-        internal string CleanUrl { get; }
+        internal string SanitizedUrl { get; }
 
         internal TimeSpan TimeToTest { get; set; }
 
