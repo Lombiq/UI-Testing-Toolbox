@@ -133,14 +133,14 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             return url;
         }
 
-        private async Task TestCurrentPageAsync(PageMonkeyTestInfo pageTestInfo)
+        private Task TestCurrentPageAsync(PageMonkeyTestInfo pageTestInfo)
         {
             int randomSeed = GetRandomSeed();
 
-            await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed);
+            return TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed);
         }
 
-        private async Task TestCurrentPageWithRandomSeedAsync(PageMonkeyTestInfo pageTestInfo, int randomSeed)
+        private Task TestCurrentPageWithRandomSeedAsync(PageMonkeyTestInfo pageTestInfo, int randomSeed)
         {
             Log.ExecuteSection(
                 new LogSection(
@@ -154,7 +154,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                     if (!_visitedPages.Contains(pageTestInfo)) _visitedPages.Add(pageTestInfo);
                 });
 
-            await _context.TriggerAfterPageChangeEventAsync();
+            return _context.TriggerAfterPageChangeEventAsync();
         }
 
         private int GetRandomSeed() =>
