@@ -102,8 +102,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             return canTest;
         }
 
-        private bool ShouldTestPageUrl(Uri url) =>
-            _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
+        private bool ShouldTestPageUrl(Uri url) => _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
 
         private bool TryGetAvailablePageToTest(out PageMonkeyTestInfo pageTestInfo)
         {
@@ -157,8 +156,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             return _context.TriggerAfterPageChangeEventAsync();
         }
 
-        private int GetRandomSeed() =>
-            _randomizer.Get();
+        private int GetRandomSeed() => _randomizer.Get();
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {

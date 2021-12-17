@@ -94,8 +94,7 @@ namespace Lombiq.Tests.UI.Services
 
         internal async Task TriggerAfterPageChangeEventAsync()
         {
-            if (IsNoAlert() &&
-                Configuration.Events.AfterPageChange is { } afterPageChange)
+            if (IsNoAlert() && Configuration.Events.AfterPageChange is { } afterPageChange)
             {
                 try
                 {
@@ -111,8 +110,8 @@ namespace Lombiq.Tests.UI.Services
         private bool IsNoAlert()
         {
             // If there's an alert (which can happen mostly after a click but also after navigating) then all other
-            // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we
-            // need to check if an alert is present and that's only possible by catching exceptions.
+            // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need
+            // to check if an alert is present and that's only possible by catching exceptions.
             try
             {
                 Driver.SwitchTo().Alert();
