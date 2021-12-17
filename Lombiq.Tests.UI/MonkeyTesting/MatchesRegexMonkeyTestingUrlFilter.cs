@@ -16,7 +16,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public MatchesRegexMonkeyTestingUrlFilter(Regex regex) =>
             _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
-        public bool AllowUrl(UITestContext context, Uri url) =>
-            _regex.IsMatch(url.AbsoluteUri);
+        public bool AllowUrl(UITestContext context, Uri url) => _regex.IsMatch(url.AbsoluteUri);
     }
 }
