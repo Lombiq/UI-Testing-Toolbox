@@ -66,6 +66,25 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
                 },
                 browser);
+
+        // Let's just test the content management admin area.
+        [Theory, Chrome]
+        public Task TestContensAdminAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    // You can fence monkey testing with URL filters: Monkey testing will only be executed if the
+                    // current URL matches. This way, you can restrict monkey testing to just sections of the site. You
+                    // can also use such fencing to have multiple monkey testing methods in multiple test classes, thus
+                    // running them in parallel.
+                    _monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/Contents/"));
+                    // You could also configure the same thing with regex:
+                    ////_monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter(@"\/Admin\/Contents\/*"));
+
+                    context.SignInDirectlyAndGoToRelativeUrl("/Admin/Contents/ContentItems");
+                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                },
+                browser);
     }
 }
 
