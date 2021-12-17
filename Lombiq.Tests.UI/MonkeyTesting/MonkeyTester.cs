@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
@@ -32,63 +33,63 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         internal void TestOnePage(int? randomSeed = null) =>
             Log.ExecuteSection(
                 new LogSection("Execute monkey testing against one page"),
-                () =>
-                {
-                    WriteOptionsToLog();
+                () => TestOnePageAsync(randomSeed).GetAwaiter().GetResult());
 
-                    var pageTestInfo = GetCurrentPageTestInfo();
+        private async Task TestOnePageAsync(int? randomSeed = null)
+        {
+            WriteOptionsToLog();
 
-                    if (randomSeed is null) TestCurrentPage(pageTestInfo);
-                    else TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed.Value);
-                });
+            var pageTestInfo = GetCurrentPageTestInfo();
+
+            if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
+            else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
+        }
 
         internal void TestRecursively() =>
             Log.ExecuteSection(
                 new LogSection($"Execute monkey testing recursively"),
-                () =>
+                () => TestRecursivelyAsync().GetAwaiter().GetResult());
+
+        private async Task TestRecursivelyAsync()
+        {
+            WriteOptionsToLog();
+
+            var pageTestInfo = GetCurrentPageTestInfo();
+            await TestCurrentPageAsync(pageTestInfo);
+
+            while (true)
+            {
+                pageTestInfo = GetCurrentPageTestInfo();
+
+                if (CanTestPage(pageTestInfo))
                 {
-                    WriteOptionsToLog();
+                    await TestCurrentPageAsync(pageTestInfo);
+                }
+                else if (TryGetAvailablePageToTest(out var availablePageToTest))
+                {
+                    _context.GoToAbsoluteUrl(availablePageToTest.Url);
 
-                    var pageTestInfo = GetCurrentPageTestInfo();
-                    TestCurrentPage(pageTestInfo);
-
-                    while (true)
-                    {
-                        pageTestInfo = GetCurrentPageTestInfo();
-
-                        if (CanTestPage(pageTestInfo))
-                        {
-                            TestCurrentPage(pageTestInfo);
-                        }
-                        else if (TryGetAvailablePageToTest(out var availablePageToTest))
-                        {
-                            _context.Scope.AtataContext.Go.ToUrl(availablePageToTest.Url);
-
-                            TestCurrentPage(availablePageToTest);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                });
+                    await TestCurrentPageAsync(availablePageToTest);
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
 
         private void WriteOptionsToLog() =>
             Log.Trace(@$"Monkey testing options:
 - {nameof(MonkeyTestingOptions.BaseRandomSeed)}={_options.BaseRandomSeed}
 - {nameof(MonkeyTestingOptions.PageTestTime)}={_options.PageTestTime.ToShortIntervalString()}
 - {nameof(MonkeyTestingOptions.PageMarkerPollingInterval)}={_options.PageMarkerPollingInterval.ToShortIntervalString()}
-- {nameof(MonkeyTestingOptions.RunAccessibilityCheckingAssertion)}={_options.RunAccessibilityCheckingAssertion}
-- {nameof(MonkeyTestingOptions.RunHtmlValidationAssertion)}={_options.RunHtmlValidationAssertion}
-- {nameof(MonkeyTestingOptions.RunAppLogAssertion)}={_options.RunAppLogAssertion}
-- {nameof(MonkeyTestingOptions.RunBrowserLogAssertion)}={_options.RunBrowserLogAssertion}
 - {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(", ", _options.GremlinsSpecies)}
 - {nameof(MonkeyTestingOptions.GremlinsMogwais)}={string.Join(", ", _options.GremlinsMogwais)}
 - {nameof(MonkeyTestingOptions.GremlinsAttackDelay)}={_options.GremlinsAttackDelay.ToShortIntervalString()}");
 
         private bool CanTestPage(PageMonkeyTestInfo pageTestInfo)
         {
-            bool canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(new Uri(pageTestInfo.Url));
+            bool canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(pageTestInfo.Url);
 
             if (!canTest)
             {
@@ -112,7 +113,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private PageMonkeyTestInfo GetCurrentPageTestInfo()
         {
-            var url = _context.Driver.Url;
+            string urlAsString = _context.Driver.Url;
+            var url = new Uri(urlAsString);
+
             var cleanUrl = CleanUrl(url);
 
             var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == cleanUrl)
@@ -123,22 +126,22 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             return pageTestInfo;
         }
 
-        private string CleanUrl(string url)
+        private Uri CleanUrl(Uri url)
         {
-            var uri = new Uri(url);
-            foreach (var cleaner in _options.UrlSanitizers) uri = cleaner.Clean(_context, uri);
+            foreach (var cleaner in _options.UrlSanitizers) url = cleaner.Clean(_context, url);
 
-            return uri.OriginalString;
+            return url;
         }
 
-        private void TestCurrentPage(PageMonkeyTestInfo pageTestInfo)
+        private async Task TestCurrentPageAsync(PageMonkeyTestInfo pageTestInfo)
         {
             int randomSeed = GetRandomSeed();
 
-            TestCurrentPageWithRandomSeed(pageTestInfo, randomSeed);
+            await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed);
         }
 
-        private void TestCurrentPageWithRandomSeed(PageMonkeyTestInfo pageTestInfo, int randomSeed) =>
+        private async Task TestCurrentPageWithRandomSeedAsync(PageMonkeyTestInfo pageTestInfo, int randomSeed)
+        {
             Log.ExecuteSection(
                 new LogSection(
 #pragma warning disable S103 // Lines should not be too long
@@ -146,27 +149,12 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 #pragma warning restore S103 // Lines should not be too long
                 () =>
                 {
-                    ExecutePreAssertions();
-
                     var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
                     pageTestInfo.TimeToTest = pageTestTimeLeft;
                     if (!_visitedPages.Contains(pageTestInfo)) _visitedPages.Add(pageTestInfo);
-
-                    ExecutePostAssertions();
                 });
 
-        private void ExecutePreAssertions()
-        {
-            if (_options.RunAccessibilityCheckingAssertion) _context.AssertAccessibility();
-
-            if (_options.RunHtmlValidationAssertion) _context.AssertHtmlValidityAsync().GetAwaiter().GetResult();
-        }
-
-        private void ExecutePostAssertions()
-        {
-            if (_options.RunAppLogAssertion) _context.AssertAppLogAsync().GetAwaiter().GetResult();
-
-            if (_options.RunBrowserLogAssertion) _context.AssertBrowserLogAsync().GetAwaiter().GetResult();
+            await _context.TriggerAfterPageChangeEventAsync();
         }
 
         private int GetRandomSeed() =>

@@ -17,8 +17,6 @@ namespace Lombiq.Tests.UI.Samples.Tests
         {
             PageTestTime = TimeSpan.FromSeconds(10),
             BaseRandomSeed = 1234,
-            RunAccessibilityCheckingAssertion = false,
-            RunHtmlValidationAssertion = false,
         };
 
         public MonkeyTests(ITestOutputHelper testOutputHelper)

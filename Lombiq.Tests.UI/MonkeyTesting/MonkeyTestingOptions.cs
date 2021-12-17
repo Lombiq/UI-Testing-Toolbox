@@ -26,30 +26,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public TimeSpan PageMarkerPollingInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
         /// <summary>
-        /// Gets or sets a value indicating whether to run accessibility checking assertion. The default value is <see
-        /// langword="true"/>.
-        /// </summary>
-        public bool RunAccessibilityCheckingAssertion { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to run HTML validation assertion. The default value is <see
-        /// langword="true"/>.
-        /// </summary>
-        public bool RunHtmlValidationAssertion { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to run application log assertion. The default value is <see
-        /// langword="true"/>.
-        /// </summary>
-        public bool RunAppLogAssertion { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to run browser log assertion. The default value is <see
-        /// langword="true"/>.
-        /// </summary>
-        public bool RunBrowserLogAssertion { get; set; } = true;
-
-        /// <summary>
         /// <para>Gets the gremlins' species.</para>
         /// <para>By default contains:</para>
         /// <list type="number">
@@ -89,7 +65,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
         /// <summary>
-        /// <para>Gets the URL sanitizers.</para>
+        /// <para>Gets the URL sanitizers that can clean the URLs under test.</para>
         /// <para>By default contains:</para>
         /// <list type="number">
         /// <item><description><see cref="RemovesFragmentMonkeyTestingUrlSanitizer"/> instance.</description></item>
@@ -110,7 +86,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// <para>Gets the URL filters.</para>
+        /// <para>Gets the URL filters that can allow/disallow certain URLs.</para>
         /// <para>By default contains:</para>
         /// <list type="number">
         /// <item><description><see cref="StartsWithBaseUrlMonkeyTestingUrlFilter"/> instance.</description></item>

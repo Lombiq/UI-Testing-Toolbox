@@ -105,7 +105,7 @@ namespace Lombiq.Tests.UI.Services
                     _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
                     ex = pageChangeAssertionException.InnerException;
                 }
-                else if (_context.Driver is not null)
+                else if (_context?.Driver is not null)
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug(
                         $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}.");
