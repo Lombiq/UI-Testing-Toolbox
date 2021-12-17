@@ -16,7 +16,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public int BaseRandomSeed { get; set; } = RandomNumberGenerator.GetInt32(100_000);
 
         /// <summary>
-        /// Gets or sets the page test time. The default value is 60 seconds.
+        /// Gets or sets the time spent monkey testing a given page. The default value is 60 seconds. The bigger this
+        /// timespan the larger the chance that a given interaction will happen and thus a bug will be uncovered.
         /// </summary>
         public TimeSpan PageTestTime { get; set; } = TimeSpan.FromSeconds(60);
 
