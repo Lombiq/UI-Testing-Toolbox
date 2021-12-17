@@ -74,7 +74,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with <c>"admin"</c>
         /// argument, because this argument varies on admin pages.</description></item>
         /// <item><description><see cref="RemovesQueryParameterMonkeyTestingUrlSanitizer"/> instance with
-        /// <c>"returnUrl"</c> argument, because this argument varies on login page.</description>
+        /// <c>"returnUrl"</c> argument, because this argument varies on the login page.</description>
         /// </item>
         /// </list>
         /// </summary>
@@ -87,7 +87,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// <para>Gets the URL filters that can allow/disallow certain URLs.</para>
+        /// <para>
+        /// Gets the URL filters that can allow/disallow certain URLs. Note that tests can still navigate away from the
+        /// allowed URLs but after opening a disallowed one they'll immediately return to the ones allowed.
+        /// </para>
         /// <para>By default contains:</para>
         /// <list type="number">
         /// <item><description><see cref="StartsWithBaseUrlMonkeyTestingUrlFilter"/> instance.</description></item>

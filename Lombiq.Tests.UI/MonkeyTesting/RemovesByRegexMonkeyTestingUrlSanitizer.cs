@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
     /// <summary>
-    /// Represents the URL sanitizer that removes parts that match the specific regex pattern.
+    /// URL sanitizer that removes parts that match the specific regex pattern.
     /// </summary>
     public class RemovesByRegexMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {

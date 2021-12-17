@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
+    /// <summary>
+    /// URL filter that matches the URL against the configured regex pattern.
+    /// </summary>
     public class MatchesRegexMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
     {
         private readonly Regex _regex;

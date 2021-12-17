@@ -4,7 +4,7 @@ using System;
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
     /// <summary>
-    /// Represents the URL sanitizer that removes a fragment part of an URL.
+    /// URL sanitizer that removes a fragment part of an URL (i.e. that comes after the hash: #).
     /// </summary>
     public sealed class RemovesFragmentMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
