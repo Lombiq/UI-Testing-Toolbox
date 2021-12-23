@@ -1,4 +1,4 @@
-﻿using Atata;
+using Atata;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using System;

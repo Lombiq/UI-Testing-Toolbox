@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Tests.UI.Models
+namespace Lombiq.Tests.UI.Models
 {
     public class DockerConfiguration
     {

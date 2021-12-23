@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services;
 
 namespace Lombiq.Tests.UI.Extensions
 {
