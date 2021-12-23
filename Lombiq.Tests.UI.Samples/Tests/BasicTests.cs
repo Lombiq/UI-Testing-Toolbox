@@ -65,7 +65,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
                     // Note that if you want the user to be logged in for the test (instead of testing the login feature
                     // itself), you don't need to log in via the login form every time: That would be slow and you'd
-                    // test the login process multiple times. Use context.SignInDirectly() instead.
+                    // test the login process multiple times. Use context.SignInDirectly() instead. Check out the
+                    // ShortcutsShouldWork test below.
                 },
                 browser);
 
@@ -87,6 +88,33 @@ namespace Lombiq.Tests.UI.Samples.Tests
                                     !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                                 OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                             });
+
+        // Let's see a couple more useful shortcuts in action.
+        [Theory, Chrome]
+        public Task ShortcutsShouldWork(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    // If you need an authenticated user but you aren't testing the login specifically then you can use
+                    // this shortcut to authenticate (note that you can specify a different user in an argument too):
+                    context.SignInDirectly();
+
+                    // You know this shortcut already:
+                    context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
+
+                    // If you want to add some sample content in just one test, or change some Orchard configuration
+                    // quickly, then defining those in a recipe and executing it will come handy:
+                    context.ExecuteRecipeDirectly("Lombiq.OSOCE.JsonEditor.Sample");
+
+                    // Retrieving some in-depth details about the app.
+                    var info = context.GetApplicationInfoAsync().Result;
+                    // Where is the app's current instance running from?
+                    _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
+
+                    // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
+                    context.EnableFeatureDirectly("OrchardCore.HealthChecks");
+                },
+                browser);
 
         // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry
         // in Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during
