@@ -139,7 +139,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
                     // Our custom message helps debugging, otherwise from the test output you could only tell that a
                     // a value should be true but is false which is less than helpful.
-                    appInsightsExist.ShouldBe(true, "The Application Insights module is not working or is not in offline mode.");
+                    appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
                 },
                 browser);
     }

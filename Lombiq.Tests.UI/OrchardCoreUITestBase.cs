@@ -82,7 +82,7 @@ namespace Lombiq.Tests.UI
             return ExecuteTestAsync(
                 test,
                 browser,
-                null,
+                setupOperation: null,
                 configuration =>
                 {
                     configuration.SetupConfiguration.SetupSnapshotDirectoryPath = appFolder;

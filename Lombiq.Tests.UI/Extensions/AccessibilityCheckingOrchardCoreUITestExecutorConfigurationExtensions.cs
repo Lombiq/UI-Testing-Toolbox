@@ -24,7 +24,7 @@ namespace Lombiq.Tests.UI.Extensions
             Action<AxeBuilder> axeBuilderConfigurator = null,
             Action<AxeResult> assertAxeResult = null)
         {
-            if (!configuration.CustomConfiguration.TryAdd("AccessibilityCheckingAssertionOnPageChangeWasSetUp", true)) return;
+            if (!configuration.CustomConfiguration.TryAdd("AccessibilityCheckingAssertionOnPageChangeWasSetUp", value: true)) return;
 
             configuration.Events.AfterPageChange += context =>
             {

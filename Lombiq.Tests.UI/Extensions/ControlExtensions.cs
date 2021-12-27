@@ -1,4 +1,5 @@
 using Atata;
+using System;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -15,7 +16,7 @@ namespace Lombiq.Tests.UI.Extensions
             control.Click();
 
             pageObject.PageUrl.Should.AtOnce.Equal(savedUrl);
-            pageObject.PageSource.Should.AtOnce.Satisfy(value => value == savedHtml, "equal previous HTML");
+            pageObject.PageSource.Should.AtOnce.Satisfy(value => value.EqualsOrdinal(savedHtml), "equal previous HTML");
 
             return pageObject;
         }

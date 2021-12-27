@@ -63,7 +63,7 @@ namespace Lombiq.Tests.UI.Extensions
 
                         return context
                             .Get(by.Then(By.CssSelector(".trumbowyg-textarea")).OfAnyVisibility())
-                            .GetValue() == expectedHtml;
+                            .GetValue().EqualsOrdinal(expectedHtml);
                     },
                     timeout,
                     interval));
@@ -103,7 +103,7 @@ namespace Lombiq.Tests.UI.Extensions
                 nameof(FillInWithRetries),
                 $"{by} - \"{text}\"",
                 () => context.DoWithRetriesOrFail(
-                    () => TryFillElement(context, by, text).GetValue() == text,
+                    () => TryFillElement(context, by, text).GetValue().EqualsOrdinal(text),
                     timeout,
                     interval));
 
@@ -139,12 +139,12 @@ namespace Lombiq.Tests.UI.Extensions
         /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
         /// </summary>
         public static bool IsElementChecked(this UITestContext context, By by) =>
-            context.Get(by.OfAnyVisibility()).GetProperty("checked") == bool.TrueString;
+            context.Get(by.OfAnyVisibility()).GetProperty("checked").EqualsOrdinal(bool.TrueString);
 
         public static void SetCheckboxValue(this UITestContext context, By by, bool isChecked)
         {
             var element = context.Get(by.OfAnyVisibility());
-            var currentValue = element.GetProperty("checked") == bool.TrueString;
+            var currentValue = element.GetProperty("checked").EqualsOrdinal(bool.TrueString);
             if (currentValue != isChecked) element.ClickReliably(context);
         }
 
@@ -167,7 +167,7 @@ namespace Lombiq.Tests.UI.Extensions
                 () =>
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
-                    return title != defaultTitle;
+                    return !title.EqualsOrdinal(defaultTitle);
                 },
                 timeout,
                 interval);
