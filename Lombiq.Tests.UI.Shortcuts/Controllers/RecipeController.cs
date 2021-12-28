@@ -37,7 +37,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
                 .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
             var recipe = recipeCollections
                 .SelectMany(recipeCollection => recipeCollection)
-                .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name.EqualsOrdinal(recipeName));
+                .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
 
             if (recipe == null) return NotFound();
 

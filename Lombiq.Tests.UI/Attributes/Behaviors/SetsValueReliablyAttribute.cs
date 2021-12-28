@@ -1,7 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using System;
 
 namespace Lombiq.Tests.UI.Attributes.Behaviors
 {
@@ -13,7 +12,7 @@ namespace Lombiq.Tests.UI.Attributes.Behaviors
             var driver = component.Context.Driver;
 
             ReliabilityHelper.DoWithRetriesOrFail(
-                () => driver.TryFillElement(element, value).GetValue().EqualsOrdinal(value));
+                () => driver.TryFillElement(element, value).GetValue() == value);
         }
     }
 }

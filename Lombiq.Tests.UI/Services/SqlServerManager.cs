@@ -147,7 +147,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (!File.Exists(filePathLocal))
             {
-                throw filePathLocal.EqualsOrdinal(filePathRemote)
+                throw filePathLocal == filePathRemote
                     ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
                     : new FileNotFoundException(
                         $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +

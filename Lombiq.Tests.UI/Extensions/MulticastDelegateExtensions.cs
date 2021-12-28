@@ -16,7 +16,7 @@ namespace System
             var handlerName = delegateToRemove.Method.Name;
             return (T)Delegate.RemoveAll(
                 multicastDelegate,
-                multicastDelegate.GetInvocationList().LastOrDefault(handler => handler.Method.Name.EqualsOrdinal(handlerName)));
+                multicastDelegate.GetInvocationList().LastOrDefault(handler => handler.Method.Name == handlerName));
         }
     }
 }
