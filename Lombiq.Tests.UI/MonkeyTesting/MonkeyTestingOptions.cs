@@ -22,7 +22,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public TimeSpan PageTestTime { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
-        /// Gets or sets the page marker polling interval. The default value is 200 milliseconds.
+        /// Gets or sets the page marker polling interval. The default value is 200 milliseconds. It is an interval of
+        /// checking whether an inserted unique page marker is still on page. When the page marker is not found - means
+        /// the page is changed due to some click or other monkey activity.
         /// </summary>
         public TimeSpan PageMarkerPollingInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
