@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         public RemovesByRegexMonkeyTestingUrlSanitizer(Regex regex) =>
             _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
-        public Uri Clean(UITestContext context, Uri url)
+        public Uri Sanitize(UITestContext context, Uri url)
         {
             string urlAsString = url.OriginalString;
 

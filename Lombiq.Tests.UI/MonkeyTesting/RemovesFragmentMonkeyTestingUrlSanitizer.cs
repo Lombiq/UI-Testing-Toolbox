@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     /// </summary>
     public sealed class RemovesFragmentMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
-        public Uri Clean(UITestContext context, Uri url)
+        public Uri Sanitize(UITestContext context, Uri url)
         {
             if (!string.IsNullOrEmpty(url.Fragment))
             {

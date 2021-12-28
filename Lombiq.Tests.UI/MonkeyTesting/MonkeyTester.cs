@@ -115,19 +115,19 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             string urlAsString = _context.Driver.Url;
             var url = new Uri(urlAsString);
 
-            var cleanUrl = CleanUrl(url);
+            var sanitizedUrl = SanitizeUrl(url);
 
-            var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == cleanUrl)
-                ?? new PageMonkeyTestInfo(url, cleanUrl, _options.PageTestTime);
+            var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
+                ?? new PageMonkeyTestInfo(url, sanitizedUrl, _options.PageTestTime);
 
             Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
 
             return pageTestInfo;
         }
 
-        private Uri CleanUrl(Uri url)
+        private Uri SanitizeUrl(Uri url)
         {
-            foreach (var cleaner in _options.UrlSanitizers) url = cleaner.Clean(_context, url);
+            foreach (var sanitizer in _options.UrlSanitizers) url = sanitizer.Sanitize(_context, url);
 
             return url;
         }

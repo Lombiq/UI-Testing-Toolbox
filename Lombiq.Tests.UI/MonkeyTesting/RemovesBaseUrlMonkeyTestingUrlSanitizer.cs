@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     /// </summary>
     public sealed class RemovesBaseUrlMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
-        public Uri Clean(UITestContext context, Uri url)
+        public Uri Sanitize(UITestContext context, Uri url)
         {
             string baseUrl = context.Scope.BaseUri.AbsoluteUri;
             string urlAsString = url.OriginalString;
