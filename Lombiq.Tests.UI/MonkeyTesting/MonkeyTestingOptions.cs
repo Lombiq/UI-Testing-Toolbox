@@ -7,6 +7,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     /// <summary>
     /// Represents the options of monkey testing.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "MA0016:Prefer return collection abstraction instead of implementation",
+        Justification = "Implementations are adequate since this is a configuration class.")]
     public sealed class MonkeyTestingOptions
     {
         /// <summary>

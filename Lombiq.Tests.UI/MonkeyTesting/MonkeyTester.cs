@@ -204,10 +204,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                 var timeLeft = timeout - stopwatch.Elapsed;
                 return timeLeft > TimeSpan.Zero ? timeLeft : TimeSpan.Zero;
             }
-            else
-            {
-                return TimeSpan.Zero;
-            }
+
+            return TimeSpan.Zero;
         }
     }
 }

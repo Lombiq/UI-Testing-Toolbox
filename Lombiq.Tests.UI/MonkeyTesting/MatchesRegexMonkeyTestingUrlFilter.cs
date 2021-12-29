@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         private readonly Regex _regex;
 
         public MatchesRegexMonkeyTestingUrlFilter(string regexPattern)
-            : this(new Regex(regexPattern, RegexOptions.Compiled))
+            : this(new Regex(regexPattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture))
         {
         }
 
