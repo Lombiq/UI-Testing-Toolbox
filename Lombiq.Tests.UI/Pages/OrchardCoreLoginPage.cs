@@ -45,7 +45,7 @@ namespace Lombiq.Tests.UI.Pages
                 .Password.Set(password)
                 .LogIn.Click();
 
-            await context.TriggerAfterPageChangeEventAsync();
+            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
 
             return page;
         }

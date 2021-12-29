@@ -56,7 +56,7 @@ namespace Lombiq.Tests.UI.Pages
             ConfirmPassword.Set(parameters.ConfirmPassword);
             Register.Click();
 
-            await context.TriggerAfterPageChangeEventAsync();
+            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
 
             return this;
         }

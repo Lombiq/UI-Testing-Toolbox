@@ -6,7 +6,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -80,34 +79,28 @@ namespace Lombiq.Tests.UI.Extensions
         // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
         // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
         // https://github.com/atata-framework/atata/issues/364
+        // The GoToPage() methods SHOULD NOT BE ASYNC, otherwise during subsequent operations AtataContext.Current will
+        // be lost.
 
         public static T GoToPage<T>(this UITestContext context)
-            where T : PageObject<T> =>
-            context.GoToPageAsync<T>().Result;
-
-        public static T GoToPage<T>(this UITestContext context, string relativeUrl)
-            where T : PageObject<T> =>
-            context.GoToPageAsync<T>(relativeUrl).Result;
-
-        public static async Task<T> GoToPageAsync<T>(this UITestContext context)
             where T : PageObject<T>
         {
             var page = context.ExecuteLogged(
                 nameof(GoToPage),
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>());
-            await context.TriggerAfterPageChangeEventAsync();
+            context.TriggerAfterPageChangeEventAsync().Wait();
             return page;
         }
 
-        public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
+        public static T GoToPage<T>(this UITestContext context, string relativeUrl)
             where T : PageObject<T>
         {
             var page = context.ExecuteLogged(
                 $"{typeof(T).FullName} - {relativeUrl}",
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
-            await context.TriggerAfterPageChangeEventAsync();
+            context.TriggerAfterPageChangeEventAsync().Wait();
             return page;
         }
 
@@ -128,6 +121,13 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreFeaturesPage>();
+
+        /// <summary>
+        /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during
+        /// Atata operations (like within a page class) when writing async code.
+        /// </summary>
+        public static void RefreshCurrentAtataContext(this UITestContext context) =>
+            AtataContext.Current = context.Scope.AtataContext;
 
         public static void SwitchTo(this UITestContext context, Action<ITargetLocator> switchOperation, string targetDescription) =>
             context.ExecuteLogged(

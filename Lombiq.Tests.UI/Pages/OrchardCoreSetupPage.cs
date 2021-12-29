@@ -111,7 +111,7 @@ namespace Lombiq.Tests.UI.Pages
 
             FinishSetup.Click();
 
-            await context.TriggerAfterPageChangeEventAsync();
+            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
 
             return this;
         }

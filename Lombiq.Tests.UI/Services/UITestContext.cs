@@ -112,6 +112,12 @@ namespace Lombiq.Tests.UI.Services
             }
         }
 
+        internal async Task TriggerAfterPageChangeEventAndRefreshAtataContextAsync()
+        {
+            await TriggerAfterPageChangeEventAsync();
+            this.RefreshCurrentAtataContext();
+        }
+
         private bool IsNoAlert()
         {
             // If there's an alert (which can happen mostly after a click but also after navigating) then all other
