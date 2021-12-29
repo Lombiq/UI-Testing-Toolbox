@@ -283,7 +283,7 @@ namespace Lombiq.Tests.UI.Services
                         remotePath = _dockerConfiguration.ContainerSnapshotPath;
                     }
 
-                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, true);
+                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, useCompressionIfAvailable: true);
                 }
                 catch (Exception failureException)
                 {
@@ -533,7 +533,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             if (_configuration.RunAssertLogsOnAllPageChanges &&
-                _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", true))
+                _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
             {
                 _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
             }

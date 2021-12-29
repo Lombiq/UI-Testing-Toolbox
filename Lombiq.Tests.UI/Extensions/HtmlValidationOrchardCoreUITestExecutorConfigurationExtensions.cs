@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Extensions
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
             Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
         {
-            if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", true)) return;
+            if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", value: true)) return;
 
             configuration.Events.AfterPageChange += async context =>
             {

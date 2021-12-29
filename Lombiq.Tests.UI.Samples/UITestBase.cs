@@ -61,7 +61,7 @@ namespace Lombiq.Tests.UI.Samples
                     // Apart from changing the code here, you can use a configuration file or environment variables, see
                     // the docs.
                     configuration.BrowserConfiguration.Headless =
-                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", false);
+                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
                     // There are event handlers that you can hook into. This is just one but check out the others in
                     // OrchardCoreConfiguration if you're interested.

@@ -16,7 +16,7 @@ namespace Lombiq.Tests.UI.Helpers
             {
                 try
                 {
-                    Directory.Delete(path, true);
+                    Directory.Delete(path, recursive: true);
                     // Even after the delete seemingly succeeding the folder can remain there with some empty
                     // subfolders. Perhaps this happens when one opens it in Explorer and that keeps a handle open.
                     if (!Directory.Exists(path)) return;

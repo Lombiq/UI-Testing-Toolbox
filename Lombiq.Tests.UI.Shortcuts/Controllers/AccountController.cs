@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
 
             if (user == null) return NotFound();
 
-            await _userSignInManager.SignInAsync(user, false);
+            await _userSignInManager.SignInAsync(user, isPersistent: false);
 
             return Ok();
         }
