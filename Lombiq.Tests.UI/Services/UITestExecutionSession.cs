@@ -176,7 +176,7 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
         {
-            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
             var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
             try
