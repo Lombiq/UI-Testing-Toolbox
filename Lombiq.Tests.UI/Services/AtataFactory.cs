@@ -54,7 +54,7 @@ namespace Lombiq.Tests.UI.Services
                             // Not using parameters because the exception can throw off the string format.
                             testOutputHelper.WriteLineTimestampedAndDebug(
                                 $"While creating the web driver failed with the following exception, it'll be " +
-                                $"retried {maxTryCount - i} more time(s). Exception: {ex}");
+                                $"retried {(maxTryCount - i).ToTechnicalString()} more time(s). Exception: {ex}");
                         }
                         else
                         {

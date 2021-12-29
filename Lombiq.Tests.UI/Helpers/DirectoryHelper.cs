@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.Helpers
                     if (tryCount == maxTryCount)
                     {
                         throw new IOException(
-                            $"The directory under {path} couldn't be cleaned up even after {maxTryCount} attempts.",
+                            $"The directory under {path} couldn't be cleaned up even after {maxTryCount.ToTechnicalString()} attempts.",
                             ex);
                     }
                 }

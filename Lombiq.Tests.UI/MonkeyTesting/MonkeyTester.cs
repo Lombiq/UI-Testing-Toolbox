@@ -80,7 +80,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private void WriteOptionsToLog() =>
             Log.Trace(@$"Monkey testing options:
-- {nameof(MonkeyTestingOptions.BaseRandomSeed)}={_options.BaseRandomSeed}
+- {nameof(MonkeyTestingOptions.BaseRandomSeed)}={_options.BaseRandomSeed.ToTechnicalString()}
 - {nameof(MonkeyTestingOptions.PageTestTime)}={_options.PageTestTime.ToShortIntervalString()}
 - {nameof(MonkeyTestingOptions.PageMarkerPollingInterval)}={_options.PageMarkerPollingInterval.ToShortIntervalString()}
 - {nameof(MonkeyTestingOptions.GremlinsSpecies)}={string.Join(", ", _options.GremlinsSpecies)}
@@ -143,9 +143,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             Log.ExecuteSection(
                 new LogSection(
-#pragma warning disable S103 // Lines should not be too long
-                    $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} with {randomSeed} random seed."),
-#pragma warning restore S103 // Lines should not be too long
+                    $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
+                    $"with {randomSeed.ToTechnicalString()} random seed."),
                 () =>
                 {
                     var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
