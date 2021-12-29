@@ -80,12 +80,16 @@ namespace Lombiq.Tests.UI.Extensions
         {
             parameters ??= new OrchardCoreSetupParameters(context);
 
-            return context.ExecuteTest(
+            context.ExecuteTest(
                 "Test setup",
                 () => context
                     .GoToSetupPage()
                     .SetupOrchardCore(context, parameters)
                     .ShouldLeaveSetupPage());
+
+            context.TriggerAfterPageChangeEventAsync().Wait();
+
+            return context;
         }
 
         /// <summary>
@@ -143,6 +147,8 @@ namespace Lombiq.Tests.UI.Extensions
                         .LogInWith(userName, password)
                         .ShouldLeaveLoginPage();
 
+                    context.TriggerAfterPageChangeEventAsync().Wait();
+
                     context.GetCurrentUserName().ShouldBe(userName);
                 });
 
@@ -193,6 +199,8 @@ namespace Lombiq.Tests.UI.Extensions
                         .TopNavbar.Account.LogOff.Click()
                         .ShouldLeaveAdminPage();
 
+                    context.TriggerAfterPageChangeEventAsync().Wait();
+
                     context.GetCurrentUserName().ShouldBeNullOrEmpty();
                 });
 
@@ -223,11 +231,13 @@ namespace Lombiq.Tests.UI.Extensions
                             .RegisterWith(parameters)
                             .ShouldLeaveRegistrationPage();
 
+                    context.TriggerAfterPageChangeEventAsync().Wait();
+
                     context.GetCurrentUserName().ShouldBe(parameters.UserName);
                     context.SignOutDirectly();
 
-                    context.GoToLoginPage()
-                        .LogInWith(parameters.UserName, parameters.Password);
+                    context.GoToLoginPage().LogInWith(parameters.UserName, parameters.Password);
+                    context.TriggerAfterPageChangeEventAsync().Wait();
                     context.GetCurrentUserName().ShouldBe(parameters.UserName);
                     context.SignOutDirectly();
                 });
@@ -322,6 +332,8 @@ namespace Lombiq.Tests.UI.Extensions
                             .Publish.ClickAndGo()
                         .AlertMessages.Should.Contain(message => message.IsSuccess)
                         .Items[item => item.Title == pageTitle].View.Click();
+
+                    context.TriggerAfterPageChangeEventAsync().Wait();
 
                     context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
                         .AggregateAssert(page => page
