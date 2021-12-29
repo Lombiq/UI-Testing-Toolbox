@@ -298,5 +298,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// Refreshes (reloads) the current page.
         /// </summary>
         public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
+
+        /// <summary>
+        /// Checks whether the current page is the Orchard setup page.
+        /// </summary>
+        public static bool IsSetupPage(this UITestContext context) =>
+            context.Driver.Title == "Setup" &&
+            context.Driver.PageSource.Contains(
+                @"<link type=""image/x-icon"" rel=""shortcut icon"" href=""/OrchardCore.Setup/favicon.ico"">");
     }
 }

@@ -80,16 +80,12 @@ namespace Lombiq.Tests.UI.Extensions
         {
             parameters ??= new OrchardCoreSetupParameters(context);
 
-            context.ExecuteTest(
+            return context.ExecuteTest(
                 "Test setup",
                 () => context
                     .GoToSetupPage()
                     .SetupOrchardCore(context, parameters)
                     .ShouldLeaveSetupPage());
-
-            context.TriggerAfterPageChangeEventAsync().Wait();
-
-            return context;
         }
 
         /// <summary>
@@ -144,10 +140,8 @@ namespace Lombiq.Tests.UI.Extensions
                 () =>
                 {
                     context.GoToLoginPage()
-                        .LogInWith(userName, password)
+                        .LogInWith(context, userName, password)
                         .ShouldLeaveLoginPage();
-
-                    context.TriggerAfterPageChangeEventAsync().Wait();
 
                     context.GetCurrentUserName().ShouldBe(userName);
                 });
@@ -174,7 +168,7 @@ namespace Lombiq.Tests.UI.Extensions
                     context.SignOutDirectly();
 
                     context.GoToLoginPage()
-                        .LogInWith(userName, password)
+                        .LogInWith(context, userName, password)
                         .ShouldStayOnLoginPage()
                         .ValidationSummaryErrors.Should.Not.BeEmpty();
 
@@ -228,15 +222,13 @@ namespace Lombiq.Tests.UI.Extensions
                     context.GoToLoginPage()
                         .RegisterAsNewUser.Should.BeVisible()
                         .RegisterAsNewUser.ClickAndGo()
-                            .RegisterWith(parameters)
+                            .RegisterWith(context, parameters)
                             .ShouldLeaveRegistrationPage();
-
-                    context.TriggerAfterPageChangeEventAsync().Wait();
 
                     context.GetCurrentUserName().ShouldBe(parameters.UserName);
                     context.SignOutDirectly();
 
-                    context.GoToLoginPage().LogInWith(parameters.UserName, parameters.Password);
+                    context.GoToLoginPage().LogInWith(context, parameters.UserName, parameters.Password);
                     context.TriggerAfterPageChangeEventAsync().Wait();
                     context.GetCurrentUserName().ShouldBe(parameters.UserName);
                     context.SignOutDirectly();
@@ -269,7 +261,7 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test registration with invalid data",
                 () => context
                     .GoToRegistrationPage()
-                    .RegisterWith(parameters)
+                    .RegisterWith(context, parameters)
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages.Should.Not.BeEmpty());
         }
@@ -298,7 +290,7 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test registration with already registered email",
                 () => context
                     .GoToRegistrationPage()
-                    .RegisterWith(parameters)
+                    .RegisterWith(context, parameters)
                     .ShouldStayOnRegistrationPage()
                     .ValidationMessages[page => page.Email].Should.BeVisible());
         }

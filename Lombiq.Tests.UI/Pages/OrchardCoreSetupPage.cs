@@ -3,7 +3,7 @@ using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -74,8 +74,10 @@ namespace Lombiq.Tests.UI.Pages
 
         public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "For future use.")]
-        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
+            SetupOrchardCoreAsync(context, parameters).Result;
+
+        public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
 
@@ -108,6 +110,8 @@ namespace Lombiq.Tests.UI.Pages
             PasswordConfirmation.Set(parameters.Password);
 
             FinishSetup.Click();
+
+            await context.TriggerAfterPageChangeEventAsync();
 
             return this;
         }

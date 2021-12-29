@@ -17,7 +17,8 @@ namespace Lombiq.Tests.UI.Helpers
             return path.StartsWithOrdinalIgnoreCase("/admin") ||
                 path.StartsWithOrdinalIgnoreCase("/Login") ||
                 path.StartsWithOrdinalIgnoreCase("/ChangePassword") ||
-                path.StartsWithOrdinalIgnoreCase("/ExternalLogins");
+                path.StartsWithOrdinalIgnoreCase("/ExternalLogins") ||
+                context.IsSetupPage();
         }
 
         /// <summary>
