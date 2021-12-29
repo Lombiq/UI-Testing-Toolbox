@@ -1,3 +1,5 @@
+using System;
+
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
     internal sealed class GremlinsScriptBuilder
@@ -26,11 +28,11 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             mogwais: [{mogwaisPart}],
             strategies: [
                 gremlins.strategies.distribution({{
-                    nb: {NumberOfAttacks},
-                    delay: {AttackDelay}
+                    nb: {NumberOfAttacks.ToTechnicalString()},
+                    delay: {AttackDelay.ToTechnicalString()}
                 }})
             ],
-            randomizer: new gremlins.Chance({RandomSeed})
+            randomizer: new gremlins.Chance({RandomSeed.ToTechnicalString()})
         }}).unleash();
     }}
     var s = document.createElement('script');
