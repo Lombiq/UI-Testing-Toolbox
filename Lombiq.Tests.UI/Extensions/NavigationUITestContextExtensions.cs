@@ -7,6 +7,7 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -83,17 +84,33 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static T GoToPage<T>(this UITestContext context)
             where T : PageObject<T> =>
-            context.ExecuteLogged(
-                nameof(GoToPage),
-                typeof(T).FullName,
-                () => context.Scope.AtataContext.Go.To<T>());
+            context.GoToPageAsync<T>().Result;
 
         public static T GoToPage<T>(this UITestContext context, string relativeUrl)
             where T : PageObject<T> =>
-            context.ExecuteLogged(
+            context.GoToPageAsync<T>(relativeUrl).Result;
+
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context)
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
                 nameof(GoToPage),
+                typeof(T).FullName,
+                () => context.Scope.AtataContext.Go.To<T>());
+            await context.TriggerAfterPageChangeEventAsync();
+            return page;
+        }
+
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
                 $"{typeof(T).FullName} - {relativeUrl}",
+                typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
+            await context.TriggerAfterPageChangeEventAsync();
+            return page;
+        }
 
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
