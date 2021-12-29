@@ -76,7 +76,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
             {
-                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, true);
+                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
             }
             else
             {
@@ -156,7 +156,7 @@ namespace Lombiq.Tests.UI.Services
         {
             await PauseAsync();
 
-            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
+            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
@@ -165,7 +165,7 @@ namespace Lombiq.Tests.UI.Services
                 await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
             }
 
-            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
+            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
         }
 
         public IEnumerable<IApplicationLog> GetLogs()

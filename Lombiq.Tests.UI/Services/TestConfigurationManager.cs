@@ -18,7 +18,7 @@ namespace Lombiq.Tests.UI.Services
     {
         private static readonly IConfiguration _configuration = BuildConfiguration();
 
-        public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", true), CultureInfo.InvariantCulture);
+        public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", throwIfNullOrEmpty: true), CultureInfo.InvariantCulture);
 
         public static int GetAgentIndexOrDefault() => int.Parse(GetConfiguration("AgentIndex", "0"), CultureInfo.InvariantCulture);
 
@@ -64,7 +64,7 @@ namespace Lombiq.Tests.UI.Services
 
         private static IConfiguration BuildConfiguration() =>
             new ConfigurationBuilder()
-                .AddJsonFile("TestConfiguration.json", true, false)
+                .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
                 .AddEnvironmentVariables()
                 .Build();
     }

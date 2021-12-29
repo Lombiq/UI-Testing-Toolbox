@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Helpers
         public static void CopyAppFolder(string sourcePath, string destinationPath)
         {
             var destinationAppData = Path.Combine(destinationPath, "App_Data");
-            FileSystem.CopyDirectory(Path.Combine(sourcePath, "App_Data"), destinationAppData, true);
+            FileSystem.CopyDirectory(Path.Combine(sourcePath, "App_Data"), destinationAppData, overwrite: true);
 
             // It's easier to delete the logs folder from the destination then to exclude it from the copy.
             var logsPath = Path.Combine(destinationAppData, "logs");
@@ -38,7 +38,7 @@ namespace Lombiq.Tests.UI.Helpers
             var recipesSourceFolderPath = Path.Combine(sourcePath, "Recipes");
             if (Directory.Exists(recipesSourceFolderPath))
             {
-                FileSystem.CopyDirectory(recipesSourceFolderPath, Path.Combine(destinationPath, "Recipes"), true);
+                FileSystem.CopyDirectory(recipesSourceFolderPath, Path.Combine(destinationPath, "Recipes"), overwrite: true);
             }
         }
 

@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Extensions
     {
         public static void SetUpEvents(this OrchardCoreUITestExecutorConfiguration configuration)
         {
-            if (!configuration.CustomConfiguration.TryAdd("EventsWereSetUp", true)) return;
+            if (!configuration.CustomConfiguration.TryAdd("EventsWereSetUp", value: true)) return;
 
             PageNavigationState navigationState = null;
 
