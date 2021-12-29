@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Exceptions
         public SetupFailedFastException(int failureCount) => FailureCount = failureCount;
 
         public override string Message =>
-             $"The given setup operation failed {FailureCount} times and won't be retried any more. All tests using " +
-            "this operation for setup will instantly fail.";
+             $"The given setup operation failed {FailureCount.ToTechnicalString()} times and won't be retried any " +
+            $"more. All tests using this operation for setup will instantly fail.";
     }
 }

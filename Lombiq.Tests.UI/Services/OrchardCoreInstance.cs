@@ -68,7 +68,7 @@ namespace Lombiq.Tests.UI.Services
         public async Task<Uri> StartUpAsync()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
-            var url = UrlPrefix + _port;
+            var url = UrlPrefix + _port.ToTechnicalString();
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
 
@@ -136,7 +136,7 @@ namespace Lombiq.Tests.UI.Services
 
                     // There is no other option here than to wait for the invoked Tasks.
 #pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
+                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait(CancellationToken.None);
 #pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 });
 
@@ -168,8 +168,10 @@ namespace Lombiq.Tests.UI.Services
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
         }
 
-        public IEnumerable<IApplicationLog> GetLogs()
+        public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
         {
+            if (cancellationToken == default) cancellationToken = CancellationToken.None;
+
             var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
             return Directory.Exists(logFolderPath) ?
                 Directory
@@ -178,7 +180,7 @@ namespace Lombiq.Tests.UI.Services
                     {
                         Name = Path.GetFileName(filePath),
                         FullName = Path.GetFullPath(filePath),
-                        ContentLoader = () => File.ReadAllTextAsync(filePath),
+                        ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
                     }) :
                 Enumerable.Empty<IApplicationLog>();
         }

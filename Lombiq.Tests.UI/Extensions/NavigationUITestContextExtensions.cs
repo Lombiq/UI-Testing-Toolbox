@@ -146,7 +146,7 @@ namespace Lombiq.Tests.UI.Extensions
             where T : Enum
         {
             context.ClickReliablyOn(By.Id(selectId));
-            context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
+            context.Get(By.CssSelector(FormattableString.Invariant($"#{selectId} option[value='{(int)(object)value}']"))).Click();
         }
 
         public static void SetDropdownByText(this UITestContext context, string selectId, string value) =>
@@ -163,7 +163,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
             context.ExecuteScript(
-                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';" +
+                FormattableString.Invariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
                 $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
         public static DateTime GetDatePicker(this UITestContext context, string id) =>

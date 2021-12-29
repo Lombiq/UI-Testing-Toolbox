@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
@@ -36,7 +37,7 @@ namespace Lombiq.Tests.UI.Services
         /// Reads all the application logs.
         /// </summary>
         /// <returns>The collection of log names and their contents.</returns>
-        IEnumerable<IApplicationLog> GetLogs();
+        IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default);
     }
 
     /// <summary>
