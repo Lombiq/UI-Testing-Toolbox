@@ -30,51 +30,59 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             _randomizer = new NonSecurityRandomizer(_options.BaseRandomSeed);
         }
 
-        internal void TestOnePage(int? randomSeed = null) =>
-            Log.ExecuteSection(
-                new LogSection("Execute monkey testing against one page"),
-                () => TestOnePageAsync(randomSeed).GetAwaiter().GetResult());
-
-        private async Task TestOnePageAsync(int? randomSeed = null)
+        internal async Task TestOnePageAsync(int? randomSeed = null)
         {
-            WriteOptionsToLog();
+            Log.Start(new LogSection("Execute monkey testing against one page"));
 
-            var pageTestInfo = GetCurrentPageTestInfo();
+            try
+            {
+                WriteOptionsToLog();
 
-            if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
-            else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
+                var pageTestInfo = GetCurrentPageTestInfo();
+
+                if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
+                else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
+            }
+            finally
+            {
+                Log.EndSection();
+            }
         }
 
-        internal void TestRecursively() =>
-            Log.ExecuteSection(
-                new LogSection($"Execute monkey testing recursively"),
-                () => TestRecursivelyAsync().GetAwaiter().GetResult());
-
-        private async Task TestRecursivelyAsync()
+        internal async Task TestRecursivelyAsync()
         {
-            WriteOptionsToLog();
+            Log.Start(new LogSection($"Execute monkey testing recursively"));
 
-            var pageTestInfo = GetCurrentPageTestInfo();
-            await TestCurrentPageAsync(pageTestInfo);
-
-            while (true)
+            try
             {
-                pageTestInfo = GetCurrentPageTestInfo();
+                WriteOptionsToLog();
 
-                if (CanTestPage(pageTestInfo))
-                {
-                    await TestCurrentPageAsync(pageTestInfo);
-                }
-                else if (TryGetAvailablePageToTest(out var availablePageToTest))
-                {
-                    _context.GoToAbsoluteUrl(availablePageToTest.Url);
+                var pageTestInfo = GetCurrentPageTestInfo();
+                await TestCurrentPageAsync(pageTestInfo);
 
-                    await TestCurrentPageAsync(availablePageToTest);
-                }
-                else
+                while (true)
                 {
-                    return;
+                    pageTestInfo = GetCurrentPageTestInfo();
+
+                    if (CanTestPage(pageTestInfo))
+                    {
+                        await TestCurrentPageAsync(pageTestInfo);
+                    }
+                    else if (TryGetAvailablePageToTest(out var availablePageToTest))
+                    {
+                        _context.GoToAbsoluteUrl(availablePageToTest.Url);
+
+                        await TestCurrentPageAsync(availablePageToTest);
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
+            }
+            finally
+            {
+                Log.EndSection();
             }
         }
 
