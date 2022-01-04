@@ -108,7 +108,7 @@ namespace Lombiq.Tests.UI.Services
                 else
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug(
-                        $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}.");
+                        $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
                 }
 
                 _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
