@@ -13,9 +13,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     internal sealed class MonkeyTester
     {
-        private const string SetIsMonkeyTestRunningScript = "window.isMonkeyTestRunning = true;";
-        private const string GetIsMonkeyTestRunningScript = "return !!window.isMonkeyTestRunning;";
-
         private readonly UITestContext _context;
         private readonly MonkeyTestingOptions _options;
         private readonly NonSecurityRandomizer _randomizer;
@@ -167,16 +164,18 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {
-            _context.Driver.ExecuteScript(SetIsMonkeyTestRunningScript);
-
             string gremlinsScript = BuildGremlinsScript(testTime, randomSeed);
             _context.Driver.ExecuteScript(gremlinsScript);
 
-            return MeasureTimeLeftOfMeetingPredicate(
+            var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
                 _context.Driver,
-                driver => !(bool)driver.ExecuteScript(GetIsMonkeyTestRunningScript),
+                driver => !(bool)driver.ExecuteScript(GremlinsScriptBuilder.GetAreGremlinsRunningScript),
                 timeout: testTime,
                 pollingInterval: _options.PageMarkerPollingInterval);
+
+            _context.Driver.ExecuteScript(GremlinsScriptBuilder.StopGremlinsScript);
+
+            return testTimeLeft;
         }
 
         private string BuildGremlinsScript(TimeSpan testTime, int randomSeed) =>
@@ -203,16 +202,11 @@ namespace Lombiq.Tests.UI.MonkeyTesting
             };
 
             var stopwatch = Stopwatch.StartNew();
-            var isPageInterrupted = wait.Until(predicate);
+            wait.Until(predicate);
             stopwatch.Stop();
 
-            if (isPageInterrupted)
-            {
-                var timeLeft = timeout - stopwatch.Elapsed;
-                return timeLeft > TimeSpan.Zero ? timeLeft : TimeSpan.Zero;
-            }
-
-            return TimeSpan.Zero;
+            var timeLeft = timeout - stopwatch.Elapsed;
+            return timeLeft > TimeSpan.Zero ? timeLeft : TimeSpan.Zero;
         }
     }
 }

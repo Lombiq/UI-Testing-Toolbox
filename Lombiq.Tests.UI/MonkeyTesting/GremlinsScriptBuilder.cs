@@ -4,6 +4,13 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 {
     internal sealed class GremlinsScriptBuilder
     {
+        public const string GetAreGremlinsRunningScript = "return !!window.areGremlinsRunning;";
+
+        public const string StopGremlinsScript =
+@"var horde = window.activeGremlinsHorde;
+if (horde)
+    horde.stop();";
+
         internal string[] Species { get; set; }
 
         internal string[] Mogwais { get; set; }
@@ -22,8 +29,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
             return
 @$"(function() {{
+    window.areGremlinsRunning = true;
+
     function callback() {{
-        gremlins.createHorde({{
+        window.activeGremlinsHorde = gremlins.createHorde({{
             species: [{speciesPart}],
             mogwais: [{mogwaisPart}],
             strategies: [
@@ -33,7 +42,13 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                 }})
             ],
             randomizer: new gremlins.Chance({RandomSeed.ToTechnicalString()})
-        }}).unleash();
+        }});
+
+        window.activeGremlinsHorde.unleash()
+            .then(() => {{
+                window.areGremlinsRunning = false;
+                window.activeGremlinsHorde = null;
+            }});
     }}
     var s = document.createElement('script');
     s.src = 'https://unpkg.com/gremlins.js';
