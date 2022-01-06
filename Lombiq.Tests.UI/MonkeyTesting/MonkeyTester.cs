@@ -164,22 +164,24 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {
-            string gremlinsScript = BuildGremlinsScript(testTime, randomSeed);
-            _context.Driver.ExecuteScript(gremlinsScript);
+            _context.Driver.ExecuteScript(GremlinsScripts.GremlinsScript);
+
+            string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
+            _context.Driver.ExecuteScript(gremlinsRunScript);
 
             var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
                 _context.Driver,
-                driver => !(bool)driver.ExecuteScript(GremlinsScriptBuilder.GetAreGremlinsRunningScript),
+                driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
                 timeout: testTime,
                 pollingInterval: _options.PageMarkerPollingInterval);
 
-            _context.Driver.ExecuteScript(GremlinsScriptBuilder.StopGremlinsScript);
+            _context.Driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
             return testTimeLeft;
         }
 
-        private string BuildGremlinsScript(TimeSpan testTime, int randomSeed) =>
-            new GremlinsScriptBuilder
+        private string BuildGremlinsRunScript(TimeSpan testTime, int randomSeed) =>
+            new GremlinsScripts.RunScriptBuilder
             {
                 Species = _options.GremlinsSpecies.ToArray(),
                 Mogwais = _options.GremlinsMogwais.ToArray(),

@@ -79,4 +79,16 @@
     <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
   </ItemGroup>
 
+  <Target Name="DownloadNpmPackages" Inputs="package.json" Outputs="node_modules\package.json" BeforeTargets="CollectPackageReferences">
+    <Exec Command="npm install" />
+    <Copy SourceFiles="package.json" DestinationFolder="node_modules" />
+  </Target>
+
+  <ItemGroup>
+    <EmbeddedResource Include="node_modules\gremlins.js\dist\gremlins.min.js">
+      <Link>Resources\gremlins.min.js</Link>
+    </EmbeddedResource>
+    <None Remove="node_modules\**" />
+  </ItemGroup>
+
 </Project>
