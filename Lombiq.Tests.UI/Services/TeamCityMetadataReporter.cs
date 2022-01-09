@@ -39,8 +39,17 @@ namespace Lombiq.Tests.UI.Services
 
         public static void Report(UITestManifest uITestManifest, string name, string type, string value)
         {
-            var testName = Escape(uITestManifest.Name);
-            testName = testName.Substring(0, testName.IndexOf('('));
+            // The only form test metadata is understood by TeamCity after an update is:
+            // <test suite name>: <namespace name>.<class name>.<test method name>,
+            // e.g.: "Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest".
+            // Test parameters can't be added.
+            // For the docs see: https://www.jetbrains.com/help/teamcity/service-messages.html#Interpreting+test+names.
+
+            var suiteName = uITestManifest.XunitTest.TestCase.TestMethod.TestClass.TestCollection.TestAssembly.Assembly.Name;
+            suiteName = suiteName.Substring(0, suiteName.IndexOf(','));
+            var methodFullName = uITestManifest.Name.Substring(0, uITestManifest.Name.IndexOf('('));
+            var testName = Escape($"{suiteName}: {methodFullName}");
+
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
