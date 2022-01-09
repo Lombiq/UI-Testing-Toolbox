@@ -50,47 +50,42 @@ namespace Lombiq.Tests.UI.Services
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-1")}' type='text' value='{Escape(value + " - 1")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-2")}' type='text' value='{Escape(value + " - 2")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-3")}' type='text' value='{Escape(value + " - 3")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-4")}' type='text' value='{Escape(value + " - 4")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-5")}' type='text' value='{Escape(value + " - 5")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-6")}' type='text' value='{Escape(value + " - 6")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-7")}' type='text' value='{Escape(value + " - 7")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata" +
-                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+                $" name='{Escape(name + "-8")}' type='text' value='{Escape(value + " - 8")}']");
         }
 #pragma warning restore S103 // Lines should not be too long
 
