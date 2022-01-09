@@ -75,7 +75,7 @@ namespace Lombiq.Tests.UI.Services
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + "-6")}' type='text' value='{Escape(value + " - 6")}']");
+                $" name='{Escape(name + uITestManifest.Name + "-6")}' type='text' value='{Escape(value + " - 6")}']");
 
             Console.WriteLine(
                 Environment.NewLine +
