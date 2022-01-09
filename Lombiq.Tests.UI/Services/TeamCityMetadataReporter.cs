@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Services
             Report(uITestManifest, name, "number", number);
 
         public static void ReportText(UITestManifest uITestManifest, string name, string text) =>
-            Report(uITestManifest, name, "text", text);
+            Report(uITestManifest, name, "test", text);
 
         public static void ReportExternalLink(UITestManifest uITestManifest, string name, string url) =>
             Report(uITestManifest, name, "link", url);
@@ -37,57 +37,15 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(UITestManifest uITestManifest, string name, string videoArtifactPath) =>
             Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
 
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable CA1801 // Review unused parameters
         public static void Report(UITestManifest uITestManifest, string name, string type, string value)
-#pragma warning restore CA1801 // Review unused parameters
         {
-#pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
-            value = uITestManifest.Name;
-            name += "-Test";
-#pragma warning restore S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
-
+            var testName = Escape(uITestManifest.Name);
+            testName = testName.Substring(0, testName.IndexOf('('));
+            // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name + "-1")}' type='text' value='{Escape(value + " - 1")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + "-2")}' type='text' value='{Escape(value + " - 2")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + "-3")}' type='text' value='{Escape(value + " - 3")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + "-4")}' type='text' value='{Escape(value + " - 4")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + "-5")}' type='text' value='{Escape(value + " - 5")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name + uITestManifest.Name + "-6")}' type='text' value='{Escape(value + " - 6")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name + "-7")}' type='text' value='{Escape(value + " - 7")}']");
-
-            Console.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name + "-8")}' type='text' value='{Escape(value + " - 8")}']");
+                $"##teamcity[testMetadata testName='{testName}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
-#pragma warning restore S103 // Lines should not be too long
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
