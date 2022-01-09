@@ -37,14 +37,33 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(UITestManifest uITestManifest, string name, string videoArtifactPath) =>
             Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
 
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable CA1801 // Review unused parameters
-        public static void Report(UITestManifest uITestManifest, string name, string type, string value) =>
+        public static void Report(UITestManifest uITestManifest, string name, string type, string value)
+        {
 #pragma warning restore CA1801 // Review unused parameters
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
+                $"##teamcity[testMetadata testName='ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
                 $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
+                $"##teamcity[testMetadata testName='ErrorOnLoadedPageShouldHaltTest'" +
+                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
+                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: TestsErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
+                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
+                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: TestsErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome) '" +
+                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+        }
+#pragma warning restore S103 // Lines should not be too long
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
