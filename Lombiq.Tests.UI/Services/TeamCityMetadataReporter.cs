@@ -37,11 +37,15 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(UITestManifest uITestManifest, string name, string videoArtifactPath) =>
             Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(UITestManifest uITestManifest, string name, string type, string value) =>
+        public static void Report(UITestManifest uITestManifest, string name, string type, string value)
+        {
+            var testName = Escape(uITestManifest.Name);
+            testName = testName.Substring(0, testName.IndexOf('('));
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='{Escape(uITestManifest.Name)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $"##teamcity[testMetadata testName='{testName}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+        }
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
