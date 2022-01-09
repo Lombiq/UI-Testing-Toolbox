@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Services
             Report(uITestManifest, name, "number", number);
 
         public static void ReportText(UITestManifest uITestManifest, string name, string text) =>
-            Report(uITestManifest, name, "test", text);
+            Report(uITestManifest, name, "text", text);
 
         public static void ReportExternalLink(UITestManifest uITestManifest, string name, string url) =>
             Report(uITestManifest, name, "link", url);
