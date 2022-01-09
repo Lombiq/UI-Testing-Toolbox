@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Services
             Report(testName, name, "number", number);
 
         public static void ReportText(string testName, string name, string text) =>
-            Report(testName, name, "test", text);
+            Report(testName, name, "text", text);
 
         public static void ReportExternalLink(string testName, string name, string url) =>
             Report(testName, name, "link", url);
