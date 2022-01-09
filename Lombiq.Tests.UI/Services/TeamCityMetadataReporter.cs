@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Services
             Report(uITestManifest, name, "number", number);
 
         public static void ReportText(UITestManifest uITestManifest, string name, string text) =>
-            Report(uITestManifest, name, "test", text);
+            Report(uITestManifest, name, "text", text);
 
         public static void ReportExternalLink(UITestManifest uITestManifest, string name, string url) =>
             Report(uITestManifest, name, "link", url);
@@ -38,7 +38,9 @@ namespace Lombiq.Tests.UI.Services
             Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable CA1801 // Review unused parameters
         public static void Report(UITestManifest uITestManifest, string name, string type, string value)
+#pragma warning restore CA1801 // Review unused parameters
         {
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
             value = uITestManifest.Name;
@@ -48,37 +50,37 @@ namespace Lombiq.Tests.UI.Services
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata" +
-                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
         }
 #pragma warning restore S103 // Lines should not be too long
 
