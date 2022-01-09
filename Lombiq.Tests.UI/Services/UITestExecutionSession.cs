@@ -198,7 +198,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
+                        TeamCityMetadataReporter.ReportImage(_testManifest, "Screenshot", imagePath);
                     }
                 }
 
@@ -209,7 +209,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "PageSource", htmlPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", htmlPath);
                     }
                 }
 
@@ -223,7 +223,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "BrowserLog", browserLogPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
                     }
                 }
 
@@ -256,7 +256,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "TestOutput", testOutputPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "TestOutput", testOutputPath);
                     }
                 }
             }
@@ -319,7 +319,7 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "AccessibilityReport", accessbilityReportPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessbilityReportPath);
                 }
             }
 
@@ -334,7 +334,7 @@ namespace Lombiq.Tests.UI.Services
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "HtmlValidationReport", htmlValidationReportPath);
+                        TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "HtmlValidationReport", htmlValidationReportPath);
                     }
                 }
                 else

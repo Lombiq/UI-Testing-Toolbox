@@ -69,7 +69,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                     {
-                        TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
+                        TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                     }
                 }
 
