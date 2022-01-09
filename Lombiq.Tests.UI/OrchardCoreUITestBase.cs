@@ -2,8 +2,6 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -30,13 +28,8 @@ namespace Lombiq.Tests.UI
             Func<UITestContext, Uri> setupOperation = null,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null)
         {
-            var testManifest = new UITestManifest
+            var testManifest = new UITestManifest(_testOutputHelper)
             {
-                Name = (_testOutputHelper.GetType()
-                    .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                    .FirstOrDefault(field => field.FieldType == typeof(ITest))
-                    ?.GetValue(_testOutputHelper) as ITest)
-                    ?.DisplayName,
                 Test = test,
             };
 
