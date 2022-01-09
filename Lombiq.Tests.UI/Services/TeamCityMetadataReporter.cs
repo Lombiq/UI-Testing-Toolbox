@@ -74,7 +74,17 @@ namespace Lombiq.Tests.UI.Services
 
             Console.WriteLine(
                 Environment.NewLine +
+                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest'" +
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
+                $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
+                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
                 $" name='{Escape(name)}' type='text' value='{Escape(value)}']");
 
             Console.WriteLine(
