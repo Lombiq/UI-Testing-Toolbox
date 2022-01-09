@@ -62,6 +62,11 @@ namespace Lombiq.Tests.UI.Services
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest(browser: Chrome)'" +
                 $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+
+            Console.WriteLine(
+                Environment.NewLine +
+                $"##teamcity[testMetadata" +
+                $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
 #pragma warning restore S103 // Lines should not be too long
 
