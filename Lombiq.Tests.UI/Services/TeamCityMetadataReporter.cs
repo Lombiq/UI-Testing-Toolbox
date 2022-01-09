@@ -42,7 +42,7 @@ namespace Lombiq.Tests.UI.Services
         {
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
             value = uITestManifest.Name;
-            name = name + "-Test";
+            name += "-Test";
 #pragma warning restore S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
 
             Console.WriteLine(
