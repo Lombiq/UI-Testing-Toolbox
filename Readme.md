@@ -1,4 +1,4 @@
-# Lombiq UI Testing Toolbox
+# Lombiq UI Testing Toolbox for Orchard Core
 
 
 
