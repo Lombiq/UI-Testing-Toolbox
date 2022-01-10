@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Delegates;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -28,23 +29,23 @@ namespace Lombiq.Tests.UI
         protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
         protected Task ExecuteMultiSizeTestAfterSetupAsync(
-            Action<UITestContext> standardBrowserSizeTest,
-            Action<UITestContext> mobileBrowserSizeTest,
+            MultiSizeTest standardBrowserSizeTest,
+            MultiSizeTest mobileBrowserSizeTest,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             ExecuteTestAfterSetupAsync(
                 context =>
                 {
                     context.SetBrowserSize(StandardBrowserSize);
-                    standardBrowserSizeTest(context);
+                    standardBrowserSizeTest(context, isStandardSize: true);
                     context.SetBrowserSize(MobileBrowserSize);
-                    mobileBrowserSizeTest(context);
+                    mobileBrowserSizeTest(context, isStandardSize: false);
                 },
                 browser,
                 changeConfiguration);
 
         protected Task ExecuteMultiSizeTestAfterSetupAsync(
-            Action<UITestContext> standardAndMobileBrowserSizeTest,
+            MultiSizeTest standardAndMobileBrowserSizeTest,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             ExecuteMultiSizeTestAfterSetupAsync(
