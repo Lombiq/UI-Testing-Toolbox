@@ -67,7 +67,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// Gets or sets the gremlins attack delay. The default value is 10 milliseconds.
+        /// Gets or sets the gremlins attack delay. The default value is 10 milliseconds. Set greater time value to make
+        /// gremlins interactions interval slower.
         /// </summary>
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
