@@ -29,6 +29,7 @@
   > OpenQA.Selenium.WebDriverException: Creating the web driver failed with the message "Cannot start the driver service on http://localhost:50526/". Note that this can mean that there is a leftover web driver process that you have to kill manually.
   
     This, unfortunately, is not something we can do much about. However, the automatic test retries will prevent tests failing due to random errors like this.
+- If you start more tests from Visual Studio Test Explorer than `maxParallelThreads` in the XUnit config, then tests will get stuck just after they're finished. Increase `maxParallelThreads` in this case.
 
 
 ## Headless mode

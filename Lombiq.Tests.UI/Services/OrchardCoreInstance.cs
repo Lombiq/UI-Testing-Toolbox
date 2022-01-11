@@ -35,7 +35,7 @@ namespace Lombiq.Tests.UI.Services
         private const string UrlPrefix = "https://localhost:";
 
         private static readonly PortLeaseManager _portLeaseManager;
-        private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
+        private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
 
         private readonly OrchardCoreConfiguration _configuration;
@@ -96,29 +96,27 @@ namespace Lombiq.Tests.UI.Services
             // test execution. So using a unified name pattern for such exes.
             if (useExeToExecuteApp)
             {
-                _exeCopyMarkers.GetOrAdd(
+                exePath = _exeCopyMarkers.GetOrAdd(
                     exePath,
-                    key =>
+                    exePathKey =>
                     {
                         // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
                         // run for the same key.
                         lock (_exeCopyLock)
                         {
                             var copyExePath = Path.Combine(
-                                Path.GetDirectoryName(exePath),
-                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+                                Path.GetDirectoryName(exePathKey),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
 
                             if (File.Exists(copyExePath) &&
-                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePathKey))
                             {
                                 File.Delete(copyExePath);
                             }
 
-                            if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+                            if (!File.Exists(copyExePath)) File.Copy(exePathKey, copyExePath);
 
-                            exePath = copyExePath;
-
-                            return true;
+                            return copyExePath;
                         }
                     });
             }
