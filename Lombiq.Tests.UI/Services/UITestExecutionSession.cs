@@ -100,18 +100,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                if (ex is PageChangeAssertionException pageChangeAssertionException)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
-                    ex = pageChangeAssertionException.InnerException;
-                }
-                else if (_context?.Driver is not null)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(
-                        $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
-                }
-
-                _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+                ex = PrepareAndLogException(ex);
 
                 if (ex is SetupFailedFastException) throw;
 
@@ -172,6 +161,35 @@ namespace Lombiq.Tests.UI.Services
             }
 
             return _browserLogMessages = allMessages;
+        }
+
+        private Exception PrepareAndLogException(Exception ex)
+        {
+            if (ex is AggregateException aggregateException)
+            {
+                if (aggregateException.InnerExceptions.Count > 1)
+                {
+                    throw new InvalidOperationException(
+                        "More than one exceptions in the AggregateException. This shouldn't really happen.");
+                }
+
+                ex = aggregateException.InnerException;
+            }
+
+            if (ex is PageChangeAssertionException pageChangeAssertionException)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                ex = pageChangeAssertionException.InnerException;
+            }
+            else if (_context?.Driver is not null)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
+            }
+
+            _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+
+            return ex;
         }
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
