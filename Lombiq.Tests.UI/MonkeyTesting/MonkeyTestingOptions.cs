@@ -27,7 +27,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         /// <summary>
         /// Gets or sets the page marker polling interval. The default value is 200 milliseconds. It is an interval of
-        /// checking whether an inserted unique page marker is still on page. When the page marker is not found - means
+        /// checking whether an inserted unique page marker is still on the page. The page marker not beind found means
         /// the page is changed due to some click or other monkey activity.
         /// </summary>
         public TimeSpan PageMarkerPollingInterval { get; set; } = TimeSpan.FromMilliseconds(200);
@@ -67,8 +67,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         };
 
         /// <summary>
-        /// Gets or sets the gremlins attack delay. The default value is 10 milliseconds. Set greater time value to make
-        /// gremlins interactions interval slower.
+        /// Gets or sets the gremlins' attack delay. The default value is 10 milliseconds. Set greater time value to
+        /// make gremlin interaction intervals smaller.
         /// </summary>
         public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
