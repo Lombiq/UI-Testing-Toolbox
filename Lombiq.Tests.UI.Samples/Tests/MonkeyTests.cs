@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.Services;
 using System;
@@ -85,6 +86,38 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
                 },
                 browser);
+
+        // To be removed after troubleshooting.
+        [Theory, Chrome]
+        public Task TestContensAdminAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    _monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/Contents/"));
+
+                    context.SignInDirectlyAndGoToRelativeUrl("/Admin/Contents/ContentItems");
+                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                },
+                browser);
+
+        // To be removed after troubleshooting.
+        [Theory, Chrome]
+        public Task TestEmptyPageAsMonkey(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    _monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Lombiq.OSOCE.Samples/Test/Index"));
+                    context.GoToRelativeUrl("/Lombiq.OSOCE.Samples/Test/Index");
+                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                },
+                browser,
+                configuration =>
+                {
+                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+                    configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;
+                    configuration.AccessibilityCheckingConfiguration.AccessbilityCheckingAndAssertionOnPageChangeRule =
+                        context => UrlCheckHelper.IsValidatablePage(context) && context.GetCurrentUri().PathAndQuery != "/";
+                });
     }
 }
 
