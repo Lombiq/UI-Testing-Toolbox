@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Models;
 using System;
 using System.IO;
+using System.Text;
 
 namespace Lombiq.Tests.UI.Services
 {
@@ -61,13 +62,57 @@ namespace Lombiq.Tests.UI.Services
 
         // Escaping values for TeamCity, see:
         // https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
-        private static string Escape(string value) => value
-            .Replace("|", "||", StringComparison.Ordinal)
-            .Replace("'", "|'", StringComparison.Ordinal)
-            .Replace("\n", "n", StringComparison.Ordinal)
-            .Replace("\r", "|r", StringComparison.Ordinal)
-            .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
-            .Replace("[", "|[", StringComparison.Ordinal)
-            .Replace("]", "|]", StringComparison.Ordinal);
+        // Taken from the sample code under https://youtrack.jetbrains.com/issue/TW-74546.
+        private static string Escape(string value)
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
+            var stringBuilder = new StringBuilder(value.Length * 2);
+
+            foreach (var character in value)
+                switch (character)
+                {
+                    case '|':
+                        stringBuilder.Append("||");
+                        break;
+                    case '\'':
+                        stringBuilder.Append("|'");
+                        break;
+                    case '\n':
+                        stringBuilder.Append("|n");
+                        break;
+                    case '\r':
+                        stringBuilder.Append("|r");
+                        break;
+                    case '[':
+                        stringBuilder.Append("|[");
+                        break;
+                    case ']':
+                        stringBuilder.Append("|]");
+                        break;
+                    case '\u0085':
+                        stringBuilder.Append("|x");
+                        break;
+                    case '\u2028':
+                        stringBuilder.Append("|l");
+                        break;
+                    case '\u2029':
+                        stringBuilder.Append("|p");
+                        break;
+                    default:
+                        if (character > 127)
+                        {
+                            stringBuilder.Append($"|0x{(ulong)character:x4}");
+                        }
+                        else
+                        {
+                            stringBuilder.Append(character);
+                        }
+
+                        break;
+                }
+
+            return stringBuilder.ToString();
+        }
     }
 }
