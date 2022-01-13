@@ -102,17 +102,6 @@ namespace Lombiq.Tests.UI.Samples
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
                         .ShouldNotContain("|ERROR|");
 
-                    // You can adjust how HTML validation assertion works too.
-                    configuration.HtmlValidationConfiguration.AssertHtmlValidationResult =
-                        async validationResult =>
-                        {
-                            var errors = await validationResult.GetErrorsAsync();
-                            errors.ShouldNotContain(error =>
-                                // This is due to TheTheme. Only necessary until we get this fix:
-                                // https://github.com/OrchardCMS/OrchardCore/pull/10292
-                                !error.ContainsOrdinalIgnoreCase("Redundant role \"main\" on <main> (no-redundant-role)"));
-                        };
-
                     changeConfiguration?.Invoke(configuration);
                 });
     }
