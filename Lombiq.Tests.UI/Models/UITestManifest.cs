@@ -6,6 +6,9 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Models
 {
+    /// <summary>
+    /// Provides data about the currently executing test.
+    /// </summary>
     public class UITestManifest
     {
         public ITest XunitTest { get; }

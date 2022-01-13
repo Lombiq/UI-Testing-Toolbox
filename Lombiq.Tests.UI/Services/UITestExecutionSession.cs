@@ -544,7 +544,7 @@ namespace Lombiq.Tests.UI.Services
                 _configuration);
 
             return new UITestContext(
-                _testManifest.Name,
+                _testManifest,
                 _configuration,
                 sqlServerContext,
                 _applicationInstance,

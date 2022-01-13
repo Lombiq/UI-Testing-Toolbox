@@ -1,5 +1,6 @@
 using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium.Remote;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -10,9 +11,9 @@ namespace Lombiq.Tests.UI.Services
     public class UITestContext
     {
         /// <summary>
-        /// Gets the technical name of the current test.
+        /// Gets data about the currently executing test.
         /// </summary>
-        public string TestName { get; }
+        public UITestManifest TestManifest { get; }
 
         /// <summary>
         /// Gets the configuration of the test execution.
@@ -67,7 +68,7 @@ namespace Lombiq.Tests.UI.Services
         public string TenantName { get; set; } = "Default";
 
         public UITestContext(
-            string testName,
+            UITestManifest testManifest,
             OrchardCoreUITestExecutorConfiguration configuration,
             SqlServerRunningContext sqlServerContext,
             IWebApplicationInstance application,
@@ -75,7 +76,7 @@ namespace Lombiq.Tests.UI.Services
             SmtpServiceRunningContext smtpContext,
             AzureBlobStorageRunningContext blobStorageContext)
         {
-            TestName = testName;
+            TestManifest = testManifest;
             Configuration = configuration;
             SqlServerRunningContext = sqlServerContext;
             Application = application;

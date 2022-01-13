@@ -46,7 +46,7 @@ namespace Lombiq.Tests.UI.Extensions
                     axeResult,
                     Path.Combine(
                         accessibilityConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath,
-                        context.TestName.MakeFileSystemFriendly() + ".html"));
+                        context.TestManifest.Name.MakeFileSystemFriendly() + ".html"));
             }
         }
 
