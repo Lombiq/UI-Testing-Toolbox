@@ -102,10 +102,6 @@ namespace Lombiq.Tests.UI.Samples
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
                         .ShouldNotContain("|ERROR|");
 
-                    // You can adjust how HTML validation assertion works too.
-                    configuration.HtmlValidationConfiguration.AssertHtmlValidationResult =
-                        async validationResult => await validationResult.GetErrorsAsync();
-
                     changeConfiguration?.Invoke(configuration);
                 });
     }
