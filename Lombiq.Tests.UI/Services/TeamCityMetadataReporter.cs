@@ -38,24 +38,11 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(UITestManifest uITestManifest, string name, string videoArtifactPath) =>
             Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(UITestManifest uITestManifest, string name, string type, string value)
-        {
-            // The only form test metadata is understood by TeamCity after an update is:
-            // <test suite name>: <namespace name>.<class name>.<test method name>,
-            // e.g.: "Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ErrorOnLoadedPageShouldHaltTest".
-            // Test parameters can't be added.
-            // For the docs see: https://www.jetbrains.com/help/teamcity/service-messages.html#Interpreting+test+names.
-
-            var suiteName = uITestManifest.XunitTest.TestCase.TestMethod.TestClass.TestCollection.TestAssembly.Assembly.Name;
-            suiteName = suiteName.Substring(0, suiteName.IndexOf(','));
-            var methodFullName = uITestManifest.Name.Substring(0, uITestManifest.Name.IndexOf('('));
-            var testName = Escape($"{suiteName}: {methodFullName}");
-
+        public static void Report(UITestManifest uITestManifest, string name, string type, string value) =>
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='{testName}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
-        }
+                $"##teamcity[testMetadata testName='{Escape(uITestManifest.Name)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
