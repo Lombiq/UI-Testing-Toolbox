@@ -19,6 +19,7 @@ namespace Lombiq.Tests.UI.Constants
         public static readonly Size Qvga = new(320, 240);
         public static readonly Size Hvga = new(480, 320);
         public static readonly Size Nhd = new(640, 360);
+        public static readonly Size NhdPortrait = new(Nhd.Height, Nhd.Width);
         public static readonly Size Vga = new(640, 480);
         public static readonly Size Svga = new(800, 600);
         public static readonly Size Qhd = new(960, 540);
