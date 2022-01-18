@@ -9,7 +9,14 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         internal const string StopGremlinsScript =
 @"var horde = window.activeGremlinsHorde;
 if (horde)
-    horde.stop();";
+    horde.stop();
+
+var gremlinElements = document.querySelectorAll('div[style^=""z-index: 2000; border: 3px solid orange;""]');
+
+for (let i = 0; i < gremlinElements.length; i++) {
+    var element = gremlinElements[i];
+    element.parentNode.removeChild(element);
+}";
 
         private static readonly Lazy<string> _lazyGremlinsScript = new(
             () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins.min.js"));
