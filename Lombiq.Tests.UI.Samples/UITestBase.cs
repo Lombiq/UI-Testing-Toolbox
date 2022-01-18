@@ -29,7 +29,7 @@ namespace Lombiq.Tests.UI.Samples
         // snapshot created from the setup.
         // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
         // NEXT STATION: Check out SetupHelpers, then come back here!
-        protected Task ExecuteTestAfterSetupAsync(
+        protected override Task ExecuteTestAfterSetupAsync(
             Action<UITestContext> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
