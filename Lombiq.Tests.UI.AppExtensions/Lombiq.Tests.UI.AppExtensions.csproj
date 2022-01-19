@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore" Version="1.2.1" />
-    <PackageReference Include="OrchardCore.Email.Abstractions" Version="1.2.1" />
-    <PackageReference Include="OrchardCore.Media.Azure" Version="1.2.1" />
+    <PackageReference Include="OrchardCore" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Email.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Media.Azure" Version="1.2.2" />
   </ItemGroup>
 
 </Project>
