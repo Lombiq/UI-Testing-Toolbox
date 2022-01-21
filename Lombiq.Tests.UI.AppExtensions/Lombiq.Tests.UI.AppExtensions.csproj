@@ -10,6 +10,7 @@
     <Authors>Lombiq Technologies</Authors>
     <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
     <Description>UI testing-related configuration extensions for the web app under test. See the project website for detailed documentation.</Description>
+    <PackageIcon>NuGetIcon.png</PackageIcon>
     <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
     <PackageProjectUrl></PackageProjectUrl>
@@ -19,6 +20,7 @@
   <ItemGroup>
     <None Include="Licence.md" Pack="true" PackagePath="" />
     <None Include="Readme.md" />
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
