@@ -9,6 +9,7 @@
     <PublishGeckoDriver>true</PublishGeckoDriver>
     <PublishIEDriver>true</PublishIEDriver>
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
