@@ -172,6 +172,31 @@ namespace Lombiq.Tests.UI.Extensions
                 "yyyy-MM-dd",
                 CultureInfo.InvariantCulture);
 
+        public static void SetTaxonomyFieldByIndex(this UITestContext context, string taxonomyId, int index)
+        {
+            var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+            SetFieldDropdownByIndex(context, baseSelector, index);
+        }
+
+        public static void SetContentPickerByIndex(this UITestContext context, string part, string field, int index)
+        {
+            var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
+            SetFieldDropdownByIndex(context, baseSelector, index);
+        }
+
+        private static void SetFieldDropdownByIndex(UITestContext context, string baseSelector, int index)
+        {
+            var byItem = By.CssSelector(FormattableString.Invariant(
+                $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"));
+
+            while (!context.Exists(byItem.Safely()))
+            {
+                context.ClickReliablyOn(By.CssSelector(baseSelector + " .multiselect__select"));
+            }
+
+            context.ClickReliablyOn(byItem);
+        }
+
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
         /// cref="NavigationWebElementExtensions.ClickReliably(IWebElement,UITestContext)"/> so the <paramref
