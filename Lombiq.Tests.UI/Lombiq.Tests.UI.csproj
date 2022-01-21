@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <IsPackable>false</IsPackable>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
     <!-- With these the driver exe files will be copied to all projects referencing this project. Otherwise all child
     projects would need to add the packages too. -->
@@ -11,6 +10,21 @@
     <PublishIEDriver>true</PublishIEDriver>
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>Lombiq UI Testing Toolbox for Orchard Core</Title>
+    <Authors>Lombiq Technologies</Authors>
+    <Copyright>Copyright © 2020, Lombiq Technologies Ltd. - https://lombiq.com</Copyright>
+    <Description>Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here. See the project website for detailed documentation.</Description>
+    <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
+    <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox</PackageProjectUrl>
+    <PackageLicenseFile>Licence.md</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Licence.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove=".htmlvalidate.json" />
@@ -59,7 +73,6 @@
     <PackageReference Include="CliWrap" Version="3.3.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="150.5164.1" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46367.54" />
     <PackageReference Include="Selenium.Axe" Version="2.1.3" />
@@ -74,9 +87,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NuGetBuild)' != 'True'">
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.RestEase\Lombiq.HelpfulLibraries.RestEase.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" />
-    <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NuGetBuild)' == 'True'">
+    <PackageReference Include="Lombiq.HelpfulLibraries" Version="0.0.6" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="0.0.6" />
   </ItemGroup>
 
 </Project>

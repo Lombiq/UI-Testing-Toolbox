@@ -2,5 +2,10 @@
 obj/
 bin/
 *.user
-Localization/
+artifacts/
+.vs/
 wwwroot
+node_modules
+.pnpm-debug.log
+Localization/
+/.editorconfig
