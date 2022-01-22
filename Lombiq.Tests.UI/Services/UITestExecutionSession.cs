@@ -149,18 +149,16 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
         {
-            if (_browserLogMessages != null) return _browserLogMessages;
-
-            var allMessages = new List<BrowserLogMessage>();
+            _browserLogMessages ??= new List<BrowserLogMessage>();
 
             foreach (var windowHandle in _context.Driver.WindowHandles)
             {
                 // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
                 _context.Driver.SwitchTo().Window(windowHandle);
-                allMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+                _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
             }
 
-            return _browserLogMessages = allMessages;
+            return _browserLogMessages;
         }
 
         private Exception PrepareAndLogException(Exception ex)

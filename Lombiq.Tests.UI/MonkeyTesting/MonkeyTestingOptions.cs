@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <para>Gets the gremlins' species.</para>
         /// <para>By default contains:</para>
         /// <list type="number">
-        /// <item><description><c>"gremlins.species.clicker()"</c></description></item>
+        /// <item><description><c>"gremlins.species.clicker({ log: true })"</c></description></item>
         /// <item><description><c>"gremlins.species.toucher()"</c></description></item>
         /// <item><description><c>"gremlins.species.formFiller()"</c></description></item>
         /// <item><description><c>"gremlins.species.scroller()"</c></description></item>
@@ -45,7 +45,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// </summary>
         public List<string> GremlinsSpecies { get; } = new()
         {
-            "gremlins.species.clicker()",
+            "gremlins.species.clicker({ log: true })",
             "gremlins.species.toucher()",
             "gremlins.species.formFiller()",
             "gremlins.species.scroller()",

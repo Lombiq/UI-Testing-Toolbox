@@ -15,8 +15,10 @@ var gremlinElements = document.querySelectorAll('div[style^=""z-index: 2000; bor
 
 for (let i = 0; i < gremlinElements.length; i++) {
     var element = gremlinElements[i];
-    element.parentNode.removeChild(element);
+    element.removeAttribute('style');
 }";
+
+        internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
 
         private static readonly Lazy<string> _lazyGremlinsScript = new(
             () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins.min.js"));
@@ -40,9 +42,22 @@ for (let i = 0; i < gremlinElements.length; i++) {
                 string speciesPart = Species != null ? string.Join(", ", Species) : null;
 
                 string mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
-
                 return
+
 @$"(function() {{
+    const customLogger = {{
+        log: function () {{
+            console.log.apply(null, arguments);
+            if (['click', 'dblclick', 'mouseup'].some(x => arguments[2] === x)) {{
+                var message = Array.prototype.slice.call(arguments, 2).join(' ');
+                sessionStorage.setItem('lastgremlinsclick', message);
+            }}
+        }},
+        info: console.info,
+        warn: console.warn,
+        error: console.error
+    }};
+
     window.activeGremlinsHorde = gremlins.createHorde({{
         species: [{speciesPart}],
         mogwais: [{mogwaisPart}],
@@ -52,7 +67,8 @@ for (let i = 0; i < gremlinElements.length; i++) {
                 delay: {AttackDelay.ToTechnicalString()}
             }})
         ],
-        randomizer: new gremlins.Chance({RandomSeed.ToTechnicalString()})
+        randomizer: new gremlins.Chance({RandomSeed.ToTechnicalString()}),
+        logger: customLogger
     }});
 
     window.activeGremlinsHorde.unleash()
