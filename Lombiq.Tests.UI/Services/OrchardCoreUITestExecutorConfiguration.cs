@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -46,7 +47,7 @@ namespace Lombiq.Tests.UI.Services
         /// </para>
         /// </remarks>
         public bool ReportTeamCityMetadata { get; set; } =
-            TestConfigurationManager.GetBoolConfiguration("OrchardCoreUITestExecutorConfiguration:ReportTeamCityMetadata", false);
+            TestConfigurationManager.GetBoolConfiguration("OrchardCoreUITestExecutorConfiguration:ReportTeamCityMetadata", defaultValue: false);
 
         /// <summary>
         /// Gets or sets the configuration for the initial setup of the Orchard Core app under test.
@@ -66,6 +67,13 @@ namespace Lombiq.Tests.UI.Services
         public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new();
 
         public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the test should verify the Orchard Core logs and the Browser logs
+        /// for errors after every page load. When enabled and there is an error the test is failed immediately which
+        /// prevents false errors related to some expected web element not being present on the error page.
+        /// </summary>
+        public bool RunAssertLogsOnAllPageChanges { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use SQL Server as the app's database instead of the default
@@ -96,6 +104,10 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets a dictionary storing some custom configuration data.
         /// </summary>
+        [SuppressMessage(
+            "Design",
+            "MA0016:Prefer return collection abstraction instead of implementation",
+            Justification = "Deliberately modifiable by consumer code.")]
         public Dictionary<string, object> CustomConfiguration { get; } = new();
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
@@ -133,7 +145,8 @@ namespace Lombiq.Tests.UI.Services
         }
 
         public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmptyAsync();
-        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings = app => app.LogsShouldBeEmptyAsync(true);
+        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings =
+            app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
         public static readonly Action<IEnumerable<BrowserLogMessage>> AssertBrowserLogIsEmpty =
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for

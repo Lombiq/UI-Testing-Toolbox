@@ -51,7 +51,7 @@ namespace Lombiq.Tests.UI.Services
         /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes
         /// (either due to explicit navigation or clicks) and assert on the validation results.
         /// </summary>
-        public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; }
+        public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a predicate that determines whether HTML validation and asserting the results should run for

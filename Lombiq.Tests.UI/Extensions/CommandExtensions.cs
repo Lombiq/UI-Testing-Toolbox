@@ -26,7 +26,8 @@ namespace CliWrap
                 {
                     return;
                 }
-                else if (enumerator.Current is StandardErrorCommandEvent stdErr)
+
+                if (enumerator.Current is StandardErrorCommandEvent stdErr)
                 {
                     stdErrHandler?.Invoke(stdErr);
                 }

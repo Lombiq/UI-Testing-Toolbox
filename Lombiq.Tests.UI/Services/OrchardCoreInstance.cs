@@ -1,7 +1,6 @@
 using CliWrap;
 using CliWrap.Builders;
 using Lombiq.Tests.UI.Helpers;
-using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Concurrent;
@@ -36,9 +35,8 @@ namespace Lombiq.Tests.UI.Services
         private const string UrlPrefix = "https://localhost:";
 
         private static readonly PortLeaseManager _portLeaseManager;
-        private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
+        private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
-        private static readonly string _executableExtension = OperatingSystemHelpers.GetExecutableExtension();
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -47,7 +45,6 @@ namespace Lombiq.Tests.UI.Services
         private int _port;
         private string _contentRootPath;
         private bool _isDisposed;
-
 
         // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -71,7 +68,7 @@ namespace Lombiq.Tests.UI.Services
         public async Task<Uri> StartUpAsync()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
-            var url = UrlPrefix + _port;
+            var url = UrlPrefix + _port.ToTechnicalString();
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
 
@@ -79,7 +76,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
             {
-                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, true);
+                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
             }
             else
             {
@@ -89,47 +86,43 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            // If you try to use dotnet command to run a DLL published for a different platform then you'll get an error
-            // (seen this with running win10-x86 DLLs on an x64 Windows machine saying "Failed to load the dll from
-            // hostpolicy.dll HRESULT: 0x800700C1") even if the executable will run without issues. So, we prefer to run
-            // the executable if it exist.
-            var executablePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", _executableExtension);
-            var useExecutable = File.Exists(executablePath);
+            // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
+            // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
+            // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
+            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
+            var useExeToExecuteApp = File.Exists(exePath);
 
-            // Running randomly named executables will make it harder to kill leftover processes in the event of an
-            // interrupted test. So using a unified name pattern for such executables.
-            if (useExecutable)
+            // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
+            // test execution. So using a unified name pattern for such exes.
+            if (useExeToExecuteApp)
             {
-                _exeCopyMarkers.GetOrAdd(
-                    executablePath,
-                    _ =>
+                exePath = _exeCopyMarkers.GetOrAdd(
+                    exePath,
+                    exePathKey =>
                     {
                         // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
                         // run for the same key.
                         lock (_exeCopyLock)
                         {
                             var copyExePath = Path.Combine(
-                                Path.GetDirectoryName(executablePath)!,
-                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(executablePath));
+                                Path.GetDirectoryName(exePathKey),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
 
                             if (File.Exists(copyExePath) &&
-                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(executablePath))
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePathKey))
                             {
                                 File.Delete(copyExePath);
                             }
 
-                            if (!File.Exists(copyExePath)) File.Copy(executablePath, copyExePath);
+                            if (!File.Exists(copyExePath)) File.Copy(exePathKey, copyExePath);
 
-                            executablePath = copyExePath;
-
-                            return true;
+                            return copyExePath;
                         }
                     });
             }
 
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
-            _command = await Cli.Wrap(useExecutable ? executablePath : $"dotnet{_executableExtension}")
-                .WithArgumentsAsync(argumentsBuilder =>
+            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
+                .WithArguments(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
                         .Add("--urls").Add(url)
@@ -137,9 +130,12 @@ namespace Lombiq.Tests.UI.Services
                         .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
                         .Add("--environment").Add("Development");
 
-                    if (!useExecutable) builder = builder.Add(_configuration.AppAssemblyPath);
+                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
 
-                    return _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder) ?? Task.CompletedTask;
+                    // There is no other option here than to wait for the invoked Tasks.
+#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
+                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait(CancellationToken.None);
+#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
                 });
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
@@ -158,7 +154,7 @@ namespace Lombiq.Tests.UI.Services
         {
             await PauseAsync();
 
-            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
+            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
@@ -167,11 +163,13 @@ namespace Lombiq.Tests.UI.Services
                 await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
             }
 
-            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
+            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
         }
 
-        public IEnumerable<IApplicationLog> GetLogs()
+        public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
         {
+            if (cancellationToken == default) cancellationToken = CancellationToken.None;
+
             var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
             return Directory.Exists(logFolderPath) ?
                 Directory
@@ -179,7 +177,8 @@ namespace Lombiq.Tests.UI.Services
                     .Select(filePath => (IApplicationLog)new ApplicationLog
                     {
                         Name = Path.GetFileName(filePath),
-                        ContentLoader = () => File.ReadAllTextAsync(filePath),
+                        FullName = Path.GetFullPath(filePath),
+                        ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
                     }) :
                 Enumerable.Empty<IApplicationLog>();
         }
@@ -217,17 +216,16 @@ namespace Lombiq.Tests.UI.Services
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            var dotnet = $"dotnet{_executableExtension}";
             await _command.ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
-                        $"Starting the Orchard Core application via {dotnet} failed with the following output:" +
-                         Environment.NewLine +
-                         stdErr.Text +
-                         (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
-                             ? $" This can happen when there are leftover {dotnet} processes after an aborted test run " +
-                               "or some other app is listening on the same port too."
-                             : string.Empty)),
+                        "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
+                        Environment.NewLine +
+                        stdErr.Text +
+                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
+                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run " +
+                                "or some other app is listening on the same port too."
+                            : string.Empty)),
                 _cancellationTokenSource.Token);
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
@@ -253,9 +251,15 @@ namespace Lombiq.Tests.UI.Services
         private class ApplicationLog : IApplicationLog
         {
             public string Name { get; set; }
+            public string FullName { get; set; }
             public Func<Task<string>> ContentLoader { get; set; }
 
             public Task<string> GetContentAsync() => ContentLoader();
+
+            public void Remove()
+            {
+                if (File.Exists(FullName)) File.Delete(FullName);
+            }
         }
     }
 }

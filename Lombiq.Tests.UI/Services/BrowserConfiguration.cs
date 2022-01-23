@@ -1,4 +1,6 @@
+using Lombiq.Tests.UI.Constants;
 using System;
+using System.Drawing;
 using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services
@@ -16,7 +18,7 @@ namespace Lombiq.Tests.UI.Services
         /// Gets or sets a value indicating whether the test will use the given browser in headless mode, provided that
         /// there's support for it.
         /// </summary>
-        public bool Headless { get; set; } = TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", false);
+        public bool Headless { get; set; } = TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: true);
 
         /// <summary>
         /// Gets or sets the action that will be invoked with the browser's options object so you can modify the options
@@ -29,5 +31,11 @@ namespace Lombiq.Tests.UI.Services
         /// requests. Defaults to <see cref="DefaultAcceptLanguage"/>.
         /// </summary>
         public CultureInfo AcceptLanguage { get; set; } = DefaultAcceptLanguage;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the resolution should be changed to <see
+        /// cref="CommonDisplayResolutions.Standard"/> when the setup is loaded.
+        /// </summary>
+        public Size DefaultBrowserSize { get; set; } = CommonDisplayResolutions.Standard;
     }
 }

@@ -3,7 +3,6 @@ using Azure.Storage.Blobs.Models;
 using Lombiq.Tests.UI.Helpers;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -64,7 +63,7 @@ namespace Lombiq.Tests.UI.Services
             await CreateContainerIfNotExistsAsync();
 
             _folderId = _portLeaseManager.LeaseAvailableRandomPort();
-            _basePath = _folderId.ToString(CultureInfo.InvariantCulture);
+            _basePath = _folderId.ToTechnicalString();
 
             await DropFolderIfExistsAsync();
 

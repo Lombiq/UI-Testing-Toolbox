@@ -1,7 +1,11 @@
+using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Delegates;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,9 +21,43 @@ namespace Lombiq.Tests.UI
 
         private static bool _appFolderCreated;
 
+        protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
+        protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
+
         protected abstract string AppAssemblyPath { get; }
 
         protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+
+        protected Task ExecuteMultiSizeTestAfterSetupAsync(
+            MultiSizeTest standardBrowserSizeTest,
+            MultiSizeTest mobileBrowserSizeTest,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    context.SetBrowserSize(StandardBrowserSize);
+                    standardBrowserSizeTest(context, isStandardSize: true);
+                    context.SetBrowserSize(MobileBrowserSize);
+                    mobileBrowserSizeTest(context, isStandardSize: false);
+                },
+                browser,
+                changeConfiguration);
+
+        protected Task ExecuteMultiSizeTestAfterSetupAsync(
+            MultiSizeTest standardAndMobileBrowserSizeTest,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteMultiSizeTestAfterSetupAsync(
+                standardAndMobileBrowserSizeTest,
+                standardAndMobileBrowserSizeTest,
+                browser,
+                changeConfiguration);
+
+        protected abstract Task ExecuteTestAfterSetupAsync(
+            Action<UITestContext> test,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null);
 
         /// <summary>
         /// Executes the given UI test, optionally after setting up the site.
@@ -82,7 +120,7 @@ namespace Lombiq.Tests.UI
             return ExecuteTestAsync(
                 test,
                 browser,
-                null,
+                setupOperation: null,
                 configuration =>
                 {
                     configuration.SetupConfiguration.SetupSnapshotDirectoryPath = appFolder;

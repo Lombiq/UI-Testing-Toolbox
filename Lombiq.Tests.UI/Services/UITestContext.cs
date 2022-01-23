@@ -1,6 +1,8 @@
+using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium.Remote;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
@@ -51,7 +53,18 @@ namespace Lombiq.Tests.UI.Services
         /// <summary>
         /// Gets a dictionary storing some custom contextual data.
         /// </summary>
+        [SuppressMessage(
+            "Design",
+            "MA0016:Prefer return collection abstraction instead of implementation",
+            Justification = "Deliberately modifiable by consumer code.")]
         public Dictionary<string, object> CustomContext { get; } = new();
+
+        /// <summary>
+        /// Gets or sets the current tenant name when testing multi-tenancy. When testing sites with multi-tenancy you
+        /// should set the value to the tenant in question so methods (e.g. <see
+        /// cref="TypedRouteUITestContextExtensions"/>) that use this property can refer to it.
+        /// </summary>
+        public string TenantName { get; set; } = "Default";
 
         public UITestContext(
             string testName,

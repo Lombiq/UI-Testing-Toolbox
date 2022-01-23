@@ -8,7 +8,7 @@ Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `
 
 For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.Samples/Readme.md).
 
-We also recommend always running the suite of tests for checking that all the basic Orchard Core features work, like login, registration, and content management. Use `context.TestBasicOrchardFeatures()` to run all such tests but see the other, more granular tests too. This is also demonstrated in `Lombiq.Tests.UI.Samples`.
+We also recommend always running the suite of tests for checking that all the basic Orchard Core features work, like login, registration, and content management. Use `context.TestBasicOrchardFeatures()` to run all such tests but see the other, more granular tests too. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=jmhq63sRZrI).
 
 
 ## Steps for creating a test class

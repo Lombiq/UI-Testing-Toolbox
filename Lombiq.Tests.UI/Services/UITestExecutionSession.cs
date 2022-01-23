@@ -90,6 +90,8 @@ namespace Lombiq.Tests.UI.Services
 
                 _context ??= await CreateContextAsync();
 
+                _context.SetDefaultBrowserSize();
+
                 _testManifest.Test(_context);
 
                 await AssertLogsAsync();
@@ -98,6 +100,17 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
+                if (ex is PageChangeAssertionException pageChangeAssertionException)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                    ex = pageChangeAssertionException.InnerException;
+                }
+                else
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
+                }
+
                 _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
 
                 if (ex is SetupFailedFastException) throw;
@@ -163,7 +176,7 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
         {
-            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount}");
+            var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
             var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
             try
@@ -270,7 +283,7 @@ namespace Lombiq.Tests.UI.Services
                         remotePath = _dockerConfiguration.ContainerSnapshotPath;
                     }
 
-                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, true);
+                    _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, useCompressionIfAvailable: true);
                 }
                 catch (Exception failureException)
                 {
@@ -363,6 +376,8 @@ namespace Lombiq.Tests.UI.Services
 
                     SetupSqlServerSnapshot();
                     SetupAzureBlobStorageSnapshot();
+
+                    _context.SetDefaultBrowserSize();
 
                     var result = (_context, setupConfiguration.SetupOperation(_context));
 
@@ -515,6 +530,12 @@ namespace Lombiq.Tests.UI.Services
             if (_configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
             {
                 _configuration.SetUpHtmlValidationAssertionOnPageChange();
+            }
+
+            if (_configuration.RunAssertLogsOnAllPageChanges &&
+                _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
+            {
+                _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
             }
 
             var atataScope = await AtataFactory.StartAtataScopeAsync(

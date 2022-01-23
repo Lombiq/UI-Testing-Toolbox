@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Lombiq.Tests.UI.Shortcuts.Models
 {
@@ -9,6 +10,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Models
         public IEnumerable<ModuleInfo> Modules { get; set; }
     }
 
+    [DebuggerDisplay("{AssemblyName}")]
     public class AssemblyInfo
     {
         public string AssemblyName { get; set; }

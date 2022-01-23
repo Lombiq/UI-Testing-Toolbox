@@ -1,11 +1,12 @@
 using Lombiq.HelpfulLibraries.Libraries.Mvc;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using OrchardCore.Modules;
 using OrchardCore.Recipes.Services;
-using OrchardCore.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers
@@ -15,16 +16,19 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
     {
         private readonly IRecipeExecutor _recipeExecutor;
         private readonly IEnumerable<IRecipeHarvester> _recipeHarvesters;
-        private readonly ISiteService _siteService;
+        private readonly IEnumerable<IRecipeEnvironmentProvider> _recipeEnvironmentProviders;
+        private readonly ILogger _logger;
 
         public RecipeController(
             IRecipeExecutor recipeExecutor,
             IEnumerable<IRecipeHarvester> recipeHarvesters,
-            ISiteService siteService)
+            IEnumerable<IRecipeEnvironmentProvider> recipeEnvironmentProviders,
+            ILogger<RecipeController> logger)
         {
             _recipeExecutor = recipeExecutor;
             _recipeHarvesters = recipeHarvesters;
-            _siteService = siteService;
+            _recipeEnvironmentProviders = recipeEnvironmentProviders;
+            _logger = logger;
         }
 
         public async Task<ActionResult> Execute(string recipeName)
@@ -34,22 +38,18 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
             var recipe = recipeCollections
                 .SelectMany(recipeCollection => recipeCollection)
                 .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
+
             if (recipe == null) return NotFound();
 
-            var site = await _siteService.GetSiteSettingsAsync();
+            // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
             var executionId = Guid.NewGuid().ToString("n");
 
-            // This is how Orchard Core did it up until 2021-02-23 including the required version used by this project.
-            // Since then they've switched over to IRecipeEnvironmentProvider for environment building. This code should
-            // be updated accordingly during Orchard upgrade.
-            var environment = new Dictionary<string, object>
-            {
-                { "SiteName", site.SiteName },
-                { "AdminUsername", User.Identity.Name },
-                { "AdminUserId", User.FindFirstValue(ClaimTypes.NameIdentifier) },
-            };
+            var environment = new Dictionary<string, object>();
+            await _recipeEnvironmentProviders
+                .OrderBy(environmentProvider => environmentProvider.Order)
+                .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, _logger);
 
-            await _recipeExecutor.ExecuteAsync(executionId, recipe, environment, default);
+            await _recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
             return Ok();
         }
     }
