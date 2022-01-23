@@ -1,5 +1,6 @@
 using CliWrap;
 using CliWrap.Builders;
+using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -37,6 +39,7 @@ namespace Lombiq.Tests.UI.Services
         private static readonly PortLeaseManager _portLeaseManager;
         private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
+        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly OrchardCoreConfiguration _configuration;
         private readonly ITestOutputHelper _testOutputHelper;
@@ -45,6 +48,8 @@ namespace Lombiq.Tests.UI.Services
         private int _port;
         private string _contentRootPath;
         private bool _isDisposed;
+
+        private string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
 
         // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -86,14 +91,15 @@ namespace Lombiq.Tests.UI.Services
                     .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
             }
 
-            // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
-            // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
-            // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
-            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
+            // If you try to use the dotnet command to run a DLL published for a different platform (seen this with
+            // running win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from
+            // hostpolicy.dll HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists,
+            // we'll run that.
+            var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ExecutableExtension);
             var useExeToExecuteApp = File.Exists(exePath);
 
-            // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
-            // test execution. So using a unified name pattern for such exes.
+            // Running randomly named executables will make it harder to kill leftover processes in the event of an
+            // interrupted test execution. So using a unified name pattern for such executables.
             if (useExeToExecuteApp)
             {
                 exePath = _exeCopyMarkers.GetOrAdd(
@@ -121,7 +127,7 @@ namespace Lombiq.Tests.UI.Services
                     });
             }
 
-            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
+            _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + ExecutableExtension))
                 .WithArguments(argumentsBuilder =>
                 {
                     var builder = argumentsBuilder
@@ -218,14 +224,18 @@ namespace Lombiq.Tests.UI.Services
 
             await _command.ExecuteDotNetApplicationAsync(
                 stdErr =>
+                {
+                    var dotnet = "dotnet" + ExecutableExtension;
+                    var note = stdErr.Text.ContainsOrdinalIgnoreCase("Failed to bind to address")
+                        ? " This can happen when there are leftover " + dotnet +
+                          " processes after an aborted test run or some other app is listening on the same port too."
+                        : string.Empty;
+
                     throw new IOException(
-                        "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                        Environment.NewLine +
-                        stdErr.Text +
-                        (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
-                            ? " This can happen when there are leftover dotnet.exe processes after an aborted test run " +
-                                "or some other app is listening on the same port too."
-                            : string.Empty)),
+                        StringHelper.Concatenate(
+                            $"Starting the Orchard Core application via {dotnet} failed with the following output:",
+                            $"{Environment.NewLine}{stdErr.Text}{note}"));
+                },
                 _cancellationTokenSource.Token);
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
