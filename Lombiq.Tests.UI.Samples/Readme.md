@@ -1,4 +1,4 @@
-# Lombiq UI Testing Toolbox - Samples
+# Samples - Lombiq UI Testing Toolbox
 
 
 

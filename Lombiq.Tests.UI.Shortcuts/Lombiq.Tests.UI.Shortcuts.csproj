@@ -7,10 +7,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Lombiq UI Testing Toolbox - Shortcuts</Title>
+    <Title>Shortcuts - Lombiq UI Testing Toolbox</Title>
     <Authors>Lombiq Technologies</Authors>
     <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
-    <Description>Provides some useful shortcuts for common operations that UI tests might want to do or check, e.g. turning features on or off, or logging in users. See the project website for detailed documentation.</Description>
+    <Description>
+      Shortcuts - Lombiq UI Testing Toolbox: Provides some useful shortcuts for common operations that UI tests might
+      want to do or check, e.g. turning features on or off, or logging in users. See the project website for detailed
+      documentation.
+    </Description>
     <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
     <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
@@ -21,7 +25,7 @@
   <ItemGroup>
     <None Include="Licence.md" Pack="true" PackagePath="" />
     <None Include="Readme.md" />
-    <None Include="NuGetIcon.png" Pack="true" PackagePath="\"/>
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
