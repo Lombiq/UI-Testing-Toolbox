@@ -177,7 +177,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
             _context.Driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
-            string lastGremlinsClickLogMessage = (string)_context.Driver.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
+            var lastGremlinsClickLogMessage = (string)_context.Driver.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
 
             if (!string.IsNullOrEmpty(lastGremlinsClickLogMessage))
                 Log.Info($"Last Gremlins click: {lastGremlinsClickLogMessage}.");
