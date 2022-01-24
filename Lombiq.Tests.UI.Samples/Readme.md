@@ -2,7 +2,7 @@
 
 
 
-Example UI testing project. The whole project is heavily documented to teach you how to write UI tests with the UI Testing Toolbox. It guides you through this process just like the [Lombiq Training Demo](https://github.com/Lombiq/Orchard-Training-Demo-Module) teaches Orchard Core and Orchard 1 development.
+Example UI testing project. The whole project is heavily documented to teach you how to write UI tests with the UI Testing Toolbox. It guides you through this process just like the [Lombiq Training Demo for Orchard Core](https://github.com/Lombiq/Orchard-Training-Demo-Module) teaches Orchard Core and Orchard 1 development.
 
 For general details about and on using the Toolbox see the [root Readme](../Readme.md).
 
@@ -26,3 +26,6 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Error handling](Tests/ErrorHandlingtests.cs)
 
 
+## Adding new tutorials
+
+Follow the practices of the [Lombiq Training Demo for Orchard Core](https://github.com/Lombiq/Orchard-Training-Demo-Module#contributing-and-support).
