@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Extensions
     public static class AccessUITestContextExtensions
     {
         /// <summary>
-        /// Click on the Content > ContentItems > New > <paramref name="contentType"/> button and verifies if it shows
+        /// Clicks on the Content > ContentItems > New > <paramref name="contentType"/> button and verifies if it shows
         /// the content item editor or an error page according to expectation.
         /// </summary>
         public static void CheckContentItemCreationAccess(
