@@ -42,4 +42,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
     }
 }
 
-// END OF TRAINING SECTION: Error Handling.
+// END OF TRAINING SECTION: Error handling.

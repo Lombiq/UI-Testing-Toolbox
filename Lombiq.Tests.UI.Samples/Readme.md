@@ -15,4 +15,14 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 4. Now that we have the basics out of the way start the tutorial in the [*GlobalSuppressions.cs*](GlobalSuppressions.cs) file.
 
 
+## Training sections
+
+- [UI Testing Toolbox basics](GlobalSuppressions.cs)
+- [Basic Orchard features tests](Tests/BasicOrchardFeaturesTests.cs)
+- [E-mail tests](Tests/EmailTests.cs)
+- [Accessibility tests](Tests/AccessibilityTest.cs)
+- [Using SQL Server](Tests/SqlServerTests.cs)
+- [Using Azure Blob Storage](Tests/AzureBlobStorageTests.cs)
+- [Error handling](Tests/ErrorHandlingtests.cs)
+
 
