@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.HelpfulLibraries.Libraries.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
@@ -177,6 +178,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
             _context.Driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
+            WaitForGremlinsIndicatorsToDisappear();
+
             var lastGremlinsClickLogMessage = (string)_context.Driver.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
 
             if (!string.IsNullOrEmpty(lastGremlinsClickLogMessage))
@@ -184,6 +187,12 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
             return testTimeLeft;
         }
+
+        private void WaitForGremlinsIndicatorsToDisappear() =>
+            _context.Driver.Missing(
+                By.CssSelector("div[style^='z-index: 2000; border: 3px solid orange;']")
+                    .Within(TimeSpan.FromSeconds(10))
+                    .OfAnyVisibility());
 
         private string BuildGremlinsRunScript(TimeSpan testTime, int randomSeed) =>
             new GremlinsScripts.RunScriptBuilder

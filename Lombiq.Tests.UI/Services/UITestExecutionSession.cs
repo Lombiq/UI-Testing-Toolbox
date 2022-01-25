@@ -151,10 +151,23 @@ namespace Lombiq.Tests.UI.Services
         {
             _browserLogMessages ??= new List<BrowserLogMessage>();
 
-            foreach (var windowHandle in _context.Driver.WindowHandles)
+            var windowHandles = _context.Driver.WindowHandles;
+
+            if (windowHandles.Count > 1)
             {
-                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                _context.Driver.SwitchTo().Window(windowHandle);
+                var currentWindowHandle = _context.Driver.CurrentWindowHandle;
+
+                foreach (var windowHandle in windowHandles)
+                {
+                    // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                    _context.Driver.SwitchTo().Window(windowHandle);
+                    _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+                }
+
+                _context.Driver.SwitchTo().Window(currentWindowHandle);
+            }
+            else
+            {
                 _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
             }
 

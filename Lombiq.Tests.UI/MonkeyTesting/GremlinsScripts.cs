@@ -9,14 +9,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         internal const string StopGremlinsScript =
 @"var horde = window.activeGremlinsHorde;
 if (horde)
-    horde.stop();
-
-var gremlinElements = document.querySelectorAll('div[style^=""z-index: 2000; border: 3px solid orange;""]');
-
-for (let i = 0; i < gremlinElements.length; i++) {
-    var element = gremlinElements[i];
-    element.removeAttribute('style');
-}";
+    horde.stop();";
 
         internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
 
@@ -48,7 +41,7 @@ for (let i = 0; i < gremlinElements.length; i++) {
     const customLogger = {{
         log: function () {{
             console.log.apply(null, arguments);
-            if (['click', 'dblclick', 'mouseup'].some(x => arguments[2] === x)) {{
+            if (['click', 'dblclick', 'mouseup'].some(mouseAction => arguments[2] === mouseAction)) {{
                 var message = Array.prototype.slice.call(arguments, 2).join(' ');
                 sessionStorage.setItem('lastgremlinsclick', message);
             }}
