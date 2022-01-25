@@ -104,7 +104,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
                     // If you want to add some sample content in just one test, or change some Orchard configuration
                     // quickly, then defining those in a recipe and executing it will come handy:
-                    context.ExecuteRecipeDirectly("Lombiq.OSOCE.JsonEditor.Sample");
+                    context.ExecuteRecipeDirectly("Lombiq.JsonEditor.Sample");
 
                     // Retrieving some in-depth details about the app.
                     var info = context.GetApplicationInfoAsync().Result;
