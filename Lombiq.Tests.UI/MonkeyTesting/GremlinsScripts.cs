@@ -8,8 +8,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         internal const string StopGremlinsScript =
 @"var horde = window.activeGremlinsHorde;
-if (horde)
-    horde.stop();";
+if (horde) horde.stop();";
 
         internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
 
