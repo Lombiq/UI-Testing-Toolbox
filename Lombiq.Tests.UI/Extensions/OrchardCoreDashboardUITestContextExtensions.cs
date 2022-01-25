@@ -57,8 +57,13 @@ namespace Lombiq.Tests.UI.Extensions
                 interval ?? TimeSpan.FromMinutes(2));
         }
 
-        public static void GoToContentItemList(this UITestContext context) =>
-            context.GoToRelativeUrl("/Admin/Contents/ContentItems");
+        public static void GoToContentItemList(this UITestContext context, string filterContentType = null)
+        {
+            var query = string.IsNullOrEmpty(filterContentType)
+                ? string.Empty
+                : ("?q=type%3A" + filterContentType);
+            context.GoToRelativeUrl("/Admin/Contents/ContentItems" + query);
+        }
 
         public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentTypeText)
         {
