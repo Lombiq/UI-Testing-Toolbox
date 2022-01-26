@@ -7,7 +7,6 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -158,9 +157,6 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                     pageTestInfo.TimeToTest = pageTestTimeLeft;
                     if (!_visitedPages.Contains(pageTestInfo)) _visitedPages.Add(pageTestInfo);
                 });
-
-            _context.Scope.Driver.GetScreenshot().SaveAsFile("d:\\Temp\\Scr\\screen.png");
-            File.WriteAllText("d:\\Temp\\Scr\\source.html", _context.Scope.Driver.PageSource);
 
             return _context.TriggerAfterPageChangeEventAsync();
         }
