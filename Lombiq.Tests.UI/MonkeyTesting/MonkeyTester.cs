@@ -7,6 +7,7 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -158,6 +159,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                     if (!_visitedPages.Contains(pageTestInfo)) _visitedPages.Add(pageTestInfo);
                 });
 
+            _context.Scope.Driver.GetScreenshot().SaveAsFile("d:\\Temp\\Scr\\screen.png");
+            File.WriteAllText("d:\\Temp\\Scr\\source.html", _context.Scope.Driver.PageSource);
+
             return _context.TriggerAfterPageChangeEventAsync();
         }
 
@@ -190,7 +194,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private void WaitForGremlinsIndicatorsToDisappear() =>
             _context.Driver.Missing(
-                By.CssSelector("div[style^='z-index: 2000; border: 3px solid orange;']")
+                By.CssSelector("body>div[style^='z-index: 2000;']")
                     .Within(TimeSpan.FromSeconds(10))
                     .OfAnyVisibility());
 
