@@ -43,5 +43,5 @@ namespace Lombiq.Tests.UI.Samples.Tests
     }
 }
 
-// END OF TRAINING SECTION: UI Testing Toolbox basics.
+// END OF TRAINING SECTION: Accessibility tests.
 // NEXT STATION: Head over to Tests/SqlServerTests.cs.

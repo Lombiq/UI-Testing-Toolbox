@@ -36,10 +36,11 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     {
                         // Remove logs to have a clean slate.
                         foreach (var log in context.Application.GetLogs()) log.Remove();
+                        context.Scope.Driver.GetAndEmptyBrowserLogAsync().Wait();
                     }
                 },
                 browser);
     }
 }
 
-// END OF TRAINING SECTION: Error Handling.
+// END OF TRAINING SECTION: Error handling.
