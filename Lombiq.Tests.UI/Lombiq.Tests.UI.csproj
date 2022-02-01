@@ -85,4 +85,13 @@
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="0.0.6" />
   </ItemGroup>
 
+  <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
+  https://github.com/NuGet/Home/discussions/11541. -->
+  <PropertyGroup Condition="'$(NuGetBuild)' == 'True'">
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <Deterministic>true</Deterministic>
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+  </PropertyGroup>
+
 </Project>
