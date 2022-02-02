@@ -50,7 +50,16 @@ namespace Lombiq.Tests.UI.Services
             _testOutputHelper = configuration.TestOutputHelper;
         }
 
-        public ValueTask DisposeAsync() => ShutdownAsync();
+        public ValueTask DisposeAsync()
+        {
+            if (_configuration.RunAssertLogsOnAllPageChanges)
+            {
+                _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
+                _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
+            }
+
+            return ShutdownAsync();
+        }
 
         public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
         {
@@ -564,7 +573,7 @@ namespace Lombiq.Tests.UI.Services
             if (_configuration.RunAssertLogsOnAllPageChanges &&
                 _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
             {
-                _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
+                _configuration.Events.AfterPageChange += OnAssertLogsAsync;
             }
 
             var atataScope = AtataFactory.StartAtataScope(
@@ -586,6 +595,8 @@ namespace Lombiq.Tests.UI.Services
             _configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
             _configuration.UseSqlServer +
             _configuration.UseAzureBlobStorage;
+
+        private Task OnAssertLogsAsync(UITestContext context) => AssertLogsAsync();
 
         private async Task AssertLogsAsync()
         {
