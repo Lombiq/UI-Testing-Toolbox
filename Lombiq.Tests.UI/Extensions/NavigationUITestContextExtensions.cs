@@ -147,6 +147,12 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SwitchToFirstWindow(this UITestContext context) =>
             context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
 
+        /// <summary>
+        /// Switches control back to the currently executing window/tab.
+        /// </summary>
+        public static void SwitchToCurrentWindow(this UITestContext context) =>
+            context.SwitchTo(locator => locator.Window(context.Driver.CurrentWindowHandle), "current window");
+
         public static void SwitchToFrame0(this UITestContext context) =>
             context.SwitchTo(locator => locator.Frame(0), "frame 0");
 
