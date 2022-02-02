@@ -118,6 +118,13 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     configuration.AccessibilityCheckingConfiguration.AccessbilityCheckingAndAssertionOnPageChangeRule =
                         context => UrlCheckHelper.IsValidatablePage(context) && context.GetCurrentUri().PathAndQuery != "/";
                 });
+
+        // To be removed after troubleshooting.
+        [Theory, Chrome]
+        public Task ShouldFailWith404(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                context => context.SignInDirectlyAndGoToRelativeUrl("/Admin/Contents/ContentItems&Options.SelectedContentType=Article"),
+                browser);
     }
 }
 
