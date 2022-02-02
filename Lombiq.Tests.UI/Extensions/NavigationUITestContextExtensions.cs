@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -80,20 +79,30 @@ namespace Lombiq.Tests.UI.Extensions
         // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
         // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
         // https://github.com/atata-framework/atata/issues/364
+        // The GoToPage() methods SHOULD NOT BE ASYNC, otherwise during subsequent operations AtataContext.Current will
+        // be lost.
 
         public static T GoToPage<T>(this UITestContext context)
-            where T : PageObject<T> =>
-            context.ExecuteLogged(
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
                 nameof(GoToPage),
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>());
+            context.TriggerAfterPageChangeEventAsync().Wait();
+            return page;
+        }
 
         public static T GoToPage<T>(this UITestContext context, string relativeUrl)
-            where T : PageObject<T> =>
-            context.ExecuteLogged(
-                nameof(GoToPage),
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
                 $"{typeof(T).FullName} - {relativeUrl}",
+                typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
+            context.TriggerAfterPageChangeEventAsync().Wait();
+            return page;
+        }
 
         public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreSetupPage>();
@@ -112,6 +121,13 @@ namespace Lombiq.Tests.UI.Extensions
 
         public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
             context.GoToPage<OrchardCoreFeaturesPage>();
+
+        /// <summary>
+        /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during
+        /// Atata operations (like within a page class) when writing async code.
+        /// </summary>
+        public static void RefreshCurrentAtataContext(this UITestContext context) =>
+            AtataContext.Current = context.Scope.AtataContext;
 
         public static void SwitchTo(this UITestContext context, Action<ITargetLocator> switchOperation, string targetDescription) =>
             context.ExecuteLogged(
@@ -141,36 +157,6 @@ namespace Lombiq.Tests.UI.Extensions
                 context.Driver.Url,
                 () => new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
                     d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete")));
-
-        public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
-            where T : Enum
-        {
-            context.ClickReliablyOn(By.Id(selectId));
-            context.Get(By.CssSelector(FormattableString.Invariant($"#{selectId} option[value='{(int)(object)value}']"))).Click();
-        }
-
-        public static void SetDropdownByText(this UITestContext context, string selectId, string value) =>
-            SetDropdownByText(context, By.Id(selectId), value);
-
-        public static void SetDropdownByText(this UITestContext context, By selectBy, string value)
-        {
-            context.ClickReliablyOn(selectBy);
-            context.Get(selectBy).Get(By.XPath($".//option[contains(., '{value}')]")).Click();
-        }
-
-        /// <summary>
-        /// Sets the value of the date picker via JavaScript and then raises the <c>change</c> event.
-        /// </summary>
-        public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
-            context.ExecuteScript(
-                FormattableString.Invariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
-                $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
-
-        public static DateTime GetDatePicker(this UITestContext context, string id) =>
-            DateTime.ParseExact(
-                context.Get(By.Id(id)).GetAttribute("value"),
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture);
 
         public static void SetTaxonomyFieldByIndex(this UITestContext context, string taxonomyId, int index)
         {
@@ -217,74 +203,6 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
 
         /// <summary>
-        /// Finds the first submit button and clicks on it reliably.
-        /// </summary>
-        public static void ClickReliablyOnSubmit(this UITestContext context) =>
-            context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
-
-        /// <summary>
-        /// Finds the "Add New" button.
-        /// </summary>
-        public static IWebElement GetAddNewButton(this UITestContext context) =>
-            context.Get(By.XPath("//button[contains(.,'Add New')]"));
-
-        /// <summary>
-        /// Opens the dropdown belonging to the "Add New" button. If <paramref name="byLocalMenuItem"/> is not <see
-        /// langword="null"/> it will click on that element within the dropdown context as well.
-        /// </summary>
-        public static void SelectAddNewDropdown(this UITestContext context, By byLocalMenuItem = null) =>
-            context.SelectFromBootstrapDropdownReliably(GetAddNewButton(context), byLocalMenuItem);
-
-        /// <summary>
-        /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
-        /// and then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
-        /// </summary>
-        /// <param name="context">The current UI test context.</param>
-        /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
-        /// <param name="byLocalMenuItem">
-        /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and
-        /// the dropdown is left open.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
-        /// </exception>
-        public static void SelectFromBootstrapDropdownReliably(
-            this UITestContext context,
-            IWebElement dropdownButton,
-            By byLocalMenuItem)
-        {
-            var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
-
-            for (var i = 0; i < 3; i++)
-            {
-                dropdownButton.ClickReliably(context);
-
-                var dropdownMenu = dropdownButton.GetAll(byDropdownMenu).SingleOrDefault();
-                if (dropdownMenu != null)
-                {
-                    if (byLocalMenuItem != null) dropdownMenu.Get(byLocalMenuItem).ClickReliably(context);
-                    return;
-                }
-            }
-
-            throw new InvalidOperationException($"Couldn't open dropdown menu in 3 tries.");
-        }
-
-        /// <summary>
-        /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
-        /// and then clicks on the menu item with the <paramref name="menuItemLinkText"/> within the dropdown menu's
-        /// context.
-        /// </summary>
-        /// <param name="context">The current UI test context.</param>
-        /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
-        /// <param name="menuItemLinkText">The text of the dropdown menu item.</param>
-        public static void SelectFromBootstrapDropdownReliably(
-            this UITestContext context,
-            By byDropdownButton,
-            string menuItemLinkText) =>
-            SelectFromBootstrapDropdownReliably(context, context.Get(byDropdownButton), By.LinkText(menuItemLinkText));
-
-        /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
         /// </summary>
         public static void AcceptAlert(this UITestContext context)
@@ -306,5 +224,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// Refreshes (reloads) the current page.
         /// </summary>
         public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
+
+        /// <summary>
+        /// Checks whether the current page is the Orchard setup page.
+        /// </summary>
+        public static bool IsSetupPage(this UITestContext context) =>
+            context.Driver.Title == "Setup" &&
+            context.Driver.PageSource.Contains(
+                @"<link type=""image/x-icon"" rel=""shortcut icon"" href=""/OrchardCore.Setup/favicon.ico"">");
     }
 }

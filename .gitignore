@@ -4,3 +4,5 @@ bin/
 *.user
 Localization/
 wwwroot
+node_modules/
+package-lock.json

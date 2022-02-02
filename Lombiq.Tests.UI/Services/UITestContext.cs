@@ -1,6 +1,9 @@
 using Lombiq.HelpfulLibraries.Libraries.Mvc;
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -92,6 +95,43 @@ namespace Lombiq.Tests.UI.Services
         {
             var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
             Configuration.AssertBrowserLog?.Invoke(browserLog);
+        }
+
+        internal async Task TriggerAfterPageChangeEventAsync()
+        {
+            if (IsNoAlert() && Configuration.Events.AfterPageChange is { } afterPageChange)
+            {
+                try
+                {
+                    await afterPageChange.Invoke(this);
+                }
+                catch (Exception exception)
+                {
+                    throw new PageChangeAssertionException(this, exception);
+                }
+            }
+        }
+
+        internal async Task TriggerAfterPageChangeEventAndRefreshAtataContextAsync()
+        {
+            await TriggerAfterPageChangeEventAsync();
+            this.RefreshCurrentAtataContext();
+        }
+
+        private bool IsNoAlert()
+        {
+            // If there's an alert (which can happen mostly after a click but also after navigating) then all other
+            // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need
+            // to check if an alert is present and that's only possible by catching exceptions.
+            try
+            {
+                Driver.SwitchTo().Alert();
+                return false;
+            }
+            catch (NoAlertPresentException)
+            {
+                return true;
+            }
         }
     }
 }
