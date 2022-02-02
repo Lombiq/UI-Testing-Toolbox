@@ -50,16 +50,7 @@ namespace Lombiq.Tests.UI.Services
             _testOutputHelper = configuration.TestOutputHelper;
         }
 
-        public ValueTask DisposeAsync()
-        {
-            if (_configuration.RunAssertLogsOnAllPageChanges)
-            {
-                _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
-                _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
-            }
-
-            return ShutdownAsync();
-        }
+        public ValueTask DisposeAsync() => ShutdownAsync();
 
         public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
         {
@@ -147,6 +138,12 @@ namespace Lombiq.Tests.UI.Services
 
         private async ValueTask ShutdownAsync()
         {
+            if (_configuration.RunAssertLogsOnAllPageChanges)
+            {
+                _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
+                _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
+            }
+
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
             _sqlServerManager?.Dispose();
