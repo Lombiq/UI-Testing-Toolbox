@@ -174,7 +174,15 @@ namespace Lombiq.Tests.UI.Services
                     _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
                 }
 
-                _context.Driver.SwitchTo().Window(currentWindowHandle);
+                try
+                {
+                    _context.Driver.SwitchTo().Window(currentWindowHandle);
+                }
+                catch (NoSuchWindowException)
+                {
+                    // This can happen in rare instances if the current window/tab was just closed.
+                    _context.Driver.SwitchTo().Window(_context.Driver.WindowHandles.Last());
+                }
             }
             else
             {
