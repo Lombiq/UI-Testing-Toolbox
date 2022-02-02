@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
@@ -24,6 +25,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly OrchardCoreUITestExecutorConfiguration _configuration;
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
+        private readonly List<Screenshot> _pageScreenshots = new();
 
         // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
         private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -151,6 +153,8 @@ namespace Lombiq.Tests.UI.Services
 
             if (_smtpService != null) await _smtpService.DisposeAsync();
             if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
+
+            if (_dumpConfiguration.CaptureScreenshots) _pageScreenshots.Clear();
         }
 
         private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
@@ -223,17 +227,27 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_context == null) return;
 
-                // Saving the screenshot and HTML output should be as early after the test fail as possible so they show
-                // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-                if (_dumpConfiguration.CaptureScreenshot)
+                // Saving the failure screenshot and HTML output should be as early after the test fail as possible so
+                // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+                if (_dumpConfiguration.CaptureScreenshots)
                 {
                     // Only PNG is supported on .NET Core.
-                    var imagePath = Path.Combine(debugInformationPath, "Screenshot.png");
-                    _context.Scope.Driver.GetScreenshot().SaveAsFile(imagePath);
+                    var imagePath = Path.Combine(debugInformationPath, "FailureScreenshot.png");
+                    _context.TakeScreenshot(imagePath);
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
                         TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
+                    }
+
+                    var pageScreenshotsPath = Path.Combine(debugInformationPath, "PageScreenshots");
+                    Directory.CreateDirectory(pageScreenshotsPath);
+                    var fileNameFormat = "D" + _pageScreenshots.Count.ToTechnicalString().Length;
+
+                    for (int i = 0; i < _pageScreenshots.Count; i++)
+                    {
+                        var path = Path.Combine(pageScreenshotsPath, i.ToString(fileNameFormat, CultureInfo.InvariantCulture) + ".png");
+                        _pageScreenshots[i].SaveAsFile(path);
                     }
                 }
 
@@ -573,6 +587,12 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.Events.AfterPageChange += OnAssertLogsAsync;
             }
 
+            if (_dumpConfiguration.CaptureScreenshots)
+            {
+                _configuration.Events.AfterPageChange -= OnTakeScreenshotAsync;
+                _configuration.Events.AfterPageChange += OnTakeScreenshotAsync;
+            }
+
             var atataScope = AtataFactory.StartAtataScope(
                 _testOutputHelper,
                 uri,
@@ -712,6 +732,12 @@ namespace Lombiq.Tests.UI.Services
             _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
             return smtpContext;
+        }
+
+        private Task OnTakeScreenshotAsync(UITestContext context)
+        {
+            _pageScreenshots.Add(context.TakeScreenshot());
+            return Task.CompletedTask;
         }
     }
 }
