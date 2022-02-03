@@ -5,6 +5,7 @@
 
   "rules": {
     "attribute-boolean-style": "off",
+    "long-title": "off",
     "no-trailing-whitespace": "off",
     "no-inline-style": "off",
     "no-dup-class": "off",
