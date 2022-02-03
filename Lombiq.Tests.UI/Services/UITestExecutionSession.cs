@@ -250,7 +250,7 @@ namespace Lombiq.Tests.UI.Services
 
                     var pageScreenshotsPath = Path.Combine(debugInformationPath, "PageScreenshots");
                     Directory.CreateDirectory(pageScreenshotsPath);
-                    var fileNameFormat = "D" + _pageScreenshots.Count.ToTechnicalString().Length;
+                    var fileNameFormat = "D" + _pageScreenshots.Count.DigitCount().ToTechnicalString();
 
                     for (int i = 0; i < _pageScreenshots.Count; i++)
                     {
