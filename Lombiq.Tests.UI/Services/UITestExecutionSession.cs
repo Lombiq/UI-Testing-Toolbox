@@ -243,10 +243,10 @@ namespace Lombiq.Tests.UI.Services
 
                     var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
                     Directory.CreateDirectory(pageScreenshotsPath);
-                    var fileNameFormat = "D" + _screenshots.Count.DigitCount().ToTechnicalString();
+                    var digitCount = _screenshots.Count.DigitCount();
 
                     string GetScreenshotPath(int index) =>
-                        Path.Combine(pageScreenshotsPath, index.ToString(fileNameFormat, CultureInfo.InvariantCulture) + ".png");
+                        Path.Combine(pageScreenshotsPath, index.PadZeroes(digitCount) + ".png");
 
                     for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
 
