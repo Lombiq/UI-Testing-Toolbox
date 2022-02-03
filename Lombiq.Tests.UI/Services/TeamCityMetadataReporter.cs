@@ -42,11 +42,6 @@ namespace Lombiq.Tests.UI.Services
         {
             var testName = Escape(uITestManifest.Name);
 
-            if (testName.Contains("BasicTests.AnonymousHomePageShouldExist"))
-            {
-                testName = "Lombiq.Tests.UI.Samples.Tests.BasicTests.AnonymousHomePageShouldExist(browser: \"Chrome\")";
-            }
-
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             Console.WriteLine(
                 Environment.NewLine +
