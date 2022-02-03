@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly OrchardCoreUITestExecutorConfiguration _configuration;
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
-        private readonly List<Screenshot> _pageScreenshots = new();
+        private readonly List<Screenshot> _screenshots = new();
 
         // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
         private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -154,7 +154,7 @@ namespace Lombiq.Tests.UI.Services
             if (_smtpService != null) await _smtpService.DisposeAsync();
             if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
-            if (_dumpConfiguration.CaptureScreenshots) _pageScreenshots.Clear();
+            if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
         }
 
         private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
@@ -239,23 +239,21 @@ namespace Lombiq.Tests.UI.Services
                 // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
                 if (_dumpConfiguration.CaptureScreenshots)
                 {
-                    // Only PNG is supported on .NET Core.
-                    var imagePath = Path.Combine(debugInformationPath, "FailureScreenshot.png");
-                    _context.TakeScreenshot(imagePath);
+                    await TakeScreenshotAsync(_context);
+
+                    var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
+                    Directory.CreateDirectory(pageScreenshotsPath);
+                    var fileNameFormat = "D" + _screenshots.Count.DigitCount().ToTechnicalString();
+
+                    string GetScreenshotPath(int index) =>
+                        Path.Combine(pageScreenshotsPath, index.ToString(fileNameFormat, CultureInfo.InvariantCulture) + ".png");
+
+                    for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
-                    }
-
-                    var pageScreenshotsPath = Path.Combine(debugInformationPath, "PageScreenshots");
-                    Directory.CreateDirectory(pageScreenshotsPath);
-                    var fileNameFormat = "D" + _pageScreenshots.Count.DigitCount().ToTechnicalString();
-
-                    for (int i = 0; i < _pageScreenshots.Count; i++)
-                    {
-                        var path = Path.Combine(pageScreenshotsPath, i.ToString(fileNameFormat, CultureInfo.InvariantCulture) + ".png");
-                        _pageScreenshots[i].SaveAsFile(path);
+                        TeamCityMetadataReporter.ReportImage(
+                            _testManifest.Name, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
                     }
                 }
 
@@ -597,8 +595,8 @@ namespace Lombiq.Tests.UI.Services
 
             if (_dumpConfiguration.CaptureScreenshots)
             {
-                _configuration.Events.AfterPageChange -= OnTakeScreenshotAsync;
-                _configuration.Events.AfterPageChange += OnTakeScreenshotAsync;
+                _configuration.Events.AfterPageChange -= TakeScreenshotAsync;
+                _configuration.Events.AfterPageChange += TakeScreenshotAsync;
             }
 
             var atataScope = AtataFactory.StartAtataScope(
@@ -742,9 +740,9 @@ namespace Lombiq.Tests.UI.Services
             return smtpContext;
         }
 
-        private Task OnTakeScreenshotAsync(UITestContext context)
+        private Task TakeScreenshotAsync(UITestContext context)
         {
-            _pageScreenshots.Add(context.TakeScreenshot());
+            _screenshots.Add(context.TakeScreenshot());
             return Task.CompletedTask;
         }
     }
