@@ -104,7 +104,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    // For some reason doing await afterPageChange.Invoke(this) will case exceptions to not propagate
+                    // For some reason doing await afterPageChange.Invoke(this) will cause exceptions to not propagate
                     // when there are more than 2 subscribers.
                     await afterPageChange.GetInvocationList()
                         .Cast<PageChangeEventHandler>()
