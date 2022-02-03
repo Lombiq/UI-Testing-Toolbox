@@ -5,7 +5,8 @@ bin/
 artifacts/
 .vs/
 wwwroot
-node_modules
+node_modules/
 .pnpm-debug.log
+package-lock.json
 Localization/
 /.editorconfig
