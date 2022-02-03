@@ -1,0 +1,25 @@
+lockfileVersion: 5.3
+
+specifiers:
+  gremlins.js: 2.2.0
+
+dependencies:
+  gremlins.js: 2.2.0
+
+packages:
+
+  /chance/1.1.8:
+    resolution: {integrity: sha512-v7fi5Hj2VbR6dJEGRWLmJBA83LJMS47pkAbmROFxHWd9qmE1esHRZW8Clf1Fhzr3rjxnNZVCjOEv/ivFxeIMtg==}
+    dev: false
+
+  /core-js/3.20.2:
+    resolution: {integrity: sha512-nuqhq11DcOAbFBV4zCbKeGbKQsUDRqTX0oqx7AttUBuqe3h20ixsE039QHelbL6P4h+9kytVqyEtyZ6gsiwEYw==}
+    requiresBuild: true
+    dev: false
+
+  /gremlins.js/2.2.0:
+    resolution: {integrity: sha512-zVe4+WuCwTheg1OzBOdtiy7nZj52lWyWjCPMw/78wI1uAJdGlc97hVGYsZg0v75Hm+E91y5D+yG4U0lk7j/6xg==}
+    dependencies:
+      chance: 1.1.8
+      core-js: 3.20.2
+    dev: false

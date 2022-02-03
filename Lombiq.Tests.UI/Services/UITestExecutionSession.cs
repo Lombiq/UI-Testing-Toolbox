@@ -100,18 +100,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                if (ex is PageChangeAssertionException pageChangeAssertionException)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
-                    ex = pageChangeAssertionException.InnerException;
-                }
-                else
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(
-                        $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
-                }
-
-                _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+                ex = PrepareAndLogException(ex);
 
                 if (ex is SetupFailedFastException) throw;
 
@@ -149,6 +138,12 @@ namespace Lombiq.Tests.UI.Services
 
         private async ValueTask ShutdownAsync()
         {
+            if (_configuration.RunAssertLogsOnAllPageChanges)
+            {
+                _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
+                _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
+            }
+
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
             _sqlServerManager?.Dispose();
@@ -160,18 +155,58 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
         {
-            if (_browserLogMessages != null) return _browserLogMessages;
+            _browserLogMessages ??= new List<BrowserLogMessage>();
 
-            var allMessages = new List<BrowserLogMessage>();
+            var windowHandles = _context.Driver.WindowHandles;
 
-            foreach (var windowHandle in _context.Driver.WindowHandles)
+            if (windowHandles.Count > 1)
             {
-                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                _context.Driver.SwitchTo().Window(windowHandle);
-                allMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+                var currentWindowHandle = _context.Driver.CurrentWindowHandle;
+
+                foreach (var windowHandle in windowHandles)
+                {
+                    // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                    _context.Driver.SwitchTo().Window(windowHandle);
+                    _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+                }
+
+                _context.Driver.SwitchTo().Window(currentWindowHandle);
+            }
+            else
+            {
+                _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
             }
 
-            return _browserLogMessages = allMessages;
+            return _browserLogMessages;
+        }
+
+        private Exception PrepareAndLogException(Exception ex)
+        {
+            if (ex is AggregateException aggregateException)
+            {
+                if (aggregateException.InnerExceptions.Count > 1)
+                {
+                    throw new InvalidOperationException(
+                        "More than one exceptions in the AggregateException. This shouldn't really happen.");
+                }
+
+                ex = aggregateException.InnerException;
+            }
+
+            if (ex is PageChangeAssertionException pageChangeAssertionException)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                ex = pageChangeAssertionException.InnerException;
+            }
+            else if (_context?.Driver is not null)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
+            }
+
+            _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+
+            return ex;
         }
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
@@ -535,7 +570,7 @@ namespace Lombiq.Tests.UI.Services
             if (_configuration.RunAssertLogsOnAllPageChanges &&
                 _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
             {
-                _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
+                _configuration.Events.AfterPageChange += OnAssertLogsAsync;
             }
 
             var atataScope = AtataFactory.StartAtataScope(
@@ -557,6 +592,8 @@ namespace Lombiq.Tests.UI.Services
             _configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
             _configuration.UseSqlServer +
             _configuration.UseAzureBlobStorage;
+
+        private Task OnAssertLogsAsync(UITestContext context) => AssertLogsAsync();
 
         private async Task AssertLogsAsync()
         {

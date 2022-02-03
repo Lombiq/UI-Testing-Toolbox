@@ -79,4 +79,14 @@
     <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
   </ItemGroup>
 
+  <Import Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.props" />
+  <Import Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
+
+  <ItemGroup>
+    <EmbeddedResource Include="node_modules\gremlins.js\dist\gremlins.min.js">
+      <Link>Resources\gremlins.min.js</Link>
+    </EmbeddedResource>
+    <None Remove="node_modules\**" />
+  </ItemGroup>
+
 </Project>

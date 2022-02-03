@@ -15,9 +15,11 @@ namespace Lombiq.Tests.UI.Helpers
             var path = context.GetCurrentUri().PathAndQuery;
 
             return path.StartsWithOrdinalIgnoreCase("/admin") ||
+                path.StartsWithOrdinalIgnoreCase("/Register") ||
                 path.StartsWithOrdinalIgnoreCase("/Login") ||
                 path.StartsWithOrdinalIgnoreCase("/ChangePassword") ||
-                path.StartsWithOrdinalIgnoreCase("/ExternalLogins");
+                path.StartsWithOrdinalIgnoreCase("/ExternalLogins") ||
+                context.IsSetupPage();
         }
 
         /// <summary>
