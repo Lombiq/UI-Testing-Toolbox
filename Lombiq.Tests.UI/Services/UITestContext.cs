@@ -7,6 +7,7 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
@@ -104,7 +105,11 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    await afterPageChange.Invoke(this);
+                    // For some reason doing await afterPageChange.Invoke(this) will cause exceptions to not propagate
+                    // when there are more than 2 subscribers.
+                    await afterPageChange.GetInvocationList()
+                        .Cast<PageChangeEventHandler>()
+                        .AwaitEachAsync(eventHandler => eventHandler(this));
                 }
                 catch (Exception exception)
                 {

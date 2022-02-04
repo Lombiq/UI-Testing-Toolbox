@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
@@ -24,6 +25,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly OrchardCoreUITestExecutorConfiguration _configuration;
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
+        private readonly List<Screenshot> _screenshots = new();
 
         // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
         private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -151,6 +153,8 @@ namespace Lombiq.Tests.UI.Services
 
             if (_smtpService != null) await _smtpService.DisposeAsync();
             if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
+
+            if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
         }
 
         private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
@@ -170,7 +174,15 @@ namespace Lombiq.Tests.UI.Services
                     _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
                 }
 
-                _context.Driver.SwitchTo().Window(currentWindowHandle);
+                try
+                {
+                    _context.Driver.SwitchTo().Window(currentWindowHandle);
+                }
+                catch (NoSuchWindowException)
+                {
+                    // This can happen in rare instances if the current window/tab was just closed.
+                    _context.Driver.SwitchTo().Window(_context.Driver.WindowHandles.Last());
+                }
             }
             else
             {
@@ -223,17 +235,25 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_context == null) return;
 
-                // Saving the screenshot and HTML output should be as early after the test fail as possible so they show
-                // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-                if (_dumpConfiguration.CaptureScreenshot)
+                // Saving the failure screenshot and HTML output should be as early after the test fail as possible so
+                // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+                if (_dumpConfiguration.CaptureScreenshots)
                 {
-                    // Only PNG is supported on .NET Core.
-                    var imagePath = Path.Combine(debugInformationPath, "Screenshot.png");
-                    _context.Scope.Driver.GetScreenshot().SaveAsFile(imagePath);
+                    await TakeScreenshotAsync(_context);
+
+                    var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
+                    Directory.CreateDirectory(pageScreenshotsPath);
+                    var digitCount = _screenshots.Count.DigitCount();
+
+                    string GetScreenshotPath(int index) =>
+                        Path.Combine(pageScreenshotsPath, index.PadZeroes(digitCount) + ".png");
+
+                    for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportImage(_testManifest, "Screenshot", imagePath);
+                        TeamCityMetadataReporter.ReportImage(
+                            _testManifest, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
                     }
                 }
 
@@ -573,6 +593,12 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.Events.AfterPageChange += OnAssertLogsAsync;
             }
 
+            if (_dumpConfiguration.CaptureScreenshots)
+            {
+                _configuration.Events.AfterPageChange -= TakeScreenshotAsync;
+                _configuration.Events.AfterPageChange += TakeScreenshotAsync;
+            }
+
             var atataScope = AtataFactory.StartAtataScope(
                 _testOutputHelper,
                 uri,
@@ -712,6 +738,12 @@ namespace Lombiq.Tests.UI.Services
             _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
             return smtpContext;
+        }
+
+        private Task TakeScreenshotAsync(UITestContext context)
+        {
+            _screenshots.Add(context.TakeScreenshot());
+            return Task.CompletedTask;
         }
     }
 }
