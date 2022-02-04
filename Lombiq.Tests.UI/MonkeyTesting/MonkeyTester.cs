@@ -165,6 +165,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
 
         private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
         {
+            // If Gremlin interactions cause the new tabs/windows to open, we need to switch back to the original one.
+            _context.SwitchToCurrentWindow();
+
             _context.Driver.ExecuteScript(GremlinsScripts.GremlinsScript);
 
             string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
@@ -175,6 +178,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                 driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
                 timeout: testTime,
                 pollingInterval: _options.PageMarkerPollingInterval);
+
+            _context.SwitchToCurrentWindow();
 
             _context.Driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
