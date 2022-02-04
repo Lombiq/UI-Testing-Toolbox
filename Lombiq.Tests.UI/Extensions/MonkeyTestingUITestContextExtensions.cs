@@ -68,8 +68,9 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
             if (!string.IsNullOrEmpty(startingRelativeUrl)) context.GoToRelativeUrl(startingRelativeUrl);
 
+            options ??= new MonkeyTestingOptions();
             options.UrlFilters.Add(new NotAdminMonkeyTestingUrlFilter());
-            return context.TestCurrentPageAsMonkeyRecursivelyAsync();
+            return context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
         }
 
         /// <inheritdoc cref="TestAdminAsMonkeyRecursivelyAsync(UITestContext, MonkeyTestingOptions, string, string)"/>
@@ -103,8 +104,9 @@ namespace Lombiq.Tests.UI.Extensions
             if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
             if (!string.IsNullOrEmpty(startingRelativeUrl)) context.GoToRelativeUrl(startingRelativeUrl);
 
+            options ??= new MonkeyTestingOptions();
             options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter());
-            return context.TestCurrentPageAsMonkeyRecursivelyAsync();
+            return context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
         }
 
         /// <inheritdoc cref="TestCurrentPageAsMonkeyAsync(UITestContext, MonkeyTestingOptions, int?)"/>
