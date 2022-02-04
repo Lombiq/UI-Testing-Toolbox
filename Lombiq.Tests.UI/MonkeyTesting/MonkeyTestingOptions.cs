@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.MonkeyTesting.UrlSanitizers;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace Lombiq.Tests.UI.MonkeyTesting
 {
@@ -16,10 +15,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting
     public sealed class MonkeyTestingOptions
     {
         /// <summary>
-        /// Gets or sets the base random seed. The default value is random. Can be used to reproduce a test with a same
-        /// randomization.
+        /// Gets or sets the base random seed. The default value is 1234 for reproducibility. Can be used to reproduce
+        /// a test with a same randomization.
         /// </summary>
-        public int BaseRandomSeed { get; set; } = RandomNumberGenerator.GetInt32(100_000);
+        public int BaseRandomSeed { get; set; } = 1234;
 
         /// <summary>
         /// Gets or sets the time spent monkey testing a given page. The default value is 60 seconds. The bigger this

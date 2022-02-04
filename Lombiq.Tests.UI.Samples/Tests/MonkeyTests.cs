@@ -19,7 +19,6 @@ namespace Lombiq.Tests.UI.Samples.Tests
         private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
         {
             PageTestTime = TimeSpan.FromSeconds(10),
-            BaseRandomSeed = 1234,
         };
 
         public MonkeyTests(ITestOutputHelper testOutputHelper)
