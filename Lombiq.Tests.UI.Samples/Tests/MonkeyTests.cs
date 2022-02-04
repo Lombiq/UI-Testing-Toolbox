@@ -53,8 +53,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.GoToHomePage();
                     context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
 
-                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursively() does the same thing but we
-                    // wanted to demonstrate the contrast with TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
+                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursively(_monkeyTestingOptions) does
+                    // the same thing but we wanted to demonstrate the contrast with
+                    // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
                 },
                 browser);
 
@@ -65,7 +66,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context =>
                     // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin
                     // dashboard.
-                    context.TestAdminAsMonkeyRecursively(),
+                    context.TestAdminAsMonkeyRecursively(_monkeyTestingOptions),
                 browser);
 
         // Let's just test the background tasks management admin area.
