@@ -37,7 +37,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 configuration => configuration.UseAzureBlobStorage = true);
 
         [Theory, Chrome]
-        public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
+        public Task TogglingFeaturesShouldWorkWithAzureBlobStorage(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context => context.ExecuteAndAssertTestFeatureToggle(),
                 browser,
