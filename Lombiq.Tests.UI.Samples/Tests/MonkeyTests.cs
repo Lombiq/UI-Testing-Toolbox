@@ -42,7 +42,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 },
                 browser);
 
-        // Recursive testing will just continue testing following the configured rules until it runs out time or new
+        // Recursive testing will just continue testing following the configured rules until it runs out of time or new
         // pages.
         [Theory, Chrome]
         public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
