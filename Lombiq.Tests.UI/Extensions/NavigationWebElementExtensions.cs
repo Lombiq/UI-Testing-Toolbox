@@ -28,9 +28,16 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     try
                     {
-                        context.Configuration.Events.BeforeClick?.Invoke(context, element).GetAwaiter().GetResult();
+                        context.Configuration.Events.BeforeClick
+                            .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element))
+                            .GetAwaiter()
+                            .GetResult();
+
                         context.Driver.Perform(actions => actions.MoveToElement(element).Click());
-                        context.Configuration.Events.AfterClick?.Invoke(context, element).GetAwaiter().GetResult();
+                        context.Configuration.Events.AfterClick
+                            .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element))
+                            .GetAwaiter()
+                            .GetResult();
                     }
                     catch (WebDriverException ex)
                         when (ex.Message.ContainsOrdinalIgnoreCase(

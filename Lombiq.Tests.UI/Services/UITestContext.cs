@@ -6,7 +6,6 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
@@ -100,15 +99,11 @@ namespace Lombiq.Tests.UI.Services
 
         internal async Task TriggerAfterPageChangeEventAsync()
         {
-            if (IsNoAlert() && Configuration.Events.AfterPageChange is { } afterPageChange)
+            if (IsNoAlert())
             {
                 try
                 {
-                    // For some reason doing await afterPageChange.Invoke(this) will case exceptions to not propagate
-                    // when there are more than 2 subscribers.
-                    await afterPageChange.GetInvocationList()
-                        .Cast<PageChangeEventHandler>()
-                        .AwaitEachAsync(eventHandler => eventHandler(this));
+                    await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
                 }
                 catch (Exception exception)
                 {
