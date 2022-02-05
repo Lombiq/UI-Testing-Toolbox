@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Services;
 using System;
 
-namespace Lombiq.Tests.UI.MonkeyTesting
+namespace Lombiq.Tests.UI.MonkeyTesting.UrlSanitizers
 {
     /// <summary>
     /// URL sanitizer that removes a fragment part of an URL (i.e. that comes after the hash: #).
