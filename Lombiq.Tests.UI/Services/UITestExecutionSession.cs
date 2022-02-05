@@ -237,7 +237,7 @@ namespace Lombiq.Tests.UI.Services
 
                     await File.WriteAllLinesAsync(
                         browserLogPath,
-                        (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
+                        (await _context.UpdateHistoricBrowserLogAsync().ConfigureAwait(false)).Select(message => message.ToString()));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
@@ -584,7 +584,7 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task AssertLogsAsync()
         {
-            await _context.UpdateHistoricBrowserLogAsync();
+            await _context.UpdateHistoricBrowserLogAsync().ConfigureAwait(false);
 
             try
             {
