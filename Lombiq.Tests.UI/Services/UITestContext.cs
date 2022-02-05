@@ -6,12 +6,15 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services
 {
     public class UITestContext
     {
+        private readonly List<BrowserLogMessage> _historicBrowserLog = new();
+
         /// <summary>
         /// Gets the technical name of the current test.
         /// </summary>
@@ -54,6 +57,11 @@ namespace Lombiq.Tests.UI.Services
         public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
         /// <summary>
+        /// Gets a cumulative log of browser console entries.
+        /// </summary>
+        public IReadOnlyList<BrowserLogMessage> HistoricBrowserLog => _historicBrowserLog;
+
+        /// <summary>
         /// Gets a dictionary storing some custom contextual data.
         /// </summary>
         [SuppressMessage(
@@ -88,10 +96,51 @@ namespace Lombiq.Tests.UI.Services
         }
 
         /// <summary>
-        /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
-        /// cref="Configuration"/>.
+        /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.
         /// </summary>
-        public async Task AssertBrowserLogAsync()
+        public async Task<IReadOnlyList<BrowserLogMessage>> UpdateHistoricBrowserLogAsync()
+        {
+            var windowHandles = Driver.WindowHandles;
+
+            if (windowHandles.Count > 1)
+            {
+                var currentWindowHandle = Driver.CurrentWindowHandle;
+
+                foreach (var windowHandle in windowHandles)
+                {
+                    // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                    Driver.SwitchTo().Window(windowHandle);
+                    _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+                }
+
+                try
+                {
+                    Driver.SwitchTo().Window(currentWindowHandle);
+                }
+                catch (NoSuchWindowException)
+                {
+                    // This can happen in rare instances if the current window/tab was just closed.
+                    Driver.SwitchTo().Window(Driver.WindowHandles.Last());
+                }
+            }
+            else
+            {
+                _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+            }
+
+            return _historicBrowserLog;
+        }
+
+        /// <summary>
+        /// Clears accumulated historic browser log messages from <see cref="HistoricBrowserLog"/>.
+        /// </summary>
+        public void ClearHistoricBrowserLog() => _historicBrowserLog.Clear();
+
+        /// <summary>
+        /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
+        /// cref="Configuration"/>. This doesn't use <see cref="HistoricBrowserLog"/>.
+        /// </summary>
+        public async Task AssertCurrentBrowserLogAsync()
         {
             var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
             Configuration.AssertBrowserLog?.Invoke(browserLog);
