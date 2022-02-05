@@ -94,8 +94,8 @@ namespace Lombiq.Tests.UI.Extensions
             const string jsonBody = @"{""type"":""browser""}";
 
             using var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-            using var response = await _httpClient.PostAsync(resource, content).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            using var response = await _httpClient.PostAsync(resource, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
             return AsLogEntries(responseBody)
                 .Select(entry => new BrowserLogMessage
                 {

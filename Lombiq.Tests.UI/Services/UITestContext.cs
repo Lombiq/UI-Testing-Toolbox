@@ -110,7 +110,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
                     Driver.SwitchTo().Window(windowHandle);
-                    _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync().ConfigureAwait(false));
+                    _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
                 }
 
                 try
@@ -125,7 +125,7 @@ namespace Lombiq.Tests.UI.Services
             }
             else
             {
-                _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync().ConfigureAwait(false));
+                _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
             }
 
             return _historicBrowserLog;
@@ -142,7 +142,7 @@ namespace Lombiq.Tests.UI.Services
         /// </summary>
         public async Task AssertCurrentBrowserLogAsync()
         {
-            var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync().ConfigureAwait(false);
+            var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
             Configuration.AssertBrowserLog?.Invoke(browserLog);
         }
 
@@ -152,9 +152,7 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    await Configuration.Events.AfterPageChange
-                        .InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this))
-                        .ConfigureAwait(false);
+                    await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
                 }
                 catch (Exception exception)
                 {
