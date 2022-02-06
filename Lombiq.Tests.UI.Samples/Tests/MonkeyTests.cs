@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
+using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ namespace Lombiq.Tests.UI.Samples.Tests
         private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
         {
             PageTestTime = TimeSpan.FromSeconds(10),
-            BaseRandomSeed = 1234,
         };
 
         public MonkeyTests(ITestOutputHelper testOutputHelper)
@@ -42,7 +42,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 },
                 browser);
 
-        // Recursive testing will just continue testing following the configured rules until it runs out time or new
+        // Recursive testing will just continue testing following the configured rules until it runs out of time or new
         // pages.
         [Theory, Chrome]
         public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
@@ -51,20 +51,21 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 {
                     context.GoToHomePage();
                     context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+
+                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursively(_monkeyTestingOptions) does
+                    // the same thing but we wanted to demonstrate the contrast with
+                    // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
                 },
                 browser);
 
         // Let's test with an authenticated user too.
         [Theory, Chrome]
-        public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+        public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
-                {
                     // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin
                     // dashboard.
-                    context.SignInDirectlyAndGoToDashboard();
-                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
-                },
+                    context.TestAdminAsMonkeyRecursively(_monkeyTestingOptions),
                 browser);
 
         // Let's just test the background tasks management admin area.

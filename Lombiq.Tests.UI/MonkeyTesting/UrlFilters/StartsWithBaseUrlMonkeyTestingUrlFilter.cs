@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Services;
 using System;
 
-namespace Lombiq.Tests.UI.MonkeyTesting
+namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters
 {
     /// <summary>
     /// URL filter that matches the URL against the base URL of the application under test, i.e. it disallows leaving

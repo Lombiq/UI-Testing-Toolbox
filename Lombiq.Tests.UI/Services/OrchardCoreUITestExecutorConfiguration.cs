@@ -69,9 +69,10 @@ namespace Lombiq.Tests.UI.Services
         public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets a value indicating whether the test should verify the Orchard Core logs and the Browser logs
+        /// Gets or sets a value indicating whether the test should verify the Orchard Core logs and the browser logs
         /// for errors after every page load. When enabled and there is an error the test is failed immediately which
-        /// prevents false errors related to some expected web element not being present on the error page.
+        /// prevents false errors related to some expected web element not being present on the error page. Defaults to
+        /// <see langword="true"/>.
         /// </summary>
         public bool RunAssertLogsOnAllPageChanges { get; set; } = true;
 
