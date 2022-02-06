@@ -92,7 +92,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context.SetDefaultBrowserSize();
 
-                _testManifest.Test(_context);
+                await _testManifest.Test(_context);
 
                 await AssertLogsAsync();
 
@@ -379,7 +379,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
+                    await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                     if (setupConfiguration.FastFailSetup &&
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
@@ -397,7 +397,7 @@ namespace Lombiq.Tests.UI.Services
 
                     _context.SetDefaultBrowserSize();
 
-                    var result = (_context, setupConfiguration.SetupOperation(_context));
+                    var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                     await AssertLogsAsync();
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
@@ -416,7 +416,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context = await CreateContextAsync();
 
-                _context.GoToRelativeUrl(resultUri.PathAndQuery);
+                await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {

@@ -11,17 +11,6 @@ namespace Lombiq.Tests.UI.Extensions
     /// </summary>
     public static class MonkeyTestingUITestContextExtensions
     {
-        /// <inheritdoc cref="TestFrontendAnonymouslyAsMonkeyRecursivelyAsync(UITestContext, MonkeyTestingOptions, string)"/>
-        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestFrontendAnonymouslyAsMonkeyRecursively(
-            this UITestContext context,
-            MonkeyTestingOptions options = null,
-            string startingRelativeUrl = "/")
-        {
-            TestFrontendAnonymouslyAsMonkeyRecursivelyAsync(context, options, startingRelativeUrl).GetAwaiter().GetResult();
-            return context;
-        }
-
         /// <summary>
         /// Tests the frontend (i.e. pages NOT under /admin) as monkey as an anonymous user.
         /// </summary>
@@ -35,20 +24,6 @@ namespace Lombiq.Tests.UI.Extensions
             string startingRelativeUrl = "/") =>
             TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(context, options, signInDirectlyWithUserName: null, startingRelativeUrl);
 
-        /// <inheritdoc cref="TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(UITestContext, MonkeyTestingOptions, string, string)"/>
-        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestFrontendAuthenticatedAsMonkeyRecursively(
-            this UITestContext context,
-            MonkeyTestingOptions options = null,
-            string signInDirectlyWithUserName = DefaultUser.UserName,
-            string startingRelativeUrl = "/")
-        {
-            TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(context, options, signInDirectlyWithUserName, startingRelativeUrl)
-                .GetAwaiter()
-                .GetResult();
-            return context;
-        }
-
         /// <summary>
         /// Tests the frontend (i.e. pages NOT under /admin) as monkey as an authenticated user.
         /// </summary>
@@ -59,30 +34,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="startingRelativeUrl">
         /// The relative URL to start monkey testing from. Defaults to <c>"/"</c>.
         /// </param>
-        public static Task TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(
+        public static async Task TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(
             this UITestContext context,
             MonkeyTestingOptions options = null,
             string signInDirectlyWithUserName = DefaultUser.UserName,
             string startingRelativeUrl = "/")
         {
             if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
-            if (!string.IsNullOrEmpty(startingRelativeUrl)) context.GoToRelativeUrl(startingRelativeUrl);
+            if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
 
             options ??= new MonkeyTestingOptions();
             options.UrlFilters.Add(new NotAdminMonkeyTestingUrlFilter());
-            return context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
-        }
-
-        /// <inheritdoc cref="TestAdminAsMonkeyRecursivelyAsync(UITestContext, MonkeyTestingOptions, string, string)"/>
-        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestAdminAsMonkeyRecursively(
-            this UITestContext context,
-            MonkeyTestingOptions options = null,
-            string signInDirectlyWithUserName = DefaultUser.UserName,
-            string startingRelativeUrl = "/admin")
-        {
-            TestAdminAsMonkeyRecursivelyAsync(context, options, signInDirectlyWithUserName, startingRelativeUrl).GetAwaiter().GetResult();
-            return context;
+            await context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
         }
 
         /// <summary>
@@ -95,29 +58,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="startingRelativeUrl">
         /// The relative URL to start monkey testing from. Defaults to <c>"/admin"</c>.
         /// </param>
-        public static Task TestAdminAsMonkeyRecursivelyAsync(
+        public static async Task TestAdminAsMonkeyRecursivelyAsync(
             this UITestContext context,
             MonkeyTestingOptions options = null,
             string signInDirectlyWithUserName = DefaultUser.UserName,
             string startingRelativeUrl = "/admin")
         {
             if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
-            if (!string.IsNullOrEmpty(startingRelativeUrl)) context.GoToRelativeUrl(startingRelativeUrl);
+            if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
 
             options ??= new MonkeyTestingOptions();
             options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter());
-            return context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
-        }
-
-        /// <inheritdoc cref="TestCurrentPageAsMonkeyAsync(UITestContext, MonkeyTestingOptions, int?)"/>
-        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestCurrentPageAsMonkey(
-            this UITestContext context,
-            MonkeyTestingOptions options = null,
-            int? randomSeed = null)
-        {
-            TestCurrentPageAsMonkeyAsync(context, options, randomSeed).GetAwaiter().GetResult();
-            return context;
+            await context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
         }
 
         /// <summary>
@@ -131,16 +83,6 @@ namespace Lombiq.Tests.UI.Extensions
             MonkeyTestingOptions options = null,
             int? randomSeed = null) =>
             new MonkeyTester(context, options).TestOnePageAsync(randomSeed);
-
-        /// <inheritdoc cref="TestCurrentPageAsMonkeyRecursivelyAsync(UITestContext, MonkeyTestingOptions)"/>
-        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestCurrentPageAsMonkeyRecursively(
-            this UITestContext context,
-            MonkeyTestingOptions options = null)
-        {
-            TestCurrentPageAsMonkeyRecursivelyAsync(context, options).GetAwaiter().GetResult();
-            return context;
-        }
 
         /// <summary>
         /// Tests the current page as monkey recursively. When the current page is left during test, continues to test

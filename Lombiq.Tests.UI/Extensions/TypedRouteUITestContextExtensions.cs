@@ -18,7 +18,7 @@ namespace Lombiq.HelpfulLibraries.Libraries.Mvc
             Expression<Action<TController>> actionExpression,
             params (string Key, object Value)[] additionalArguments)
             where TController : ControllerBase =>
-            context.GoToRelativeUrl(TypedRoute
+            context.GoToRelativeUrlAsync(TypedRoute
                 .CreateFromExpression(actionExpression, additionalArguments)
                 .ToString(context.TenantName));
 
@@ -31,7 +31,7 @@ namespace Lombiq.HelpfulLibraries.Libraries.Mvc
             Expression<Func<TController, Task>> actionExpression,
             params (string Key, object Value)[] additionalArguments)
             where TController : ControllerBase =>
-            context.GoToRelativeUrl(TypedRoute
+            context.GoToRelativeUrlAsync(TypedRoute
                 .CreateFromExpression(actionExpression.StripResult(), additionalArguments)
                 .ToString(context.TenantName));
     }

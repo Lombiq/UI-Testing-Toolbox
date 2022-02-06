@@ -30,17 +30,17 @@ namespace Lombiq.Tests.UI.Samples
         // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
         // NEXT STATION: Check out SetupHelpers, then come back here!
         protected override Task ExecuteTestAfterSetupAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-            ExecuteTestAsync(test, browser, SetupHelpers.RunSetup, changeConfiguration);
+            ExecuteTestAsync(test, browser, SetupHelpers.RunSetupAsync, changeConfiguration);
 
         // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync()
         // and do something before or after they're executed but this is not always necessary.
         protected override Task ExecuteTestAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> test,
             Browser browser,
-            Func<UITestContext, Uri> setupOperation = null,
+            Func<UITestContext, Task<Uri>> setupOperation = null,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             base.ExecuteTestAsync(
                 test,

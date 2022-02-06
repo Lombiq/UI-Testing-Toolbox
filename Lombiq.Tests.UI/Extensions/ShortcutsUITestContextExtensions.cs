@@ -37,25 +37,25 @@ namespace Lombiq.Tests.UI.Extensions
         /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
         /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void SignInDirectlyAndGoToRelativeUrl(
+        public static Task SignInDirectlyAndGoToRelativeUrlAsync(
             this UITestContext context,
             string relativeUrl,
             bool onlyIfNotAlreadyThere = true)
-            => context.SignInDirectlyAndGoToRelativeUrl(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
+            => context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
 
         /// <summary>
         /// Authenticates the client with the given user account and navigates to the given URL. Note that this will
         /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
         /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void SignInDirectlyAndGoToRelativeUrl(
+        public static Task SignInDirectlyAndGoToRelativeUrlAsync(
             this UITestContext context,
             string userName,
             string relativeUrl,
             bool onlyIfNotAlreadyThere = true)
         {
             context.SignInDirectly(userName);
-            context.GoToRelativeUrl(relativeUrl, onlyIfNotAlreadyThere);
+            return context.GoToRelativeUrlAsync(relativeUrl, onlyIfNotAlreadyThere);
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
         /// operations indeed worked. This can be used to test if anything breaks when a feature is enabled or disabled.
         /// </summary>
-        public static void ExecuteAndAssertTestFeatureToggle(this UITestContext context)
+        public static async Task ExecuteAndAssertTestFeatureToggleAsync(this UITestContext context)
         {
             context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
-            context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
+            await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
             context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
-            context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
+            await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
         }
 

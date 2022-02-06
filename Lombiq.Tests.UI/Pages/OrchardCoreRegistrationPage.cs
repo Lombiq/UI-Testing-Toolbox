@@ -45,9 +45,6 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveRegistrationPage() =>
             PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-        public _ RegisterWith(UITestContext context, UserRegistrationParameters parameters) =>
-            RegisterWithAsync(context, parameters).Result;
-
         public async Task<_> RegisterWithAsync(UITestContext context, UserRegistrationParameters parameters)
         {
             UserName.Set(parameters.UserName);

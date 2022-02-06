@@ -29,23 +29,20 @@ namespace Lombiq.Tests.UI
         protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
         protected Task ExecuteMultiSizeTestAfterSetupAsync(
-            MultiSizeTest standardBrowserSizeTest,
-            MultiSizeTest mobileBrowserSizeTest,
+            MultiSizeTest standardAndMobileBrowserSizeTest,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-            ExecuteTestAfterSetupAsync(
-                context =>
+            ExecuteMultiSizeTestAfterSetupAsync(
+                (context, isStandardSize) =>
                 {
-                    context.SetBrowserSize(StandardBrowserSize);
-                    standardBrowserSizeTest(context, isStandardSize: true);
-                    context.SetBrowserSize(MobileBrowserSize);
-                    mobileBrowserSizeTest(context, isStandardSize: false);
+                    standardAndMobileBrowserSizeTest(context, isStandardSize);
+                    return Task.CompletedTask;
                 },
                 browser,
                 changeConfiguration);
 
         protected Task ExecuteMultiSizeTestAfterSetupAsync(
-            MultiSizeTest standardAndMobileBrowserSizeTest,
+            MultiSizeTestAsync standardAndMobileBrowserSizeTest,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
             ExecuteMultiSizeTestAfterSetupAsync(
@@ -54,8 +51,56 @@ namespace Lombiq.Tests.UI
                 browser,
                 changeConfiguration);
 
-        protected abstract Task ExecuteTestAfterSetupAsync(
+        protected Task ExecuteMultiSizeTestAfterSetupAsync(
+            MultiSizeTest standardBrowserSizeTest,
+            MultiSizeTest mobileBrowserSizeTest,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteMultiSizeTestAfterSetupAsync(
+                (context, isStandardSize) =>
+                {
+                    standardBrowserSizeTest(context, isStandardSize);
+                    return Task.CompletedTask;
+                },
+                (context, isStandardSize) =>
+                {
+                    mobileBrowserSizeTest(context, isStandardSize);
+                    return Task.CompletedTask;
+                },
+                browser,
+                changeConfiguration);
+
+        protected Task ExecuteMultiSizeTestAfterSetupAsync(
+            MultiSizeTestAsync standardBrowserSizeTest,
+            MultiSizeTestAsync mobileBrowserSizeTest,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteTestAfterSetupAsync(
+                async context =>
+                {
+                    context.SetBrowserSize(StandardBrowserSize);
+                    await standardBrowserSizeTest(context, isStandardSize: true);
+                    context.SetBrowserSize(MobileBrowserSize);
+                    await mobileBrowserSizeTest(context, isStandardSize: false);
+                },
+                browser,
+                changeConfiguration);
+
+        protected virtual Task ExecuteTestAfterSetupAsync(
             Action<UITestContext> test,
+            Browser browser,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteTestAfterSetupAsync(
+                context =>
+                {
+                    test(context);
+                    return Task.CompletedTask;
+                },
+                browser,
+                changeConfiguration);
+
+        protected abstract Task ExecuteTestAfterSetupAsync(
+            Func<UITestContext, Task> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null);
 
@@ -65,7 +110,25 @@ namespace Lombiq.Tests.UI
         protected virtual Task ExecuteTestAsync(
             Action<UITestContext> test,
             Browser browser,
-            Func<UITestContext, Uri> setupOperation = null,
+            Func<UITestContext, Task<Uri>> setupOperation = null,
+            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            ExecuteTestAsync(
+                context =>
+                {
+                    test(context);
+                    return Task.CompletedTask;
+                },
+                browser,
+                setupOperation,
+                changeConfiguration);
+
+        /// <summary>
+        /// Executes the given UI test, optionally after setting up the site.
+        /// </summary>
+        protected virtual Task ExecuteTestAsync(
+            Func<UITestContext, Task> test,
+            Browser browser,
+            Func<UITestContext, Task<Uri>> setupOperation = null,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null)
         {
             var testManifest = new UITestManifest
@@ -97,7 +160,7 @@ namespace Lombiq.Tests.UI
         /// folder.
         /// </summary>
         protected virtual Task ExecuteTestFromExistingDBAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> test,
             Browser browser,
             Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null)
         {

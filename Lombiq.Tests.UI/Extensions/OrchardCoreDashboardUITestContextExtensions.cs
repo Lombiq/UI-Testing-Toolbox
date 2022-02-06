@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -57,22 +58,22 @@ namespace Lombiq.Tests.UI.Extensions
                 interval ?? TimeSpan.FromMinutes(2));
         }
 
-        public static void GoToContentItemList(this UITestContext context, string filterContentType = null)
+        public static Task GoToContentItemListAsync(this UITestContext context, string filterContentType = null)
         {
             var query = string.IsNullOrEmpty(filterContentType)
                 ? string.Empty
                 : ("?q=type%3A" + filterContentType);
-            context.GoToRelativeUrl("/Admin/Contents/ContentItems" + query);
+            return context.GoToRelativeUrlAsync("/Admin/Contents/ContentItems" + query);
         }
 
-        public static void GoToContentItemListAndCreateNew(this UITestContext context, string contentTypeText)
+        public static async Task GoToContentItemListAndCreateNewAsync(this UITestContext context, string contentTypeText)
         {
-            context.GoToContentItemList();
+            await context.GoToContentItemListAsync();
             context.ClickNewContentItem(contentTypeText);
         }
 
-        public static void CreateNewContentItem(this UITestContext context, string contentType) =>
-            context.GoToRelativeUrl($"/Admin/Contents/ContentTypes/{contentType}/Create");
+        public static Task CreateNewContentItemAsync(this UITestContext context, string contentType) =>
+            context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create");
 
         public static void ClickNewContentItem(this UITestContext context, string contentItemName, bool dropdown = true)
         {

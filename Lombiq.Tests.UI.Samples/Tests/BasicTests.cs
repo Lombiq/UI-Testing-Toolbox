@@ -44,11 +44,11 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task LoginShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate
                     // to any URL.
-                    context.GoToRelativeUrl("/Login");
+                    await context.GoToRelativeUrlAsync("/Login");
 
                     // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                     // actually sure that the values are indeed there! To make things more reliable, we've added a lot
@@ -75,7 +75,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task TogglingFeaturesShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context.ExecuteAndAssertTestFeatureToggle(),
+                context => context.ExecuteAndAssertTestFeatureToggleAsync(),
                 browser,
                 // You can change the configuration even for each test.
                 configuration =>
@@ -93,7 +93,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task ShortcutsShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // If you need an authenticated user but you aren't testing the login specifically then you can use
                     // this shortcut to authenticate (note that you can specify a different user in an argument too):
@@ -107,7 +107,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.ExecuteRecipeDirectly("Lombiq.JsonEditor.Sample");
 
                     // Retrieving some in-depth details about the app.
-                    var info = context.GetApplicationInfoAsync().Result;
+                    var info = await context.GetApplicationInfoAsync();
                     // Where is the app's current instance running from?
                     _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
 

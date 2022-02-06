@@ -23,7 +23,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context =>
                     // This is just a simple test that visits two pages: The homepage, where the test will start by
                     // default, and another one.
-                    context.GoToRelativeUrl("/categories/travel"),
+                    context.GoToRelativeUrlAsync("/categories/travel"),
                 browser,
                 configuration =>
                 {

@@ -36,9 +36,6 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveLoginPage() =>
             PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-        public _ LogInWith(UITestContext context, string userName, string password) =>
-            LogInWithAsync(context, userName, password).Result;
-
         public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
         {
             var page = UserName.Set(userName)

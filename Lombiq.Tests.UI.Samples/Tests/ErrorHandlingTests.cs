@@ -47,11 +47,11 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task ClientSideErrorOnLoadedPageShouldHaltTest(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     try
                     {
-                        context.GoToRelativeUrl("/this-does-not-exist");
+                        await context.GoToRelativeUrlAsync("/this-does-not-exist");
 
                         // This point should be unreachable because browser logs are automatically asserted after a
                         // page load.
