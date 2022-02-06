@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static async Task<UITestContext> TestBasicOrchardFeaturesAsync(
+        public static async Task TestBasicOrchardFeaturesAsync(
             this UITestContext context,
             OrchardCoreSetupParameters setupParameters = null)
         {
@@ -40,7 +40,6 @@ namespace Lombiq.Tests.UI.Extensions
             await context.TestContentOperationsAsync();
             await context.TestTurningFeatureOnAndOffAsync();
             await context.TestLogoutAsync();
-            return context;
         }
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static async Task<UITestContext> TestBasicOrchardFeaturesExceptRegistrationAsync(
+        public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
             this UITestContext context,
             OrchardCoreSetupParameters setupParameters = null)
         {
@@ -66,7 +65,6 @@ namespace Lombiq.Tests.UI.Extensions
             await context.TestContentOperationsAsync();
             await context.TestTurningFeatureOnAndOffAsync();
             await context.TestLogoutAsync();
-            return context;
         }
 
         /// <summary>
@@ -81,7 +79,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters(context);
 
@@ -108,7 +106,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestSetupWithInvalidDataAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupWithInvalidDataAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters(context)
             {
@@ -138,7 +136,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="userName">The user name.</param>
         /// <param name="password">The password.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestLoginAsync(
+        public static Task TestLoginAsync(
             this UITestContext context,
             string userName = DefaultUser.UserName,
             string password = DefaultUser.Password) =>
@@ -163,7 +161,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="userName">The user name.</param>
         /// <param name="password">The password.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestLoginWithInvalidDataAsync(
+        public static Task TestLoginWithInvalidDataAsync(
             this UITestContext context,
             string userName = DefaultUser.UserName,
             string password = "WrongPass!") =>
@@ -190,7 +188,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </para>
         /// </summary>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestLogoutAsync(this UITestContext context) =>
+        public static Task TestLogoutAsync(this UITestContext context) =>
             context.ExecuteTestAsync(
                 "Test logout",
                 async () =>
@@ -221,7 +219,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
+        public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= UserRegistrationParameters.CreateDefault();
 
@@ -260,7 +258,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestRegistrationWithInvalidDataAsync(
+        public static Task TestRegistrationWithInvalidDataAsync(
             this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= new()
@@ -295,7 +293,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestRegistrationWithAlreadyRegisteredEmailAsync(
+        public static Task TestRegistrationWithAlreadyRegisteredEmailAsync(
             this UITestContext context,
             UserRegistrationParameters parameters = null)
         {
@@ -332,7 +330,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="pageTitle">The page title to enter.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestContentOperationsAsync(this UITestContext context, string pageTitle = "Test page") =>
+        public static Task TestContentOperationsAsync(this UITestContext context, string pageTitle = "Test page") =>
             context.ExecuteTestAsync(
                 "Test content operations",
                 async () =>
@@ -374,7 +372,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="featureName">The name of the feature to use.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> TestTurningFeatureOnAndOffAsync(
+        public static Task TestTurningFeatureOnAndOffAsync(
             this UITestContext context, string featureName = "Background Tasks") =>
             context.ExecuteTestAsync(
                 "Test turning feature on and off",
@@ -408,7 +406,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="testName">The test name.</param>
         /// <param name="testFunction">The test action.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task<UITestContext> ExecuteTestAsync(
+        public static Task ExecuteTestAsync(
             this UITestContext context, string testName, Func<Task> testFunction)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
@@ -418,11 +416,8 @@ namespace Lombiq.Tests.UI.Extensions
             return ExecuteTestInnerAsync(context, testName, testFunction);
         }
 
-        private static async Task<UITestContext> ExecuteTestInnerAsync(
-            UITestContext context, string testName, Func<Task> testFunction)
-        {
-            await context.ExecuteLoggedAsync(testName, testFunction);
-            return context;
-        }
+        private static Task ExecuteTestInnerAsync(
+            UITestContext context, string testName, Func<Task> testFunction) =>
+            context.ExecuteLoggedAsync(testName, testFunction);
     }
 }
