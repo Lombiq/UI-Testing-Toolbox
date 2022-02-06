@@ -36,8 +36,6 @@ namespace Lombiq.Tests.UI.Samples.Helpers
                     SiteTimeZoneValue = "Europe/Budapest",
                 });
 
-            var uri = setupPage.PageUri.Value;
-
             // Here we make sure that the setup actually finished and we're on the homepage where the menu is visible.
             // Without this, a failing setup may only surface much later when an assertion in a test fails. Failing
             // here quickly also allows to the UI Testing Toolbox not to run all the other tests (since without a
@@ -45,7 +43,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             // interested how that works.
             AssertSetupSuccessful(context);
 
-            return uri;
+            return setupPage.PageUri.Value;
         }
 
         // Just a convenience method.
