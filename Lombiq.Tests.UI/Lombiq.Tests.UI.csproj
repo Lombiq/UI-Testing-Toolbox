@@ -80,9 +80,13 @@
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" />
   </ItemGroup>
 
+  <Import Condition="'$(NuGetBuild)' != 'True'" Project="..\..\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.props" />
+  <Import Condition="'$(NuGetBuild)' != 'True'" Project="..\..\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
+
   <ItemGroup Condition="'$(NuGetBuild)' == 'True'">
     <PackageReference Include="Lombiq.HelpfulLibraries" Version="0.0.6" />
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="0.0.6" />
+    <PackageReference Include="Lombiq.Npm.Targets" Version="0.0.5" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
@@ -93,9 +97,6 @@
     <Deterministic>true</Deterministic>
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>
-
-  <Import Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.props" />
-  <Import Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup>
     <EmbeddedResource Include="node_modules\gremlins.js\dist\gremlins.min.js">
