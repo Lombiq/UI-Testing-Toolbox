@@ -24,7 +24,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 async context =>
                 {
                     // A shortcut to sign in without going through (and thus testing) the login screen.
-                    context.SignInDirectly();
+                    await context.SignInDirectlyAsync();
 
                     // Let's go to the e-mail admin page.
                     await context.GoToRelativeUrlAsync("/Admin/Settings/email");

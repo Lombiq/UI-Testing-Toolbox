@@ -40,7 +40,7 @@ namespace Lombiq.Tests.UI.Extensions
             string signInDirectlyWithUserName = DefaultUser.UserName,
             string startingRelativeUrl = "/")
         {
-            if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
+            if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
             if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
 
             options ??= new MonkeyTestingOptions();
@@ -64,7 +64,7 @@ namespace Lombiq.Tests.UI.Extensions
             string signInDirectlyWithUserName = DefaultUser.UserName,
             string startingRelativeUrl = "/admin")
         {
-            if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) context.SignInDirectly(signInDirectlyWithUserName);
+            if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
             if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
 
             options ??= new MonkeyTestingOptions();

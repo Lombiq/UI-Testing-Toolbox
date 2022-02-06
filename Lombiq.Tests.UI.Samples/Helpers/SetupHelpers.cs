@@ -52,7 +52,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
         public static async Task RunSetupAndSignInDirectlyAsync(UITestContext context, string userName = DefaultUser.UserName)
         {
             await RunSetupAsync(context);
-            context.SignInDirectly(userName);
+            await context.SignInDirectlyAsync(userName);
         }
 
         // When using the Auto Setup feature (https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) you

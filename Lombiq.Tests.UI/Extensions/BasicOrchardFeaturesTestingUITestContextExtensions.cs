@@ -149,7 +149,7 @@ namespace Lombiq.Tests.UI.Extensions
                     var loginPage = await context.GoToLoginPageAsync();
                     (await loginPage.LogInWithAsync(context, userName, password)).ShouldLeaveLoginPage();
 
-                    context.GetCurrentUserName().ShouldBe(userName);
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(userName);
                 });
 
         /// <summary>
@@ -171,14 +171,14 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test login with invalid data",
                 async () =>
                 {
-                    context.SignOutDirectly();
+                    await context.SignOutDirectlyAsync();
 
                     var loginPage = await context.GoToLoginPageAsync();
                     (await loginPage.LogInWithAsync(context, userName, password))
                         .ShouldStayOnLoginPage()
                         .ValidationSummaryErrors.Should.Not.BeEmpty();
 
-                    context.GetCurrentUserName().ShouldBeEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeEmpty();
                 });
 
         /// <summary>
@@ -205,7 +205,7 @@ namespace Lombiq.Tests.UI.Extensions
 
                     await context.TriggerAfterPageChangeEventAsync();
 
-                    context.GetCurrentUserName().ShouldBeNullOrEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
                 });
 
         /// <summary>
@@ -237,14 +237,14 @@ namespace Lombiq.Tests.UI.Extensions
                         .RegisterWithAsync(context, parameters);
                     registrationPage.ShouldLeaveRegistrationPage();
 
-                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
-                    context.SignOutDirectly();
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
+                    await context.SignOutDirectlyAsync();
 
                     loginPage = await context.GoToLoginPageAsync();
                     await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password);
                     await context.TriggerAfterPageChangeEventAsync();
-                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
-                    context.SignOutDirectly();
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
+                    await context.SignOutDirectlyAsync();
                 });
         }
 

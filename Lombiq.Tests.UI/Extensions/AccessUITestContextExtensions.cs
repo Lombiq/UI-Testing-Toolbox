@@ -27,14 +27,14 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Same as <see cref="CheckContentItemCreationAccessAsync"/> but also signs in as <paramref name="userName"/>.
         /// </summary>
-        public static Task SignInDirectlyAndCheckContentItemCreationAccessAsync(
+        public static async Task SignInDirectlyAndCheckContentItemCreationAccessAsync(
             this UITestContext context,
             string userName,
             string contentType,
             bool hasAccess)
         {
-            context.SignInDirectly(userName);
-            return context.CheckContentItemCreationAccessAsync(contentType, hasAccess);
+            await context.SignInDirectlyAsync(userName);
+            await context.CheckContentItemCreationAccessAsync(contentType, hasAccess);
         }
     }
 }

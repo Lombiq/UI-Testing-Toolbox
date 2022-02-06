@@ -41,44 +41,44 @@ namespace Lombiq.Tests.UI.Extensions
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
             new(context.Scope.BaseUri, relativeUrl);
 
-        public static Task SignOutDirectlyThenSignInDirectlyAndGoToHomepageAsync(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            return context.SignInDirectlyAndGoToHomepageAsync(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToHomepageAsync(email);
         }
 
-        public static Task SignInDirectlyAndGoToHomepageAsync(
+        public static async Task SignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            return context.GoToHomePageAsync();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToHomePageAsync();
         }
 
-        public static Task SignOutDirectlyThenSignInDirectlyAndGoToDashboardAsync(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            return context.SignInDirectlyAndGoToDashboardAsync(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToDashboardAsync(email);
         }
 
-        public static Task SignInDirectlyAndGoToDashboardAsync(
+        public static async Task SignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            return context.GoToDashboardAsync();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToDashboardAsync();
         }
 
-        public static void SignOutDirectlyThenSignInDirectly(
+        public static async Task SignOutDirectlyThenSignInDirectlyAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectly(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAsync(email);
         }
 
         // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
