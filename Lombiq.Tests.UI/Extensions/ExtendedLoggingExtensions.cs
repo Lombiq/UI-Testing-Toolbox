@@ -9,36 +9,36 @@ namespace Lombiq.Tests.UI.Extensions
     public static class ExtendedLoggingExtensions
     {
         public static Task ExecuteLoggedAsync(
-            this UITestContext context, string operationName, IWebElement element, Func<Task> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, element), function);
+            this UITestContext context, string operationName, IWebElement element, Func<Task> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, element), functionAsync);
 
         public static Task<TResult> ExecuteLoggedAsync<TResult>(
-            this UITestContext context, string operationName, IWebElement element, Func<Task<TResult>> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, element), function);
+            this UITestContext context, string operationName, IWebElement element, Func<Task<TResult>> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, element), functionAsync);
 
         public static Task ExecuteLoggedAsync(
-            this UITestContext context, string operationName, By by, Func<Task> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, by), function);
+            this UITestContext context, string operationName, By by, Func<Task> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, by), functionAsync);
 
         public static Task<TResult> ExecuteLoggedAsync<TResult>(
-            this UITestContext context, string operationName, By by, Func<Task<TResult>> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, by), function);
+            this UITestContext context, string operationName, By by, Func<Task<TResult>> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, by), functionAsync);
 
         public static Task ExecuteLoggedAsync(
-            this UITestContext context, string operationName, string objectOfOperation, Func<Task> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, objectOfOperation), function);
+            this UITestContext context, string operationName, string objectOfOperation, Func<Task> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, objectOfOperation), functionAsync);
 
         public static Task<TResult> ExecuteLoggedAsync<TResult>(
-            this UITestContext context, string operationName, string objectOfOperation, Func<Task<TResult>> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName, objectOfOperation), function);
+            this UITestContext context, string operationName, string objectOfOperation, Func<Task<TResult>> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName, objectOfOperation), functionAsync);
 
         public static Task ExecuteLoggedAsync(
-            this UITestContext context, string operationName, Func<Task> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName), function);
+            this UITestContext context, string operationName, Func<Task> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName), functionAsync);
 
         public static Task<TResult> ExecuteLoggedAsync<TResult>(
-            this UITestContext context, string operationName, Func<Task<TResult>> function) =>
-            context.ExecuteSectionAsync(GetLogSection(operationName), function);
+            this UITestContext context, string operationName, Func<Task<TResult>> functionAsync) =>
+            context.ExecuteSectionAsync(GetLogSection(operationName), functionAsync);
 
         public static void ExecuteLogged(
             this UITestContext context, string operationName, IWebElement element, Action action) =>
@@ -92,23 +92,23 @@ namespace Lombiq.Tests.UI.Extensions
         private static TResult ExecuteSection<TResult>(this UITestContext context, LogSection section, Func<TResult> function) =>
             context.Scope.AtataContext.Log.ExecuteSection(section, function);
 
-        private static Task ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> function) =>
+        private static Task ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> functionAsync) =>
             context.ExecuteSectionAsync(
                 section,
                 async () =>
                 {
-                    await function();
+                    await functionAsync();
                     return true;
                 });
 
         private static async Task<TResult> ExecuteSectionAsync<TResult>(
-            this UITestContext context, LogSection section, Func<Task<TResult>> function)
+            this UITestContext context, LogSection section, Func<Task<TResult>> functionAsync)
         {
             // This is somewhat risky. ILogManager is not thread-safe and uses as stack to keep track of sections, so
             // if multiple sections are started in concurrent threads, the result will be incorrect. This shouldn't be
             // too much of an issue for now though since tests, while async, are single-threaded.
             context.Scope.AtataContext.Log.Start(section);
-            var result = await function();
+            var result = await functionAsync();
             context.Scope.AtataContext.Log.EndSection();
             return result;
         }

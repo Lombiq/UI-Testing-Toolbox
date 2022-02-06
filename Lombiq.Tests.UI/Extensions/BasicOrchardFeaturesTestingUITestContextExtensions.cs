@@ -401,23 +401,23 @@ namespace Lombiq.Tests.UI.Extensions
                 });
 
         /// <summary>
-        /// Executes the <paramref name="testFunction"/> with the specified <paramref name="testName"/>.
+        /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
         /// </summary>
         /// <param name="testName">The test name.</param>
-        /// <param name="testFunction">The test action.</param>
+        /// <param name="testFunctionAsync">The test action.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
         public static Task ExecuteTestAsync(
-            this UITestContext context, string testName, Func<Task> testFunction)
+            this UITestContext context, string testName, Func<Task> testFunctionAsync)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
             if (testName is null) throw new ArgumentNullException(nameof(testName));
-            if (testFunction is null) throw new ArgumentNullException(nameof(testFunction));
+            if (testFunctionAsync is null) throw new ArgumentNullException(nameof(testFunctionAsync));
 
-            return ExecuteTestInnerAsync(context, testName, testFunction);
+            return ExecuteTestInnerAsync(context, testName, testFunctionAsync);
         }
 
         private static Task ExecuteTestInnerAsync(
-            UITestContext context, string testName, Func<Task> testFunction) =>
-            context.ExecuteLoggedAsync(testName, testFunction);
+            UITestContext context, string testName, Func<Task> testFunctionAsync) =>
+            context.ExecuteLoggedAsync(testName, testFunctionAsync);
     }
 }

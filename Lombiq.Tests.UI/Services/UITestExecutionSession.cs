@@ -92,7 +92,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context.SetDefaultBrowserSize();
 
-                await _testManifest.Test(_context);
+                await _testManifest.TestAsync(_context);
 
                 await AssertLogsAsync();
 
@@ -588,7 +588,7 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
-                if (_configuration.AssertAppLogs != null) await _configuration.AssertAppLogs(_context.Application);
+                if (_configuration.AssertAppLogsAsync != null) await _configuration.AssertAppLogsAsync(_context.Application);
             }
             catch (Exception)
             {
