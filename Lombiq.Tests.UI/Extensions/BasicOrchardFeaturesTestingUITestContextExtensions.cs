@@ -195,7 +195,11 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test logout",
                 async () =>
                 {
-                    (await context.GoToDashboardAsync())
+                    var dashboard = await context.GoToDashboardAsync();
+
+                    context.RefreshCurrentAtataContext();
+
+                    dashboard
                         .TopNavbar.Account.LogOff.Click()
                         .ShouldLeaveAdminPage();
 
@@ -226,6 +230,7 @@ namespace Lombiq.Tests.UI.Extensions
                 async () =>
                 {
                     var loginPage = await context.GoToLoginPageAsync();
+                    context.RefreshCurrentAtataContext();
                     var registrationPage = await loginPage
                         .RegisterAsNewUser.Should.BeVisible()
                         .RegisterAsNewUser.ClickAndGo()
@@ -302,6 +307,7 @@ namespace Lombiq.Tests.UI.Extensions
                 {
                     var registrationPage = await context.GoToRegistrationPageAsync();
                     registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                    context.RefreshCurrentAtataContext();
                     registrationPage
                         .ShouldStayOnRegistrationPage()
                         .ValidationMessages[page => page.Email].Should.BeVisible();
@@ -331,7 +337,9 @@ namespace Lombiq.Tests.UI.Extensions
                 "Test content operations",
                 async () =>
                 {
-                    (await context.GoToContentItemsPageAsync())
+                    var contentItemsPage = await context.GoToContentItemsPageAsync();
+                    context.RefreshCurrentAtataContext();
+                    contentItemsPage
                         .CreateNewPage()
                             .Title.Set(pageTitle)
                             .Publish.ClickAndGo()
@@ -371,10 +379,15 @@ namespace Lombiq.Tests.UI.Extensions
             context.ExecuteTestAsync(
                 "Test turning feature on and off",
                 async () =>
-                    (await context.GoToFeaturesPageAsync())
-                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
-                    .Features[featureName].CheckBox.Check()
-                    .BulkActions.Toggle.Click()
+                {
+                    var featuresPage = await context.GoToFeaturesPageAsync();
+
+                    context.RefreshCurrentAtataContext();
+
+                    featuresPage
+                        .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
+                        .Features[featureName].CheckBox.Check()
+                        .BulkActions.Toggle.Click()
 
                     .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
@@ -386,7 +399,8 @@ namespace Lombiq.Tests.UI.Extensions
                     .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
                         .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState)));
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                });
 
         /// <summary>
         /// Executes the <paramref name="testFunction"/> with the specified <paramref name="testName"/>.

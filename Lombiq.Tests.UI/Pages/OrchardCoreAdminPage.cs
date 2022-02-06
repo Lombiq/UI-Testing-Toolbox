@@ -12,11 +12,9 @@ namespace Lombiq.Tests.UI.Pages
 
         public ControlList<AlertMessage<TOwner>, TOwner> AlertMessages { get; private set; }
 
-        public TOwner ShouldStayOnAdminPage() =>
-            AdminMenu.Should.Exist();
+        public TOwner ShouldStayOnAdminPage() => AdminMenu.Should.Exist();
 
-        public TOwner ShouldLeaveAdminPage() =>
-            AdminMenu.Should.Not.Exist();
+        public TOwner ShouldLeaveAdminPage() => AdminMenu.Should.Not.Exist();
 
         protected override void OnVerify()
         {

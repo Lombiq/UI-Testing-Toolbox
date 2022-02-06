@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Components;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 
@@ -43,6 +44,8 @@ namespace Lombiq.Tests.UI.Pages
                 .LogIn.Click();
 
             await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+            context.RefreshCurrentAtataContext();
 
             return page;
         }

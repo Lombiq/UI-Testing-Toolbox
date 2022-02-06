@@ -95,6 +95,8 @@ namespace Lombiq.Tests.UI.Extensions
 
             await context.TriggerAfterPageChangeEventAsync();
 
+            context.RefreshCurrentAtataContext();
+
             return page;
         }
 
@@ -107,6 +109,8 @@ namespace Lombiq.Tests.UI.Extensions
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
 
             await context.TriggerAfterPageChangeEventAsync();
+
+            context.RefreshCurrentAtataContext();
 
             return page;
         }
