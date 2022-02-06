@@ -52,7 +52,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     await context.GoToHomePageAsync();
                     await context.TestCurrentPageAsMonkeyRecursivelyAsync(_monkeyTestingOptions);
 
-                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursively(_monkeyTestingOptions) does
+                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions) does
                     // the same thing but we wanted to demonstrate the contrast with
                     // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
                 },
