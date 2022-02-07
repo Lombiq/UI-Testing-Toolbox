@@ -30,23 +30,23 @@ namespace Lombiq.Tests.UI.Samples
         // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
         // NEXT STATION: Check out SetupHelpers, then come back here!
         protected override Task ExecuteTestAfterSetupAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> testAsync,
             Browser browser,
-            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-            ExecuteTestAsync(test, browser, SetupHelpers.RunSetup, changeConfiguration);
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+            ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
 
         // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync()
         // and do something before or after they're executed but this is not always necessary.
         protected override Task ExecuteTestAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> testAsync,
             Browser browser,
-            Func<UITestContext, Uri> setupOperation = null,
-            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            Func<UITestContext, Task<Uri>> setupOperation,
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
             base.ExecuteTestAsync(
-                test,
+                testAsync,
                 browser,
                 setupOperation,
-                configuration =>
+                async configuration =>
                 {
                     // You should always set the window size of the browser, otherwise the size will be random based on
                     // the settings of the given machine. However this is already handled as long as the
@@ -95,14 +95,14 @@ namespace Lombiq.Tests.UI.Samples
                     // Maybe not all of the default checks are suitable for you. Then it's simple to override them; here
                     // we change which log entries cause the tests to fail. We use the trick of making expected error
                     // messages not look like real errors.
-                    configuration.AssertAppLogs = async webApplicationInstance =>
+                    configuration.AssertAppLogsAsync = async webApplicationInstance =>
                         (await webApplicationInstance.GetLogOutputAsync())
                         .ReplaceOrdinalIgnoreCase(
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|ERROR|Expected non-error",
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
                         .ShouldNotContain("|ERROR|");
 
-                    changeConfiguration?.Invoke(configuration);
+                    if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
                 });
     }
 }

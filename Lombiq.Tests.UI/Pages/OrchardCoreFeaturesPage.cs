@@ -54,8 +54,7 @@ namespace Lombiq.Tests.UI.Pages
                 Disable.ClickAndGo()
                     .Yes.ClickAndGo();
 
-            protected override bool GetIsEnabled() =>
-                !Enable.IsVisible;
+            protected override bool GetIsEnabled() => !Enable.IsVisible;
         }
 
         public sealed class FeatureItemList : ControlList<FeatureItem, _>
