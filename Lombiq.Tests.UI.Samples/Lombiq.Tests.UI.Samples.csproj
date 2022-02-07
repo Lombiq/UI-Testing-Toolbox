@@ -22,6 +22,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <!-- Full test parallelization, temporarily until xUnit v3 is out, see:
+    https://github.com/Lombiq/UI-Testing-Toolbox/issues/83. -->
+    <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
