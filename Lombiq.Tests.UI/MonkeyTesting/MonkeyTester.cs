@@ -68,7 +68,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
                     }
                     else if (TryGetAvailablePageToTest(out var availablePageToTest))
                     {
-                        _context.GoToAbsoluteUrl(availablePageToTest.Url);
+                        await _context.GoToAbsoluteUrlAsync(availablePageToTest.Url);
 
                         await TestCurrentPageAsync(availablePageToTest);
                     }

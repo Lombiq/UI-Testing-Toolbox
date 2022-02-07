@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Services;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Models
@@ -14,7 +15,7 @@ namespace Lombiq.Tests.UI.Models
         public ITestOutputHelper TestOutputHelper { get; }
         public ITest XunitTest { get; }
         public string Name => XunitTest.DisplayName;
-        public Action<UITestContext> Test { get; set; }
+        public Func<UITestContext, Task> TestAsync { get; set; }
 
         public UITestManifest(ITestOutputHelper testOutputHelper)
         {

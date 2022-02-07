@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
             ExecuteTestAsync(
-                context => context.TestBasicOrchardFeatures(
+                context => context.TestBasicOrchardFeaturesAsync(
                     new OrchardCoreSetupParameters
                     {
                         // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a

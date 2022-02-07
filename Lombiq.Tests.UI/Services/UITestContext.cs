@@ -14,6 +14,8 @@ namespace Lombiq.Tests.UI.Services
 {
     public class UITestContext
     {
+        private readonly List<BrowserLogMessage> _historicBrowserLog = new();
+
         /// <summary>
         /// Gets data about the currently executing test.
         /// </summary>
@@ -56,6 +58,11 @@ namespace Lombiq.Tests.UI.Services
         public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
         /// <summary>
+        /// Gets a cumulative log of browser console entries.
+        /// </summary>
+        public IReadOnlyList<BrowserLogMessage> HistoricBrowserLog => _historicBrowserLog;
+
+        /// <summary>
         /// Gets a dictionary storing some custom contextual data.
         /// </summary>
         [SuppressMessage(
@@ -90,10 +97,51 @@ namespace Lombiq.Tests.UI.Services
         }
 
         /// <summary>
-        /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
-        /// cref="Configuration"/>.
+        /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.
         /// </summary>
-        public async Task AssertBrowserLogAsync()
+        public async Task<IReadOnlyList<BrowserLogMessage>> UpdateHistoricBrowserLogAsync()
+        {
+            var windowHandles = Driver.WindowHandles;
+
+            if (windowHandles.Count > 1)
+            {
+                var currentWindowHandle = Driver.CurrentWindowHandle;
+
+                foreach (var windowHandle in windowHandles)
+                {
+                    // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
+                    Driver.SwitchTo().Window(windowHandle);
+                    _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+                }
+
+                try
+                {
+                    Driver.SwitchTo().Window(currentWindowHandle);
+                }
+                catch (NoSuchWindowException)
+                {
+                    // This can happen in rare instances if the current window/tab was just closed.
+                    Driver.SwitchTo().Window(Driver.WindowHandles.Last());
+                }
+            }
+            else
+            {
+                _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+            }
+
+            return _historicBrowserLog;
+        }
+
+        /// <summary>
+        /// Clears accumulated historic browser log messages from <see cref="HistoricBrowserLog"/>.
+        /// </summary>
+        public void ClearHistoricBrowserLog() => _historicBrowserLog.Clear();
+
+        /// <summary>
+        /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
+        /// cref="Configuration"/>. This doesn't use <see cref="HistoricBrowserLog"/>.
+        /// </summary>
+        public async Task AssertCurrentBrowserLogAsync()
         {
             var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
             Configuration.AssertBrowserLog?.Invoke(browserLog);
@@ -101,15 +149,11 @@ namespace Lombiq.Tests.UI.Services
 
         internal async Task TriggerAfterPageChangeEventAsync()
         {
-            if (IsNoAlert() && Configuration.Events.AfterPageChange is { } afterPageChange)
+            if (IsNoAlert())
             {
                 try
                 {
-                    // For some reason doing await afterPageChange.Invoke(this) will cause exceptions to not propagate
-                    // when there are more than 2 subscribers.
-                    await afterPageChange.GetInvocationList()
-                        .Cast<PageChangeEventHandler>()
-                        .AwaitEachAsync(eventHandler => eventHandler(this));
+                    await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
                 }
                 catch (Exception exception)
                 {

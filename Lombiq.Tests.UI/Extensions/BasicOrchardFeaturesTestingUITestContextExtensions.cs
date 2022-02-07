@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -25,20 +26,21 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestBasicOrchardFeatures(
+        public static async Task TestBasicOrchardFeaturesAsync(
             this UITestContext context,
-            OrchardCoreSetupParameters setupParameters = null) =>
-            context
-                .TestSetupWithInvalidData()
-                .TestSetup(setupParameters)
-                .TestRegistrationWithInvalidData()
-                .TestRegistration()
-                .TestRegistrationWithAlreadyRegisteredEmail()
-                .TestLoginWithInvalidData()
-                .TestLogin()
-                .TestContentOperations()
-                .TestTurningFeatureOnAndOff()
-                .TestLogout();
+            OrchardCoreSetupParameters setupParameters = null)
+        {
+            await context.TestSetupWithInvalidDataAsync();
+            await context.TestSetupAsync(setupParameters);
+            await context.TestRegistrationWithInvalidDataAsync();
+            await context.TestRegistrationAsync();
+            await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
+            await context.TestLoginWithInvalidDataAsync();
+            await context.TestLoginAsync();
+            await context.TestContentOperationsAsync();
+            await context.TestTurningFeatureOnAndOffAsync();
+            await context.TestLogoutAsync();
+        }
 
         /// <summary>
         /// <para>
@@ -52,17 +54,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestBasicOrchardFeaturesExceptRegistration(
+        public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
             this UITestContext context,
-            OrchardCoreSetupParameters setupParameters = null) =>
-            context
-                .TestSetupWithInvalidData()
-                .TestSetup(setupParameters)
-                .TestLoginWithInvalidData()
-                .TestLogin()
-                .TestContentOperations()
-                .TestTurningFeatureOnAndOff()
-                .TestLogout();
+            OrchardCoreSetupParameters setupParameters = null)
+        {
+            await context.TestSetupWithInvalidDataAsync();
+            await context.TestSetupAsync(setupParameters);
+            await context.TestLoginWithInvalidDataAsync();
+            await context.TestLoginAsync();
+            await context.TestContentOperationsAsync();
+            await context.TestTurningFeatureOnAndOffAsync();
+            await context.TestLogoutAsync();
+        }
 
         /// <summary>
         /// <para>
@@ -76,16 +79,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestSetup(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters(context);
 
-            return context.ExecuteTest(
+            return context.ExecuteTestAsync(
                 "Test setup",
-                () => context
-                    .GoToSetupPage()
-                    .SetupOrchardCore(context, parameters)
-                    .ShouldLeaveSetupPage());
+                async () =>
+                {
+                    var setupPage = await context.GoToSetupPageAsync();
+                    (await setupPage.SetupOrchardCoreAsync(context, parameters)).ShouldLeaveSetupPage();
+                });
         }
 
         /// <summary>
@@ -102,7 +106,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestSetupWithInvalidData(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupWithInvalidDataAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters(context)
             {
@@ -112,12 +116,13 @@ namespace Lombiq.Tests.UI.Extensions
                 Password = string.Empty,
             };
 
-            return context.ExecuteTest(
+            return context.ExecuteTestAsync(
                 "Test setup with invalid data",
-                () => context
-                    .GoToSetupPage()
-                    .SetupOrchardCore(context, parameters)
-                    .ShouldStayOnSetupPage());
+                async () =>
+                {
+                    var setupPage = await context.GoToSetupPageAsync();
+                    (await setupPage.SetupOrchardCoreAsync(context, parameters)).ShouldStayOnSetupPage();
+                });
         }
 
         /// <summary>
@@ -131,19 +136,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="userName">The user name.</param>
         /// <param name="password">The password.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestLogin(
+        public static Task TestLoginAsync(
             this UITestContext context,
             string userName = DefaultUser.UserName,
             string password = DefaultUser.Password) =>
-            context.ExecuteTest(
+            context.ExecuteTestAsync(
                 "Test login",
-                () =>
+                async () =>
                 {
-                    context.GoToLoginPage()
-                        .LogInWith(context, userName, password)
-                        .ShouldLeaveLoginPage();
+                    var loginPage = await context.GoToLoginPageAsync();
+                    (await loginPage.LogInWithAsync(context, userName, password)).ShouldLeaveLoginPage();
 
-                    context.GetCurrentUserName().ShouldBe(userName);
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(userName);
                 });
 
         /// <summary>
@@ -157,22 +161,22 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="userName">The user name.</param>
         /// <param name="password">The password.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestLoginWithInvalidData(
+        public static Task TestLoginWithInvalidDataAsync(
             this UITestContext context,
             string userName = DefaultUser.UserName,
             string password = "WrongPass!") =>
-            context.ExecuteTest(
+            context.ExecuteTestAsync(
                 "Test login with invalid data",
-                () =>
+                async () =>
                 {
-                    context.SignOutDirectly();
+                    await context.SignOutDirectlyAsync();
 
-                    context.GoToLoginPage()
-                        .LogInWith(context, userName, password)
+                    var loginPage = await context.GoToLoginPageAsync();
+                    (await loginPage.LogInWithAsync(context, userName, password))
                         .ShouldStayOnLoginPage()
                         .ValidationSummaryErrors.Should.Not.BeEmpty();
 
-                    context.GetCurrentUserName().ShouldBeEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeEmpty();
                 });
 
         /// <summary>
@@ -184,18 +188,22 @@ namespace Lombiq.Tests.UI.Extensions
         /// </para>
         /// </summary>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestLogout(this UITestContext context) =>
-            context.ExecuteTest(
+        public static Task TestLogoutAsync(this UITestContext context) =>
+            context.ExecuteTestAsync(
                 "Test logout",
-                () =>
+                async () =>
                 {
-                    context.GoToDashboard()
+                    var dashboard = await context.GoToDashboardAsync();
+
+                    context.RefreshCurrentAtataContext();
+
+                    dashboard
                         .TopNavbar.Account.LogOff.Click()
                         .ShouldLeaveAdminPage();
 
-                    context.TriggerAfterPageChangeEventAsync().Wait();
+                    await context.TriggerAfterPageChangeEventAsync();
 
-                    context.GetCurrentUserName().ShouldBeNullOrEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
                 });
 
         /// <summary>
@@ -211,27 +219,30 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestRegistration(this UITestContext context, UserRegistrationParameters parameters = null)
+        public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= UserRegistrationParameters.CreateDefault();
 
-            return context.ExecuteTest(
+            return context.ExecuteTestAsync(
                 "Test registration",
-                () =>
+                async () =>
                 {
-                    context.GoToLoginPage()
+                    var loginPage = await context.GoToLoginPageAsync();
+                    context.RefreshCurrentAtataContext();
+                    var registrationPage = await loginPage
                         .RegisterAsNewUser.Should.BeVisible()
                         .RegisterAsNewUser.ClickAndGo()
-                            .RegisterWith(context, parameters)
-                            .ShouldLeaveRegistrationPage();
+                        .RegisterWithAsync(context, parameters);
+                    registrationPage.ShouldLeaveRegistrationPage();
 
-                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
-                    context.SignOutDirectly();
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
+                    await context.SignOutDirectlyAsync();
 
-                    context.GoToLoginPage().LogInWith(context, parameters.UserName, parameters.Password);
-                    context.TriggerAfterPageChangeEventAsync().Wait();
-                    context.GetCurrentUserName().ShouldBe(parameters.UserName);
-                    context.SignOutDirectly();
+                    loginPage = await context.GoToLoginPageAsync();
+                    await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password);
+                    await context.TriggerAfterPageChangeEventAsync();
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
+                    await context.SignOutDirectlyAsync();
                 });
         }
 
@@ -247,7 +258,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestRegistrationWithInvalidData(this UITestContext context, UserRegistrationParameters parameters = null)
+        public static Task TestRegistrationWithInvalidDataAsync(
+            this UITestContext context, UserRegistrationParameters parameters = null)
         {
             parameters ??= new()
             {
@@ -257,13 +269,14 @@ namespace Lombiq.Tests.UI.Extensions
                 ConfirmPassword = "short",
             };
 
-            return context.ExecuteTest(
+            return context.ExecuteTestAsync(
                 "Test registration with invalid data",
-                () => context
-                    .GoToRegistrationPage()
-                    .RegisterWith(context, parameters)
-                    .ShouldStayOnRegistrationPage()
-                    .ValidationMessages.Should.Not.BeEmpty());
+                async () =>
+                {
+                    var registrationPage = await context.GoToRegistrationPageAsync();
+                    registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                    registrationPage.ShouldStayOnRegistrationPage().ValidationMessages.Should.Not.BeEmpty();
+                });
         }
 
         /// <summary>
@@ -280,19 +293,23 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="parameters">The user registration parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestRegistrationWithAlreadyRegisteredEmail(
+        public static Task TestRegistrationWithAlreadyRegisteredEmailAsync(
             this UITestContext context,
             UserRegistrationParameters parameters = null)
         {
             parameters ??= UserRegistrationParameters.CreateDefault();
 
-            return context.ExecuteTest(
+            return context.ExecuteTestAsync(
                 "Test registration with already registered email",
-                () => context
-                    .GoToRegistrationPage()
-                    .RegisterWith(context, parameters)
-                    .ShouldStayOnRegistrationPage()
-                    .ValidationMessages[page => page.Email].Should.BeVisible());
+                async () =>
+                {
+                    var registrationPage = await context.GoToRegistrationPageAsync();
+                    registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                    context.RefreshCurrentAtataContext();
+                    registrationPage
+                        .ShouldStayOnRegistrationPage()
+                        .ValidationMessages[page => page.Email].Should.BeVisible();
+                });
         }
 
         /// <summary>
@@ -313,19 +330,21 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="pageTitle">The page title to enter.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestContentOperations(this UITestContext context, string pageTitle = "Test page") =>
-            context.ExecuteTest(
+        public static Task TestContentOperationsAsync(this UITestContext context, string pageTitle = "Test page") =>
+            context.ExecuteTestAsync(
                 "Test content operations",
-                () =>
+                async () =>
                 {
-                    context.GoToContentItemsPage()
+                    var contentItemsPage = await context.GoToContentItemsPageAsync();
+                    context.RefreshCurrentAtataContext();
+                    contentItemsPage
                         .CreateNewPage()
                             .Title.Set(pageTitle)
                             .Publish.ClickAndGo()
                         .AlertMessages.Should.Contain(message => message.IsSuccess)
                         .Items[item => item.Title == pageTitle].View.Click();
 
-                    context.TriggerAfterPageChangeEventAsync().Wait();
+                    await context.TriggerAfterPageChangeEventAsync();
 
                     context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
                         .AggregateAssert(page => page
@@ -353,14 +372,20 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <param name="featureName">The name of the feature to use.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext TestTurningFeatureOnAndOff(this UITestContext context, string featureName = "Background Tasks") =>
-            context.ExecuteTest(
+        public static Task TestTurningFeatureOnAndOffAsync(
+            this UITestContext context, string featureName = "Background Tasks") =>
+            context.ExecuteTestAsync(
                 "Test turning feature on and off",
-                () => context
-                    .GoToFeaturesPage()
-                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
-                    .Features[featureName].CheckBox.Check()
-                    .BulkActions.Toggle.Click()
+                async () =>
+                {
+                    var featuresPage = await context.GoToFeaturesPageAsync();
+
+                    context.RefreshCurrentAtataContext();
+
+                    featuresPage
+                        .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
+                        .Features[featureName].CheckBox.Check()
+                        .BulkActions.Toggle.Click()
 
                     .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
@@ -372,23 +397,27 @@ namespace Lombiq.Tests.UI.Extensions
                     .AggregateAssert(page => page
                         .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
                         .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState)));
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                });
 
         /// <summary>
-        /// Executes the <paramref name="testAction"/> with the specified <paramref name="testName"/>.
+        /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
         /// </summary>
         /// <param name="testName">The test name.</param>
-        /// <param name="testAction">The test action.</param>
+        /// <param name="testFunctionAsync">The test action.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static UITestContext ExecuteTest(this UITestContext context, string testName, Action testAction)
+        public static Task ExecuteTestAsync(
+            this UITestContext context, string testName, Func<Task> testFunctionAsync)
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
             if (testName is null) throw new ArgumentNullException(nameof(testName));
-            if (testAction is null) throw new ArgumentNullException(nameof(testAction));
+            if (testFunctionAsync is null) throw new ArgumentNullException(nameof(testFunctionAsync));
 
-            context.Scope.AtataContext.Log.ExecuteSection(new LogSection(testName), testAction);
-
-            return context;
+            return ExecuteTestInnerAsync(context, testName, testFunctionAsync);
         }
+
+        private static Task ExecuteTestInnerAsync(
+            UITestContext context, string testName, Func<Task> testFunctionAsync) =>
+            context.ExecuteLoggedAsync(testName, testFunctionAsync);
     }
 }

@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
+using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ namespace Lombiq.Tests.UI.Samples.Tests
         private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
         {
             PageTestTime = TimeSpan.FromSeconds(10),
-            BaseRandomSeed = 1234,
         };
 
         public MonkeyTests(ITestOutputHelper testOutputHelper)
@@ -32,46 +32,47 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // Note how we define the starting point of the test as the homepage.
-                    context.GoToHomePage();
+                    await context.GoToHomePageAsync();
                     // The specified random see gives you the option to reproduce the random interactions. Otherwise
                     // it would be calculated from MonkeyTestingOptions.BaseRandomSeed.
-                    context.TestCurrentPageAsMonkey(_monkeyTestingOptions, 12345);
+                    await context.TestCurrentPageAsMonkeyAsync(_monkeyTestingOptions, 12345);
                 },
                 browser);
 
-        // Recursive testing will just continue testing following the configured rules until it runs out time or new
+        // Recursive testing will just continue testing following the configured rules until it runs out of time or new
         // pages.
         [Theory, Chrome]
         public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
-                    context.GoToHomePage();
-                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                    await context.GoToHomePageAsync();
+                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(_monkeyTestingOptions);
+
+                    // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions)
+                    // does the same thing but we wanted to demonstrate the contrast with
+                    // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
                 },
                 browser);
 
         // Let's test with an authenticated user too.
         [Theory, Chrome]
-        public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+        public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
             ExecuteTestAfterSetupAsync(
                 context =>
-                {
                     // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin
                     // dashboard.
-                    context.SignInDirectlyAndGoToDashboard();
-                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
-                },
+                    context.TestAdminAsMonkeyRecursivelyAsync(_monkeyTestingOptions),
                 browser);
 
         // Let's just test the background tasks management admin area.
         [Theory, Chrome]
         public Task TestAdminBackgroundTasksAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // You can fence monkey testing with URL filters: Monkey testing will only be executed if the
                     // current URL matches. This way, you can restrict monkey testing to just sections of the site. You
@@ -81,8 +82,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // You could also configure the same thing with regex:
                     ////_monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter(@"\/Admin\/BackgroundTasks"));
 
-                    context.SignInDirectlyAndGoToRelativeUrl("/Admin/BackgroundTasks");
-                    context.TestCurrentPageAsMonkeyRecursively(_monkeyTestingOptions);
+                    await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
+                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(_monkeyTestingOptions);
                 },
                 browser);
     }

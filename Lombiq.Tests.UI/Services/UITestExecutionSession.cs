@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
@@ -41,7 +40,6 @@ namespace Lombiq.Tests.UI.Services
         private AzureBlobStorageManager _azureBlobStorageManager;
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
-        private List<BrowserLogMessage> _browserLogMessages;
         private DockerConfiguration _dockerConfiguration;
 
         public UITestExecutionSession(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
@@ -94,7 +92,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context.SetDefaultBrowserSize();
 
-                _testManifest.Test(_context);
+                await _testManifest.TestAsync(_context);
 
                 await AssertLogsAsync();
 
@@ -155,41 +153,6 @@ namespace Lombiq.Tests.UI.Services
             if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
             if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
-        }
-
-        private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
-        {
-            _browserLogMessages ??= new List<BrowserLogMessage>();
-
-            var windowHandles = _context.Driver.WindowHandles;
-
-            if (windowHandles.Count > 1)
-            {
-                var currentWindowHandle = _context.Driver.CurrentWindowHandle;
-
-                foreach (var windowHandle in windowHandles)
-                {
-                    // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                    _context.Driver.SwitchTo().Window(windowHandle);
-                    _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
-                }
-
-                try
-                {
-                    _context.Driver.SwitchTo().Window(currentWindowHandle);
-                }
-                catch (NoSuchWindowException)
-                {
-                    // This can happen in rare instances if the current window/tab was just closed.
-                    _context.Driver.SwitchTo().Window(_context.Driver.WindowHandles.Last());
-                }
-            }
-            else
-            {
-                _browserLogMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
-            }
-
-            return _browserLogMessages;
         }
 
         private Exception PrepareAndLogException(Exception ex)
@@ -274,7 +237,7 @@ namespace Lombiq.Tests.UI.Services
 
                     await File.WriteAllLinesAsync(
                         browserLogPath,
-                        (await GetBrowserLogAsync(_context.Scope.Driver)).Select(message => message.ToString()));
+                        (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
@@ -416,7 +379,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
+                    await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                     if (setupConfiguration.FastFailSetup &&
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
@@ -434,11 +397,9 @@ namespace Lombiq.Tests.UI.Services
 
                     _context.SetDefaultBrowserSize();
 
-                    var result = (_context, setupConfiguration.SetupOperation(_context));
+                    var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                     await AssertLogsAsync();
-                    // Clearing the cache so the first test after the setup will assert correctly too.
-                    _browserLogMessages = null;
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                     return result;
@@ -455,7 +416,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context = await CreateContextAsync();
 
-                _context.GoToRelativeUrl(resultUri.PathAndQuery);
+                await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {
@@ -623,9 +584,11 @@ namespace Lombiq.Tests.UI.Services
 
         private async Task AssertLogsAsync()
         {
+            await _context.UpdateHistoricBrowserLogAsync();
+
             try
             {
-                if (_configuration.AssertAppLogs != null) await _configuration.AssertAppLogs(_context.Application);
+                if (_configuration.AssertAppLogsAsync != null) await _configuration.AssertAppLogsAsync(_context.Application);
             }
             catch (Exception)
             {
@@ -637,12 +600,12 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
-                _configuration.AssertBrowserLog?.Invoke(await GetBrowserLogAsync(_context.Scope.Driver));
+                _configuration.AssertBrowserLog?.Invoke(_context.HistoricBrowserLog);
             }
             catch (Exception)
             {
                 _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                _testOutputHelper.WriteLine((await GetBrowserLogAsync(_context.Scope.Driver)).ToFormattedString());
+                _testOutputHelper.WriteLine(_context.HistoricBrowserLog.ToFormattedString());
 
                 throw;
             }

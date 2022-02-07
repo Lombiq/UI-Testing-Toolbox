@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Executes assertions on the result of an HTML markup validation with the html-validate library. Note that you
         /// need to run this after every page load, it won't accumulate during a session.
         /// </summary>
-        /// <param name="assertHtmlValidationResult">
+        /// <param name="assertHtmlValidationResultAsync">
         /// The assertion logic to run on the result of an HTML markup validation. If <see langword="null"/> then the
         /// assertion supplied in the context will be used.
         /// </param>
@@ -22,14 +22,14 @@ namespace Lombiq.Tests.UI.Extensions
         public static async Task AssertHtmlValidityAsync(
             this UITestContext context,
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-            Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
+            Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
         {
             var validationResult = context.ValidateHtml(htmlValidationOptionsAdjuster);
             var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
             try
             {
-                var assertTask = (assertHtmlValidationResult ?? validationConfiguration.AssertHtmlValidationResult)?
+                var assertTask = (assertHtmlValidationResultAsync ?? validationConfiguration.AssertHtmlValidationResultAsync)?
                     .Invoke(validationResult);
                 await (assertTask ?? Task.CompletedTask);
             }

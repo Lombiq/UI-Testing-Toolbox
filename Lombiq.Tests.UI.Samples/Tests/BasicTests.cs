@@ -26,7 +26,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task AnonymousHomePageShouldExist(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // Is the title correct?
                     context
@@ -35,7 +35,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                         .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing");
 
                     // Are we logged out?
-                    context.GetCurrentUserName().ShouldBeNullOrEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
                 },
                 browser);
 
@@ -44,11 +44,11 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task LoginShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate
                     // to any URL.
-                    context.GoToRelativeUrl("/Login");
+                    await context.GoToRelativeUrlAsync("/Login");
 
                     // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                     // actually sure that the values are indeed there! To make things more reliable, we've added a lot
@@ -61,7 +61,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
                     // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
                     // module) to see if it indeed happened.
-                    context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
 
                     // Note that if you want the user to be logged in for the test (instead of testing the login feature
                     // itself), you don't need to log in via the login form every time: That would be slow and you'd
@@ -75,7 +75,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task TogglingFeaturesShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context.ExecuteAndAssertTestFeatureToggle(),
+                context => context.ExecuteAndAssertTestFeatureToggleAsync(),
                 browser,
                 // You can change the configuration even for each test.
                 configuration =>
@@ -93,26 +93,26 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task ShortcutsShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // If you need an authenticated user but you aren't testing the login specifically then you can use
                     // this shortcut to authenticate (note that you can specify a different user in an argument too):
-                    context.SignInDirectly();
+                    await context.SignInDirectlyAsync();
 
                     // You know this shortcut already:
-                    context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
 
                     // If you want to add some sample content in just one test, or change some Orchard configuration
                     // quickly, then defining those in a recipe and executing it will come handy:
-                    context.ExecuteRecipeDirectly("Lombiq.JsonEditor.Sample");
+                    await context.ExecuteRecipeDirectlyAsync("Lombiq.JsonEditor.Sample");
 
                     // Retrieving some in-depth details about the app.
-                    var info = context.GetApplicationInfoAsync().Result;
+                    var info = await context.GetApplicationInfoAsync();
                     // Where is the app's current instance running from?
                     _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
 
                     // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
-                    context.EnableFeatureDirectly("OrchardCore.HealthChecks");
+                    await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
                 },
                 browser);
 

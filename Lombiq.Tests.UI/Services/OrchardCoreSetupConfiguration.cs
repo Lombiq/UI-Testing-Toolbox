@@ -17,7 +17,7 @@ namespace Lombiq.Tests.UI.Services
         /// (since they can't be reliable after an improper setup). If configured, automatic log assertions will be
         /// executed after the setup operation too. Also see <see cref="FastFailSetup"/>.
         /// </summary>
-        public Func<UITestContext, Uri> SetupOperation { get; set; }
+        public Func<UITestContext, Task<Uri>> SetupOperation { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether if a specific setup operations fails and exhausts <see
