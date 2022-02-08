@@ -44,7 +44,8 @@ namespace Lombiq.Tests.UI.Services
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
             uITestManifest.TestOutputHelper.WriteLine(
                 Environment.NewLine +
-                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(testName)}' " +
+                $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
