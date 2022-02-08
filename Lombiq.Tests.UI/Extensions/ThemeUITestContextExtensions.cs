@@ -19,7 +19,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="creditsClass">CSS class name of the credits HTML element.</param>
         /// <param name="siteNameClass">CSS class name of the HTML element that has the site name text inside.</param>
         public static async Task GoToHomePageAndCheckNavBarAndCreditsAsync(
-            UITestContext context,
+            this UITestContext context,
             string siteName = "Test Site",
             string creditsClass = "credits",
             string siteNameClass = "navbar-brand")

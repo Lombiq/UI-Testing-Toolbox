@@ -108,5 +108,35 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         {
             new StartsWithBaseUrlMonkeyTestingUrlFilter(),
         };
+
+        /// <summary>
+        /// Adds the login page (/Login) to the URL filters.
+        /// </summary>
+        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
+        public MonkeyTestingOptions AddLoginPageToUrlFilters(MonkeyTestingOptions options)
+        {
+            options.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Login"));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the register page (/Register) to the URL filters.
+        /// </summary>
+        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
+        public MonkeyTestingOptions AddRegisterPageToUrlFilters(MonkeyTestingOptions options)
+        {
+            options.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Register"));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the login page (/Login) and the register page (/Register) to the URL filters.
+        /// </summary>
+        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
+        public MonkeyTestingOptions AddLoginAndRegisterPagesToUrlFilters(MonkeyTestingOptions options)
+        {
+            AddLoginPageToUrlFilters(options).AddRegisterPageToUrlFilters(options);
+            return this;
+        }
     }
 }

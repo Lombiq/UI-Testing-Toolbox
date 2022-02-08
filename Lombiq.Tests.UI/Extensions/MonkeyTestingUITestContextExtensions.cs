@@ -112,36 +112,12 @@ namespace Lombiq.Tests.UI.Extensions
             string signInDirectlyWithUserName = DefaultUser.UserName,
             string startingRelativeUrl = "/")
         {
-            await TestFrontendAnonymouslyAsMonkeyRecursivelyAsync(context, options, startingRelativeUrl);
             await TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(
                 context,
                 options,
                 signInDirectlyWithUserName,
                 startingRelativeUrl);
-        }
-
-        /// <summary>
-        /// Adds login (/Login) page to URL filters.
-        /// </summary>
-        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
-        public static void AddLoginPageToUrlFilters(MonkeyTestingOptions options) =>
-            options.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Login"));
-
-        /// <summary>
-        /// Adds register (/Register) page to URL filters.
-        /// </summary>
-        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
-        public static void AddRegisterPageToUrlFilters(MonkeyTestingOptions options) =>
-            options.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Register"));
-
-        /// <summary>
-        /// Adds login (/Login) and register (/Register) pages to URL filters.
-        /// </summary>
-        /// <param name="options">The current <see cref="MonkeyTestingOptions"/> instance.</param>
-        public static void AddLoginAndRegisterPagesToUrlFilters(MonkeyTestingOptions options)
-        {
-            AddLoginPageToUrlFilters(options);
-            AddRegisterPageToUrlFilters(options);
+            await TestFrontendAnonymouslyAsMonkeyRecursivelyAsync(context, options, startingRelativeUrl);
         }
     }
 }
