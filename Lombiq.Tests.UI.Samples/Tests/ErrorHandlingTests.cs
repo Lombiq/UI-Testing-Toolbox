@@ -27,7 +27,8 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     "ServerSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
                 "Val1",
                 99);
-            return Task.FromResult(1);
+
+            throw new InvalidOperationException("This test failed.");
         }
 
         [Theory, Chrome]
