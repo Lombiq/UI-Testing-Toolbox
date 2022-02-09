@@ -42,7 +42,7 @@ namespace Lombiq.Tests.UI.Services
             var testName = Escape(uITestManifest.Name);
 
             // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
-            uITestManifest.TestOutputHelper.WriteLine(
+            Console.WriteLine(
                 Environment.NewLine +
                 $"##teamcity[testMetadata testName='{Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
