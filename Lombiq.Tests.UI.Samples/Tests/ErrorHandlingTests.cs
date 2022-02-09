@@ -1,94 +1,71 @@
+using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Samples.Tests
 {
-    [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Just for test.")]
-    [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Just for test.")]
-    public class ErrorHandlingTests
+    // Sometimes errors are expected. Let's check out what can be done with them!
+    public class ErrorHandlingTests : UITestBase
     {
-        private readonly ITestOutputHelper _output;
+        public ErrorHandlingTests(ITestOutputHelper testOutputHelper)
+            : base(testOutputHelper)
+        {
+        }
 
-        public ErrorHandlingTests(ITestOutputHelper output) => _output = output;
-
+        // It's easier to diagnose a test failure if you know whether an element is missing because there something is
+        // actually missing or there was a server-side error. The below test visits a page where the action method
+        // throws an exception.
         [Theory, Chrome]
-        public Task ServerSideErrorOnLoadedPageShouldHaltTest(Browser browser)
-        {
-            TeamCityMetadataReporter.ReportInt(
-                _output,
-                "Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ServerSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
-                "Val1",
-                99);
+        public Task ServerSideErrorOnLoadedPageShouldHaltTest(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                async context =>
+                {
+                    try
+                    {
+                        await context.GoToErrorPageDirectlyAsync();
 
-            throw new InvalidOperationException("This test failed.");
-        }
+                        // This point should be unreachable because Orchard logs are automatically asserted after a
+                        // page load.
+                        throw new InvalidOperationException("The log assertion didn't happen after page load!");
+                    }
+                    catch (PageChangeAssertionException)
+                    {
+                        // Remove logs to have a clean slate.
+                        foreach (var log in context.Application.GetLogs()) log.Remove();
+                        context.ClearHistoricBrowserLog();
+                    }
+                },
+                browser);
 
+        // You can interact with the browser log and its history as well. E.g. 404s and JS exceptions show up in the
+        // browser log.
         [Theory, Chrome]
-        public Task ClientSideErrorOnLoadedPageShouldHaltTest(Browser browser)
-        {
-            TeamCityMetadataReporter.ReportInt(
-                _output,
-                "Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ClientSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
-                "Val2",
-                33);
-            return Task.FromResult(1);
-        }
-    }
+        public Task ClientSideErrorOnLoadedPageShouldHaltTest(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                async context =>
+                {
+                    try
+                    {
+                        await context.GoToRelativeUrlAsync("/this-does-not-exist");
 
-    public enum Browser
-    {
-        Chrome,
-        Edge,
-        Firefox,
-        InternetExplorer,
-    }
-
-    public sealed class ChromeAttribute : BrowserAttributeBase
-    {
-        protected override Browser Browser => Browser.Chrome;
-    }
-
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public abstract class BrowserAttributeBase : DataAttribute
-    {
-        protected abstract Browser Browser { get; }
-
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-        {
-            yield return new[] { Browser as object };
-        }
-    }
-
-    public static class TeamCityMetadataReporter
-    {
-        public static void ReportInt(ITestOutputHelper output, string testName, string name, int number) =>
-            ReportNumber(output, testName, name, number.ToString(CultureInfo.InvariantCulture));
-
-        public static void ReportNumber(ITestOutputHelper output, string testName, string name, string number) =>
-            Report(output, testName, name, "number", number);
-
-        public static void Report(ITestOutputHelper output, string testName, string name, string type, string value) =>
-            // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
-            output.WriteLine(
-                Environment.NewLine +
-                $"##teamcity[testMetadata testName='{Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
-
-        // Escaping values for TeamCity, see:
-        // https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
-        private static string Escape(string value) => value
-            .Replace("|", "||", StringComparison.Ordinal)
-            .Replace("'", "|'", StringComparison.Ordinal)
-            .Replace("\n", "n", StringComparison.Ordinal)
-            .Replace("\r", "|r", StringComparison.Ordinal)
-            .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
-            .Replace("[", "|[", StringComparison.Ordinal)
-            .Replace("]", "|]", StringComparison.Ordinal);
+                        // This point should be unreachable because browser logs are automatically asserted after a
+                        // page load.
+                        throw new InvalidOperationException("The log assertion didn't happen after page load!");
+                    }
+                    catch (PageChangeAssertionException)
+                    {
+                        // Remove logs to have a clean slate.
+                        context.ClearHistoricBrowserLog();
+                    }
+                },
+                browser);
     }
 }
+
+// END OF TRAINING SECTION: Error handling.
+// NEXT STATION: Head over to Tests/MonkeyTests.cs.
