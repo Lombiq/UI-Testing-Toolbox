@@ -23,8 +23,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         {
             TeamCityMetadataReporter.ReportInt(
                 _output,
-                "Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests." +
-                    "ServerSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
+                "Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ServerSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
                 "Val1",
                 99);
 
@@ -36,8 +35,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         {
             TeamCityMetadataReporter.ReportInt(
                 _output,
-                "Lombiq.Tests.UI.Samples: Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests" +
-                    ".ClientSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
+                "Lombiq.Tests.UI.Samples.Tests.ErrorHandlingTests.ClientSideErrorOnLoadedPageShouldHaltTest(browser: Chrome)",
                 "Val2",
                 33);
             return Task.FromResult(1);
