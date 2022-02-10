@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -13,7 +14,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// cref="OrchardCoreUITestExecutorConfiguration.UseSmtpService"/> is set to <see langword="true"/>.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
-        public static void GoToSmtpWebUI(this UITestContext context)
+        public static Task GoToSmtpWebUIAsync(this UITestContext context)
         {
             if (context.SmtpServiceRunningContext == null)
             {
@@ -23,7 +24,7 @@ namespace Lombiq.Tests.UI.Extensions
                     " and could it properly start?");
             }
 
-            context.GoToAbsoluteUrl(context.SmtpServiceRunningContext.WebUIUri);
+            return context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
         }
 
         /// <summary>
@@ -31,12 +32,12 @@ namespace Lombiq.Tests.UI.Extensions
         /// name="emailTitle"/> and message body contains <paramref name="textToFind"/>. If none are found <see
         /// cref="NotFoundException"/> is thrown.
         /// </summary>
-        public static IWebElement FindSpecificEmailInInbox(
+        public static async Task<IWebElement> FindSpecificEmailInInboxAsync(
             this UITestContext context,
             string emailTitle,
             string textToFind)
         {
-            context.GoToSmtpWebUI();
+            await context.GoToSmtpWebUIAsync();
             context.ClickReliablyOn(ByHelper.SmtpInboxRow(emailTitle));
             context.SwitchToFrame0();
 

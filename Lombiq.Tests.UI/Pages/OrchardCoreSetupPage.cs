@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
@@ -74,9 +75,6 @@ namespace Lombiq.Tests.UI.Pages
 
         public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
-            SetupOrchardCoreAsync(context, parameters).Result;
-
         public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
@@ -112,6 +110,8 @@ namespace Lombiq.Tests.UI.Pages
             FinishSetup.Click();
 
             await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+            context.RefreshCurrentAtataContext();
 
             return this;
         }

@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Services
         public TimeSpan RetryInterval { get; set; } =
             TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:RetryIntervalSeconds", 0));
 
-        public Func<IWebApplicationInstance, Task> AssertAppLogs { get; set; } = AssertAppLogsCanContainWarnings;
+        public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
         public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
         public ITestOutputHelper TestOutputHelper { get; set; }
 
@@ -113,11 +113,11 @@ namespace Lombiq.Tests.UI.Services
 
         public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
         {
-            if (instance == null || AssertAppLogs == null) return;
+            if (instance == null || AssertAppLogsAsync == null) return;
 
             try
             {
-                await AssertAppLogs(instance);
+                await AssertAppLogsAsync(instance);
             }
             catch (Exception)
             {
@@ -145,8 +145,8 @@ namespace Lombiq.Tests.UI.Services
             }
         }
 
-        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmpty = app => app.LogsShouldBeEmptyAsync();
-        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarnings =
+        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app => app.LogsShouldBeEmptyAsync();
+        public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
             app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
         public static readonly Action<IEnumerable<BrowserLogMessage>> AssertBrowserLogIsEmpty =

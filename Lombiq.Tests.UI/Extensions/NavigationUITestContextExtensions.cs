@@ -6,35 +6,32 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
     public static class NavigationUITestContextExtensions
     {
-        public static void GoToHomePage(this UITestContext context) => context.GoToRelativeUrl("/");
+        public static Task GoToHomePageAsync(this UITestContext context) => context.GoToRelativeUrlAsync("/");
 
-        public static void GoToRelativeUrl(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
-            context.GoToAbsoluteUrl(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
+        public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
+            context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
 
-        public static void GoToAbsoluteUrl(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
-            context.ExecuteLogged(
-                nameof(GoToAbsoluteUrl),
+        public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
+            context.ExecuteLoggedAsync(
+                nameof(GoToAbsoluteUrlAsync),
                 $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
-                () =>
+                async () =>
                 {
                     if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
-                    context.Configuration.Events.BeforeNavigation
-                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri))
-                        .GetAwaiter()
-                        .GetResult();
+                    await context.Configuration.Events.BeforeNavigation
+                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
                     context.Driver.Navigate().GoToUrl(absoluteUri);
 
-                    context.Configuration.Events.AfterNavigation
-                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri))
-                        .GetAwaiter()
-                        .GetResult();
+                    await context.Configuration.Events.AfterNavigation
+                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
                 });
 
         public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
@@ -44,91 +41,97 @@ namespace Lombiq.Tests.UI.Extensions
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
             new(context.Scope.BaseUri, relativeUrl);
 
-        public static void SignOutDirectlyThenSignInDirectlyAndGoToHomepage(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectlyAndGoToHomepage(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToHomepageAsync(email);
         }
 
-        public static void SignInDirectlyAndGoToHomepage(
+        public static async Task SignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            context.GoToHomePage();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToHomePageAsync();
         }
 
-        public static void SignOutDirectlyThenSignInDirectlyAndGoToDashboard(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectlyAndGoToDashboard(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToDashboardAsync(email);
         }
 
-        public static void SignInDirectlyAndGoToDashboard(
+        public static async Task SignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            context.GoToDashboard();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToDashboardAsync();
         }
 
-        public static void SignOutDirectlyThenSignInDirectly(
+        public static async Task SignOutDirectlyThenSignInDirectlyAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectly(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAsync(email);
         }
 
         // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
         // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
-        // https://github.com/atata-framework/atata/issues/364
-        // The GoToPage() methods SHOULD NOT BE ASYNC, otherwise during subsequent operations AtataContext.Current will
-        // be lost.
+        // https://github.com/atata-framework/atata/issues/364.
 
-        public static T GoToPage<T>(this UITestContext context)
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context)
             where T : PageObject<T>
         {
             var page = context.ExecuteLogged(
-                nameof(GoToPage),
+                nameof(GoToPageAsync),
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>());
-            context.TriggerAfterPageChangeEventAsync().Wait();
+
+            await context.TriggerAfterPageChangeEventAsync();
+
+            context.RefreshCurrentAtataContext();
+
             return page;
         }
 
-        public static T GoToPage<T>(this UITestContext context, string relativeUrl)
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
             where T : PageObject<T>
         {
             var page = context.ExecuteLogged(
                 $"{typeof(T).FullName} - {relativeUrl}",
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
-            context.TriggerAfterPageChangeEventAsync().Wait();
+
+            await context.TriggerAfterPageChangeEventAsync();
+
+            context.RefreshCurrentAtataContext();
+
             return page;
         }
 
-        public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreSetupPage>();
+        public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreSetupPage>();
 
-        public static OrchardCoreLoginPage GoToLoginPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreLoginPage>();
+        public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreLoginPage>();
 
-        public static OrchardCoreRegistrationPage GoToRegistrationPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreRegistrationPage>();
+        public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
-        public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
-            context.GoToPage<OrchardCoreDashboardPage>();
+        public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreDashboardPage>();
 
-        public static OrchardCoreContentItemsPage GoToContentItemsPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreContentItemsPage>();
+        public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreContentItemsPage>();
 
-        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreFeaturesPage>();
+        public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreFeaturesPage>();
 
         /// <summary>
         /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during

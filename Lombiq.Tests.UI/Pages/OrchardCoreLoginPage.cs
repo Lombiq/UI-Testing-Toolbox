@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Components;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 
@@ -36,9 +37,6 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveLoginPage() =>
             PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-        public _ LogInWith(UITestContext context, string userName, string password) =>
-            LogInWithAsync(context, userName, password).Result;
-
         public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
         {
             var page = UserName.Set(userName)
@@ -46,6 +44,8 @@ namespace Lombiq.Tests.UI.Pages
                 .LogIn.Click();
 
             await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+            context.RefreshCurrentAtataContext();
 
             return page;
         }
