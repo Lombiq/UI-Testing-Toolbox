@@ -220,6 +220,19 @@ namespace Lombiq.Tests.UI
                 ConvertChangeConfigurationToAsynchronous(changeConfiguration));
 
         /// <summary>
+        /// Executes the given UI test.
+        /// </summary>
+        protected virtual Task ExecuteTestAsync(
+            Func<UITestContext, Task> testAsync,
+            Browser browser,
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+            ExecuteTestAsync(
+                testAsync,
+                browser,
+                setupOperation: null,
+                changeConfigurationAsync);
+
+        /// <summary>
         /// Executes the given UI test, optionally after setting up the site.
         /// </summary>
         protected virtual async Task ExecuteTestAsync(
@@ -251,19 +264,6 @@ namespace Lombiq.Tests.UI
 
             await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
         }
-
-        /// <summary>
-        /// Executes the given UI test, optionally after setting up the site.
-        /// </summary>
-        protected virtual Task ExecuteTestAsync(
-            Func<UITestContext, Task> testAsync,
-            Browser browser,
-            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-            ExecuteTestAsync(
-                testAsync,
-                browser,
-                setupOperation: null,
-                changeConfigurationAsync);
 
         private static MultiSizeTestAsync ConvertMultiSizeTestToAsynchronous(MultiSizeTest test) =>
             (context, isStandardSize) =>
