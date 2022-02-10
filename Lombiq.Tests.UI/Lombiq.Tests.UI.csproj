@@ -15,7 +15,7 @@
   <PropertyGroup>
     <Title>Lombiq UI Testing Toolbox for Orchard Core</Title>
     <Authors>Lombiq Technologies</Authors>
-    <Copyright>Copyright © 2020, Lombiq Technologies Ltd. - https://lombiq.com</Copyright>
+    <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
     <Description>Lombiq UI Testing Toolbox for Orchard Core: Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here. See the project website for detailed documentation.</Description>
     <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
     <PackageIcon>NuGetIcon.png</PackageIcon>
