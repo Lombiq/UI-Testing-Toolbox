@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Include="TeamCity.VSTest.TestAdapter" Version="1.0.34" />
   </ItemGroup>
 
   <ItemGroup>

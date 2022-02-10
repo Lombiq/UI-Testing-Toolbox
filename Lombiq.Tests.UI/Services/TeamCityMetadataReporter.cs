@@ -42,7 +42,8 @@ namespace Lombiq.Tests.UI.Services
             var testName = Escape(uITestManifest.Name);
 
             uITestManifest.TestOutputHelper.WriteLine(
-                $"##teamcity[testMetadata testName='{Escape(testName)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+                $"##Lombiq.Tests.UI.Samples: teamcity[testMetadata testName='{Escape(testName)}' " +
+                $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
