@@ -112,7 +112,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <summary>
         /// Adds the login page (/Login) to the URL filters (i.e. monkey testing will not happen on that page).
         /// </summary>
-        public MonkeyTestingOptions AddLoginPageToUrlFilters()
+        public MonkeyTestingOptions ExcludeLoginPageFromMonkeyTesting()
         {
             UrlFilters.Add(new NotStartsWithMonkeyTestingUrlFilter("/Login"));
             return this;
@@ -121,7 +121,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// <summary>
         /// Adds the register page (/Register) to the URL filters (i.e. monkey testing will not happen on that page).
         /// </summary>
-        public MonkeyTestingOptions AddRegisterPageToUrlFilters()
+        public MonkeyTestingOptions ExcludeRegisterPageFromMonkeyTesting()
         {
             UrlFilters.Add(new NotStartsWithMonkeyTestingUrlFilter("/Register"));
             return this;
@@ -131,9 +131,9 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// Adds the login page (/Login) and the register page (/Register) to the URL filters (i.e. monkey testing will
         /// not happen on those pages).
         /// </summary>
-        public MonkeyTestingOptions AddLoginAndRegisterPagesToUrlFilters()
+        public MonkeyTestingOptions ExcludeLoginAndRegisterPagesFromMonkeyTesting()
         {
-            AddLoginPageToUrlFilters().AddRegisterPageToUrlFilters();
+            ExcludeLoginPageFromMonkeyTesting().ExcludeRegisterPageFromMonkeyTesting();
             return this;
         }
     }
