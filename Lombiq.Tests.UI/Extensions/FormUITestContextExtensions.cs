@@ -1,6 +1,7 @@
 using AngleSharp.Text;
 using Atata;
 using Lombiq.Tests.UI.Services;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using System;
 using System.Globalization;
@@ -71,6 +72,30 @@ namespace Lombiq.Tests.UI.Extensions
                     },
                     timeout,
                     interval));
+        }
+
+        /// <summary>
+        /// Uses Javascript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
+        /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose
+        /// the CodeMirror library globally for editing the existing instance and this editor can't be filled using
+        /// regular Selenium interactions either.
+        /// </summary>
+        public static void SetMarkdownEasyMdeWysiwygEditor(this UITestContext context, string id, string text)
+        {
+            var script = $@"
+                /* First get rid of the existing editor instance. */
+                document.querySelector('#{id} + .EasyMDEContainer').remove();
+                /* Create a new one using the same call found in OC's MarkdownBodyPart-Wysiwyg.Edit.cshtml */
+                var mde = new EasyMDE({{
+                    element: document.getElementById('{id}'),
+                    forceSync: true,
+                    toolbar: mdeToolbar,
+                    autoDownloadFontAwesome: false,
+                }});
+                /* Finally set the value programmatically. */
+                mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
+
+            context.Driver.ExecuteScript(script);
         }
 
         public static void ClickAndClear(this UITestContext context, By by) =>
