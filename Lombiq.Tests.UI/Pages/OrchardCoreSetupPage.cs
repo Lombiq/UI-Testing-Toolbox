@@ -81,7 +81,7 @@ namespace Lombiq.Tests.UI.Pages
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
-            // If there are a lot of recipes and "headless" mode is enabled, the recipe can become unclickable, so we
+            // If there are a lot of recipes and "headless" mode is disabled, the recipe can become unclickable, so we
             // need to use JavaScript for clicking it.
             context
                 .ExecuteScript("document.querySelectorAll(\"a[data-recipe-name='" + parameters.RecipeId + "']\")[0]" +
