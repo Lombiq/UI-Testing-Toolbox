@@ -4,14 +4,14 @@
 
 ## Creating a test project
 
-Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
+Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
 
 For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.Samples/Readme.md).
 
 We also recommend always running some highly automated tests that need very little configuration:
 
 - The suite of tests for checking that all the basic Orchard Core features work, like login, registration, and content management. Use `context.TestBasicOrchardFeatures()` to run all such tests but see the other, more granular tests too. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=jmhq63sRZrI).
-- [Monkey tests](https://en.wikipedia.org/wiki/Monkey_testing) can also be useful. Use `context.TestCurrentPageAsMonkeyRecursively()` to run a monkey testing process, which walks through site pages and does random interactions with pages, like clicking, scrolling, form filling, etc. It's recommended to have at least 3 monkey tests that execute with different user states: As an admin, as a regular registered user and as an anonymous user. The admin test can start execution on admin dashboard page, while other tests can start on home page.
+- [Monkey tests](https://en.wikipedia.org/wiki/Monkey_testing) can also be useful. Use `context.TestCurrentPageAsMonkeyRecursively()` to run a monkey testing process, which walks through site pages and does random interactions with pages, like clicking, scrolling, form filling, etc. It's recommended to have at least 3 monkey tests that execute with different user states: As an admin, as a regular registered user and as an anonymous user. The admin test can start execution on admin dashboard page, while other tests can start on home page. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=pZbEsEz3tuE).
 
 ## Steps for creating a test class
 
