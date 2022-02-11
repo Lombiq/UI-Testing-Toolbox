@@ -15,12 +15,6 @@ namespace Lombiq.Tests.UI.Samples.Tests
     // Use such tests plug holes in your test suite which are not covered by explicit tests.
     public class MonkeyTests : UITestBase
     {
-        // Monkey testing has its own configuration too. Check out the docs of the options too.
-        private readonly MonkeyTestingOptions _monkeyTestingOptions = new()
-        {
-            PageTestTime = TimeSpan.FromSeconds(10),
-        };
-
         public MonkeyTests(ITestOutputHelper testOutputHelper)
             : base(testOutputHelper)
         {
@@ -38,7 +32,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     await context.GoToHomePageAsync();
                     // The specified random see gives you the option to reproduce the random interactions. Otherwise
                     // it would be calculated from MonkeyTestingOptions.BaseRandomSeed.
-                    await context.TestCurrentPageAsMonkeyAsync(_monkeyTestingOptions, 12345);
+                    await context.TestCurrentPageAsMonkeyAsync(CreateMonkeyTestingOptions(), 12345);
                 },
                 browser);
 
@@ -50,7 +44,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 async context =>
                 {
                     await context.GoToHomePageAsync();
-                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(_monkeyTestingOptions);
+                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions());
 
                     // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions)
                     // does the same thing but we wanted to demonstrate the contrast with
@@ -65,7 +59,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context =>
                     // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin
                     // dashboard.
-                    context.TestAdminAsMonkeyRecursivelyAsync(_monkeyTestingOptions),
+                    context.TestAdminAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions()),
                 browser);
 
         // Let's just test the background tasks management admin area.
@@ -74,18 +68,27 @@ namespace Lombiq.Tests.UI.Samples.Tests
             ExecuteTestAfterSetupAsync(
                 async context =>
                 {
+                    var monkeyTestingOptions = CreateMonkeyTestingOptions();
+
                     // You can fence monkey testing with URL filters: Monkey testing will only be executed if the
                     // current URL matches. This way, you can restrict monkey testing to just sections of the site. You
                     // can also use such fencing to have multiple monkey testing methods in multiple test classes, thus
                     // running them in parallel.
-                    _monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
+                    monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
                     // You could also configure the same thing with regex:
                     ////_monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter(@"\/Admin\/BackgroundTasks"));
 
                     await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
-                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(_monkeyTestingOptions);
+                    await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
                 },
                 browser);
+
+        // Monkey testing has its own configuration too. Check out the docs of the options too.
+        private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
+            new()
+            {
+                PageTestTime = TimeSpan.FromSeconds(10),
+            };
     }
 }
 
