@@ -3,6 +3,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -153,7 +154,7 @@ namespace Lombiq.Tests.UI.Services
             // every page.
             messages => messages.ShouldNotContain(
                 message => IsValidBrowserLogMessage(message),
-                messages.ToFormattedString());
+                messages.Where(IsValidBrowserLogMessage).ToFormattedString());
 
         public static readonly Func<BrowserLogMessage, bool> IsValidBrowserLogMessage =
             message =>
