@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPublishable>false</IsPublishable>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
     <!-- With these the driver exe files will be copied to all projects referencing this project. Otherwise all child
     projects would need to add the packages too. -->
