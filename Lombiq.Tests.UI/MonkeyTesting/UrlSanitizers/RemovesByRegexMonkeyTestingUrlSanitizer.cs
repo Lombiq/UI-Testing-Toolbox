@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.MonkeyTesting.UrlSanitizers
@@ -7,6 +8,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlSanitizers
     /// <summary>
     /// URL sanitizer that removes parts that match the specific regex pattern.
     /// </summary>
+    [DebuggerDisplay("Regex: \"{_regex}\"")]
     public class RemovesByRegexMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitizer
     {
         private readonly Regex _regex;
