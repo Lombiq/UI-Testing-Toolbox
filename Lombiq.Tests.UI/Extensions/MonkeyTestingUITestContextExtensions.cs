@@ -94,5 +94,30 @@ namespace Lombiq.Tests.UI.Extensions
             this UITestContext context,
             MonkeyTestingOptions options = null) =>
             new MonkeyTester(context, options).TestRecursivelyAsync();
+
+        /// <summary>
+        /// Tests the frontend (i.e. pages NOT under /admin) as monkey as an authenticated user and as an anonymous
+        /// user.
+        /// </summary>
+        /// <param name="options">The <see cref="MonkeyTestingOptions"/> instance to configure monkey testing.</param>
+        /// <param name="signInDirectlyWithUserName">
+        /// The username to sign in with directly. Defaults to <see cref="DefaultUser.UserName"/>.
+        /// </param>
+        /// <param name="startingRelativeUrl">
+        /// The relative URL to start monkey testing from. Defaults to <c>"/"</c>.
+        /// </param>
+        public static async Task TestFrontendAuthenticatedAndAnonymouslyAsMonkeyRecursivelyAsync(
+            this UITestContext context,
+            MonkeyTestingOptions options = null,
+            string signInDirectlyWithUserName = DefaultUser.UserName,
+            string startingRelativeUrl = "/")
+        {
+            await TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(
+                context,
+                options,
+                signInDirectlyWithUserName,
+                startingRelativeUrl);
+            await TestFrontendAnonymouslyAsMonkeyRecursivelyAsync(context, options, startingRelativeUrl);
+        }
     }
 }

@@ -21,10 +21,8 @@ namespace Lombiq.Tests.UI.Samples.Helpers
         public static async Task<Uri> RunSetupAsync(UITestContext context)
         {
             // Running the setup.
-            var setupPage = await context.GoToSetupPageAsync();
             // OrchardCoreSetupParameters will initialize some basic settings from the context.
-            setupPage = await setupPage.SetupOrchardCoreAsync(
-                context,
+            var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
                 new OrchardCoreSetupParameters(context)
                 {
                     SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
@@ -43,7 +41,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             // interested how that works.
             AssertSetupSuccessful(context);
 
-            return setupPage.PageUri.Value;
+            return homepageUri;
         }
 
         // Just a convenience method.

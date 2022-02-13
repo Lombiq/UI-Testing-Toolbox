@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters
@@ -7,6 +8,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters
     /// <summary>
     /// URL filter that matches the URL against the configured regex pattern.
     /// </summary>
+    [DebuggerDisplay("Regex: \"{_regex}\"")]
     public class MatchesRegexMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
     {
         private readonly Regex _regex;

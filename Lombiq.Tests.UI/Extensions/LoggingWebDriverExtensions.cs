@@ -28,8 +28,7 @@ namespace Lombiq.Tests.UI.Extensions
         public DateTime DateTimeUtc { get; set; }
         public string Message { get; set; }
 
-        public override string ToString() =>
-            $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
+        public override string ToString() => $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
 
         public bool IsNotFoundMessage(string url) =>
             Message.ContainsOrdinalIgnoreCase(
