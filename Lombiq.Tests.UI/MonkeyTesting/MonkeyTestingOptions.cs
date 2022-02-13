@@ -131,10 +131,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting
         /// Adds the login page (/Login) and the register page (/Register) to the URL filters (i.e. monkey testing will
         /// not happen on those pages).
         /// </summary>
-        public MonkeyTestingOptions ExcludeLoginAndRegisterPagesFromMonkeyTesting()
-        {
+        public MonkeyTestingOptions ExcludeLoginAndRegisterPagesFromMonkeyTesting() =>
             ExcludeLoginPageFromMonkeyTesting().ExcludeRegisterPageFromMonkeyTesting();
-            return this;
-        }
     }
 }
