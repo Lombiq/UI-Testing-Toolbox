@@ -1,5 +1,7 @@
 using Lombiq.Tests.UI.Services;
+using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
+using Shouldly;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -35,6 +37,31 @@ namespace Lombiq.Tests.UI.Extensions
         {
             await context.SignInDirectlyAsync(userName);
             await context.CheckContentItemCreationAccessAsync(contentType, hasAccess);
+        }
+
+        /// <summary>
+        /// Signs in and the navigates to the content item display URL with the ID of <paramref name="contentItemId"/>
+        /// and checks if this causes an exception or not.
+        /// </summary>
+        public static async Task SignInDirectlyAndCheckContentItemDisplayAccessAsync(
+            this UITestContext context,
+            string userName,
+            string contentItemId,
+            bool hasAccess)
+        {
+            Task GoAsync() => context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
+
+            await context.SignInDirectlyAsync(userName);
+
+            if (hasAccess)
+            {
+                await GoAsync();
+            }
+            else
+            {
+                await Should.ThrowAsync<InvalidOperandException>(GoAsync);
+                context.ClearHistoricBrowserLog();
+            }
         }
     }
 }
