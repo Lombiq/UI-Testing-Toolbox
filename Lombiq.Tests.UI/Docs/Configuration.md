@@ -9,7 +9,19 @@ All the necessary aspects of the Toolbox can be configured from code. Look for s
 
 ## External configuration
 
-Note that since the tests are xUnit tests you can configure general parameters of test execution, including the level or parallelization, with [an xUnit configuration file](https://xunit.net/docs/configuration-files) (a default suitable one is included in the UI Testing Toolbox).
+Note that since the tests are xUnit tests you can configure general parameters of test execution, including the level or parallelization, with [an xUnit configuration file](https://xunit.net/docs/configuration-files) (*xunit.runner.json*). A default suitable one is included in the UI Testing Toolbox and will be loaded into your test projects; if you want to override that then:
+
+1. Add a suitable *xunit.runner.json* file to your project's folder.
+2. In the `csproj` configure its "Build Action" as "Content", and "Copy to Output Directory" as "Copy if newer" to ensure it'll be used by the tests. This is how it looks like in the project file:
+
+```xml
+<ItemGroup>
+  <None Remove="xunit.runner.json" />
+  <Content Include="xunit.runner.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+</ItemGroup>
+```
 
 Certain test execution parameters can be configured externally too, the ones retrieved via the `TestConfigurationManager` class. All configuration options are basic key-value pairs and can be provided in one of the two ways:
 
