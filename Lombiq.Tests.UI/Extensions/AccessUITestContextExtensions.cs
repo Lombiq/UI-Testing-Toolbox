@@ -49,19 +49,12 @@ namespace Lombiq.Tests.UI.Extensions
             string contentItemId,
             bool hasAccess)
         {
-            Task GoAsync() => context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
-
             await context.SignInDirectlyAsync(userName);
+            await context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
-            if (hasAccess)
-            {
-                await GoAsync();
-            }
-            else
-            {
-                await Should.ThrowAsync<InvalidOperandException>(GoAsync);
-                context.ClearHistoricBrowserLog();
-            }
+            context.CheckExistence(
+                By.XPath("//h1[contains(., 'You do not have access to this resource.')]"),
+                !hasAccess);
         }
     }
 }
