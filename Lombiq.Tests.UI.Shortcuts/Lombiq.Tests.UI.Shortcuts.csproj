@@ -35,11 +35,11 @@
 
   <ItemGroup>
     <PackageReference Include="OrchardCore.Module.Targets" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.ContentManagement" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.DisplayManagement" Version="1.2.2" />
     <PackageReference Include="OrchardCore.Users.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Media" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.2.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
