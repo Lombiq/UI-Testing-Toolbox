@@ -81,7 +81,11 @@ namespace Lombiq.Tests.UI.Pages
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
-            Recipe.Find<Link<_>>(parameters.RecipeId, new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click();
+            // If there are a lot of recipes and "headless" mode is disabled, the recipe can become unclickable because
+            // the list of recipes is too long and it's off the screen, so we need to use JavaScript for clicking it.
+            context
+                .ExecuteScript("document.querySelectorAll(\"a[data-recipe-name='" + parameters.RecipeId + "']\")[0]" +
+                ".click()");
             DatabaseProvider.Set(parameters.DatabaseProvider);
 
             if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))

@@ -154,7 +154,7 @@ namespace Lombiq.Tests.UI.Services
             // every page.
             messages => messages.ShouldNotContain(
                 message => IsValidBrowserLogMessage(message),
-                string.Join(Environment.NewLine, messages.Where(IsValidBrowserLogMessage).Select(message => message.Message)));
+                messages.Where(IsValidBrowserLogMessage).ToFormattedString());
 
         public static readonly Func<BrowserLogMessage, bool> IsValidBrowserLogMessage =
             message =>
