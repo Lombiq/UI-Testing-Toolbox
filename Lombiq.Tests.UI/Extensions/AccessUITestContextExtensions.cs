@@ -1,7 +1,5 @@
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
-using Shouldly;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
