@@ -16,32 +16,32 @@ namespace Lombiq.Tests.UI.Services
     /// </remarks>
     public static class TeamCityMetadataReporter
     {
-        public static void ReportInt(UITestManifest uITestManifest, string name, int number) =>
-            ReportNumber(uITestManifest, name, number.ToTechnicalString());
+        public static void ReportInt(UITestManifest uiTestManifest, string name, int number) =>
+            ReportNumber(uiTestManifest, name, number.ToTechnicalString());
 
-        public static void ReportNumber(UITestManifest uITestManifest, string name, string number) =>
-            Report(uITestManifest, name, "number", number);
+        public static void ReportNumber(UITestManifest uiTestManifest, string name, string number) =>
+            Report(uiTestManifest, name, "number", number);
 
-        public static void ReportText(UITestManifest uITestManifest, string name, string text) =>
-            Report(uITestManifest, name, "text", text);
+        public static void ReportText(UITestManifest uiTestManifest, string name, string text) =>
+            Report(uiTestManifest, name, "text", text);
 
-        public static void ReportExternalLink(UITestManifest uITestManifest, string name, string url) =>
-            Report(uITestManifest, name, "link", url);
+        public static void ReportExternalLink(UITestManifest uiTestManifest, string name, string url) =>
+            Report(uiTestManifest, name, "link", url);
 
-        public static void ReportArtifactLink(UITestManifest uITestManifest, string name, string artifactPath) =>
-            Report(uITestManifest, name, "artifact", PreparePath(artifactPath));
+        public static void ReportArtifactLink(UITestManifest uiTestManifest, string name, string artifactPath) =>
+            Report(uiTestManifest, name, "artifact", PreparePath(artifactPath));
 
-        public static void ReportImage(UITestManifest uITestManifest, string name, string imageArtifactPath) =>
-            Report(uITestManifest, name, "image", PreparePath(imageArtifactPath));
+        public static void ReportImage(UITestManifest uiTestManifest, string name, string imageArtifactPath) =>
+            Report(uiTestManifest, name, "image", PreparePath(imageArtifactPath));
 
-        public static void ReportVideo(UITestManifest uITestManifest, string name, string videoArtifactPath) =>
-            Report(uITestManifest, name, "video", PreparePath(videoArtifactPath));
+        public static void ReportVideo(UITestManifest uiTestManifest, string name, string videoArtifactPath) =>
+            Report(uiTestManifest, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(UITestManifest uITestManifest, string name, string type, string value)
+        public static void Report(UITestManifest uiTestManifest, string name, string type, string value)
         {
-            var testName = Escape(uITestManifest.Name);
+            var testName = Escape(uiTestManifest.Name);
 
-            uITestManifest.TestOutputHelper.WriteLine(
+            uiTestManifest.TestOutputHelper.WriteLine(
                 $"##Lombiq.Tests.UI.Samples: teamcity[testMetadata testName='{Escape(testName)}' " +
                 $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
         }
