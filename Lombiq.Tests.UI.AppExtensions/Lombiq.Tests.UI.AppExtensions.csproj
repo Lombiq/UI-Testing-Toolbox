@@ -2,8 +2,27 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPublishable>false</IsPublishable>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git*;node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>App Extensions - Lombiq UI Testing Toolbox</Title>
+    <Authors>Lombiq Technologies</Authors>
+    <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
+    <Description>App Extensions - Lombiq UI Testing Toolbox: UI testing-related configuration extensions for the web app under test. See the project website for detailed documentation.</Description>
+    <PackageIcon>NuGetIcon.png</PackageIcon>
+    <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
+    <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
+    <PackageProjectUrl></PackageProjectUrl>
+    <PackageLicenseFile>Licence.md</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Licence.md" Pack="true" PackagePath="" />
+    <None Include="Readme.md" />
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="node_modules\**" />
@@ -16,7 +35,6 @@
   <ItemGroup>
     <PackageReference Include="OrchardCore" Version="1.2.2" />
     <PackageReference Include="OrchardCore.Email.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Media.Azure" Version="1.2.2" />
   </ItemGroup>
 
 </Project>

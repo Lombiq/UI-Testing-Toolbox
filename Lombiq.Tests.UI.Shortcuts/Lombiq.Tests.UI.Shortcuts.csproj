@@ -2,9 +2,28 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPublishable>false</IsPublishable>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git*;node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>Shortcuts - Lombiq UI Testing Toolbox</Title>
+    <Authors>Lombiq Technologies</Authors>
+    <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
+    <Description>Shortcuts - Lombiq UI Testing Toolbox: Provides some useful shortcuts for common operations that UI tests might want to do or check, e.g. turning features on or off, or logging in users. See the project website for detailed documentation.</Description>
+    <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
+    <PackageIcon>NuGetIcon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox/tree/dev/Lombiq.Tests.UI.Shortcuts</PackageProjectUrl>
+    <PackageLicenseFile>Licence.md</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Licence.md" Pack="true" PackagePath="" />
+    <None Include="Readme.md" />
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="node_modules\**" />
@@ -16,16 +35,24 @@
 
   <ItemGroup>
     <PackageReference Include="OrchardCore.Module.Targets" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.ContentManagement" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.DisplayManagement" Version="1.2.2" />
     <PackageReference Include="OrchardCore.Users.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Media" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.2.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" Condition="Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" Condition="!Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
+  <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
+    <ProjectReference
+      Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj"
+      Condition="Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
+    <ProjectReference
+      Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj"
+      Condition="!Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
+    <PackageReference Include="Lombiq.HelpfulLibraries" Version="2.0.1" />
   </ItemGroup>
 
 </Project>

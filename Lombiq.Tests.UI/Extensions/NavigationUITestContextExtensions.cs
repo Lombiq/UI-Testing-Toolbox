@@ -121,6 +121,23 @@ namespace Lombiq.Tests.UI.Extensions
         public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
             context.GoToPageAsync<OrchardCoreLoginPage>();
 
+        public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
+            context.GoToSetupPageAndSetupOrchardCoreAsync(
+                new OrchardCoreSetupParameters(context)
+                {
+                    RecipeId = recipeId,
+                });
+
+        public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
+            this UITestContext context,
+            OrchardCoreSetupParameters parameters = null)
+        {
+            var setupPage = await context.GoToSetupPageAsync();
+            setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
+
+            return setupPage.PageUri.Value;
+        }
+
         public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
             context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
