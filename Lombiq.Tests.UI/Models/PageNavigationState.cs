@@ -1,13 +1,15 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 
 namespace Lombiq.Tests.UI.Models
 {
     /// <summary>
     /// Represents the current web page in terms of whether the browser has navigated away from it yet.
     /// </summary>
-    public class PageNavigationState
+    public class PageNavigationState : IWebContentState
     {
         private readonly IWebElement _root;
 
@@ -31,5 +33,8 @@ namespace Lombiq.Tests.UI.Models
                 return true;
             }
         }
+
+        public void Wait(TimeSpan? timeout = null, TimeSpan? interval = null) =>
+            ReliabilityHelper.DoWithRetriesOrFail(CheckIfNavigationHasOccurred, timeout, interval);
     }
 }
