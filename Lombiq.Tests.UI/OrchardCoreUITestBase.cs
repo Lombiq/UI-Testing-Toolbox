@@ -218,6 +218,19 @@ namespace Lombiq.Tests.UI
                 ConvertChangeConfigurationToAsynchronous(changeConfiguration));
 
         /// <summary>
+        /// Executes the given UI test.
+        /// </summary>
+        protected virtual Task ExecuteTestAsync(
+            Func<UITestContext, Task> testAsync,
+            Browser browser,
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+            ExecuteTestAsync(
+                testAsync,
+                browser,
+                setupOperation: null,
+                changeConfigurationAsync);
+
+        /// <summary>
         /// Executes the given UI test, optionally after setting up the site.
         /// </summary>
         protected virtual async Task ExecuteTestAsync(

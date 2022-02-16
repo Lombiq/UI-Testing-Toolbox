@@ -16,6 +16,23 @@ namespace Lombiq.Tests.UI.Extensions
     {
         /// <summary>
         /// <para>
+        /// Tests all the basic Orchard features. At first sets up Orchard with the recipe with the specified
+        /// <paramref name="setupRecipeId"/>.
+        /// </para>
+        /// <para>
+        /// The test method assumes that the site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+        public static Task TestBasicOrchardFeaturesAsync(this UITestContext context, string setupRecipeId) =>
+            context.TestBasicOrchardFeaturesAsync(new OrchardCoreSetupParameters(context)
+            {
+                RecipeId = setupRecipeId,
+            });
+
+        /// <summary>
+        /// <para>
         /// Tests all the basic Orchard features. At first sets up Orchard with optionally specified
         /// <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/> instance
         /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
@@ -44,6 +61,23 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
+        /// Tests all the basic Orchard features except for registration. At first sets up Orchard with the recipe with
+        /// the specified <paramref name="setupRecipeId"/>.
+        /// </para>
+        /// <para>
+        /// The test method assumes that the site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+        public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(this UITestContext context, string setupRecipeId) =>
+            context.TestBasicOrchardFeaturesExceptRegistrationAsync(new OrchardCoreSetupParameters(context)
+            {
+                RecipeId = setupRecipeId,
+            });
+
+        /// <summary>
+        /// <para>
         /// Tests all the basic Orchard features except for registration. At first sets up Orchard with optionally
         /// specified <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/>
         /// instance with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
@@ -69,7 +103,23 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// <para>
-        /// Tests the site setup with optionally set <paramref name="parameters"/>.
+        /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.
+        /// </para>
+        /// <para>
+        /// The test method assumes that the site is not set up.
+        /// </para>
+        /// </summary>
+        /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+        /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+        public static Task TestSetupAsync(this UITestContext context, string setupRecipeId) =>
+            context.TestSetupAsync(new OrchardCoreSetupParameters(context)
+            {
+                RecipeId = setupRecipeId,
+            });
+
+        /// <summary>
+        /// <para>
+        /// Tests the site setup with optionally set <paramref name="setupParameters"/>.
         /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
         /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
         /// </para>
@@ -77,24 +127,24 @@ namespace Lombiq.Tests.UI.Extensions
         /// The test method assumes that the site is not set up.
         /// </para>
         /// </summary>
-        /// <param name="parameters">The setup parameters.</param>
+        /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters(context);
+            setupParameters ??= new OrchardCoreSetupParameters(context);
 
             return context.ExecuteTestAsync(
                 "Test setup",
                 async () =>
                 {
                     var setupPage = await context.GoToSetupPageAsync();
-                    (await setupPage.SetupOrchardCoreAsync(context, parameters)).ShouldLeaveSetupPage();
+                    (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldLeaveSetupPage();
                 });
         }
 
         /// <summary>
         /// <para>
-        /// Tests the site setup negatively with optionally set <paramref name="parameters"/>.
+        /// Tests the site setup negatively with optionally set <paramref name="setupParameters"/>.
         /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
         /// with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>,
         /// <see cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/>
@@ -104,11 +154,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// The test method assumes that the site is not set up.
         /// </para>
         /// </summary>
-        /// <param name="parameters">The setup parameters.</param>
+        /// <param name="setupParameters">The setup parameters.</param>
         /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-        public static Task TestSetupWithInvalidDataAsync(this UITestContext context, OrchardCoreSetupParameters parameters = null)
+        public static Task TestSetupWithInvalidDataAsync(
+            this UITestContext context,
+            OrchardCoreSetupParameters setupParameters = null)
         {
-            parameters ??= new OrchardCoreSetupParameters(context)
+            setupParameters ??= new OrchardCoreSetupParameters(context)
             {
                 SiteName = string.Empty,
                 UserName = string.Empty,
@@ -121,7 +173,7 @@ namespace Lombiq.Tests.UI.Extensions
                 async () =>
                 {
                     var setupPage = await context.GoToSetupPageAsync();
-                    (await setupPage.SetupOrchardCoreAsync(context, parameters)).ShouldStayOnSetupPage();
+                    (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldStayOnSetupPage();
                 });
         }
 
