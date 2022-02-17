@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.Models
     {
         /// <summary>
         /// Returns <see langword="true"/> if navigation has occurred or the content has changed based on some
-        /// previously provided content..
+        /// previously provided content.
         /// </summary>
         bool CheckIfNavigationHasOccurred();
 
