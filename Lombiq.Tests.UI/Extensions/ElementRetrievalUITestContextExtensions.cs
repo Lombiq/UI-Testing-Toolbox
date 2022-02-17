@@ -106,9 +106,9 @@ namespace Lombiq.Tests.UI.Extensions
 
         /// <summary>
         /// Retrieves the elements according to <paramref name="by"/> and matches their text content against <paramref
-        /// name="toMatch"/>. The strings are trimmed in both collections. If an item in <paramref name="toMatch"/> is
-        /// <see langword="null" /> it's ignored among the result elements too. Every other item is converted to string,
-        /// using invariant culture where possible.
+        /// name="toMatch"/>. Both the text contents and <paramref name="toMatch"/> strings are trimmed. If an item in
+        /// <paramref name="toMatch"/> is <see langword="null" /> it's ignored among the result elements too. Every
+        /// other item is converted to string, using invariant culture where possible.
         /// </summary>
         public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch)
         {
