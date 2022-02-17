@@ -132,7 +132,7 @@ namespace Lombiq.Tests.UI.Extensions
                 .ShouldBe(target);
         }
 
-        /// <inheritdoc cref="VerifyElementTexts(Lombiq.Tests.UI.Services.UITestContext,OpenQA.Selenium.By,object[])"/>
+        /// <inheritdoc cref="VerifyElementTexts(UITestContext, By, object[])"/>
         public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
             VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
 
