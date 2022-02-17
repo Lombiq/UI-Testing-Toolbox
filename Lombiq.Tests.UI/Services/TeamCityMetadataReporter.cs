@@ -50,7 +50,7 @@ namespace Lombiq.Tests.UI.Services
         private static string Escape(string value) => value
             .Replace("|", "||", StringComparison.Ordinal)
             .Replace("'", "|'", StringComparison.Ordinal)
-            .Replace("\n", "n", StringComparison.Ordinal)
+            .Replace("\n", "|n", StringComparison.Ordinal)
             .Replace("\r", "|r", StringComparison.Ordinal)
             .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
             .Replace("[", "|[", StringComparison.Ordinal)
