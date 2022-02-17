@@ -37,14 +37,10 @@ namespace Lombiq.Tests.UI.Services
         public static void ReportVideo(UITestManifest uiTestManifest, string name, string videoArtifactPath) =>
             Report(uiTestManifest, name, "video", PreparePath(videoArtifactPath));
 
-        public static void Report(UITestManifest uiTestManifest, string name, string type, string value)
-        {
-            var testName = Escape(uiTestManifest.Name);
-
+        public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
             uiTestManifest.TestOutputHelper.WriteLine(
-                $"##Lombiq.Tests.UI.Samples: teamcity[testMetadata testName='{Escape(testName)}' " +
+                $"##Lombiq.Tests.UI.Samples: teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}' " +
                 $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
-        }
 
         // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
         private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
