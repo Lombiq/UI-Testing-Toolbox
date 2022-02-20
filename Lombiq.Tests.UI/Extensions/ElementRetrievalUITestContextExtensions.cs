@@ -6,7 +6,6 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions
@@ -119,9 +118,7 @@ namespace Lombiq.Tests.UI.Extensions
                 .Where(index => index >= 0)
                 .ToList();
             var target = toMatch
-                .Select(item => item is IFormattable formattable
-                    ? formattable.ToString("{0}", CultureInfo.InvariantCulture)
-                    : item?.ToString())
+                .Select(item => FormattableString.Invariant($"{item}"))
                 .Select(item => item?.Trim())
                 .ToArray();
 
