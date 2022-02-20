@@ -118,7 +118,7 @@ namespace Lombiq.Tests.UI.Extensions
                 .Where(index => index >= 0)
                 .ToList();
             var target = toMatch
-                .Select(item => FormattableString.Invariant($"{item}"))
+                .Select(item => item == null ? null : FormattableString.Invariant($"{item}"))
                 .Select(item => item?.Trim())
                 .ToArray();
 
