@@ -24,6 +24,22 @@ namespace Lombiq.Tests.UI.Services
         public string SnapshotDirectoryPath { get; set; }
         public BeforeAppStartHandler BeforeAppStart { get; set; }
         public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
+
+        /// <summary>
+        /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline
+        /// mode. This way it won't try to reach out to a remote server with telemetry and the test remains
+        /// self-sufficient.
+        /// </summary>
+        public void EnableApplicationInsightsOfflineOperation() =>
+            BeforeAppStart +=
+                (_, argumentsBuilder) =>
+                {
+                    argumentsBuilder
+                        .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
+                        .Add("true");
+
+                    return Task.CompletedTask;
+                };
     }
 
     /// <summary>
