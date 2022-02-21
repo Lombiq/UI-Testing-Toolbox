@@ -161,9 +161,6 @@ namespace Lombiq.Tests.UI.Services
                 !message.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
                 // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared
                 // to be under a different URL.
-                !message.IsNotFoundMessage("/favicon.ico") &&
-                // Ignore if browser telemetry is not available.
-                !message.Message.ContainsOrdinalIgnoreCase(
-                    "https://dc.services.visualstudio.com/v2/track - Failed to load resource: the server responded with a status of 400");
+                !message.IsNotFoundMessage("/favicon.ico");
     }
 }
