@@ -262,7 +262,7 @@ namespace Lombiq.Tests.UI.Helpers
             if (timeout != null) wait.Timeout = timeout.Value;
             if (interval != null) wait.PollingInterval = interval.Value;
 
-            return (await wait.Until(async _ => await processAsync()), wait);
+            return (await processAsync(), wait);
         }
     }
 }

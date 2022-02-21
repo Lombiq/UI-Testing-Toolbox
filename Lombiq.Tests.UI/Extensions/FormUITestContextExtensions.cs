@@ -238,7 +238,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Finds the first submit button and clicks on it reliably.
         /// </summary>
-        public static void ClickReliablyOnSubmit(this UITestContext context) =>
+        public static Task ClickReliablyOnSubmitAsync(this UITestContext context) =>
             context.ClickReliablyOnAsync(By.CssSelector("button[type='submit']"));
 
         /// <summary>

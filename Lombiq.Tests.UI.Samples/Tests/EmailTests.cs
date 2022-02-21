@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
                     await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
                     await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
-                    context.ClickReliablyOnSubmit();
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // The SMTP service running behind the scenes also has a web UI that we can access to see all
                     // outgoing e-mails and check if everything's alright.

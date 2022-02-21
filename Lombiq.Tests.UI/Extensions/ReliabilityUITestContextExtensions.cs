@@ -33,10 +33,10 @@ namespace Lombiq.Tests.UI.Extensions
             Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-                ReliabilityHelper.DoWithRetriesOrFailAsync(
-                    processAsync,
-                    timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-                    interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            ReliabilityHelper.DoWithRetriesOrFailAsync(
+                processAsync,
+                timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
+                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
         /// <summary>
         /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
@@ -67,10 +67,10 @@ namespace Lombiq.Tests.UI.Extensions
             Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-                ReliabilityHelper.RetryIfStaleOrFailAsync(
-                    processAsync,
-                    timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-                    interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            ReliabilityHelper.RetryIfStaleOrFailAsync(
+                processAsync,
+                timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
+                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
         /// <summary>
         /// Executes the process and retries until no element is stale (<see cref="StaleElementReferenceException"/>).
@@ -106,26 +106,26 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Tries to execute an operation until the given element exists.
         /// </summary>
-        /// <param name="process">Operation to execute.</param>
+        /// <param name="processAsync">Operation to execute.</param>
         /// <param name="elementToWaitFor">Selector of the element that's required to exist.</param>
         /// <param name="timeout">Timeout of the operation.</param>
         /// <param name="interval">Time between retries.</param>
         /// <param name="existsTimeout">Timeout of checking the existence of the given element.</param>
         public static Task DoWithRetriesUntilExistsAsync(
             this UITestContext context,
-            Action process,
+            Func<Task> processAsync,
             By elementToWaitFor,
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
             context.DoWithRetriesOrFailAsync(
-                () =>
+                async () =>
                 {
-                    process();
+                    await processAsync();
 
                     existsTimeout ??= GetExistsTimeout(context, timeout);
 
-                    return Task.FromResult(ExistsWithin(context, elementToWaitFor, existsTimeout.Value, interval));
+                    return ExistsWithin(context, elementToWaitFor, existsTimeout.Value, interval);
                 },
                 timeout,
                 interval);
@@ -133,26 +133,26 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Tries to execute an operation until the given element goes missing.
         /// </summary>
-        /// <param name="process">Operation to execute.</param>
+        /// <param name="processAsync">Operation to execute.</param>
         /// <param name="elementToWaitForGoMissing">Selector of the element that's required to go missing.</param>
         /// <param name="timeout">Timeout of the operation.</param>
         /// <param name="interval">Time between retries.</param>
         /// <param name="existsTimeout">Timeout of checking the existence of the given element.</param>
         public static Task DoWithRetriesUntilMissingAsync(
             this UITestContext context,
-            Action process,
+            Func<Task> processAsync,
             By elementToWaitForGoMissing,
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
             context.DoWithRetriesOrFailAsync(
-                () =>
+                async () =>
                 {
-                    process();
+                    await processAsync();
 
                     existsTimeout ??= GetExistsTimeout(context, timeout);
 
-                    return Task.FromResult(MissingWithin(context, elementToWaitForGoMissing, existsTimeout.Value, interval));
+                    return MissingWithin(context, elementToWaitForGoMissing, existsTimeout.Value, interval);
                 },
                 timeout,
                 interval);

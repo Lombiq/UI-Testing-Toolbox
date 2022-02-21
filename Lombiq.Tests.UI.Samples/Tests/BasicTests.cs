@@ -57,7 +57,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
 
                     // Even clicking can be unreliable thus we have a helper for that too.
-                    context.ClickReliablyOnSubmit();
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
                     // module) to see if it indeed happened.

@@ -7,10 +7,10 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class OrchardCoreDashboardUITestContextExtensions
     {
-        public static void FillContentItemTitle(this UITestContext context, string title) =>
+        public static Task FillContentItemTitleAsync(this UITestContext context, string title) =>
             context.ClickAndFillInWithRetriesAsync(By.Id("TitlePart_Title"), title);
 
-        public static void GoToEditorTab(this UITestContext context, string tabText) =>
+        public static Task GoToEditorTabAsync(this UITestContext context, string tabText) =>
             context.ClickReliablyOnAsync(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
 
         public static async Task ClickPublishAsync(this UITestContext context, bool withJavaScript = false)
@@ -28,7 +28,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <summary>
         /// Clicks on the "Ok" button on the Bootstrap modal window.
         /// </summary>
-        public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
+        public static Task ClickModalOkAsync(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
 
         /// <summary>
         /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
