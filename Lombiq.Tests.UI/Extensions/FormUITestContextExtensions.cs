@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 // Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenium not
 // necessarily.
@@ -13,7 +14,7 @@ namespace Lombiq.Tests.UI.Extensions
 {
     public static class FormUITestContextExtensions
     {
-        public static void ClickAndFillInWithRetries(
+        public static Task ClickAndFillInWithRetriesAsync(
             this UITestContext context,
             By by,
             string text,
@@ -21,10 +22,10 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null)
         {
             context.Get(by).Click();
-            context.FillInWithRetries(by, text, timeout, interval);
+            return context.FillInWithRetriesAsync(by, text, timeout, interval);
         }
 
-        public static void ClickAndFillInWithRetriesUntilNotBlank(
+        public static Task ClickAndFillInWithRetriesUntilNotBlankAsync(
             this UITestContext context,
             By by,
             string text,
@@ -32,20 +33,20 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? interval = null)
         {
             context.Get(by).Click();
-            context.FillInWithRetriesUntilNotBlank(by, text, timeout, interval);
+            return context.FillInWithRetriesUntilNotBlankAsync(by, text, timeout, interval);
         }
 
-        public static void ClickAndFillInWithRetriesIfNotNullOrEmpty(
+        public static async Task ClickAndFillInWithRetriesIfNotNullOrEmptyAsync(
             this UITestContext context,
             By by,
             string text,
             TimeSpan? timeout = null,
             TimeSpan? interval = null)
         {
-            if (!string.IsNullOrEmpty(text)) ClickAndFillInWithRetries(context, by, text, timeout, interval);
+            if (!string.IsNullOrEmpty(text)) await ClickAndFillInWithRetriesAsync(context, by, text, timeout, interval);
         }
 
-        public static void ClickAndFillInTrumbowygEditorWithRetries(
+        public static Task ClickAndFillInTrumbowygEditorWithRetriesAsync(
             this UITestContext context,
             By by,
             string text,
@@ -58,17 +59,17 @@ namespace Lombiq.Tests.UI.Extensions
 
             expectedHtml ??= FormattableString.Invariant($"<p>{text}</p>");
 
-            context.ExecuteLogged(
-                nameof(ClickAndFillInTrumbowygEditorWithRetries),
+            return context.ExecuteLoggedAsync(
+                nameof(ClickAndFillInTrumbowygEditorWithRetriesAsync),
                 $"{editorBy} - \"{text}\"",
-                () => context.DoWithRetriesOrFail(
+                () => context.DoWithRetriesOrFailAsync(
                     () =>
                     {
                         TryFillElement(context, editorBy, text);
 
-                        return context
+                        return Task.FromResult(context
                             .Get(by.Then(By.ClassName("trumbowyg-textarea")).OfAnyVisibility())
-                            .GetValue() == expectedHtml;
+                            .GetValue() == expectedHtml);
                     },
                     timeout,
                     interval));
@@ -114,7 +115,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Use <see cref="FillInWithRetriesUntilNotBlank"/> instead if the field will contain a string different than
+        /// Use <see cref="FillInWithRetriesUntilNotBlankAsync"/> instead if the field will contain a string different than
         /// what's written to it, e.g. when it applies some formatting to numbers.
         /// </para>
         /// <para>
@@ -122,17 +123,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// true, sometimes filling form fields still fails. Go figure...
         /// </para>
         /// </remarks>
-        public static void FillInWithRetries(
+        public static Task FillInWithRetriesAsync(
             this UITestContext context,
             By by,
             string text,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            context.ExecuteLogged(
-                nameof(FillInWithRetries),
+            context.ExecuteLoggedAsync(
+                nameof(FillInWithRetriesAsync),
                 $"{by} - \"{text}\"",
-                () => context.DoWithRetriesOrFail(
-                    () => TryFillElement(context, by, text).GetValue() == text,
+                () => context.DoWithRetriesOrFailAsync(
+                    () => Task.FromResult(TryFillElement(context, by, text).GetValue() == text),
                     timeout,
                     interval));
 
@@ -142,7 +143,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Use this instead of <see cref="FillInWithRetries"/> if the field will contain a string different than what's
+        /// Use this instead of <see cref="FillInWithRetriesAsync"/> if the field will contain a string different than what's
         /// written to it, e.g. when it applies some formatting to numbers.
         /// </para>
         /// <para>
@@ -150,17 +151,17 @@ namespace Lombiq.Tests.UI.Extensions
         /// true, sometimes filling form fields still fails. Go figure...
         /// </para>
         /// </remarks>
-        public static void FillInWithRetriesUntilNotBlank(
+        public static Task FillInWithRetriesUntilNotBlankAsync(
             this UITestContext context,
             By by,
             string text,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            context.ExecuteLogged(
-                nameof(FillInWithRetriesUntilNotBlank),
+            context.ExecuteLoggedAsync(
+                nameof(FillInWithRetriesUntilNotBlankAsync),
                 $"{by} - \"{text}\"",
-                () => context.DoWithRetriesOrFail(
-                    () => !string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue()),
+                () => context.DoWithRetriesOrFailAsync(
+                    () => Task.FromResult(!string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue())),
                     timeout,
                     interval));
 
@@ -170,11 +171,11 @@ namespace Lombiq.Tests.UI.Extensions
         public static bool IsElementChecked(this UITestContext context, By by) =>
             context.Get(by.OfAnyVisibility()).GetProperty("checked") == bool.TrueString;
 
-        public static void SetCheckboxValue(this UITestContext context, By by, bool isChecked)
+        public static async Task SetCheckboxValueAsync(this UITestContext context, By by, bool isChecked)
         {
             var element = context.Get(by.OfAnyVisibility());
             var currentValue = element.GetProperty("checked") == bool.TrueString;
-            if (currentValue != isChecked) element.ClickReliably(context);
+            if (currentValue != isChecked) await element.ClickReliablyAsync(context);
         }
 
         public static int GetIntValue(this UITestContext context, By by) =>
@@ -184,7 +185,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value
         /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/>.
         /// </summary>
-        public static string GetSelectedTabText(
+        public static async Task<string> GetSelectedTabTextAsync(
             this UITestContext context,
             string defaultTitle = "Content",
             TimeSpan? timeout = null,
@@ -192,11 +193,11 @@ namespace Lombiq.Tests.UI.Extensions
         {
             string title = defaultTitle;
 
-            context.DoWithRetriesOrFail(
+            await context.DoWithRetriesOrFailAsync(
                 () =>
                 {
                     title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
-                    return title != defaultTitle;
+                    return Task.FromResult(title != defaultTitle);
                 },
                 timeout,
                 interval);
@@ -204,19 +205,19 @@ namespace Lombiq.Tests.UI.Extensions
             return title;
         }
 
-        public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
+        public static async Task SetDropdownAsync<T>(this UITestContext context, string selectId, T value)
             where T : Enum
         {
-            context.ClickReliablyOn(By.Id(selectId));
+            await context.ClickReliablyOnAsync(By.Id(selectId));
             context.Get(By.CssSelector(FormattableString.Invariant($"#{selectId} option[value='{(int)(object)value}']"))).Click();
         }
 
-        public static void SetDropdownByText(this UITestContext context, string selectId, string value) =>
-            SetDropdownByText(context, By.Id(selectId), value);
+        public static Task SetDropdownByTextAsync(this UITestContext context, string selectId, string value) =>
+            SetDropdownByTextAsync(context, By.Id(selectId), value);
 
-        public static void SetDropdownByText(this UITestContext context, By selectBy, string value)
+        public static async Task SetDropdownByTextAsync(this UITestContext context, By selectBy, string value)
         {
-            context.ClickReliablyOn(selectBy);
+            await context.ClickReliablyOnAsync(selectBy);
             context.Get(selectBy).Get(By.XPath($".//option[contains(., '{value}')]")).Click();
         }
 
@@ -238,7 +239,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Finds the first submit button and clicks on it reliably.
         /// </summary>
         public static void ClickReliablyOnSubmit(this UITestContext context) =>
-            context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
+            context.ClickReliablyOnAsync(By.CssSelector("button[type='submit']"));
 
         /// <summary>
         /// Finds the "Add New" button.
@@ -250,8 +251,8 @@ namespace Lombiq.Tests.UI.Extensions
         /// Opens the dropdown belonging to the "Add New" button. If <paramref name="byLocalMenuItem"/> is not <see
         /// langword="null"/> it will click on that element within the dropdown context as well.
         /// </summary>
-        public static void SelectAddNewDropdown(this UITestContext context, By byLocalMenuItem = null) =>
-            context.SelectFromBootstrapDropdownReliably(GetAddNewButton(context), byLocalMenuItem);
+        public static Task SelectAddNewDropdownAsync(this UITestContext context, By byLocalMenuItem = null) =>
+            context.SelectFromBootstrapDropdownReliablyAsync(GetAddNewButton(context), byLocalMenuItem);
 
         /// <summary>
         /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
@@ -266,7 +267,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <exception cref="InvalidOperationException">
         /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
         /// </exception>
-        public static void SelectFromBootstrapDropdownReliably(
+        public static async Task SelectFromBootstrapDropdownReliablyAsync(
             this UITestContext context,
             IWebElement dropdownButton,
             By byLocalMenuItem)
@@ -275,12 +276,12 @@ namespace Lombiq.Tests.UI.Extensions
 
             for (var i = 0; i < 3; i++)
             {
-                dropdownButton.ClickReliably(context);
+                await dropdownButton.ClickReliablyAsync(context);
 
                 var dropdownMenu = dropdownButton.GetAll(byDropdownMenu).SingleOrDefault();
                 if (dropdownMenu != null)
                 {
-                    if (byLocalMenuItem != null) dropdownMenu.Get(byLocalMenuItem).ClickReliably(context);
+                    if (byLocalMenuItem != null) await dropdownMenu.Get(byLocalMenuItem).ClickReliablyAsync(context);
                     return;
                 }
             }
@@ -296,11 +297,11 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="context">The current UI test context.</param>
         /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
         /// <param name="menuItemLinkText">The text of the dropdown menu item.</param>
-        public static void SelectFromBootstrapDropdownReliably(
+        public static Task SelectFromBootstrapDropdownReliablyAsync(
             this UITestContext context,
             By byDropdownButton,
             string menuItemLinkText) =>
-            SelectFromBootstrapDropdownReliably(context, context.Get(byDropdownButton), By.LinkText(menuItemLinkText));
+            SelectFromBootstrapDropdownReliablyAsync(context, context.Get(byDropdownButton), By.LinkText(menuItemLinkText));
 
         private static IWebElement TryFillElement(UITestContext context, By by, string text)
         {

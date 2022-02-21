@@ -38,14 +38,14 @@ namespace Lombiq.Tests.UI.Extensions
             string textToFind)
         {
             await context.GoToSmtpWebUIAsync();
-            context.ClickReliablyOn(ByHelper.SmtpInboxRow(emailTitle));
+            await context.ClickReliablyOnAsync(ByHelper.SmtpInboxRow(emailTitle));
             context.SwitchToFrame0();
 
             var currentlySelectedEmail = context.Get(By.CssSelector(".emailContent p"));
             while (!currentlySelectedEmail.Text.Contains(textToFind, StringComparison.InvariantCultureIgnoreCase))
             {
                 context.SwitchToFirstWindow();
-                context.ClickReliablyOn(By.CssSelector(".unread").Within(TimeSpan.FromMinutes(2)));
+                await context.ClickReliablyOnAsync(By.CssSelector(".unread").Within(TimeSpan.FromMinutes(2)));
                 context.SwitchToFrame0();
 
                 currentlySelectedEmail = context.Get(By.CssSelector(".emailContent p"));

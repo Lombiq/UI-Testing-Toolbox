@@ -8,12 +8,12 @@ namespace Lombiq.Tests.UI.Extensions
     public static class OrchardCoreDashboardUITestContextExtensions
     {
         public static void FillContentItemTitle(this UITestContext context, string title) =>
-            context.ClickAndFillInWithRetries(By.Id("TitlePart_Title"), title);
+            context.ClickAndFillInWithRetriesAsync(By.Id("TitlePart_Title"), title);
 
         public static void GoToEditorTab(this UITestContext context, string tabText) =>
-            context.ClickReliablyOn(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
+            context.ClickReliablyOnAsync(By.XPath($"//*[text()='{tabText}' and @class='nav-item nav-link']"));
 
-        public static void ClickPublish(this UITestContext context, bool withJavaScript = false)
+        public static async Task ClickPublishAsync(this UITestContext context, bool withJavaScript = false)
         {
             if (withJavaScript)
             {
@@ -21,14 +21,14 @@ namespace Lombiq.Tests.UI.Extensions
             }
             else
             {
-                context.ClickReliablyOn(By.Name("submit.Publish"));
+                await context.ClickReliablyOnAsync(By.Name("submit.Publish"));
             }
         }
 
         /// <summary>
         /// Clicks on the "Ok" button on the Bootstrap modal window.
         /// </summary>
-        public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOn(By.Id("modalOkButton"));
+        public static void ClickModalOk(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
 
         /// <summary>
         /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
@@ -40,7 +40,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// similar methods that get theirs from the test configuration. These defaults are set to minimize the chance
         /// of an unintended early timeout or bounce effect because the publishing may take a longer time.
         /// </para></remarks>
-        public static void ClickPublishUntilNavigation(
+        public static Task ClickPublishUntilNavigationAsync(
             this UITestContext context,
             bool withJavaScript = false,
             TimeSpan? timeout = null,
@@ -48,10 +48,10 @@ namespace Lombiq.Tests.UI.Extensions
         {
             var navigationState = context.AsPageNavigationState();
 
-            context.DoWithRetriesOrFail(
-                () =>
+            return context.DoWithRetriesOrFailAsync(
+                async () =>
                 {
-                    ClickPublish(context, withJavaScript);
+                    await ClickPublishAsync(context, withJavaScript);
                     return navigationState.CheckIfNavigationHasOccurred();
                 },
                 timeout ?? TimeSpan.FromSeconds(30),
@@ -69,29 +69,29 @@ namespace Lombiq.Tests.UI.Extensions
         public static async Task GoToContentItemListAndCreateNewAsync(this UITestContext context, string contentTypeText)
         {
             await context.GoToContentItemListAsync();
-            context.ClickNewContentItem(contentTypeText);
+            await context.ClickNewContentItemAsync(contentTypeText);
         }
 
         public static Task CreateNewContentItemAsync(this UITestContext context, string contentType) =>
             context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create");
 
-        public static void ClickNewContentItem(this UITestContext context, string contentItemName, bool dropdown = true)
+        public static async Task ClickNewContentItemAsync(this UITestContext context, string contentItemName, bool dropdown = true)
         {
             if (dropdown)
             {
-                context.ClickReliablyOn(By.Id("new-dropdown"));
-                context.ClickReliablyOn(By.LinkText(contentItemName));
+                await context.ClickReliablyOnAsync(By.Id("new-dropdown"));
+                await context.ClickReliablyOnAsync(By.LinkText(contentItemName));
             }
             else
             {
-                context.ClickReliablyOn(By.LinkText($"New {contentItemName}"));
+                await context.ClickReliablyOnAsync(By.LinkText($"New {contentItemName}"));
             }
         }
 
-        public static void GoToUsers(this UITestContext context)
+        public static async Task GoToUsersAsync(this UITestContext context)
         {
-            context.ClickReliablyOn(By.CssSelector("#security .title"));
-            context.ClickReliablyOn(By.CssSelector(".item-label.users .title"));
+            await context.ClickReliablyOnAsync(By.CssSelector("#security .title"));
+            await context.ClickReliablyOnAsync(By.CssSelector(".item-label.users .title"));
         }
     }
 }

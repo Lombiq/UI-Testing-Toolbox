@@ -192,37 +192,37 @@ namespace Lombiq.Tests.UI.Extensions
                 () => new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
                     d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete")));
 
-        public static void SetTaxonomyFieldByIndex(this UITestContext context, string taxonomyId, int index)
+        public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
         {
             var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
-            SetFieldDropdownByIndex(context, baseSelector, index);
+            return SetFieldDropdownByIndexAsync(context, baseSelector, index);
         }
 
-        public static void SetContentPickerByIndex(this UITestContext context, string part, string field, int index)
+        public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
         {
             var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
-            SetFieldDropdownByIndex(context, baseSelector, index);
+            return SetFieldDropdownByIndexAsync(context, baseSelector, index);
         }
 
-        private static void SetFieldDropdownByIndex(UITestContext context, string baseSelector, int index)
+        private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
         {
             var byItem = By.CssSelector(FormattableString.Invariant(
                 $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"));
 
             while (!context.Exists(byItem.Safely()))
             {
-                context.ClickReliablyOn(By.CssSelector(baseSelector + " .multiselect__select"));
+                await context.ClickReliablyOnAsync(By.CssSelector(baseSelector + " .multiselect__select"));
             }
 
-            context.ClickReliablyOn(byItem);
+            await context.ClickReliablyOnAsync(byItem);
         }
 
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-        /// cref="NavigationWebElementExtensions.ClickReliably(IWebElement,UITestContext)"/> so the <paramref
+        /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement,UITestContext)"/> so the <paramref
         /// name="context"/> doesn't have to be passed twice.
         /// </summary>
-        public static void ClickReliablyOn(this UITestContext context, By by) => context.Get(by).ClickReliably(context);
+        public static Task ClickReliablyOnAsync(this UITestContext context, By by) => context.Get(by).ClickReliablyAsync(context);
 
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see

@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -12,7 +13,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If
         /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
         /// </summary>
-        /// <param name="process">
+        /// <param name="processAsync">
         /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
         /// <see langword="false"/> otherwise.
         /// </param>
@@ -27,15 +28,15 @@ namespace Lombiq.Tests.UI.Extensions
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
-        public static void DoWithRetriesOrFail(
+        public static Task DoWithRetriesOrFailAsync(
             this UITestContext context,
-            Func<bool> process,
+            Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.DoWithRetriesOrFail(
-                process,
-                timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+                ReliabilityHelper.DoWithRetriesOrFailAsync(
+                    processAsync,
+                    timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
+                    interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
         /// <summary>
         /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
@@ -45,7 +46,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// long running operations such as GetAll, causing stale virtual DOM. Such change tends to be near
         /// instantaneous and only happens once at a time so this should pass by the 2nd try.
         /// </summary>
-        /// <param name="process">
+        /// <param name="processAsync">
         /// The long running operation that may execute during DOM change and should be retried. Should return <see
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
@@ -61,22 +62,22 @@ namespace Lombiq.Tests.UI.Extensions
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
-        public static void RetryIfStaleOrFail(
+        public static Task RetryIfStaleOrFailAsync(
             this UITestContext context,
-            Func<bool> process,
+            Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.RetryIfStaleOrFail(
-                process,
-                timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+                ReliabilityHelper.RetryIfStaleOrFailAsync(
+                    processAsync,
+                    timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
+                    interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
         /// <summary>
         /// Executes the process and retries until no element is stale (<see cref="StaleElementReferenceException"/>).
         ///
         /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
         /// </summary>
-        /// <param name="process">
+        /// <param name="processAsync">
         /// The long running operation that may execute during DOM change and should be retried. Should return <see
         /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
         /// <see langword="false"/> otherwise.
@@ -92,13 +93,13 @@ namespace Lombiq.Tests.UI.Extensions
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
         /// </exception>
-        public static void RetryIfNotStaleOrFail(
+        public static Task RetryIfNotStaleOrFailAsync(
             this UITestContext context,
-            Func<bool> process,
+            Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
-            ReliabilityHelper.RetryIfNotStaleOrFail(
-                process,
+            ReliabilityHelper.RetryIfNotStaleOrFailAsync(
+                processAsync,
                 timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
                 interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
@@ -110,21 +111,21 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="timeout">Timeout of the operation.</param>
         /// <param name="interval">Time between retries.</param>
         /// <param name="existsTimeout">Timeout of checking the existence of the given element.</param>
-        public static void DoWithRetriesUntilExists(
+        public static Task DoWithRetriesUntilExistsAsync(
             this UITestContext context,
             Action process,
             By elementToWaitFor,
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
-            context.DoWithRetriesOrFail(
+            context.DoWithRetriesOrFailAsync(
                 () =>
                 {
                     process();
 
                     existsTimeout ??= GetExistsTimeout(context, timeout);
 
-                    return ExistsWithin(context, elementToWaitFor, existsTimeout.Value, interval);
+                    return Task.FromResult(ExistsWithin(context, elementToWaitFor, existsTimeout.Value, interval));
                 },
                 timeout,
                 interval);
@@ -137,21 +138,21 @@ namespace Lombiq.Tests.UI.Extensions
         /// <param name="timeout">Timeout of the operation.</param>
         /// <param name="interval">Time between retries.</param>
         /// <param name="existsTimeout">Timeout of checking the existence of the given element.</param>
-        public static void DoWithRetriesUntilMissing(
+        public static Task DoWithRetriesUntilMissingAsync(
             this UITestContext context,
             Action process,
             By elementToWaitForGoMissing,
             TimeSpan? timeout = null,
             TimeSpan? interval = null,
             TimeSpan? existsTimeout = null) =>
-            context.DoWithRetriesOrFail(
+            context.DoWithRetriesOrFailAsync(
                 () =>
                 {
                     process();
 
                     existsTimeout ??= GetExistsTimeout(context, timeout);
 
-                    return MissingWithin(context, elementToWaitForGoMissing, existsTimeout.Value, interval);
+                    return Task.FromResult(MissingWithin(context, elementToWaitForGoMissing, existsTimeout.Value, interval));
                 },
                 timeout,
                 interval);
