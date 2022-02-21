@@ -34,11 +34,6 @@ namespace Lombiq.Tests.UI.Services
             BeforeAppStart +=
                 (_, argumentsBuilder) =>
                 {
-                    // This is quite handy! We're adding a configuration parameter when launching the app. This
-                    // can be used to set configuration for configuration providers, see the docs:
-                    // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/.
-                    // What's happening here is that we set the Lombiq Application Insights module's parameter
-                    // to allow us to test it. We'll get back to this later when writing the actual test.
                     argumentsBuilder
                         .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
                         .Add("true");
