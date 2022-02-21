@@ -126,7 +126,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
             ExecuteTestAfterSetupAsync(
                 async context =>
                 {
-                    // Now there's a bit of a pickle though: The Lombiq Privacy module is also enable from the test
+                    // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test
                     // recipe and shows its privacy consent banner. For tracking to be enabled, even in offline mode,
                     // the user needs to give consent. This is what we do now:
                     await context.ClickReliablyOnAsync(By.Id("privacy-consent-accept-button"));
