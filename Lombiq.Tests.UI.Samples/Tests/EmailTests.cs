@@ -33,10 +33,10 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context.ClickReliablyOnUntilPageLeave(By.LinkText("Test settings"));
 
                     // Let's send a basic e-mail.
-                    context.FillInWithRetries(By.Id("To"), "recipient@example.com");
-                    context.FillInWithRetries(By.Id("Subject"), "Test message");
-                    context.FillInWithRetries(By.Id("Body"), "Hi, this is a test.");
-                    context.ClickReliablyOnSubmit();
+                    await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
+                    await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
+                    await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // The SMTP service running behind the scenes also has a web UI that we can access to see all
                     // outgoing e-mails and check if everything's alright.

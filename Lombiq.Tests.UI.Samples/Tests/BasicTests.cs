@@ -53,11 +53,11 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                     // actually sure that the values are indeed there! To make things more reliable, we've added a lot
                     // of useful methods like FillInWithRetries().
-                    context.FillInWithRetries(By.Id("UserName"), DefaultUser.UserName);
-                    context.FillInWithRetries(By.Id("Password"), DefaultUser.Password);
+                    await context.FillInWithRetriesAsync(By.Id("UserName"), DefaultUser.UserName);
+                    await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
 
                     // Even clicking can be unreliable thus we have a helper for that too.
-                    context.ClickReliablyOnSubmit();
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
                     // module) to see if it indeed happened.
@@ -124,12 +124,12 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task ApplicationInsightsTrackingShouldBePresent(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test
                     // recipe and shows its privacy consent banner. For tracking to be enabled, even in offline mode,
                     // the user needs to give consent. This is what we do now:
-                    context.ClickReliablyOn(By.Id("privacy-consent-accept-button"));
+                    await context.ClickReliablyOnAsync(By.Id("privacy-consent-accept-button"));
                     context.Refresh();
 
                     // In offline mode, the module adds an appInsights variable that we can check. So let's execute some
