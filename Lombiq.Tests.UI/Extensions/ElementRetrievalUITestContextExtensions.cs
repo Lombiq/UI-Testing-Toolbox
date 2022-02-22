@@ -4,7 +4,9 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions
 {
@@ -100,6 +102,36 @@ namespace Lombiq.Tests.UI.Extensions
             context.Get(By.CssSelector(".validation-summary-errors li"))
                 .Text
                 .ShouldBe(errorMessage);
+
+        /// <summary>
+        /// Retrieves the elements according to <paramref name="by"/> and matches their text content against <paramref
+        /// name="toMatch"/>. Both the text contents and <paramref name="toMatch"/> strings are trimmed. If an item in
+        /// <paramref name="toMatch"/> is <see langword="null" /> it's ignored among the result elements too. Every
+        /// other item is converted to string, using invariant culture where possible.
+        /// </summary>
+        public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch)
+        {
+            context.Exists(by); // Ensure content is loaded first.
+
+            var dontCare = toMatch
+                .Select((item, index) => item == null ? index : -1)
+                .Where(index => index >= 0)
+                .ToList();
+            var target = toMatch
+                .Select(item => item == null ? null : FormattableString.Invariant($"{item}"))
+                .Select(item => item?.Trim())
+                .ToArray();
+
+            context
+                .GetAll(by)
+                .Select((element, index) => dontCare.Contains(index) ? null : element.Text.Trim())
+                .ToArray()
+                .ShouldBe(target);
+        }
+
+        /// <inheritdoc cref="VerifyElementTexts(UITestContext, By, object[])"/>
+        public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
+            VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
 
         private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
             new(

@@ -63,22 +63,14 @@ namespace Lombiq.Tests.UI.Samples
                     configuration.BrowserConfiguration.Headless =
                         TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
-                    // There are event handlers that you can hook into. This is just one but check out the others in
-                    // OrchardCoreConfiguration if you're interested.
-                    configuration.OrchardCoreConfiguration.BeforeAppStart +=
-                        (_, argumentsBuilder) =>
-                        {
-                            // This is quite handy! We're adding a configuration parameter when launching the app. This
-                            // can be used to set configuration for configuration providers, see the docs:
-                            // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/.
-                            // What's happening here is that we set the Lombiq Application Insights module's parameter
-                            // to allow us to test it. We'll get back to this later when writing the actual test.
-                            argumentsBuilder
-                                .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
-                                .Add("true");
-
-                            return Task.CompletedTask;
-                        };
+                    // There are event handlers that you can hook into. This method sets BeforeAppStart which is just
+                    // one of many. Check out the others in OrchardCoreConfiguration if you're interested.
+                    // This is quite handy! We're adding a configuration parameter when launching the app. This
+                    // can be used to set configuration for configuration providers, see the docs:
+                    // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/.
+                    // What's happening here is that we set the Lombiq Application Insights module's parameter
+                    // to allow us to test it. We'll get back to this later when writing the actual test.
+                    configuration.OrchardCoreConfiguration.EnableApplicationInsightsOfflineOperation();
 
                     // Note that automatic HTML markup validation is enabled on every page change by default (you can
                     // disable it with the below config). With this, you can make sure that the HTML markup the app
