@@ -13,6 +13,35 @@ namespace Lombiq.Tests.UI.Extensions
         /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If
         /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
         /// </summary>
+        /// <param name="process">
+        /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
+        /// <see langword="false"/> otherwise.
+        /// </param>
+        /// <param name="timeout">
+        /// The maximum time allowed for the process to complete. Defaults to <paramref
+        /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+        /// </param>
+        /// <param name="interval">
+        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to <paramref
+        /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+        /// </param>
+        /// <exception cref="TimeoutException">
+        /// Thrown if the operation didn't succeed even after retries within the allotted time.
+        /// </exception>
+        public static void DoWithRetriesOrFail(
+            this UITestContext context,
+            Func<bool> process,
+            TimeSpan? timeout = null,
+            TimeSpan? interval = null) =>
+            ReliabilityHelper.DoWithRetriesOrFail(
+                process,
+                timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
+                interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+
+        /// <summary>
+        /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
+        /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+        /// </summary>
         /// <param name="processAsync">
         /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
         /// <see langword="false"/> otherwise.
@@ -39,7 +68,7 @@ namespace Lombiq.Tests.UI.Extensions
                 interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
         /// <summary>
-        /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
+        /// Executes the async process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
         /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
         ///
         /// In situations like a DataTable load it is possible that the page will change during execution of multiple
