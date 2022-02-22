@@ -76,11 +76,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
@@ -108,11 +108,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first
@@ -139,11 +139,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
@@ -168,11 +168,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first
@@ -196,11 +196,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
         /// Thrown if the operation didn't succeed even after retries within the allotted time.
@@ -221,11 +221,11 @@ namespace Lombiq.Tests.UI.Helpers
         /// </param>
         /// <param name="timeout">
         /// The maximum time allowed for the process to complete. Defaults to the default of <see
-        /// cref="SafeWait{T}.Timeout"/>.
+        /// cref="SafeWaitAsync{T}.Timeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
-        /// cref="SafeWait{T}.PollingInterval"/>.
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+        /// cref="SafeWaitAsync{T}.PollingInterval"/>.
         /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
