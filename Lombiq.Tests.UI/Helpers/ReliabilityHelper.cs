@@ -251,18 +251,18 @@ namespace Lombiq.Tests.UI.Helpers
             return (wait.Until(_ => process()), wait);
         }
 
-        private static async Task<(bool IsSuccess, SafeWait<object> Wait)> DoWithRetriesInternalAsync(
+        private static async Task<(bool IsSuccess, SafeWaitAsync<object> Wait)> DoWithRetriesInternalAsync(
             Func<Task<bool>> processAsync,
             TimeSpan? timeout = null,
             TimeSpan? interval = null)
         {
-            var wait = new SafeWait<object>(new object());
+            var wait = new SafeWaitAsync<object>(new object());
 
             // If no values are supplied then the defaults specified in AtataFactory will be used.
             if (timeout != null) wait.Timeout = timeout.Value;
             if (interval != null) wait.PollingInterval = interval.Value;
 
-            return (await processAsync(), wait);
+            return (await wait.UntilAsync(_ => processAsync()), wait);
         }
     }
 }
