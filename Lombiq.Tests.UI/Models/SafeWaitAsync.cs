@@ -68,8 +68,9 @@ namespace Atata
         }
 
         public TResult Until<TResult>(Func<T, TResult> condition) =>
-            throw new NotSupportedException("SafeWaitAsync does not support synchronous Until function, it only supports" +
-                " the asynchronous UntilAsync function.");
+            throw new NotSupportedException(
+                "SafeWaitAsync does not support synchronous Until function, it only supports the asynchronous " +
+                "UntilAsync function.");
 
         /// <summary>
         /// Does the same as <see cref="SafeWait{T}.Until{TResult}(Func{T, TResult})"/> but in async. See documentation
@@ -79,7 +80,8 @@ namespace Atata
         /// <param name="condition">A delegate taking an object of type T as its parameter, and returning a
         /// TResult.</param>
         /// <returns>The delegate's return value.</returns>
-        /// Implements the same logic as <see cref="SafeWait{T}.Until{TResult}(Func{T, TResult})"/>, the complexity is okay.
+        // Implements the same logic as <see cref="SafeWait{T}.Until{TResult}(Func{T, TResult})"/>, the complexity is
+        // okay.
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
         public async Task<TResult> UntilAsync<TResult>(Func<T, Task<TResult>> condition)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high

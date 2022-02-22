@@ -51,7 +51,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to <paramref
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
         /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
@@ -85,7 +85,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to <paramref
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
         /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
@@ -116,7 +116,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
         /// </param>
         /// <param name="interval">
-        /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to <paramref
+        /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
         /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
         /// </param>
         /// <exception cref="TimeoutException">
