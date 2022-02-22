@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
                 new OrchardCoreSetupParameters(context)
                 {
-                    SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
+                    SiteName = "Lombiq's OSOCE - UI Testing",
                     RecipeId = RecipeId,
                     // A table prefix is not really needed but this way we also check whether we've written any SQL
                     // that doesn't support prefixes.
