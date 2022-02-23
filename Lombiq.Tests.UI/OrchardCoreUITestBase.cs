@@ -170,10 +170,10 @@ namespace Lombiq.Tests.UI
                 testAsync,
                 browser,
                 setupOperation: null,
-                configuration =>
+                async configuration =>
                 {
                     configuration.SetupConfiguration.SetupSnapshotDirectoryPath = appFolder;
-                    changeConfigurationAsync?.Invoke(configuration);
+                    if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
                 });
         }
 
