@@ -266,5 +266,8 @@ namespace Lombiq.Tests.UI.Extensions
             context.Driver.Title == "Setup" &&
             context.Driver.PageSource.Contains(
                 @"<link type=""image/x-icon"" rel=""shortcut icon"" href=""/OrchardCore.Setup/favicon.ico"">");
+
+        public static Task GoToContentItemByIdAsync(this UITestContext context, string contentItemId) =>
+            context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
     }
 }
