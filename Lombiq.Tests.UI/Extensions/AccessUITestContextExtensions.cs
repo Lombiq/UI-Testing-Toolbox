@@ -36,5 +36,23 @@ namespace Lombiq.Tests.UI.Extensions
             await context.SignInDirectlyAsync(userName);
             await context.CheckContentItemCreationAccessAsync(contentType, hasAccess);
         }
+
+        /// <summary>
+        /// Signs in and the navigates to the content item display URL with the ID of <paramref name="contentItemId"/>
+        /// and checks if this causes an exception or not.
+        /// </summary>
+        public static async Task SignInDirectlyAndCheckContentItemDisplayAccessAsync(
+            this UITestContext context,
+            string userName,
+            string contentItemId,
+            bool hasAccess)
+        {
+            await context.SignInDirectlyAsync(userName);
+            await context.GoToContentItemByIdAsync(contentItemId);
+
+            context.CheckExistence(
+                By.XPath("//h1[contains(., 'You do not have access to this resource.')]"),
+                !hasAccess);
+        }
     }
 }

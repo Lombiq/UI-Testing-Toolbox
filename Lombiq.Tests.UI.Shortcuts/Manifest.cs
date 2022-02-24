@@ -5,7 +5,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Name = "Shortcuts - Lombiq UI Testing Toolbox",
     Author = "Lombiq Technologies",
     Website = "https://github.com/Lombiq/UI-Testing-Toolbox",
-    Version = "1.6.0"
+    Version = "1.6.4"
 )]
 
 [assembly: Feature(
