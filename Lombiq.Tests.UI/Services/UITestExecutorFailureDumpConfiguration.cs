@@ -14,7 +14,7 @@ namespace Lombiq.Tests.UI.Services
 
         public string DumpsDirectoryPath { get; set; } = "FailureDumps";
         public bool CaptureAppSnapshot { get; set; } = true;
-        public bool CaptureScreenshot { get; set; } = true;
+        public bool CaptureScreenshots { get; set; } = true;
         public bool CaptureHtmlSource { get; set; } = true;
         public bool CaptureBrowserLog { get; set; } = true;
     }

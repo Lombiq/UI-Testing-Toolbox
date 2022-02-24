@@ -1,7 +1,10 @@
 using Atata;
 using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Components;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -43,13 +46,17 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveRegistrationPage() =>
             PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-        public _ RegisterWith(UserRegistrationParameters parameters)
+        public async Task<_> RegisterWithAsync(UITestContext context, UserRegistrationParameters parameters)
         {
             UserName.Set(parameters.UserName);
             Email.Set(parameters.Email);
             Password.Set(parameters.Password);
             ConfirmPassword.Set(parameters.ConfirmPassword);
             Register.Click();
+
+            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+            context.RefreshCurrentAtataContext();
 
             return this;
         }

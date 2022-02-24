@@ -38,7 +38,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context.ExecuteAndAssertTestFeatureToggle(),
+                context => context.ExecuteAndAssertTestFeatureToggleAsync(),
                 browser,
                 configuration =>
                 {

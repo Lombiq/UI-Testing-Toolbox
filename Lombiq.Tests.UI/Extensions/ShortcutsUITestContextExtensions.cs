@@ -29,50 +29,50 @@ namespace Lombiq.Tests.UI.Extensions
         /// anything else happening on the login page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
         /// enabled.
         /// </summary>
-        public static void SignInDirectly(this UITestContext context, string userName = DefaultUser.UserName) =>
-            context.GoTo<AccountController>(controller => controller.SignInDirectly(userName));
+        public static Task SignInDirectlyAsync(this UITestContext context, string userName = DefaultUser.UserName) =>
+            context.GoToAsync<AccountController>(controller => controller.SignInDirectly(userName));
 
         /// <summary>
         /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
         /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
         /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void SignInDirectlyAndGoToRelativeUrl(
+        public static Task SignInDirectlyAndGoToRelativeUrlAsync(
             this UITestContext context,
             string relativeUrl,
             bool onlyIfNotAlreadyThere = true)
-            => context.SignInDirectlyAndGoToRelativeUrl(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
+            => context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
 
         /// <summary>
         /// Authenticates the client with the given user account and navigates to the given URL. Note that this will
         /// execute a direct sign in without anything else happening on the login page and going to a relative URL after
         /// login. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void SignInDirectlyAndGoToRelativeUrl(
+        public static async Task SignInDirectlyAndGoToRelativeUrlAsync(
             this UITestContext context,
             string userName,
             string relativeUrl,
             bool onlyIfNotAlreadyThere = true)
         {
-            context.SignInDirectly(userName);
-            context.GoToRelativeUrl(relativeUrl, onlyIfNotAlreadyThere);
+            await context.SignInDirectlyAsync(userName);
+            await context.GoToRelativeUrlAsync(relativeUrl, onlyIfNotAlreadyThere);
         }
 
         /// <summary>
         /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the
         /// logoff page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void SignOutDirectly(this UITestContext context) =>
-            context.GoTo<AccountController>(controller => controller.SignOutDirectly());
+        public static Task SignOutDirectlyAsync(this UITestContext context) =>
+            context.GoToAsync<AccountController>(controller => controller.SignOutDirectly());
 
         /// <summary>
         /// Retrieves the currently authenticated user's name, if any. The target app needs to have
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
         /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
-        public static string GetCurrentUserName(this UITestContext context)
+        public static async Task<string> GetCurrentUserNameAsync(this UITestContext context)
         {
-            context.GoTo<CurrentUserController>(controller => controller.Index());
+            await context.GoToAsync<CurrentUserController>(controller => controller.Index());
             var userNameContainer = context.Get(By.CssSelector("pre")).Text;
             return userNameContainer["UserName: ".Length..];
         }
@@ -82,27 +82,27 @@ namespace Lombiq.Tests.UI.Extensions
         /// else happening on the admin Features page. The target app needs to
         /// have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void EnableFeatureDirectly(this UITestContext context, string featureId) =>
-            context.GoTo<ShellFeaturesController>(controller => controller.EnableFeatureDirectly(featureId));
+        public static Task EnableFeatureDirectlyAsync(this UITestContext context, string featureId) =>
+            context.GoToAsync<ShellFeaturesController>(controller => controller.EnableFeatureDirectly(featureId));
 
         /// <summary>
         /// Disables the feature with the given ID directly, without anything else happening on the admin Features page.
         /// The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void DisableFeatureDirectly(this UITestContext context, string featureId) =>
-            context.GoTo<ShellFeaturesController>(controller => controller.DisableFeatureDirectly(featureId));
+        public static Task DisableFeatureDirectlyAsync(this UITestContext context, string featureId) =>
+            context.GoToAsync<ShellFeaturesController>(controller => controller.DisableFeatureDirectly(featureId));
 
         /// <summary>
         /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
         /// operations indeed worked. This can be used to test if anything breaks when a feature is enabled or disabled.
         /// </summary>
-        public static void ExecuteAndAssertTestFeatureToggle(this UITestContext context)
+        public static async Task ExecuteAndAssertTestFeatureToggleAsync(this UITestContext context)
         {
-            context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
-            context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
+            await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+            await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
-            context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
-            context.GoToRelativeUrl(FeatureToggleTestBenchUrl);
+            await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+            await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
             context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
         }
 
@@ -114,18 +114,18 @@ namespace Lombiq.Tests.UI.Extensions
         /// In case the <c>Lombiq.Tests.UI.Shortcuts.MediaCachePurge</c> feature haven't been turned on yet, then set
         /// <see langword="true"/>.
         /// </param>
-        public static void PurgeMediaCacheDirectly(this UITestContext context, bool toggleTheFeature = false)
+        public static async Task PurgeMediaCacheDirectlyAsync(this UITestContext context, bool toggleTheFeature = false)
         {
             if (toggleTheFeature)
             {
-                context.EnableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+                await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
             }
 
-            context.GoTo<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
+            await context.GoToAsync<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
             if (toggleTheFeature)
             {
-                context.DisableFeatureDirectly("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+                await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
             }
         }
 
@@ -142,15 +142,15 @@ namespace Lombiq.Tests.UI.Extensions
         /// Executes a recipe identified by its name directly. The user must be logged in. The target app needs to have
         /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
         /// </summary>
-        public static void ExecuteRecipeDirectly(this UITestContext context, string recipeName) =>
-            context.GoTo<RecipeController>(controller => controller.Execute(recipeName));
+        public static Task ExecuteRecipeDirectlyAsync(this UITestContext context, string recipeName) =>
+            context.GoToAsync<RecipeController>(controller => controller.Execute(recipeName));
 
         /// <summary>
         /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET
         /// Core to display an error page.
         /// </summary>
-        public static void GoToErrorPageDirectly(this UITestContext context) =>
-            context.GoTo<ErrorController>(controller => controller.Index());
+        public static Task GoToErrorPageDirectlyAsync(this UITestContext context) =>
+            context.GoToAsync<ErrorController>(controller => controller.Index());
 
         private static IShortcutsApi GetApi(this UITestContext context) =>
             _apis.GetOrAdd(

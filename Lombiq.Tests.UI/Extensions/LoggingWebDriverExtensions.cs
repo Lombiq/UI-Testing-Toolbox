@@ -28,8 +28,7 @@ namespace Lombiq.Tests.UI.Extensions
         public DateTime DateTimeUtc { get; set; }
         public string Message { get; set; }
 
-        public override string ToString() =>
-            $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
+        public override string ToString() => $"{DateTimeUtc} UTC | {Level} | {Source} | {Message}";
 
         public bool IsNotFoundMessage(string url) =>
             Message.ContainsOrdinalIgnoreCase(
@@ -76,7 +75,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// <para>
         /// Direct log retrieval with <c>driver.Manage().Logs.GetLog()</c> (see:
         /// https://stackoverflow.com/a/36463573/220230) currently doesn't work and every log operation throws an NRE.
-        /// Apparently this will work again in WebDriver v4 which is currently in alpha
+        /// Apparently this will work again in WebDriver v4 (Selenium 4) which is currently in alpha
         /// (https://www.nuget.org/packages/Selenium.WebDriver/).Then we'll also have access to the Chrome DevTools
         /// console: https://codoid.com/selenium-4-chrome-devtools-log-entry-listeners/. All details accessible from
         /// under

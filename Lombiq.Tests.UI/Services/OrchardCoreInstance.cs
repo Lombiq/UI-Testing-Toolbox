@@ -26,6 +26,22 @@ namespace Lombiq.Tests.UI.Services
         public string SnapshotDirectoryPath { get; set; }
         public BeforeAppStartHandler BeforeAppStart { get; set; }
         public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
+
+        /// <summary>
+        /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline
+        /// mode. This way it won't try to reach out to a remote server with telemetry and the test remains
+        /// self-sufficient.
+        /// </summary>
+        public void EnableApplicationInsightsOfflineOperation() =>
+            BeforeAppStart +=
+                (_, argumentsBuilder) =>
+                {
+                    argumentsBuilder
+                        .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
+                        .Add("true");
+
+                    return Task.CompletedTask;
+                };
     }
 
     /// <summary>
@@ -127,22 +143,21 @@ namespace Lombiq.Tests.UI.Services
                     });
             }
 
+            var argumentsBuilder = new ArgumentsBuilder();
+
+            argumentsBuilder = argumentsBuilder
+                .Add("--urls").Add(url)
+                .Add("--contentRoot").Add(_contentRootPath)
+                .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
+                .Add("--environment").Add("Development");
+
+            if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
+
+            await _configuration.BeforeAppStart
+                .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, argumentsBuilder));
+
             _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + ExecutableExtension))
-                .WithArguments(argumentsBuilder =>
-                {
-                    var builder = argumentsBuilder
-                        .Add("--urls").Add(url)
-                        .Add("--contentRoot").Add(_contentRootPath)
-                        .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
-                        .Add("--environment").Add("Development");
-
-                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
-
-                    // There is no other option here than to wait for the invoked Tasks.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait(CancellationToken.None);
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
-                });
+                .WithArguments(argumentsBuilder.Build());
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
@@ -164,10 +179,8 @@ namespace Lombiq.Tests.UI.Services
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
-            if (_configuration.BeforeTakeSnapshot != null)
-            {
-                await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
-            }
+            await _configuration.BeforeTakeSnapshot
+                .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
 
             FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
         }

@@ -1,4 +1,5 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Delegates
 {
@@ -12,4 +13,7 @@ namespace Lombiq.Tests.UI.Delegates
     /// cref="OrchardCoreUITestBase.MobileBrowserSize"/>.
     /// </param>
     public delegate void MultiSizeTest(UITestContext context, bool isStandardSize);
+
+    /// <inheritdoc cref="MultiSizeTest"/>
+    public delegate Task MultiSizeTestAsync(UITestContext context, bool isStandardSize);
 }

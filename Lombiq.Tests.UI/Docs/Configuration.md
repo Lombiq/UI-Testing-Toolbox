@@ -9,7 +9,19 @@ All the necessary aspects of the Toolbox can be configured from code. Look for s
 
 ## External configuration
 
-Note that since the tests are xUnit tests you can configure general parameters of test execution, including the level or parallelization, with [an xUnit configuration file](https://xunit.net/docs/configuration-files) (a default one is included in the UI Testing Toolbox).
+Note that since the tests are xUnit tests you can configure general parameters of test execution, including the level or parallelization, with [an xUnit configuration file](https://xunit.net/docs/configuration-files) (*xunit.runner.json*). A default suitable one is included in the UI Testing Toolbox and will be loaded into your test projects; if you want to override that then:
+
+1. Add a suitable *xunit.runner.json* file to your project's folder.
+2. In the `csproj` configure its "Build Action" as "Content", and "Copy to Output Directory" as "Copy if newer" to ensure it'll be used by the tests. This is how it looks like in the project file:
+
+```xml
+<ItemGroup>
+  <None Remove="xunit.runner.json" />
+  <Content Include="xunit.runner.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+</ItemGroup>
+```
 
 Certain test execution parameters can be configured externally too, the ones retrieved via the `TestConfigurationManager` class. All configuration options are basic key-value pairs and can be provided in one of the two ways:
 
@@ -49,6 +61,8 @@ We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for y
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
 
 Supply the agent index in the `AgentIndex` configuration. It doesn't need to but is highly recommended to be zero-indexed (see the [docs on limits](Limits.md)) and it must be unique to each process. You can also use this to find a port interval where on your machine there are no other processes listening.
+
+If you have multiple UI test projects in a single solution and you're executing them with a single `dotnet test` command then disable them being executed in parallel with the xUnit `"parallelizeAssembly": false` configuration (i.e. while tests within a project will be executed in parallel, the two test projects won't, not to have port and other clashes due to the same `AgentIndex`). This is provided by the *xunit.runner.json* file of the UI Testing Toolbox by default. 
 
 
 ## Using SQL Server from a Docker container

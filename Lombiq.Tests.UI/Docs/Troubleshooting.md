@@ -4,7 +4,14 @@
 
 ## General tips
 
-- When a test fails it'll create a dump in the test execution's folder, in a new *FailureDumps* folder. This will contain the Orchard application's folder (including settings files, the SQLite DB if used, logs, etc. that you can utilize to run the app from that state), browser logs (i.e. the developer console output; you can use the timestamps of entries to correlate with the test output and see on which step they happened), a screenshot (Windows Photo Viewer won't be able to open it though, use something else like the Windows 10 Photos app), the HTML output, any direct output of the test (like the exception thrown) as well as a log of the operations it completed. If accessibility was checked and asserting it failed then an accessibility report will be included too. Together with the test output this should help you pinpoint where the issue is even if the test was run in the CI environment and you can't reproduce it locally.
+- When a test fails it'll create a dump in the test execution's folder, in a new *FailureDumps* folder. This should help you pinpoint where the issue is even if the test was run in the CI environment, and you can't reproduce it locally. The dump contains the following:
+    - The Orchard application's folder, including settings files, the SQLite DB if used, logs, etc. that you can utilize to see log entries and to run the app from that state.
+    - Browser logs, i.e. the developer console output
+    - Screenshots of each page in order the test visiting them, as well as when the test failed (Windows Photo Viewer won't be able to open it though, use something else like the Windows 10 Photos app)
+    - The HTML output on the page the test failed.
+    - Any direct output of the test (like the exception thrown) as well as a log of the operations it completed.
+    - If accessibility was checked and asserting it failed then an accessibility report will be included too. 
+    - If HTML validation was done and asserting it failed then an HTML validation report will be included too. 
 - Run tests with the debugger attached to stop where the test fails. This way you can take a good look at what's in the driven browser window so you can examine the web page. Alternatively, if you want to debug the web app then you can run the test without debugging and attach the debugger to the *dotnet.exe* process running the app.
 - An aborted test can leave processes open (a failed test should clean up after itself nevertheless). Look for *dotnet.exe* and *chromedriver.exe* processes (and also for *geckodriver.exe*, *IEDriverServer.exe* and *msedgedriver.exe* if you use other browsers) with [Process Explorer](https://docs.microsoft.com/en-us/sysinternals/downloads/process-explorer) and kill them. You can also use the included *KillLeftoverProcesses.bat* script to kill these (optionally install the [Command Task Runner](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.CommandTaskRunner) Visual Studio Extension so you can run this script from Task Runner Explorer directly). If you see build warnings or errors with files being locked then most possibly a *dotnet.exe* process is locking them (or an IIS Express one if you have run the app from VS too). If you get an `IOException` with the message along the lines of "Starting the Orchard Core application via dotnet.exe failed with the following output: Unhandled exception. System.IO.IOException: Failed to bind to address https://127.0.0.1:5122: address already in use." then that's also because there's a leftover *dotnet.exe* using that port.
 - All tests failing is a telltale sign of the setup failing (if your tests run with a fresh setup), check out the failure dumps. Note that app and browser logs are asserted on only at the end of test execution so a test will fail at the very end even if some swallowed exception was logged on the first page view.
@@ -29,7 +36,6 @@
   > OpenQA.Selenium.WebDriverException: Creating the web driver failed with the message "Cannot start the driver service on http://localhost:50526/". Note that this can mean that there is a leftover web driver process that you have to kill manually.
   
     This, unfortunately, is not something we can do much about. However, the automatic test retries will prevent tests failing due to random errors like this.
-- If you start more tests from Visual Studio Test Explorer than `maxParallelThreads` in the XUnit config, then tests will get stuck just after they're finished. Increase `maxParallelThreads` in this case.
 
 
 ## Headless mode
@@ -54,3 +60,11 @@
 
     EXEC sp_executesql @sql 
     ```
+
+
+## Monkey testing
+
+- Errors uncovered by monkey testing functionality can be reproduced locally by executing the same test with the same random seed by setting `MonkeyTestingOptions.BaseRandomSeed` with the value the test failed. If `BaseRandomSeed` is generated then you can see it in the log; if you specified it then nothing else to do.
+- The last monkey testing interaction before a failure is logged. You can correlate with the coordinates of it with the last page screenshot.
+- If you want to test the failed page granularly, you can write a test that navigates to that page and executes `context.TestCurrentPageAsMonkey(_monkeyTestingOptions, 12345);`, where `12345` is the random seed number that can be found in a failed test log.
+- It is also possible to set a larger time value to the `MonkeyTestingOptions.GremlinsAttackDelay` property in order to make gremlin interaction slower, thus allowing you to watch what's happening.

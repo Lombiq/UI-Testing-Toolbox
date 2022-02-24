@@ -5,7 +5,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium.Remote;
+using OpenQA.Selenium;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
@@ -24,6 +24,7 @@ namespace Lombiq.Tests.UI.Services
         private readonly OrchardCoreUITestExecutorConfiguration _configuration;
         private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
         private readonly ITestOutputHelper _testOutputHelper;
+        private readonly List<Screenshot> _screenshots = new();
 
         // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
         private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -39,7 +40,6 @@ namespace Lombiq.Tests.UI.Services
         private AzureBlobStorageManager _azureBlobStorageManager;
         private IWebApplicationInstance _applicationInstance;
         private UITestContext _context;
-        private List<BrowserLogMessage> _browserLogMessages;
         private DockerConfiguration _dockerConfiguration;
 
         public UITestExecutionSession(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
@@ -92,7 +92,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context.SetDefaultBrowserSize();
 
-                _testManifest.Test(_context);
+                await _testManifest.TestAsync(_context);
 
                 await AssertLogsAsync();
 
@@ -100,18 +100,7 @@ namespace Lombiq.Tests.UI.Services
             }
             catch (Exception ex)
             {
-                if (ex is PageChangeAssertionException pageChangeAssertionException)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
-                    ex = pageChangeAssertionException.InnerException;
-                }
-                else
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(
-                        $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
-                }
-
-                _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+                ex = PrepareAndLogException(ex);
 
                 if (ex is SetupFailedFastException) throw;
 
@@ -149,6 +138,12 @@ namespace Lombiq.Tests.UI.Services
 
         private async ValueTask ShutdownAsync()
         {
+            if (_configuration.RunAssertLogsOnAllPageChanges)
+            {
+                _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
+                _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
+            }
+
             if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
             _sqlServerManager?.Dispose();
@@ -156,22 +151,37 @@ namespace Lombiq.Tests.UI.Services
 
             if (_smtpService != null) await _smtpService.DisposeAsync();
             if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
+
+            if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
         }
 
-        private async Task<List<BrowserLogMessage>> GetBrowserLogAsync(RemoteWebDriver driver)
+        private Exception PrepareAndLogException(Exception ex)
         {
-            if (_browserLogMessages != null) return _browserLogMessages;
-
-            var allMessages = new List<BrowserLogMessage>();
-
-            foreach (var windowHandle in _context.Driver.WindowHandles)
+            if (ex is AggregateException aggregateException)
             {
-                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                _context.Driver.SwitchTo().Window(windowHandle);
-                allMessages.AddRange(await driver.GetAndEmptyBrowserLogAsync());
+                if (aggregateException.InnerExceptions.Count > 1)
+                {
+                    throw new InvalidOperationException(
+                        "More than one exceptions in the AggregateException. This shouldn't really happen.");
+                }
+
+                ex = aggregateException.InnerException;
             }
 
-            return _browserLogMessages = allMessages;
+            if (ex is PageChangeAssertionException pageChangeAssertionException)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
+                ex = pageChangeAssertionException.InnerException;
+            }
+            else if (_context?.Driver is not null)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"An exception has occurred while interacting with the page {_context?.GetPageTitleAndAddress()}.");
+            }
+
+            _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
+
+            return ex;
         }
 
         private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
@@ -188,17 +198,25 @@ namespace Lombiq.Tests.UI.Services
 
                 if (_context == null) return;
 
-                // Saving the screenshot and HTML output should be as early after the test fail as possible so they show
-                // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-                if (_dumpConfiguration.CaptureScreenshot)
+                // Saving the failure screenshot and HTML output should be as early after the test fail as possible so
+                // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+                if (_dumpConfiguration.CaptureScreenshots)
                 {
-                    // Only PNG is supported on .NET Core.
-                    var imagePath = Path.Combine(debugInformationPath, "Screenshot.png");
-                    _context.Scope.Driver.GetScreenshot().SaveAsFile(imagePath);
+                    await TakeScreenshotAsync(_context);
+
+                    var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
+                    Directory.CreateDirectory(pageScreenshotsPath);
+                    var digitCount = _screenshots.Count.DigitCount();
+
+                    string GetScreenshotPath(int index) =>
+                        Path.Combine(pageScreenshotsPath, index.PadZeroes(digitCount) + ".png");
+
+                    for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
-                        TeamCityMetadataReporter.ReportImage(_testManifest.Name, "Screenshot", imagePath);
+                        TeamCityMetadataReporter.ReportImage(
+                            _testManifest.Name, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
                     }
                 }
 
@@ -219,7 +237,7 @@ namespace Lombiq.Tests.UI.Services
 
                     await File.WriteAllLinesAsync(
                         browserLogPath,
-                        (await GetBrowserLogAsync(_context.Scope.Driver)).Select(message => message.ToString()));
+                        (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
 
                     if (_configuration.ReportTeamCityMetadata)
                     {
@@ -361,7 +379,7 @@ namespace Lombiq.Tests.UI.Services
                 {
                     _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                    if (setupConfiguration.BeforeSetup != null) await setupConfiguration.BeforeSetup.Invoke(_configuration);
+                    await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                     if (setupConfiguration.FastFailSetup &&
                         _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
@@ -379,11 +397,9 @@ namespace Lombiq.Tests.UI.Services
 
                     _context.SetDefaultBrowserSize();
 
-                    var result = (_context, setupConfiguration.SetupOperation(_context));
+                    var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                     await AssertLogsAsync();
-                    // Clearing the cache so the first test after the setup will assert correctly too.
-                    _browserLogMessages = null;
                     _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                     return result;
@@ -400,7 +416,7 @@ namespace Lombiq.Tests.UI.Services
 
                 _context = await CreateContextAsync();
 
-                _context.GoToRelativeUrl(resultUri.PathAndQuery);
+                await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
             }
             catch (Exception ex) when (ex is not SetupFailedFastException)
             {
@@ -535,10 +551,16 @@ namespace Lombiq.Tests.UI.Services
             if (_configuration.RunAssertLogsOnAllPageChanges &&
                 _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
             {
-                _configuration.Events.AfterPageChange += _ => AssertLogsAsync();
+                _configuration.Events.AfterPageChange += OnAssertLogsAsync;
             }
 
-            var atataScope = await AtataFactory.StartAtataScopeAsync(
+            if (_dumpConfiguration.CaptureScreenshots)
+            {
+                _configuration.Events.AfterPageChange -= TakeScreenshotAsync;
+                _configuration.Events.AfterPageChange += TakeScreenshotAsync;
+            }
+
+            var atataScope = AtataFactory.StartAtataScope(
                 _testOutputHelper,
                 uri,
                 _configuration);
@@ -558,11 +580,15 @@ namespace Lombiq.Tests.UI.Services
             _configuration.UseSqlServer +
             _configuration.UseAzureBlobStorage;
 
+        private Task OnAssertLogsAsync(UITestContext context) => AssertLogsAsync();
+
         private async Task AssertLogsAsync()
         {
+            await _context.UpdateHistoricBrowserLogAsync();
+
             try
             {
-                if (_configuration.AssertAppLogs != null) await _configuration.AssertAppLogs(_context.Application);
+                if (_configuration.AssertAppLogsAsync != null) await _configuration.AssertAppLogsAsync(_context.Application);
             }
             catch (Exception)
             {
@@ -574,12 +600,12 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
-                _configuration.AssertBrowserLog?.Invoke(await GetBrowserLogAsync(_context.Scope.Driver));
+                _configuration.AssertBrowserLog?.Invoke(_context.HistoricBrowserLog);
             }
             catch (Exception)
             {
                 _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                _testOutputHelper.WriteLine((await GetBrowserLogAsync(_context.Scope.Driver)).ToFormattedString());
+                _testOutputHelper.WriteLine(_context.HistoricBrowserLog.ToFormattedString());
 
                 throw;
             }
@@ -675,6 +701,12 @@ namespace Lombiq.Tests.UI.Services
             _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
             return smtpContext;
+        }
+
+        private Task TakeScreenshotAsync(UITestContext context)
+        {
+            _screenshots.Add(context.TakeScreenshot());
+            return Task.CompletedTask;
         }
     }
 }
