@@ -560,7 +560,7 @@ namespace Lombiq.Tests.UI.Services
                 _configuration.Events.AfterPageChange += TakeScreenshotAsync;
             }
 
-            var atataScope = AtataFactory.StartAtataScope(
+            var atataScope = await AtataFactory.StartAtataScopeAsync(
                 _testOutputHelper,
                 uri,
                 _configuration);
