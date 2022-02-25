@@ -64,14 +64,15 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    return await (browserConfiguration.Browser switch
+                    var task = browserConfiguration.Browser switch
                     {
                         Browser.Chrome => CastDriverFactoryAsync(WebDriverFactory.CreateChromeDriverAsync),
                         Browser.Edge => CastDriverFactoryAsync(WebDriverFactory.CreateEdgeDriverAsync),
                         Browser.Firefox => CastDriverFactoryAsync(WebDriverFactory.CreateFirefoxDriverAsync),
                         Browser.InternetExplorer => CastDriverFactoryAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
                         _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
-                    });
+                    };
+                    return await task;
                 }
                 catch (WebDriverException ex)
                 {
