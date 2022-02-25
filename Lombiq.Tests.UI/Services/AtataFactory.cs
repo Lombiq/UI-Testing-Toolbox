@@ -50,10 +50,8 @@ namespace Lombiq.Tests.UI.Services
             ITestOutputHelper testOutputHelper)
         {
             async Task<RemoteWebDriver> CastDriverFactoryAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
-                where T : RemoteWebDriver
-            {
-                return await factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
-            }
+                where T : RemoteWebDriver =>
+                await factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
 
             // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions
             // if the machine is under load. Retrying it here so not the whole test needs to be re-run.
@@ -80,10 +78,12 @@ namespace Lombiq.Tests.UI.Services
                         currentTryIndex < maxTryCount - 1)
                     {
                         currentTryIndex++;
+                        var retryCount = maxTryCount - currentTryIndex;
+
                         // Not using parameters because the exception can throw off the string format.
                         testOutputHelper.WriteLineTimestampedAndDebug(
-                            $"While creating the web driver failed with the following exception, it'll be " +
-                            $"retried {maxTryCount - currentTryIndex} more time(s). Exception: {ex}");
+                            "While creating the web driver failed with the following exception, it'll be retried " +
+                            FormattableString.Invariant($"{retryCount} more time(s). Exception: {ex}"));
                     }
                     else
                     {
