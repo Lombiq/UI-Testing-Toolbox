@@ -178,7 +178,7 @@ namespace Lombiq.Tests.UI.Services
                 EdgeConfig => ("powershell", "(Get-AppxPackage Microsoft.MicrosoftEdge).Version"),
                 InternetExplorerConfig =>
                     ("reg", @"query HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer /v svcVersion"),
-                _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, null),
+                _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, message: null),
             };
             executableName += OperatingSystemHelpers.GetExecutableExtension();
 

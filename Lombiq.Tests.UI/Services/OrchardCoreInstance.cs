@@ -65,7 +65,7 @@ namespace Lombiq.Tests.UI.Services
         private string _contentRootPath;
         private bool _isDisposed;
 
-        private string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
+        private static string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
 
         // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression

@@ -15,7 +15,7 @@ namespace Lombiq.Tests.UI.Services
 
     public static class AtataFactory
     {
-        public async static Task<AtataScope> StartAtataScopeAsync(
+        public static async Task<AtataScope> StartAtataScopeAsync(
             ITestOutputHelper testOutputHelper,
             Uri baseUri,
             OrchardCoreUITestExecutorConfiguration configuration)
@@ -49,6 +49,12 @@ namespace Lombiq.Tests.UI.Services
             TimeoutConfiguration timeoutConfiguration,
             ITestOutputHelper testOutputHelper)
         {
+            async Task<RemoteWebDriver> CastDriverFactoryAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
+                where T : RemoteWebDriver
+            {
+                return await factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
+            }
+
             // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions
             // if the machine is under load. Retrying it here so not the whole test needs to be re-run.
             const int maxTryCount = 3;
@@ -58,15 +64,14 @@ namespace Lombiq.Tests.UI.Services
             {
                 try
                 {
-                    return browserConfiguration.Browser switch
+                    return await (browserConfiguration.Browser switch
                     {
-                        Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
-                        Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
-                        Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
-                        Browser.InternetExplorer =>
-                            await WebDriverFactory.CreateInternetExplorerDriverAsync(browserConfiguration, timeoutConfiguration.PageLoadTimeout),
+                        Browser.Chrome => CastDriverFactoryAsync(WebDriverFactory.CreateChromeDriverAsync),
+                        Browser.Edge => CastDriverFactoryAsync(WebDriverFactory.CreateEdgeDriverAsync),
+                        Browser.Firefox => CastDriverFactoryAsync(WebDriverFactory.CreateFirefoxDriverAsync),
+                        Browser.InternetExplorer => CastDriverFactoryAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
                         _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
-                    };
+                    });
                 }
                 catch (WebDriverException ex)
                 {
