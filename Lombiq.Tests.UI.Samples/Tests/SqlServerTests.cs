@@ -30,7 +30,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context => context
                     .Get(By.ClassName("navbar-brand"))
                     .Text
-                    .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing"),
+                    .ShouldBe("Lombiq's OSOCE - UI Testing"),
                 browser,
                 // Note the configuration! We could also set this globally in UITestBase.
                 configuration => configuration.UseSqlServer = true);

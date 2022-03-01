@@ -32,7 +32,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                     context
                         .Get(By.ClassName("navbar-brand"))
                         .Text
-                        .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing");
+                        .ShouldBe("Lombiq's OSOCE - UI Testing");
 
                     // Are we logged out?
                     (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
