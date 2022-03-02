@@ -26,7 +26,13 @@ namespace Lombiq.Tests.UI.Services
 
                     options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
-                    if (configuration.Headless) options.AddArgument("--headless");
+                    options.AddArgument("--disable-extensions");
+
+                    if (configuration.Headless)
+                    {
+                        options.AddArgument("--headless");
+                        options.AddArgument("--disable-gpu");
+                    }
 
                     // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of
                     // timeouts during parallel execution:
