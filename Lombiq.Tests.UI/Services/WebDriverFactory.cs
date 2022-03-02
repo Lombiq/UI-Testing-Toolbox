@@ -26,14 +26,16 @@ namespace Lombiq.Tests.UI.Services
 
                     options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
+                    if (configuration.Headless) options.AddArgument("--headless");
+
                     // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of
                     // timeouts during parallel execution:
                     // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
                     // However, this makes the executing machine vulnerable to browser-based attacks so it should only
                     // be used with trusted code (i.e. our own).
-                    options.AddArgument("no-sandbox");
+                    options.AddArgument("--no-sandbox");
 
-                    if (configuration.Headless) options.AddArgument("headless");
+                    options.AddArgument("--disable-dev-shm-usage");
 
                     configuration.BrowserOptionsConfigurator?.Invoke(options);
 
