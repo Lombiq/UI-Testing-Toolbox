@@ -146,7 +146,14 @@ namespace Lombiq.Tests.UI.Services
             Configuration.AssertBrowserLog?.Invoke(browserLog);
         }
 
-        internal async Task TriggerAfterPageChangeEventAsync()
+        /// <summary>
+        /// Invokes the registered <see cref="PageChangeEventHandler"/>s. Should be called when the browser loads a new
+        /// page in the app.
+        /// </summary>
+        /// <exception cref="PageChangeAssertionException">
+        /// Thrown when any of the event handlers throws an exception.
+        /// </exception>
+        public async Task TriggerAfterPageChangeEventAsync()
         {
             if (IsNoAlert())
             {
@@ -161,7 +168,12 @@ namespace Lombiq.Tests.UI.Services
             }
         }
 
-        internal async Task TriggerAfterPageChangeEventAndRefreshAtataContextAsync()
+        /// <summary>
+        /// Invokes the registered <see cref="PageChangeEventHandler"/>s and refreshes the Atata context with <see
+        /// cref="NavigationUITestContextExtensions.RefreshCurrentAtataContext(UITestContext)"/>. Should be called when
+        /// the browser loads a new page in the app.
+        /// </summary>
+        public async Task TriggerAfterPageChangeEventAndRefreshAtataContextAsync()
         {
             await TriggerAfterPageChangeEventAsync();
             this.RefreshCurrentAtataContext();
