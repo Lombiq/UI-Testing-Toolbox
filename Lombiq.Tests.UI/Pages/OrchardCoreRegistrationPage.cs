@@ -46,12 +46,19 @@ namespace Lombiq.Tests.UI.Pages
         public _ ShouldLeaveRegistrationPage() =>
             PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-        public async Task<_> RegisterWithAsync(UITestContext context, UserRegistrationParameters parameters)
+        public async Task<_> RegisterWithAsync(
+            UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
         {
             UserName.Set(parameters.UserName);
             Email.Set(parameters.Email);
             Password.Set(parameters.Password);
             ConfirmPassword.Set(parameters.ConfirmPassword);
+
+            if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
+            {
+                PrivacyPolicyAgreement.Click();
+            }
+
             Register.Click();
 
             await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
