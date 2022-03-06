@@ -148,7 +148,7 @@ namespace Lombiq.Tests.UI.Services
             argumentsBuilder = argumentsBuilder
                 .Add("--urls").Add(url)
                 .Add("--contentRoot").Add(_contentRootPath)
-                .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
+                .Add("--webroot=" + Path.Combine(_contentRootPath, "wwwroot"))
                 .Add("--environment").Add("Development");
 
             if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
