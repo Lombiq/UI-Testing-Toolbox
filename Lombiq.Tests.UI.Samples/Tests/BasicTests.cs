@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -23,21 +24,16 @@ namespace Lombiq.Tests.UI.Samples.Tests
         // necessary for xUnit, while [Chrome] is an input parameter of the test. The latter is an important concept:
         // You can create so-called data-driven tests. See here for more info:
         // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
+        //
+        // See the extension method for the test body. It's reused in other tests to verify different features too.
         [Theory, Chrome]
         public Task AnonymousHomePageShouldExist(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                async context =>
-                {
-                    // Is the title correct?
-                    context
-                        .Get(By.ClassName("navbar-brand"))
-                        .Text
-                        .ShouldBe("Lombiq's OSOCE - UI Testing");
-
-                    // Are we logged out?
-                    (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
-                },
-                browser);
+                context => context.CheckIfAnonymousHomePageExistsAsync(),
+                browser,
+                // We make sure this test uses SQLite even if you enabled it in the TestConfiguration.json, because
+                // there is already an equivalent test in SqlServerTests that uses SQL Server
+                configuration => configuration.UseSqlServer = false);
 
         // Let's click around now. The login page is quite important, so let's make sure it works. While it's an Orchard
         // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
@@ -79,15 +75,21 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 browser,
                 // You can change the configuration even for each test.
                 configuration =>
-                    // By default, apart from some commonly known exceptions, the browser log should be empty. However,
+                {
+                    // We make sure this test uses SQLite even if you enabled it in the TestConfiguration.json, because
+                    // there is already an equivalent test in SqlServerTests that uses SQL Server
+                    configuration.UseSqlServer = false;
+
                     // ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on that.
+                    // By default, apart from some commonly known exceptions, the browser log should be empty. However,
                     configuration.AssertBrowserLog =
                         messages =>
-                            {
-                                var messagesWithoutToggle = messages.Where(message =>
-                                    !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
-                                OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
-                            });
+                        {
+                            var messagesWithoutToggle = messages.Where(message =>
+                                !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                            OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
+                        };
+                });
 
         // Let's see a couple more useful shortcuts in action.
         [Theory, Chrome]

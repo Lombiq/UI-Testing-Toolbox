@@ -1,8 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
-using Shouldly;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -25,10 +24,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task AnonymousHomePageShouldExistWithAzureBlobStorage(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context
-                    .Get(By.ClassName("navbar-brand"))
-                    .Text
-                    .ShouldBe("Lombiq's OSOCE - UI Testing"),
+                context => context.CheckIfAnonymousHomePageExistsAsync(),
                 browser,
                 // Note the configuration! We could also set this globally in UITestBase.
                 // You'll need an accessible Azure Blob Storage account. For testing we recommend the Azurite emulator
