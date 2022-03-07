@@ -48,12 +48,13 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
     }
   }
 }
-
 ```
 
 Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode.
 
 We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
+
+If you have several UI test projects it can be cumbersome to maintain a *TestConfiguration.json* file for each. Instead you can set the value of the `LOMBIQ_SHARED_TEST_CONFIGURATION` environment variable to the absolute path of a central configuration file and then each project will look it up. If you place an individual *TestConfiguration.json* into a test directory it will still take precedence in case you need special configuration for just that one.
 
 
 ## <a name="multi-process"></a>Multi-process test execution

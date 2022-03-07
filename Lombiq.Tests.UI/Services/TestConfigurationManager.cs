@@ -65,6 +65,10 @@ namespace Lombiq.Tests.UI.Services
         private static IConfiguration BuildConfiguration() =>
             new ConfigurationBuilder()
                 .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
+                .AddJsonFile(
+                    Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? $"dummy_{Guid.NewGuid()}",
+                    optional: true,
+                    reloadOnChange: false)
                 .AddEnvironmentVariables()
                 .Build();
     }
