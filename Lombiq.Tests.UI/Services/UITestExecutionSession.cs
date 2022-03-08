@@ -437,6 +437,14 @@ namespace Lombiq.Tests.UI.Services
                 return;
             }
 
+            // .Net doesn't resolve ~ to $HOME, but on non-Windows your host path is likely there so we must expand it.
+            if (docker.HostSnapshotPath.StartsWith("~/"))
+            {
+                docker.HostSnapshotPath = Path.Combine(
+                    Environment.GetEnvironmentVariable("HOME"),
+                    docker.HostSnapshotPath[2..]);
+            }
+
             // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
             // itself (which would be logical). Removing the volume directory instantly severs the connection between
             // host and the container so that should be avoided at all costs.
