@@ -43,15 +43,15 @@ namespace Lombiq.Tests.UI.Services
 
         /// <summary>
         /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
-        /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmpty"/>.
+        /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
         /// </summary>
-        public Func<HtmlValidationResult, Task> AssertHtmlValidationResult { get; set; } = AssertHtmlValidationOutputIsEmpty;
+        public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; } = AssertHtmlValidationOutputIsEmptyAsync;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes
         /// (either due to explicit navigation or clicks) and assert on the validation results.
         /// </summary>
-        public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; }
+        public bool RunHtmlValidationAssertionOnAllPageChanges { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a predicate that determines whether HTML validation and asserting the results should run for
@@ -61,7 +61,7 @@ namespace Lombiq.Tests.UI.Services
         public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
             EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
-        public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmpty =
+        public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
             validationResult =>
             {
                 validationResult.Output.ShouldBeEmpty();

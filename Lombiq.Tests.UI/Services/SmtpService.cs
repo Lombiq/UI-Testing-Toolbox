@@ -17,7 +17,7 @@ namespace Lombiq.Tests.UI.Services
     public class SmtpServiceRunningContext
     {
         public int Port { get; }
-        public string Host => "localhost:" + Port;
+        public string Host => "localhost:" + Port.ToTechnicalString();
         public Uri WebUIUri { get; }
 
         public SmtpServiceRunningContext(int port, Uri webUIUri)
@@ -71,7 +71,9 @@ namespace Lombiq.Tests.UI.Services
                 throw new InvalidOperationException("No .NET CLI local tool manifest file found. Was the .config folder removed?");
             }
 
-            var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath));
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, _cancellationTokenSource.Token));
 
             var smtp4devConfig = (manifest["tools"] as JObject)?["rnwood.smtp4dev"];
             if (smtp4devConfig == null)
@@ -84,7 +86,7 @@ namespace Lombiq.Tests.UI.Services
 
             try
             {
-                await _restoreSemaphore.WaitAsync();
+                await _restoreSemaphore.WaitAsync(_cancellationTokenSource.Token);
 
                 if (!_wasRestored)
                 {
@@ -92,7 +94,7 @@ namespace Lombiq.Tests.UI.Services
                     var restoreResult = await Cli
                         .Wrap("dotnet.exe")
                         .WithArguments(a => a.Add("tool").Add("restore"))
-                        .ExecuteBufferedAsync();
+                        .ExecuteBufferedAsync(_cancellationTokenSource.Token);
 
                     if (restoreResult.ExitCode != 0)
                     {
@@ -108,8 +110,7 @@ namespace Lombiq.Tests.UI.Services
                 _restoreSemaphore.Release();
             }
 
-            _cancellationTokenSource = new CancellationTokenSource();
-            var webUIUri = new Uri("http://localhost:" + _webUIPort);
+            var webUIUri = new Uri("http://localhost:" + _webUIPort.ToTechnicalString());
 
             // Starting smtp4dev with a command like this:
             // dotnet.exe tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
@@ -126,8 +127,8 @@ namespace Lombiq.Tests.UI.Services
                 .ExecuteDotNetApplicationAsync(
                     stdErr =>
                         throw new IOException(
-                            $"The smtp4dev service didn't start properly on SMTP port {_smtpPort} and web UI port " +
-                                $"{_webUIPort} due to the following error: " +
+                            $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()} " +
+                            $"and web UI port {_webUIPort.ToTechnicalString()} due to the following error: " +
                             Environment.NewLine +
                             stdErr.Text),
                     _cancellationTokenSource.Token);

@@ -1,10 +1,10 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
-using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Samples.Helpers
 {
@@ -18,30 +18,21 @@ namespace Lombiq.Tests.UI.Samples.Helpers
         // If you use a setup recipe for local development then you can execute that from this test recipe.
         public const string RecipeId = "Lombiq.OSOCE.Tests";
 
-        public static Uri RunSetup(UITestContext context)
+        public static async Task<Uri> RunSetupAsync(UITestContext context)
         {
-            // You should always explicitly set the window size of the browser, otherwise the size will be random based
-            // on the settings of the given machine. This is especially true when running tests in headless mode. So, we
-            // set it to full HD here.
-            context.SetStandardBrowserSize();
-
             // Running the setup.
-            var uri = context
-                .GoToSetupPage()
-                // OrchardCoreSetupParameters will initialize some basic settings from the context.
-                .SetupOrchardCore(
-                    new OrchardCoreSetupParameters(context)
-                    {
-                        SiteName = "Lombiq's Open-Source Orchard Core Extensions - UI Testing",
-                        RecipeId = RecipeId,
-                        // A table prefix is not really needed but this way we also check whether we've written any SQL
-                        // that doesn't support prefixes.
-                        TablePrefix = "OSOCE",
-                        // Where else would we be?!
-                        SiteTimeZoneValue = "Europe/Budapest",
-                    })
-                .PageUri
-                .Value;
+            // OrchardCoreSetupParameters will initialize some basic settings from the context.
+            var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
+                new OrchardCoreSetupParameters(context)
+                {
+                    SiteName = "Lombiq's OSOCE - UI Testing",
+                    RecipeId = RecipeId,
+                    // A table prefix is not really needed but this way we also check whether we've written any SQL
+                    // that doesn't support prefixes.
+                    TablePrefix = "OSOCE",
+                    // Where else would we be?!
+                    SiteTimeZoneValue = "Europe/Budapest",
+                });
 
             // Here we make sure that the setup actually finished and we're on the homepage where the menu is visible.
             // Without this, a failing setup may only surface much later when an assertion in a test fails. Failing
@@ -50,14 +41,14 @@ namespace Lombiq.Tests.UI.Samples.Helpers
             // interested how that works.
             AssertSetupSuccessful(context);
 
-            return uri;
+            return homepageUri;
         }
 
         // Just a convenience method.
-        public static void RunSetupAndSignInDirectly(UITestContext context, string userName = DefaultUser.UserName)
+        public static async Task RunSetupAndSignInDirectlyAsync(UITestContext context, string userName = DefaultUser.UserName)
         {
-            RunSetup(context);
-            context.SignInDirectly(userName);
+            await RunSetupAsync(context);
+            await context.SignInDirectlyAsync(userName);
         }
 
         // When using the Auto Setup feature (https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) you
@@ -67,9 +58,9 @@ namespace Lombiq.Tests.UI.Samples.Helpers
         // recipe, contain testing-specific content and configuration). So it's still better to not use Auto Setup for
         // test execution even if you use it for development: To achieve this, in your web app's Startup class you can
         // only conditionally run AddSetupFeatures("OrchardCore.AutoSetup"), based on  IConfiguration.IsUITesting().
-        public static Uri RunAutoSetup(UITestContext context)
+        public static async Task<Uri> RunAutoSetupAsync(UITestContext context)
         {
-            context.GoToHomePage();
+            await context.GoToHomePageAsync();
             AssertSetupSuccessful(context);
             return context.GetCurrentUri();
         }

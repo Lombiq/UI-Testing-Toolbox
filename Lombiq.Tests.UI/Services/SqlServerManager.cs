@@ -4,7 +4,6 @@ using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
@@ -67,7 +66,7 @@ namespace Lombiq.Tests.UI.Services
             _databaseId = _portLeaseManager.LeaseAvailableRandomPort();
 
             var connectionString = _configuration.ConnectionStringTemplate
-                .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+                .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
 
             var connection = new SqlConnectionStringBuilder(connectionString);
             _serverName = connection.DataSource;

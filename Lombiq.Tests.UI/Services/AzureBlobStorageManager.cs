@@ -3,7 +3,6 @@ using Azure.Storage.Blobs.Models;
 using Lombiq.Tests.UI.Helpers;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -64,7 +63,7 @@ namespace Lombiq.Tests.UI.Services
             await CreateContainerIfNotExistsAsync();
 
             _folderId = _portLeaseManager.LeaseAvailableRandomPort();
-            _basePath = _folderId.ToString(CultureInfo.InvariantCulture);
+            _basePath = _folderId.ToTechnicalString();
 
             await DropFolderIfExistsAsync();
 
@@ -116,14 +115,14 @@ namespace Lombiq.Tests.UI.Services
         private Task DropFolderIfExistsAsync() =>
             IterateThroughBlobsAsync(blobClient => blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots));
 
-        private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessor)
+        private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessorAsync)
         {
             var pages = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
             await foreach (var page in pages)
             {
                 foreach (var blob in page.Values)
                 {
-                    await blobProcessor(_blobContainer.GetBlobClient(blob.Name));
+                    await blobProcessorAsync(_blobContainer.GetBlobClient(blob.Name));
                 }
             }
         }

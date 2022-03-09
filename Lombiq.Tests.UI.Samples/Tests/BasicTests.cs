@@ -26,16 +26,16 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task AnonymousHomePageShouldExist(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // Is the title correct?
                     context
                         .Get(By.ClassName("navbar-brand"))
                         .Text
-                        .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing");
+                        .ShouldBe("Lombiq's OSOCE - UI Testing");
 
                     // Are we logged out?
-                    context.GetCurrentUserName().ShouldBeNullOrEmpty();
+                    (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
                 },
                 browser);
 
@@ -44,28 +44,29 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task LoginShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate
                     // to any URL.
-                    context.GoToRelativeUrl("/Login");
+                    await context.GoToRelativeUrlAsync("/Login");
 
                     // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                     // actually sure that the values are indeed there! To make things more reliable, we've added a lot
                     // of useful methods like FillInWithRetries().
-                    context.FillInWithRetries(By.Id("UserName"), DefaultUser.UserName);
-                    context.FillInWithRetries(By.Id("Password"), DefaultUser.Password);
+                    await context.FillInWithRetriesAsync(By.Id("UserName"), DefaultUser.UserName);
+                    await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
 
                     // Even clicking can be unreliable thus we have a helper for that too.
-                    context.ClickReliablyOnSubmit();
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
                     // module) to see if it indeed happened.
-                    context.GetCurrentUserName().ShouldBe(DefaultUser.UserName);
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
 
                     // Note that if you want the user to be logged in for the test (instead of testing the login feature
                     // itself), you don't need to log in via the login form every time: That would be slow and you'd
-                    // test the login process multiple times. Use context.SignInDirectly() instead.
+                    // test the login process multiple times. Use context.SignInDirectly() instead. Check out the
+                    // ShortcutsShouldWork test below.
                 },
                 browser);
 
@@ -74,7 +75,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task TogglingFeaturesShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context.ExecuteAndAssertTestFeatureToggle(),
+                context => context.ExecuteAndAssertTestFeatureToggleAsync(),
                 browser,
                 // You can change the configuration even for each test.
                 configuration =>
@@ -88,6 +89,33 @@ namespace Lombiq.Tests.UI.Samples.Tests
                                 OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                             });
 
+        // Let's see a couple more useful shortcuts in action.
+        [Theory, Chrome]
+        public Task ShortcutsShouldWork(Browser browser) =>
+            ExecuteTestAfterSetupAsync(
+                async context =>
+                {
+                    // If you need an authenticated user but you aren't testing the login specifically then you can use
+                    // this shortcut to authenticate (note that you can specify a different user in an argument too):
+                    await context.SignInDirectlyAsync();
+
+                    // You know this shortcut already:
+                    (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
+
+                    // If you want to add some sample content in just one test, or change some Orchard configuration
+                    // quickly, then defining those in a recipe and executing it will come handy:
+                    await context.ExecuteRecipeDirectlyAsync("Lombiq.JsonEditor.Sample");
+
+                    // Retrieving some in-depth details about the app.
+                    var info = await context.GetApplicationInfoAsync();
+                    // Where is the app's current instance running from?
+                    _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
+
+                    // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
+                    await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
+                },
+                browser);
+
         // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry
         // in Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during
         // UI testing since tests should be self-contained and only test the app. However, it would be still nice to at
@@ -96,12 +124,12 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task ApplicationInsightsTrackingShouldBePresent(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
-                    // Now there's a bit of a pickle though: The Lombiq Privacy module is also enable from the test
+                    // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test
                     // recipe and shows its privacy consent banner. For tracking to be enabled, even in offline mode,
                     // the user needs to give consent. This is what we do now:
-                    context.ClickReliablyOn(By.Id("privacy-consent-accept-button"));
+                    await context.ClickReliablyOnAsync(By.Id("privacy-consent-accept-button"));
                     context.Refresh();
 
                     // In offline mode, the module adds an appInsights variable that we can check. So let's execute some
@@ -111,7 +139,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
 
                     // Our custom message helps debugging, otherwise from the test output you could only tell that a
                     // a value should be true but is false which is less than helpful.
-                    appInsightsExist.ShouldBe(true, "The Application Insights module is not working or is not in offline mode.");
+                    appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
                 },
                 browser);
     }

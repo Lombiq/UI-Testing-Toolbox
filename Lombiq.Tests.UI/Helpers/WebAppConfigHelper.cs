@@ -15,15 +15,27 @@ namespace Lombiq.Tests.UI.Helpers
         /// <returns>The absolute path to the assembly (DLL) of the application being tested.</returns>
         public static string GetAbsoluteApplicationAssemblyPath(string webAppName, string frameworkFolderName = "net5.0")
         {
-            var baseDirectory = File.Exists(webAppName + ".dll")
-                ? AppContext.BaseDirectory
-                : Path.Combine(
+            string baseDirectory;
+
+            if (File.Exists(webAppName + ".dll"))
+            {
+                baseDirectory = AppContext.BaseDirectory;
+            }
+            else
+            {
+                var outputFolderContainingPath = Path.Combine(
                     AppContext.BaseDirectory.Split(new[] { "src", "test" }, StringSplitOptions.RemoveEmptyEntries)[0],
                     "src",
                     webAppName,
-                    "bin",
-                    "Debug",
-                    frameworkFolderName);
+                    "bin");
+
+                baseDirectory = Path.Combine(outputFolderContainingPath, "Debug", frameworkFolderName);
+
+                if (!Directory.Exists(baseDirectory))
+                {
+                    baseDirectory = Path.Combine(outputFolderContainingPath, "Release", frameworkFolderName);
+                }
+            }
 
             return Path.Combine(baseDirectory, webAppName + ".dll");
         }

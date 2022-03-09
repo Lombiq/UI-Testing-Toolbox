@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Sets up HTML validation to run every time a page changes (either due to explicit navigation or clicks) and
         /// asserts on the validation results.
         /// </summary>
-        /// <param name="assertHtmlValidationResult">
+        /// <param name="assertHtmlValidationResultAsync">
         /// The assertion logic to run on the result of an HTML markup validation. If <see langword="null"/> then the
         /// assertion supplied in the context will be used.
         /// </param>
@@ -21,15 +21,15 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SetUpHtmlValidationAssertionOnPageChange(
             this OrchardCoreUITestExecutorConfiguration configuration,
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-            Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
+            Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
         {
-            if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", true)) return;
+            if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", value: true)) return;
 
             configuration.Events.AfterPageChange += async context =>
             {
                 if (configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule?.Invoke(context) == true)
                 {
-                    await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResult);
+                    await context.AssertHtmlValidityAsync(htmlValidationOptionsAdjuster, assertHtmlValidationResultAsync);
                 }
             };
         }

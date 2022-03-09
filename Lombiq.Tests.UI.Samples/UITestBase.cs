@@ -1,6 +1,6 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
@@ -29,61 +29,56 @@ namespace Lombiq.Tests.UI.Samples
         // snapshot created from the setup.
         // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
         // NEXT STATION: Check out SetupHelpers, then come back here!
-        protected Task ExecuteTestAfterSetupAsync(
-            Action<UITestContext> test,
+        protected override Task ExecuteTestAfterSetupAsync(
+            Func<UITestContext, Task> testAsync,
             Browser browser,
-            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-            ExecuteTestAsync(test, browser, SetupHelpers.RunSetup, changeConfiguration);
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+            ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
 
+        // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync()
+        // and do something before or after they're executed but this is not always necessary.
         protected override Task ExecuteTestAsync(
-            Action<UITestContext> test,
+            Func<UITestContext, Task> testAsync,
             Browser browser,
-            Func<UITestContext, Uri> setupOperation = null,
-            Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+            Func<UITestContext, Task<Uri>> setupOperation,
+            Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
             base.ExecuteTestAsync(
-                context =>
-                {
-                    // Setting the browser size at the beginning of each test. As mentioned in SetupHelpers, this is
-                    // quite important for reproducible results.
-                    context.SetStandardBrowserSize();
-
-                    test(context);
-                },
+                testAsync,
                 browser,
                 setupOperation,
-                configuration =>
+                async configuration =>
                 {
+                    // You should always set the window size of the browser, otherwise the size will be random based on
+                    // the settings of the given machine. However this is already handled as long as the
+                    // context.Configuration.BrowserConfiguration.DefaultBrowserSize option is properly set. You can
+                    // change it here but usually the default full HD is suitable.
+                    configuration.BrowserConfiguration.DefaultBrowserSize = CommonDisplayResolutions.HdPlus;
+
                     // In headless mode, the browser's UI is not showing, it just runs in the background. This is what
                     // you want to use when running all tests, especially in a CI environment. During local
-                    // troubleshooting you may want to turn this off so you can see in the browser what's happening:
+                    // troubleshooting you may want to turn this off so you can see in the browser what's happening.
+                    // Hence the override of the default here.
                     // Apart from changing the code here, you can use a configuration file or environment variables, see
                     // the docs.
                     configuration.BrowserConfiguration.Headless =
-                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", true);
+                        TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
-                    // There are event handlers that you can hook into. This is just one but check out the others in
-                    // OrchardCoreConfiguration if you're interested.
-                    configuration.OrchardCoreConfiguration.BeforeAppStart +=
-                        (contentRootPath, argumentsBuilder) =>
-                        {
-                            // This is quite handy! We're adding a configuration parameter when launching the app. This
-                            // can be used to set configuration for configuration providers, see the docs:
-                            // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/.
-                            // What's happening here is that we set the Lombiq Application Insights module's parameter
-                            // to allow us to test it. We'll get back to this later when writing the actual test.
-                            argumentsBuilder
-                                .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
-                                .Add("true");
+                    // There are event handlers that you can hook into. This method sets BeforeAppStart which is just
+                    // one of many. Check out the others in OrchardCoreConfiguration if you're interested.
+                    // This is quite handy! We're adding a configuration parameter when launching the app. This
+                    // can be used to set configuration for configuration providers, see the docs:
+                    // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/.
+                    // What's happening here is that we set the Lombiq Application Insights module's parameter
+                    // to allow us to test it. We'll get back to this later when writing the actual test.
+                    configuration.OrchardCoreConfiguration.EnableApplicationInsightsOfflineOperation();
 
-                            return Task.CompletedTask;
-                        };
-
-                    // Enabling automatic HTML markup validation on every page change. With this, you can make sure that
-                    // the HTML markup the app generates (also from content items) is valid. While the default settings
-                    // for HTML validation are most possibly suitable for your projects, check out the
-                    // HtmlValidationConfiguration class for what else you can configure. We've also added a
-                    // .htmlvalidate.json file (note the Content Build Action) to further configure it.
-                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = true;
+                    // Note that automatic HTML markup validation is enabled on every page change by default (you can
+                    // disable it with the below config). With this, you can make sure that the HTML markup the app
+                    // generates (also from content items) is valid. While the default settings for HTML validation are
+                    // most possibly suitable for your projects, check out the HtmlValidationConfiguration class for
+                    // what else you can configure. We've also added a .htmlvalidate.json file (note the Content Build
+                    // Action) to further configure it.
+                    ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
                     // The UI Testing Toolbox can run several checks for the app even if you don't add explicit
                     // assertions: By default, the Orchard logs and the browser logs (where e.g. JavaScript errors show
@@ -92,25 +87,14 @@ namespace Lombiq.Tests.UI.Samples
                     // Maybe not all of the default checks are suitable for you. Then it's simple to override them; here
                     // we change which log entries cause the tests to fail. We use the trick of making expected error
                     // messages not look like real errors.
-                    configuration.AssertAppLogs = async webApplicationInstance =>
+                    configuration.AssertAppLogsAsync = async webApplicationInstance =>
                         (await webApplicationInstance.GetLogOutputAsync())
                         .ReplaceOrdinalIgnoreCase(
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|ERROR|Expected non-error",
                             "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
                         .ShouldNotContain("|ERROR|");
 
-                    // You can adjust how HTML validation assertion works too.
-                    configuration.HtmlValidationConfiguration.AssertHtmlValidationResult =
-                        async validationResult =>
-                        {
-                            var errors = await validationResult.GetErrorsAsync();
-                            errors.ShouldNotContain(error =>
-                                // This is due to TheTheme. Only necessary until we get this fix:
-                                // https://github.com/OrchardCMS/OrchardCore/pull/10292
-                                !error.ContainsOrdinalIgnoreCase("Redundant role \"main\" on <main> (no-redundant-role)"));
-                        };
-
-                    changeConfiguration?.Invoke(configuration);
+                    if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
                 });
     }
 }

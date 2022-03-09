@@ -27,7 +27,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
 
             if (feature == null) return NotFound();
 
-            await _shellFeatureManager.EnableFeaturesAsync(new[] { feature }, true);
+            await _shellFeatureManager.EnableFeaturesAsync(new[] { feature }, force: true);
 
             return Ok();
         }
@@ -38,7 +38,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers
 
             if (feature == null) return NotFound();
 
-            await _shellFeatureManager.DisableFeaturesAsync(new[] { feature }, true);
+            await _shellFeatureManager.DisableFeaturesAsync(new[] { feature }, force: true);
 
             return Ok();
         }

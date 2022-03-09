@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Extensions
         /// Executes assertions on the result of an HTML markup validation with the html-validate library. Note that you
         /// need to run this after every page load, it won't accumulate during a session.
         /// </summary>
-        /// <param name="assertHtmlValidationResult">
+        /// <param name="assertHtmlValidationResultAsync">
         /// The assertion logic to run on the result of an HTML markup validation. If <see langword="null"/> then the
         /// assertion supplied in the context will be used.
         /// </param>
@@ -22,21 +22,20 @@ namespace Lombiq.Tests.UI.Extensions
         public static async Task AssertHtmlValidityAsync(
             this UITestContext context,
             Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-            Func<HtmlValidationResult, Task> assertHtmlValidationResult = null)
+            Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
         {
             var validationResult = context.ValidateHtml(htmlValidationOptionsAdjuster);
-            var htmlValidationConfiguration = context.Configuration.HtmlValidationConfiguration;
+            var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
             try
             {
-                await (assertHtmlValidationResult ?? htmlValidationConfiguration.AssertHtmlValidationResult)?.Invoke(validationResult);
+                var assertTask = (assertHtmlValidationResultAsync ?? validationConfiguration.AssertHtmlValidationResultAsync)?
+                    .Invoke(validationResult);
+                await (assertTask ?? Task.CompletedTask);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new HtmlValidationAssertionException(
-                    validationResult,
-                    htmlValidationConfiguration.CreateReportOnFailure,
-                    ex);
+                throw new HtmlValidationAssertionException(validationResult, validationConfiguration, exception);
             }
         }
 

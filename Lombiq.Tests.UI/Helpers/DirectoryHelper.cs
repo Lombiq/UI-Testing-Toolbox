@@ -16,7 +16,7 @@ namespace Lombiq.Tests.UI.Helpers
             {
                 try
                 {
-                    Directory.Delete(path, true);
+                    Directory.Delete(path, recursive: true);
                     // Even after the delete seemingly succeeding the folder can remain there with some empty
                     // subfolders. Perhaps this happens when one opens it in Explorer and that keeps a handle open.
                     if (!Directory.Exists(path)) return;
@@ -36,7 +36,7 @@ namespace Lombiq.Tests.UI.Helpers
                     if (tryCount == maxTryCount)
                     {
                         throw new IOException(
-                            $"The directory under {path} couldn't be cleaned up even after {maxTryCount} attempts.",
+                            $"The directory under {path} couldn't be cleaned up even after {maxTryCount.ToTechnicalString()} attempts.",
                             ex);
                     }
                 }

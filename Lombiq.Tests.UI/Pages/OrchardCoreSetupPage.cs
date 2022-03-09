@@ -1,8 +1,10 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages
 {
@@ -11,8 +13,8 @@ namespace Lombiq.Tests.UI.Pages
     using _ = OrchardCoreSetupPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-    [VerifyTitle(DefaultPageTitle, Format = "{0}")]
-    [VerifyH1(DefaultPageTitle)]
+    [VerifyTitle(values: new[] { DefaultPageTitle, OlderPageTitle }, Format = "{0}")]
+    [VerifyH1(values: new[] { DefaultPageTitle, OlderPageTitle })]
     [TermFindSettings(
         Case = TermCase.Pascal,
         TargetAllChildren = true,
@@ -20,6 +22,7 @@ namespace Lombiq.Tests.UI.Pages
     public sealed class OrchardCoreSetupPage : Page<_>
     {
         public const string DefaultPageTitle = "Setup";
+        public const string OlderPageTitle = "Orchard Setup";
 
         public enum DatabaseType
         {
@@ -68,23 +71,21 @@ namespace Lombiq.Tests.UI.Pages
 
         public Button<_> FinishSetup { get; private set; }
 
-        public _ ShouldStayOnSetupPage() =>
-            PageTitle.Should.Equal(DefaultPageTitle);
+        public _ ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
 
-        public _ ShouldLeaveSetupPage() =>
-            PageTitle.Should.Not.Equal(DefaultPageTitle);
+        public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-        [Obsolete("Use another overloaded " + nameof(SetupOrchardCore) + " method without UITestContext parameter.")]
-        public _ SetupOrchardCore(UITestContext context, OrchardCoreSetupParameters parameters = null) =>
-            SetupOrchardCore(parameters);
-
-        public _ SetupOrchardCore(OrchardCoreSetupParameters parameters = null)
+        public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
         {
             parameters ??= new OrchardCoreSetupParameters();
 
             Language.Set(parameters.LanguageValue);
             SiteName.Set(parameters.SiteName);
-            Recipe.Find<Link<_>>(parameters.RecipeId, new FindByAttributeAttribute("data-recipe-name", parameters.RecipeId)).Click();
+            // If there are a lot of recipes and "headless" mode is disabled, the recipe can become unclickable because
+            // the list of recipes is too long and it's off the screen, so we need to use JavaScript for clicking it.
+            context
+                .ExecuteScript("document.querySelectorAll(\"a[data-recipe-name='" + parameters.RecipeId + "']\")[0]" +
+                ".click()");
             DatabaseProvider.Set(parameters.DatabaseProvider);
 
             if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
@@ -112,7 +113,14 @@ namespace Lombiq.Tests.UI.Pages
 
             FinishSetup.Click();
 
+            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+            context.RefreshCurrentAtataContext();
+
             return this;
         }
+
+        private static bool IsExpectedTitle(string title) =>
+            title.EqualsOrdinalIgnoreCase(DefaultPageTitle) || title.EqualsOrdinalIgnoreCase(OlderPageTitle);
     }
 }

@@ -24,6 +24,22 @@ namespace Lombiq.Tests.UI.Services
         public string SnapshotDirectoryPath { get; set; }
         public BeforeAppStartHandler BeforeAppStart { get; set; }
         public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
+
+        /// <summary>
+        /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline
+        /// mode. This way it won't try to reach out to a remote server with telemetry and the test remains
+        /// self-sufficient.
+        /// </summary>
+        public void EnableApplicationInsightsOfflineOperation() =>
+            BeforeAppStart +=
+                (_, argumentsBuilder) =>
+                {
+                    argumentsBuilder
+                        .Add("--OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation")
+                        .Add("true");
+
+                    return Task.CompletedTask;
+                };
     }
 
     /// <summary>
@@ -35,7 +51,7 @@ namespace Lombiq.Tests.UI.Services
         private const string UrlPrefix = "https://localhost:";
 
         private static readonly PortLeaseManager _portLeaseManager;
-        private static readonly ConcurrentDictionary<string, bool> _exeCopyMarkers = new();
+        private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
         private static readonly object _exeCopyLock = new();
 
         private readonly OrchardCoreConfiguration _configuration;
@@ -68,7 +84,7 @@ namespace Lombiq.Tests.UI.Services
         public async Task<Uri> StartUpAsync()
         {
             _port = _portLeaseManager.LeaseAvailableRandomPort();
-            var url = UrlPrefix + _port;
+            var url = UrlPrefix + _port.ToTechnicalString();
 
             _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
 
@@ -76,7 +92,7 @@ namespace Lombiq.Tests.UI.Services
 
             if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
             {
-                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, true);
+                FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
             }
             else
             {
@@ -96,49 +112,45 @@ namespace Lombiq.Tests.UI.Services
             // test execution. So using a unified name pattern for such exes.
             if (useExeToExecuteApp)
             {
-                _exeCopyMarkers.GetOrAdd(
+                exePath = _exeCopyMarkers.GetOrAdd(
                     exePath,
-                    key =>
+                    exePathKey =>
                     {
                         // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
                         // run for the same key.
                         lock (_exeCopyLock)
                         {
                             var copyExePath = Path.Combine(
-                                Path.GetDirectoryName(exePath),
-                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePath));
+                                Path.GetDirectoryName(exePathKey),
+                                "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
 
                             if (File.Exists(copyExePath) &&
-                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePath))
+                                File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePathKey))
                             {
                                 File.Delete(copyExePath);
                             }
 
-                            if (!File.Exists(copyExePath)) File.Copy(exePath, copyExePath);
+                            if (!File.Exists(copyExePath)) File.Copy(exePathKey, copyExePath);
 
-                            exePath = copyExePath;
-
-                            return true;
+                            return copyExePath;
                         }
                     });
             }
 
-            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe")
-                .WithArguments(argumentsBuilder =>
-                {
-                    var builder = argumentsBuilder
-                        .Add("--urls").Add(url)
-                        .Add("--contentRoot").Add(_contentRootPath)
-                        .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
-                        .Add("--environment").Add("Development");
+            var argumentsBuilder = new ArgumentsBuilder();
 
-                    if (!useExeToExecuteApp) builder = builder.Add(_configuration.AppAssemblyPath);
+            argumentsBuilder = argumentsBuilder
+                .Add("--urls").Add(url)
+                .Add("--contentRoot").Add(_contentRootPath)
+                .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
+                .Add("--environment").Add("Development");
 
-                    // There is no other option here than to wait for the invoked Tasks.
-#pragma warning disable AsyncFixer02 // Long-running or blocking operations inside an async method
-                    _configuration.BeforeAppStart?.Invoke(_contentRootPath, builder)?.Wait();
-#pragma warning restore AsyncFixer02 // Long-running or blocking operations inside an async method
-                });
+            if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
+
+            await _configuration.BeforeAppStart
+                .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, argumentsBuilder));
+
+            _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe").WithArguments(argumentsBuilder.Build());
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
@@ -156,20 +168,20 @@ namespace Lombiq.Tests.UI.Services
         {
             await PauseAsync();
 
-            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, true);
+            if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
 
             Directory.CreateDirectory(snapshotDirectoryPath);
 
-            if (_configuration.BeforeTakeSnapshot != null)
-            {
-                await _configuration.BeforeTakeSnapshot.Invoke(_contentRootPath, snapshotDirectoryPath);
-            }
+            await _configuration.BeforeTakeSnapshot
+                .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
 
-            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, true);
+            FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
         }
 
-        public IEnumerable<IApplicationLog> GetLogs()
+        public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
         {
+            if (cancellationToken == default) cancellationToken = CancellationToken.None;
+
             var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
             return Directory.Exists(logFolderPath) ?
                 Directory
@@ -177,7 +189,8 @@ namespace Lombiq.Tests.UI.Services
                     .Select(filePath => (IApplicationLog)new ApplicationLog
                     {
                         Name = Path.GetFileName(filePath),
-                        ContentLoader = () => File.ReadAllTextAsync(filePath),
+                        FullName = Path.GetFullPath(filePath),
+                        ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
                     }) :
                 Enumerable.Empty<IApplicationLog>();
         }
@@ -250,9 +263,15 @@ namespace Lombiq.Tests.UI.Services
         private class ApplicationLog : IApplicationLog
         {
             public string Name { get; set; }
+            public string FullName { get; set; }
             public Func<Task<string>> ContentLoader { get; set; }
 
             public Task<string> GetContentAsync() => ContentLoader();
+
+            public void Remove()
+            {
+                if (File.Exists(FullName)) File.Delete(FullName);
+            }
         }
     }
 }

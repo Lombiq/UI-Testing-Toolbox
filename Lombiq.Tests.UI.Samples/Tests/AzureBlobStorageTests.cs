@@ -28,7 +28,7 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 context => context
                     .Get(By.ClassName("navbar-brand"))
                     .Text
-                    .ShouldBe("Lombiq's Open-Source Orchard Core Extensions - UI Testing"),
+                    .ShouldBe("Lombiq's OSOCE - UI Testing"),
                 browser,
                 // Note the configuration! We could also set this globally in UITestBase.
                 // You'll need an accessible Azure Blob Storage account. For testing we recommend the Azurite emulator
@@ -37,9 +37,9 @@ namespace Lombiq.Tests.UI.Samples.Tests
                 configuration => configuration.UseAzureBlobStorage = true);
 
         [Theory, Chrome]
-        public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
+        public Task TogglingFeaturesShouldWorkWithAzureBlobStorage(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context => context.ExecuteAndAssertTestFeatureToggle(),
+                context => context.ExecuteAndAssertTestFeatureToggleAsync(),
                 browser,
                 configuration =>
                 {
@@ -57,3 +57,4 @@ namespace Lombiq.Tests.UI.Samples.Tests
 }
 
 // END OF TRAINING SECTION: Using Azure Blob Storage.
+// NEXT STATION: Head over to Tests/ErrorHandlingtests.cs.

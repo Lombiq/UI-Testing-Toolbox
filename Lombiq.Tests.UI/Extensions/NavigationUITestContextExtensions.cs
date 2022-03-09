@@ -5,29 +5,33 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions
 {
     public static class NavigationUITestContextExtensions
     {
-        public static void GoToHomePage(this UITestContext context) => context.GoToRelativeUrl("/");
+        public static Task GoToHomePageAsync(this UITestContext context) => context.GoToRelativeUrlAsync("/");
 
-        public static void GoToRelativeUrl(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
-            context.GoToAbsoluteUrl(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
+        public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
+            context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
 
-        public static void GoToAbsoluteUrl(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
-            context.ExecuteLogged(
-                nameof(GoToAbsoluteUrl),
+        public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
+            context.ExecuteLoggedAsync(
+                nameof(GoToAbsoluteUrlAsync),
                 $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
-                () =>
+                async () =>
                 {
                     if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
-                    context.Configuration.Events.BeforeNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
+                    await context.Configuration.Events.BeforeNavigation
+                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
+
                     context.Driver.Navigate().GoToUrl(absoluteUri);
-                    context.Configuration.Events.AfterNavigation?.Invoke(context, absoluteUri).GetAwaiter().GetResult();
+
+                    await context.Configuration.Events.AfterNavigation
+                        .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
                 });
 
         public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
@@ -37,94 +41,121 @@ namespace Lombiq.Tests.UI.Extensions
         public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
             new(context.Scope.BaseUri, relativeUrl);
 
-        public static void SignOutDirectlyThenSignInDirectlyAndGoToHomepage(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectlyAndGoToHomepage(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToHomepageAsync(email);
         }
 
-        public static void SignInDirectlyAndGoToHomepage(
+        public static async Task SignInDirectlyAndGoToHomepageAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            context.GoToHomePage();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToHomePageAsync();
         }
 
-        public static void SignOutDirectlyThenSignInDirectlyAndGoToDashboard(
+        public static async Task SignOutDirectlyThenSignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectlyAndGoToDashboard(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAndGoToDashboardAsync(email);
         }
 
-        public static void SignInDirectlyAndGoToDashboard(
+        public static async Task SignInDirectlyAndGoToDashboardAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignInDirectly(email);
-            context.GoToDashboard();
+            await context.SignInDirectlyAsync(email);
+            await context.GoToDashboardAsync();
         }
 
-        public static void SignOutDirectlyThenSignInDirectly(
+        public static async Task SignOutDirectlyThenSignInDirectlyAsync(
             this UITestContext context,
             string email = DefaultUser.UserName)
         {
-            context.SignOutDirectly();
-            context.SignInDirectly(email);
+            await context.SignOutDirectlyAsync();
+            await context.SignInDirectlyAsync(email);
         }
 
         // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
         // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
-        // https://github.com/atata-framework/atata/issues/364
+        // https://github.com/atata-framework/atata/issues/364.
 
-        public static T GoToPage<T>(this UITestContext context)
-            where T : PageObject<T> =>
-            context.ExecuteLogged(
-                nameof(GoToPage),
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context)
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
+                nameof(GoToPageAsync),
                 typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>());
 
-        public static T GoToPage<T>(this UITestContext context, string relativeUrl)
-            where T : PageObject<T> =>
-            context.ExecuteLogged(
-                nameof(GoToPage),
+            await context.TriggerAfterPageChangeEventAsync();
+
+            context.RefreshCurrentAtataContext();
+
+            return page;
+        }
+
+        public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
+            where T : PageObject<T>
+        {
+            var page = context.ExecuteLogged(
                 $"{typeof(T).FullName} - {relativeUrl}",
+                typeof(T).FullName,
                 () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
 
-        public static OrchardCoreSetupPage GoToSetupPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreSetupPage>();
+            await context.TriggerAfterPageChangeEventAsync();
 
-        public static OrchardCoreLoginPage GoToLoginPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreLoginPage>();
+            context.RefreshCurrentAtataContext();
 
-        public static OrchardCoreRegistrationPage GoToRegistrationPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreRegistrationPage>();
-
-        public static OrchardCoreDashboardPage GoToDashboard(this UITestContext context) =>
-            context.GoToPage<OrchardCoreDashboardPage>();
-
-        public static OrchardCoreContentItemsPage GoToContentItemsPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreContentItemsPage>();
-
-        public static OrchardCoreFeaturesPage GoToFeaturesPage(this UITestContext context) =>
-            context.GoToPage<OrchardCoreFeaturesPage>();
-
-        public static void GoToSmtpWebUI(this UITestContext context)
-        {
-            if (context.SmtpServiceRunningContext == null)
-            {
-                throw new InvalidOperationException(
-                    "The SMTP service is not running. Did you turn it on with " +
-                    nameof(OrchardCoreUITestExecutorConfiguration) + "." + nameof(OrchardCoreUITestExecutorConfiguration.UseSmtpService) +
-                    " and could it properly start?");
-            }
-
-            context.GoToAbsoluteUrl(context.SmtpServiceRunningContext.WebUIUri);
+            return page;
         }
+
+        public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreSetupPage>();
+
+        public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreLoginPage>();
+
+        public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
+            context.GoToSetupPageAndSetupOrchardCoreAsync(
+                new OrchardCoreSetupParameters(context)
+                {
+                    RecipeId = recipeId,
+                });
+
+        public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
+            this UITestContext context,
+            OrchardCoreSetupParameters parameters = null)
+        {
+            var setupPage = await context.GoToSetupPageAsync();
+            setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
+
+            return setupPage.PageUri.Value;
+        }
+
+        public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreRegistrationPage>();
+
+        public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreDashboardPage>();
+
+        public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreContentItemsPage>();
+
+        public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
+            context.GoToPageAsync<OrchardCoreFeaturesPage>();
+
+        /// <summary>
+        /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during
+        /// Atata operations (like within a page class) when writing async code.
+        /// </summary>
+        public static void RefreshCurrentAtataContext(this UITestContext context) =>
+            AtataContext.Current = context.Scope.AtataContext;
 
         public static void SwitchTo(this UITestContext context, Action<ITargetLocator> switchOperation, string targetDescription) =>
             context.ExecuteLogged(
@@ -144,6 +175,12 @@ namespace Lombiq.Tests.UI.Extensions
         public static void SwitchToFirstWindow(this UITestContext context) =>
             context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
 
+        /// <summary>
+        /// Switches control back to the currently executing window/tab.
+        /// </summary>
+        public static void SwitchToCurrentWindow(this UITestContext context) =>
+            context.SwitchTo(locator => locator.Window(context.Driver.CurrentWindowHandle), "current window");
+
         public static void SwitchToFrame0(this UITestContext context) =>
             context.SwitchTo(locator => locator.Frame(0), "frame 0");
 
@@ -155,42 +192,37 @@ namespace Lombiq.Tests.UI.Extensions
                 () => new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
                     d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete")));
 
-        public static void SetDropdown<T>(this UITestContext context, string selectId, T value)
-            where T : Enum
+        public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
         {
-            context.ClickReliablyOn(By.Id(selectId));
-            context.Get(By.CssSelector($"#{selectId} option[value='{(int)(object)value}']")).Click();
+            var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+            return SetFieldDropdownByIndexAsync(context, baseSelector, index);
         }
 
-        public static void SetDropdownByText(this UITestContext context, string selectId, string value) =>
-            SetDropdownByText(context, By.Id(selectId), value);
-
-        public static void SetDropdownByText(this UITestContext context, By selectBy, string value)
+        public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
         {
-            context.ClickReliablyOn(selectBy);
-            context.Get(selectBy).Get(By.XPath($".//option[contains(., '{value}')]")).Click();
+            var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
+            return SetFieldDropdownByIndexAsync(context, baseSelector, index);
         }
 
-        /// <summary>
-        /// Sets the value of the date picker via JavaScript and then raises the <c>change</c> event.
-        /// </summary>
-        public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
-            context.ExecuteScript(
-                $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';" +
-                $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
+        private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
+        {
+            var byItem = By.CssSelector(FormattableString.Invariant(
+                $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"));
 
-        public static DateTime GetDatePicker(this UITestContext context, string id) =>
-            DateTime.ParseExact(
-                context.Get(By.Id(id)).GetAttribute("value"),
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture);
+            while (!context.Exists(byItem.Safely()))
+            {
+                await context.ClickReliablyOnAsync(By.CssSelector(baseSelector + " .multiselect__select"));
+            }
+
+            await context.ClickReliablyOnAsync(byItem);
+        }
 
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-        /// cref="NavigationWebElementExtensions.ClickReliably(IWebElement,UITestContext)"/> so the <paramref
+        /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement,UITestContext)"/> so the <paramref
         /// name="context"/> doesn't have to be passed twice.
         /// </summary>
-        public static void ClickReliablyOn(this UITestContext context, By by) => context.Get(by).ClickReliably(context);
+        public static Task ClickReliablyOnAsync(this UITestContext context, By by) => context.Get(by).ClickReliablyAsync(context);
 
         /// <summary>
         /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
@@ -203,12 +235,6 @@ namespace Lombiq.Tests.UI.Extensions
             TimeSpan? timeout = null,
             TimeSpan? interval = null) =>
             context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
-
-        /// <summary>
-        /// Finds the first submit button and clicks on it reliably.
-        /// </summary>
-        public static void ClickReliablyOnSubmit(this UITestContext context) =>
-            context.ClickReliablyOn(By.CssSelector("button[type='submit']"));
 
         /// <summary>
         /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
@@ -232,5 +258,16 @@ namespace Lombiq.Tests.UI.Extensions
         /// Refreshes (reloads) the current page.
         /// </summary>
         public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
+
+        /// <summary>
+        /// Checks whether the current page is the Orchard setup page.
+        /// </summary>
+        public static bool IsSetupPage(this UITestContext context) =>
+            context.Driver.Title == "Setup" &&
+            context.Driver.PageSource.Contains(
+                @"<link type=""image/x-icon"" rel=""shortcut icon"" href=""/OrchardCore.Setup/favicon.ico"">");
+
+        public static Task GoToContentItemByIdAsync(this UITestContext context, string contentItemId) =>
+            context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
     }
 }

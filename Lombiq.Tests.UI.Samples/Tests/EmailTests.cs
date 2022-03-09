@@ -21,26 +21,26 @@ namespace Lombiq.Tests.UI.Samples.Tests
         [Theory, Chrome]
         public Task SendingTestEmailShouldWork(Browser browser) =>
             ExecuteTestAfterSetupAsync(
-                context =>
+                async context =>
                 {
                     // A shortcut to sign in without going through (and thus testing) the login screen.
-                    context.SignInDirectly();
+                    await context.SignInDirectlyAsync();
 
                     // Let's go to the e-mail admin page.
-                    context.GoToRelativeUrl("/Admin/Settings/email");
+                    await context.GoToRelativeUrlAsync("/Admin/Settings/email");
 
                     // The default sender is configured in the test recipe so we can use the test feature.
                     context.ClickReliablyOnUntilPageLeave(By.LinkText("Test settings"));
 
                     // Let's send a basic e-mail.
-                    context.FillInWithRetries(By.Id("To"), "recipient@example.com");
-                    context.FillInWithRetries(By.Id("Subject"), "Test message");
-                    context.FillInWithRetries(By.Id("Body"), "Hi, this is a test.");
-                    context.ClickReliablyOnSubmit();
+                    await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
+                    await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
+                    await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
+                    await context.ClickReliablyOnSubmitAsync();
 
                     // The SMTP service running behind the scenes also has a web UI that we can access to see all
                     // outgoing e-mails and check if everything's alright.
-                    context.GoToSmtpWebUI();
+                    await context.GoToSmtpWebUIAsync();
 
                     // If the e-mail we've sent exists then it's all good.
                     context.Exists(ByHelper.SmtpInboxRow("Test message"));
