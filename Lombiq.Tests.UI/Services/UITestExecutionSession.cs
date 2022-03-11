@@ -441,7 +441,7 @@ namespace Lombiq.Tests.UI.Services
             }
 
             // .Net doesn't resolve ~ to $HOME, but on non-Windows your host path is likely there so we must expand it.
-            if (docker.HostSnapshotPath.StartsWith("~/"))
+            if (docker.HostSnapshotPath.StartsWithOrdinal("~/"))
             {
                 docker.HostSnapshotPath = Path.Combine(
                     Environment.GetEnvironmentVariable("HOME"),
