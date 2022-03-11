@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Mono.Unix;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using Selenium.Axe;
@@ -13,9 +14,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+
 namespace Lombiq.Tests.UI.Services
 {
     internal sealed class UITestExecutionSession : IAsyncDisposable
@@ -480,6 +483,17 @@ namespace Lombiq.Tests.UI.Services
                 {
                     snapshotDirectoryPath = _dockerConfiguration.HostSnapshotPath;
                     remotePath = _dockerConfiguration.ContainerSnapshotPath;
+
+                    // Due to the multiuser focus of Unix-like platforms it's very common that docker will be a
+                    // different user without access to freshly created directories by the current user. Since this is a
+                    // subdirectory that third parties can't list without prior knowledge and it only contains freshly
+                    // created data this is not a security concern.
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        if (!Directory.Exists(snapshotDirectoryPath)) Directory.CreateDirectory(snapshotDirectoryPath);
+                        var unixFileInfo = new UnixFileInfo(snapshotDirectoryPath);
+                        unixFileInfo.FileAccessPermissions |= FileAccessPermissions.OtherReadWriteExecute;
+                    }
                 }
 
                 _sqlServerManager.TakeSnapshot(remotePath, snapshotDirectoryPath);
