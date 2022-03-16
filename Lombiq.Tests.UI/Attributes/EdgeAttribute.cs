@@ -1,9 +1,8 @@
 using Lombiq.Tests.UI.Services;
 
-namespace Lombiq.Tests.UI.Attributes
+namespace Lombiq.Tests.UI.Attributes;
+
+public sealed class EdgeAttribute : BrowserAttributeBase
 {
-    public sealed class EdgeAttribute : BrowserAttributeBase
-    {
-        protected override Browser Browser => Browser.Edge;
-    }
+    protected override Browser Browser => Browser.Edge;
 }

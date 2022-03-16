@@ -1,40 +1,40 @@
 using System;
 
-namespace Lombiq.Tests.UI.MonkeyTesting
-{
-    internal static class GremlinsScripts
-    {
-        internal const string GetAreGremlinsRunningScript = "return !!window.activeGremlinsHorde;";
+namespace Lombiq.Tests.UI.MonkeyTesting;
 
-        internal const string StopGremlinsScript =
+internal static class GremlinsScripts
+{
+    internal const string GetAreGremlinsRunningScript = "return !!window.activeGremlinsHorde;";
+
+    internal const string StopGremlinsScript =
 @"var horde = window.activeGremlinsHorde;
 if (horde) horde.stop();";
 
-        internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
+    internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
 
-        private static readonly Lazy<string> _lazyGremlinsScript = new(
-            () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins.min.js"));
+    private static readonly Lazy<string> _lazyGremlinsScript = new(
+        () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins.min.js"));
 
-        internal static string GremlinsScript => _lazyGremlinsScript.Value;
+    internal static string GremlinsScript => _lazyGremlinsScript.Value;
 
-        internal sealed class RunScriptBuilder
+    internal sealed class RunScriptBuilder
+    {
+        internal string[] Species { get; set; }
+
+        internal string[] Mogwais { get; set; }
+
+        internal int NumberOfAttacks { get; set; }
+
+        internal int AttackDelay { get; set; }
+
+        internal int RandomSeed { get; set; }
+
+        internal string Build()
         {
-            internal string[] Species { get; set; }
+            string speciesPart = Species != null ? string.Join(", ", Species) : null;
+            string mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
 
-            internal string[] Mogwais { get; set; }
-
-            internal int NumberOfAttacks { get; set; }
-
-            internal int AttackDelay { get; set; }
-
-            internal int RandomSeed { get; set; }
-
-            internal string Build()
-            {
-                string speciesPart = Species != null ? string.Join(", ", Species) : null;
-                string mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
-
-                return
+            return
 
 @$"(function() {{
     const customLogger = {{
@@ -68,7 +68,6 @@ if (horde) horde.stop();";
             window.activeGremlinsHorde = null;
         }});
 }})();";
-            }
         }
     }
 }

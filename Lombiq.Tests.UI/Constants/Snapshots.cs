@@ -1,7 +1,6 @@
-namespace Lombiq.Tests.UI.Constants
+namespace Lombiq.Tests.UI.Constants;
+
+public static class Snapshots
 {
-    public static class Snapshots
-    {
-        public const string DefaultSetupSnapshotDirectoryPath = "SetupSnapshot";
-    }
+    public const string DefaultSetupSnapshotDirectoryPath = "SetupSnapshot";
 }

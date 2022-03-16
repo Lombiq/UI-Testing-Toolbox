@@ -8,264 +8,263 @@ using System.IO;
 using System.Threading;
 using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
-namespace Lombiq.Tests.UI.Services
+namespace Lombiq.Tests.UI.Services;
+
+public class SqlServerConfiguration
 {
-    public class SqlServerConfiguration
-    {
-        public const string DatabaseIdPlaceholder = "{{id}}";
+    public const string DatabaseIdPlaceholder = "{{id}}";
 
-        /// <summary>
-        /// Gets or sets the template to use to generate SQL Server connection strings. It needs to contain the <see
-        /// cref="DatabaseIdPlaceholder"/> placeholder in the database name so unique database names can be generated
-        /// for concurrently running UI tests.
-        /// </summary>
-        public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
-            "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
-            $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
-                $"MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
-    }
+    /// <summary>
+    /// Gets or sets the template to use to generate SQL Server connection strings. It needs to contain the <see
+    /// cref="DatabaseIdPlaceholder"/> placeholder in the database name so unique database names can be generated
+    /// for concurrently running UI tests.
+    /// </summary>
+    public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
+        "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
+        $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
+            $"MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
+}
 
-    public class SqlServerRunningContext
-    {
-        public string ConnectionString { get; }
+public class SqlServerRunningContext
+{
+    public string ConnectionString { get; }
 
-        public SqlServerRunningContext(string connectionString) => ConnectionString = connectionString;
-    }
+    public SqlServerRunningContext(string connectionString) => ConnectionString = connectionString;
+}
 
-    public sealed class SqlServerManager : IDisposable
-    {
-        private const string DbSnasphotName = "Database.bak";
+public sealed class SqlServerManager : IDisposable
+{
+    private const string DbSnasphotName = "Database.bak";
 
-        private static readonly PortLeaseManager _portLeaseManager;
+    private static readonly PortLeaseManager _portLeaseManager;
 
-        private readonly SqlServerConfiguration _configuration;
-        private int _databaseId;
-        private string _serverName;
-        private string _databaseName;
-        private string _userId;
-        private string _password;
-        private bool _isDisposed;
+    private readonly SqlServerConfiguration _configuration;
+    private int _databaseId;
+    private string _serverName;
+    private string _databaseName;
+    private string _userId;
+    private string _password;
+    private bool _isDisposed;
 
-        // Not actually unnecessary.
+    // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
-        [SuppressMessage(
-            "Performance",
-            "CA1810:Initialize reference type static fields inline",
-            Justification = "No GetAgentIndexOrDefault() duplication this way.")]
+    [SuppressMessage(
+        "Performance",
+        "CA1810:Initialize reference type static fields inline",
+        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
 #pragma warning restore IDE0079 // Remove unnecessary suppression
-        static SqlServerManager()
+    static SqlServerManager()
+    {
+        var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
+        _portLeaseManager = new PortLeaseManager(13000 + agentIndexTimesHundred, 13099 + agentIndexTimesHundred);
+    }
+
+    public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
+
+    public SqlServerRunningContext CreateDatabase()
+    {
+        _databaseId = _portLeaseManager.LeaseAvailableRandomPort();
+
+        var connectionString = _configuration.ConnectionStringTemplate
+            .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
+
+        var connection = new SqlConnectionStringBuilder(connectionString);
+        _serverName = connection.DataSource;
+        _databaseName = connection.InitialCatalog;
+        _userId = connection.UserID;
+        _password = connection.Password;
+
+        var server = CreateServer();
+
+        DropDatabaseIfExists(server);
+
+        new Database(server, _databaseName).Create();
+
+        return new SqlServerRunningContext(connectionString);
+    }
+
+    /// <summary>
+    /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
+    /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
+    /// <paramref name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default
+    /// <see langword="null"/> value. If the server is on a remote location or within a container, then the
+    /// <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
+    /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted
+    /// volume on Docker or an (S)FTP network location mounted as a drive.
+    /// </summary>
+    /// <param name="snapshotDirectoryPathRemote">
+    /// The location of the save directory on the SQL Server's machine.
+    /// </param>
+    /// <param name="snapshotDirectoryPathLocal">
+    /// The location of the directory where the saved database snapshot can be accessed from the local system. If
+    /// <see langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if
+    /// for local server only calls.
+    /// </param>
+    /// <param name="useCompressionIfAvailable">
+    /// If set to <see langword="true"/> and the database engine supports it, then
+    /// <see cref="BackupCompressionOptions.On"/> will be used.
+    /// </param>
+    public void TakeSnapshot(
+        string snapshotDirectoryPathRemote,
+        string snapshotDirectoryPathLocal = null,
+        bool useCompressionIfAvailable = false)
+    {
+        var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+        var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
+
+        if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
+
+        var server = CreateServer();
+
+        KillDatabaseProcesses(server);
+
+        var useCompression = useCompressionIfAvailable &&
+            (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
+
+        var backup = new Backup
         {
-            var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-            _portLeaseManager = new PortLeaseManager(13000 + agentIndexTimesHundred, 13099 + agentIndexTimesHundred);
+            Action = BackupActionType.Database,
+            CopyOnly = true,
+            Checksum = true,
+            Incremental = false,
+            ContinueAfterError = false,
+            // We don't need compression for setup snapshots as those backups will be only short-lived and we want
+            // them to be fast.
+            CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
+            SkipTapeHeader = true,
+            UnloadTapeAfter = false,
+            NoRewind = true,
+            FormatMedia = true,
+            Initialize = true,
+            Database = _databaseName,
+        };
+
+        var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
+        backup.Devices.Add(destination);
+        // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
+        // which is messy.
+        backup.SqlBackup(server);
+
+        if (!File.Exists(filePathLocal))
+        {
+            throw filePathLocal == filePathRemote
+                ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
+                : new FileNotFoundException(
+                    $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
+                    $"Are the two bound together? If you are using Docker, did you set up the local volume?");
+        }
+    }
+
+    public void RestoreSnapshot(string snapshotDirectoryPath)
+    {
+        if (_isDisposed)
+        {
+            throw new InvalidOperationException("This instance was already disposed.");
         }
 
-        public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
+        var server = CreateServer();
 
-        public SqlServerRunningContext CreateDatabase()
+        if (!server.Databases.Contains(_databaseName))
         {
-            _databaseId = _portLeaseManager.LeaseAvailableRandomPort();
-
-            var connectionString = _configuration.ConnectionStringTemplate
-                .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
-
-            var connection = new SqlConnectionStringBuilder(connectionString);
-            _serverName = connection.DataSource;
-            _databaseName = connection.InitialCatalog;
-            _userId = connection.UserID;
-            _password = connection.Password;
-
-            var server = CreateServer();
-
-            DropDatabaseIfExists(server);
-
-            new Database(server, _databaseName).Create();
-
-            return new SqlServerRunningContext(connectionString);
+            throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
         }
 
-        /// <summary>
-        /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
-        /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
-        /// <paramref name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default
-        /// <see langword="null"/> value. If the server is on a remote location or within a container, then the
-        /// <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
-        /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted
-        /// volume on Docker or an (S)FTP network location mounted as a drive.
-        /// </summary>
-        /// <param name="snapshotDirectoryPathRemote">
-        /// The location of the save directory on the SQL Server's machine.
-        /// </param>
-        /// <param name="snapshotDirectoryPathLocal">
-        /// The location of the directory where the saved database snapshot can be accessed from the local system. If
-        /// <see langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if
-        /// for local server only calls.
-        /// </param>
-        /// <param name="useCompressionIfAvailable">
-        /// If set to <see langword="true"/> and the database engine supports it, then
-        /// <see cref="BackupCompressionOptions.On"/> will be used.
-        /// </param>
-        public void TakeSnapshot(
-            string snapshotDirectoryPathRemote,
-            string snapshotDirectoryPathLocal = null,
-            bool useCompressionIfAvailable = false)
+        KillDatabaseProcesses(server);
+
+        var restore = new Restore();
+        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+        restore.Database = _databaseName;
+        restore.ReplaceDatabase = true;
+
+        // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
+        // https://stackoverflow.com/a/17547737/220230.
+        var dataFile = new RelocateFile
         {
-            var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
-            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
+            LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
+            PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName,
+        };
 
-            if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
-
-            var server = CreateServer();
-
-            KillDatabaseProcesses(server);
-
-            var useCompression = useCompressionIfAvailable &&
-                (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
-
-            var backup = new Backup
-            {
-                Action = BackupActionType.Database,
-                CopyOnly = true,
-                Checksum = true,
-                Incremental = false,
-                ContinueAfterError = false,
-                // We don't need compression for setup snapshots as those backups will be only short-lived and we want
-                // them to be fast.
-                CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
-                SkipTapeHeader = true,
-                UnloadTapeAfter = false,
-                NoRewind = true,
-                FormatMedia = true,
-                Initialize = true,
-                Database = _databaseName,
-            };
-
-            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
-            backup.Devices.Add(destination);
-            // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
-            // which is messy.
-            backup.SqlBackup(server);
-
-            if (!File.Exists(filePathLocal))
-            {
-                throw filePathLocal == filePathRemote
-                    ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
-                    : new FileNotFoundException(
-                        $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
-                        $"Are the two bound together? If you are using Docker, did you set up the local volume?");
-            }
-        }
-
-        public void RestoreSnapshot(string snapshotDirectoryPath)
+        var logFile = new RelocateFile
         {
-            if (_isDisposed)
-            {
-                throw new InvalidOperationException("This instance was already disposed.");
-            }
+            LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
+            PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName,
+        };
 
-            var server = CreateServer();
+        restore.RelocateFiles.Add(dataFile);
+        restore.RelocateFiles.Add(logFile);
 
-            if (!server.Databases.Contains(_databaseName))
-            {
-                throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
-            }
+        // We're not using SqlRestoreAsync() and SqlVerifyAsync() due to the same reason we're not using
+        // SqlBackupAsync().
+        restore.SqlRestore(server);
+    }
 
-            KillDatabaseProcesses(server);
+    public void Dispose()
+    {
+        if (_isDisposed) return;
 
-            var restore = new Restore();
-            restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
-            restore.Database = _databaseName;
-            restore.ReplaceDatabase = true;
+        _isDisposed = true;
 
-            // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
-            // https://stackoverflow.com/a/17547737/220230.
-            var dataFile = new RelocateFile
-            {
-                LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
-                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName,
-            };
+        DropDatabaseIfExists(CreateServer());
 
-            var logFile = new RelocateFile
-            {
-                LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
-                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName,
-            };
+        _portLeaseManager.StopLease(_databaseId);
+    }
 
-            restore.RelocateFiles.Add(dataFile);
-            restore.RelocateFiles.Add(logFile);
+    // It's easier to use the server name directly instead of the connection string as that also requires the
+    // referenced database to exist.
+    private Server CreateServer() =>
+        string.IsNullOrWhiteSpace(_password)
+            ? new Server(_serverName)
+            : new Server(new ServerConnection(_serverName, _userId, _password));
 
-            // We're not using SqlRestoreAsync() and SqlVerifyAsync() due to the same reason we're not using
-            // SqlBackupAsync().
-            restore.SqlRestore(server);
-        }
+    private void DropDatabaseIfExists(Server server)
+    {
+        if (!server.Databases.Contains(_databaseName)) return;
 
-        public void Dispose()
+        const int maxTryCount = 10;
+        var i = 0;
+        var dbDropExceptions = new List<Exception>(maxTryCount);
+        while (i < maxTryCount)
         {
-            if (_isDisposed) return;
+            i++;
 
-            _isDisposed = true;
-
-            DropDatabaseIfExists(CreateServer());
-
-            _portLeaseManager.StopLease(_databaseId);
-        }
-
-        // It's easier to use the server name directly instead of the connection string as that also requires the
-        // referenced database to exist.
-        private Server CreateServer() =>
-            string.IsNullOrWhiteSpace(_password)
-                ? new Server(_serverName)
-                : new Server(new ServerConnection(_serverName, _userId, _password));
-
-        private void DropDatabaseIfExists(Server server)
-        {
-            if (!server.Databases.Contains(_databaseName)) return;
-
-            const int maxTryCount = 10;
-            var i = 0;
-            var dbDropExceptions = new List<Exception>(maxTryCount);
-            while (i < maxTryCount)
-            {
-                i++;
-
-                try
-                {
-                    KillDatabaseProcesses(server);
-                    server.Databases[_databaseName].Drop();
-
-                    return;
-                }
-                catch (FailedOperationException ex)
-                {
-                    dbDropExceptions.Add(ex);
-
-                    if (i == maxTryCount)
-                    {
-                        throw new AggregateException(
-                            $"Dropping the database {_databaseName} failed {maxTryCount} times and won't be retried again.",
-                            dbDropExceptions);
-                    }
-
-                    Thread.Sleep(10000);
-                }
-            }
-        }
-
-        private void KillDatabaseProcesses(Server server)
-        {
             try
             {
-                server.KillAllProcesses(_databaseName);
+                KillDatabaseProcesses(server);
+                server.Databases[_databaseName].Drop();
+
+                return;
             }
-            catch (FailedOperationException)
+            catch (FailedOperationException ex)
             {
-                // This can cause all kinds of random exceptions that don't actually cause any issues when the server is
-                // under load.
+                dbDropExceptions.Add(ex);
+
+                if (i == maxTryCount)
+                {
+                    throw new AggregateException(
+                        $"Dropping the database {_databaseName} failed {maxTryCount} times and won't be retried again.",
+                        dbDropExceptions);
+                }
+
+                Thread.Sleep(10000);
             }
         }
-
-        private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
-            snapshotDirectoryPath[0] == '/'
-                ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
-                : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
     }
+
+    private void KillDatabaseProcesses(Server server)
+    {
+        try
+        {
+            server.KillAllProcesses(_databaseName);
+        }
+        catch (FailedOperationException)
+        {
+            // This can cause all kinds of random exceptions that don't actually cause any issues when the server is
+            // under load.
+        }
+    }
+
+    private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
+        snapshotDirectoryPath[0] == '/'
+            ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
+            : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
 }

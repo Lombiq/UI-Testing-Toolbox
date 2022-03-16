@@ -3,21 +3,20 @@ using OrchardCore.Media;
 using OrchardCore.Modules;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Shortcuts.Controllers
+namespace Lombiq.Tests.UI.Shortcuts.Controllers;
+
+[Feature(ShortcutsFeatureIds.MediaCachePurge)]
+public class MediaCachePurgeController : Controller
 {
-    [Feature(ShortcutsFeatureIds.MediaCachePurge)]
-    public class MediaCachePurgeController : Controller
+    private readonly IMediaFileStoreCache _mediaFileStoreCache;
+
+    public MediaCachePurgeController(IMediaFileStoreCache mediaFileStoreCache)
+        => _mediaFileStoreCache = mediaFileStoreCache;
+
+    public async Task<IActionResult> PurgeMediaCacheDirectly()
     {
-        private readonly IMediaFileStoreCache _mediaFileStoreCache;
+        var hasErrors = await _mediaFileStoreCache.PurgeAsync();
 
-        public MediaCachePurgeController(IMediaFileStoreCache mediaFileStoreCache)
-            => _mediaFileStoreCache = mediaFileStoreCache;
-
-        public async Task<IActionResult> PurgeMediaCacheDirectly()
-        {
-            var hasErrors = await _mediaFileStoreCache.PurgeAsync();
-
-            return hasErrors ? StatusCode(500) : Ok();
-        }
+        return hasErrors ? StatusCode(500) : Ok();
     }
 }
