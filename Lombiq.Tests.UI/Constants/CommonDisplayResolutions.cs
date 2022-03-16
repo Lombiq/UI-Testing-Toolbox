@@ -4,9 +4,9 @@ namespace Lombiq.Tests.UI.Constants;
 
 /// <summary>
 /// Some common display resolutions to be used when setting browser window sizes with <see
-/// cref="Extensions.ResponsivenessUITestContextExtensions.SetBrowserSize(Services.UITestContext, Size)"/>.
-/// Generally it's better to test the given app's responsive breakpoints specifically though instead of using such
-/// standard resolutions.
+/// cref="Extensions.ResponsivenessUITestContextExtensions.SetBrowserSize(Services.UITestContext, Size)"/>. Generally
+/// it's better to test the given app's responsive breakpoints specifically though instead of using such standard
+/// resolutions.
 /// </summary>
 /// <remarks>
 /// <para>

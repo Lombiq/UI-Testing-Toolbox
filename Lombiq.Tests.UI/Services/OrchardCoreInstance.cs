@@ -26,9 +26,8 @@ public class OrchardCoreConfiguration
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 
     /// <summary>
-    /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline
-    /// mode. This way it won't try to reach out to a remote server with telemetry and the test remains
-    /// self-sufficient.
+    /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline mode.
+    /// This way it won't try to reach out to a remote server with telemetry and the test remains self-sufficient.
     /// </summary>
     public void EnableApplicationInsightsOfflineOperation() =>
         BeforeAppStart +=
@@ -96,8 +95,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         }
         else
         {
-            // Copying the config files from the assembly path, i.e. the build output path so only those are
-            // included that actually matter.
+            // Copying the config files from the assembly path, i.e. the build output path so only those are included
+            // that actually matter.
             OrchardCoreDirectoryHelper
                 .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
         }
@@ -116,8 +115,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                 exePath,
                 exePathKey =>
                 {
-                    // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't
-                    // run for the same key.
+                    // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't run
+                    // for the same key.
                     lock (_exeCopyLock)
                     {
                         var copyExePath = Path.Combine(

@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.Delegates;
 /// </summary>
 /// <param name="context">The context of the currently executed UI test.</param>
 /// <param name="isStandardSize">
-/// A value indicating the screen size being used. If <see langword="true" /> then the window is set to <see
+/// A value indicating the screen size being used. If <see langword="true"/> then the window is set to <see
 /// cref="OrchardCoreUITestBase.StandardBrowserSize"/>, otherwise to <see
 /// cref="OrchardCoreUITestBase.MobileBrowserSize"/>.
 /// </param>

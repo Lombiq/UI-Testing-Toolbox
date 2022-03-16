@@ -81,8 +81,8 @@ public static class NavigationUITestContextExtensions
         await context.SignInDirectlyAsync(email);
     }
 
-    // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't
-    // be fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
+    // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
+    // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
 
     public static async Task<T> GoToPageAsync<T>(this UITestContext context)
@@ -151,8 +151,8 @@ public static class NavigationUITestContextExtensions
         context.GoToPageAsync<OrchardCoreFeaturesPage>();
 
     /// <summary>
-    /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during
-    /// Atata operations (like within a page class) when writing async code.
+    /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
+    /// operations (like within a page class) when writing async code.
     /// </summary>
     public static void RefreshCurrentAtataContext(this UITestContext context) =>
         AtataContext.Current = context.Scope.AtataContext;

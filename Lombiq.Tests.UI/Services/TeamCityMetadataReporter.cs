@@ -45,8 +45,7 @@ public static class TeamCityMetadataReporter
     // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
     private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
 
-    // Escaping values for TeamCity, see:
-    // https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
+    // Escaping values for TeamCity, see: https://www.jetbrains.com/help/teamcity/service-messages.html#Escaped+values.
     private static string Escape(string value) => value
         .Replace("|", "||", StringComparison.Ordinal)
         .Replace("'", "|'", StringComparison.Ordinal)

@@ -17,8 +17,8 @@ public static class DirectoryHelper
             try
             {
                 Directory.Delete(path, recursive: true);
-                // Even after the delete seemingly succeeding the folder can remain there with some empty
-                // subfolders. Perhaps this happens when one opens it in Explorer and that keeps a handle open.
+                // Even after the delete seemingly succeeding the folder can remain there with some empty subfolders.
+                // Perhaps this happens when one opens it in Explorer and that keeps a handle open.
                 if (!Directory.Exists(path)) return;
             }
             catch (DirectoryNotFoundException)
@@ -28,8 +28,7 @@ public static class DirectoryHelper
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
             {
-                // This means that somehow a process is still locking the content folder so let's wait and try
-                // again.
+                // This means that somehow a process is still locking the content folder so let's wait and try again.
                 Thread.Sleep(1000);
                 tryCount++;
 

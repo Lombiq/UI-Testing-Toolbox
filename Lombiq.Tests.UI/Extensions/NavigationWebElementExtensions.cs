@@ -9,15 +9,15 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class NavigationWebElementExtensions
 {
     /// <summary>
-    /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click()
-    /// but still not perfect. If you're doing a Get() before then use <see
+    /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click() but
+    /// still not perfect. If you're doing a Get() before then use <see
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Even when the element is absolutely, positively there (Atata's Get() succeeds) the clicks sometimes simply
-    /// don't go through the first time. More literature on the scientific field of clicking (but the code there
-    /// doesn't really help): https://cezarypiatek.github.io/post/why-click-with-selenium-so-hard/ Also see:
+    /// Even when the element is absolutely, positively there (Atata's Get() succeeds) the clicks sometimes simply don't
+    /// go through the first time. More literature on the scientific field of clicking (but the code there doesn't
+    /// really help): https://cezarypiatek.github.io/post/why-click-with-selenium-so-hard/ Also see:
     /// https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error.
     /// </para>
     /// </remarks>
@@ -47,8 +47,8 @@ public static class NavigationWebElementExtensions
             });
 
     /// <summary>
-    /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use
-    /// <see cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
+    /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
     /// </summary>
     public static void ClickReliablyUntilPageLeave(
         this IWebElement element,

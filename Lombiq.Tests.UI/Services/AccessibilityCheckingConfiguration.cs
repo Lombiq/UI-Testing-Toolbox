@@ -10,28 +10,28 @@ namespace Lombiq.Tests.UI.Services;
 public class AccessibilityCheckingConfiguration
 {
     /// <summary>
-    /// Gets or sets a value indicating whether to create an accessibility report if the given test fails
-    /// accessibility checking.
+    /// Gets or sets a value indicating whether to create an accessibility report if the given test fails accessibility
+    /// checking.
     /// </summary>
     public bool CreateReportOnFailure { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to create an accessibility report for every test. You can use this
-    /// to e.g. compile an accessibility report for the whole app, encompassing all pages checked by tests.
+    /// Gets or sets a value indicating whether to create an accessibility report for every test. You can use this to
+    /// e.g. compile an accessibility report for the whole app, encompassing all pages checked by tests.
     /// </summary>
     public bool CreateReportAlways { get; set; }
 
     /// <summary>
-    /// Gets or sets the (relative or absolute) path where those accessibility reports are stored that are created
-    /// for every test (see <see cref="CreateReportAlways"/>).
+    /// Gets or sets the (relative or absolute) path where those accessibility reports are stored that are created for
+    /// every test (see <see cref="CreateReportAlways"/>).
     /// </summary>
     public string AlwaysCreatedAccessibilityReportsDirectoryPath { get; set; } = "AccessibilityReports";
 
     /// <summary>
-    /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility
-    /// checking. For more information on the various options see <see
-    /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>. Defaults to
-    /// <see cref="ConfigureWcag21aa"/>.
+    /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility checking.
+    /// For more information on the various options see <see
+    /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>. Defaults to <see
+    /// cref="ConfigureWcag21aa"/>.
     /// </summary>
     public Action<AxeBuilder> AxeBuilderConfigurator { get; set; } = axeBuilder => ConfigureWcag21aa(axeBuilder);
 
@@ -42,17 +42,17 @@ public class AccessibilityCheckingConfiguration
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
     /// <summary>
-    /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run
-    /// for the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is
-    /// set to <see langword="true"/>. Defaults to <see
+    /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run for
+    /// the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is set to
+    /// <see langword="true"/>. Defaults to <see
     /// cref="EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule"/>.
     /// </summary>
     public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
         EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule;
 
     /// <summary>
-    /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking
-    /// happens. Defaults to <see cref="AssertAxeResultIsEmpty"/>.
+    /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking happens.
+    /// Defaults to <see cref="AssertAxeResultIsEmpty"/>.
     /// </summary>
     public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 

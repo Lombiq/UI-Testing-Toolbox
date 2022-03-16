@@ -26,8 +26,8 @@ public static class AtataFactory
 
         RemoteWebDriver CreateDriver()
         {
-            // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions
-            // if the machine is under load. Retrying it here so not the whole test needs to be re-run.
+            // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if
+            // the machine is under load. Retrying it here so not the whole test needs to be re-run.
             const int maxTryCount = 3;
             var i = 0;
 

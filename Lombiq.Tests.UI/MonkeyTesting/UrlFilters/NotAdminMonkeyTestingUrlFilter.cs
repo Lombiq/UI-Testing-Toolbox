@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System;
+
 namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 
 /// <summary>

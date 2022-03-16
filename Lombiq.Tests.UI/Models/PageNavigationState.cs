@@ -24,8 +24,8 @@ public class PageNavigationState : IWebContentState
     {
         try
         {
-            // Just any element operation to cause a StaleElementReferenceException if it's stale. If it isn't
-            // then this will always return false.
+            // Just any element operation to cause a StaleElementReferenceException if it's stale. If it isn't then this
+            // will always return false.
             return _root.Size.Width < 0;
         }
         catch (StaleElementReferenceException)

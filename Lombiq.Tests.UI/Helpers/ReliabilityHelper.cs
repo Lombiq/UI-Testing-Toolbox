@@ -34,8 +34,8 @@ public static class ReliabilityHelper
     };
 
     /// <summary>
-    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If
-    /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If the
+    /// operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="process">
     /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
@@ -115,8 +115,8 @@ public static class ReliabilityHelper
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first
-    /// try or during retries, <see langword="false"/> otherwise.
+    /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
+    /// or during retries, <see langword="false"/> otherwise.
     /// </returns>
     public static async Task<bool> DoWithRetriesAsync(
         Func<Task<bool>> processAsync,
@@ -125,17 +125,17 @@ public static class ReliabilityHelper
             (await DoWithRetriesInternalAsync(processAsync, timeout, interval)).IsSuccess;
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
-    /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>). If
+    /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     ///
-    /// In situations like a DataTable load it is possible that the page will change during execution of multiple
-    /// long running operations such as GetAll, causing stale virtual DOM. Such change tends to be near
-    /// instantaneous and only happens once at a time so this should pass by the 2nd try.
+    /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
+    /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
+    /// only happens once at a time so this should pass by the 2nd try.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -155,16 +155,16 @@ public static class ReliabilityHelper
             DoWithRetriesOrFailAsync(_retryIfStaleProcess(processAsync), timeout, interval);
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>).
     ///
-    /// In situations like a DataTable load it is possible that the page will change during execution of multiple
-    /// long running operations such as GetAll, causing stale virtual DOM. Such change tends to be near
-    /// instantaneous and only happens once at a time so this should pass by the 2nd try.
+    /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
+    /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
+    /// only happens once at a time so this should pass by the 2nd try.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -175,8 +175,8 @@ public static class ReliabilityHelper
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first
-    /// try or during retries, <see langword="false"/> otherwise.
+    /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
+    /// or during retries, <see langword="false"/> otherwise.
     /// </returns>
     public static Task<bool> RetryIfStaleAsync(
         Func<Task<bool>> processAsync,
@@ -185,14 +185,14 @@ public static class ReliabilityHelper
             DoWithRetriesAsync(_retryIfStaleProcess(processAsync), timeout, interval);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale (<see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -212,12 +212,12 @@ public static class ReliabilityHelper
             DoWithRetriesOrFailAsync(_retryIfNotStaleProcess(processAsync), timeout, interval);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale (<see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see

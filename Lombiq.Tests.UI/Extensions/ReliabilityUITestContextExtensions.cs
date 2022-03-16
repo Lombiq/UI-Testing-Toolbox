@@ -10,8 +10,8 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ReliabilityUITestContextExtensions
 {
     /// <summary>
-    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If
-    /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals. If the
+    /// operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="process">
     /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
@@ -68,17 +68,18 @@ public static class ReliabilityUITestContextExtensions
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
     /// <summary>
-    /// Executes the async process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
-    /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// Executes the async process and retries if an element becomes stale ( <see
+    /// cref="StaleElementReferenceException"/>). If the operation didn't succeed then throws a <see
+    /// cref="TimeoutException"/>.
     ///
-    /// In situations like a DataTable load it is possible that the page will change during execution of multiple
-    /// long running operations such as GetAll, causing stale virtual DOM. Such change tends to be near
-    /// instantaneous and only happens once at a time so this should pass by the 2nd try.
+    /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
+    /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
+    /// only happens once at a time so this should pass by the 2nd try.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to <paramref
@@ -102,14 +103,14 @@ public static class ReliabilityUITestContextExtensions
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale (<see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return
-    /// <see langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
+    /// langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to <paramref
@@ -187,8 +188,8 @@ public static class ReliabilityUITestContextExtensions
             interval);
 
     private static TimeSpan GetExistsTimeout(UITestContext context, TimeSpan? timeout) =>
-        // The timeout for this existence check needs to be significantly smaller than the timeout of the
-        // whole retry logic so actually multiple tries can happen.
+        // The timeout for this existence check needs to be significantly smaller than the timeout of the whole retry
+        // logic so actually multiple tries can happen.
         (timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout) / 5;
 
     private static bool ExistsWithin(

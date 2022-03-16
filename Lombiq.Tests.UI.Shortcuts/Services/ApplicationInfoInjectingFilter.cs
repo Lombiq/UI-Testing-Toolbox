@@ -6,6 +6,7 @@ using OrchardCore.Modules;
 using OrchardCore.ResourceManagement;
 using System;
 using System.Threading.Tasks;
+
 namespace Lombiq.Tests.UI.Shortcuts.Services;
 
 public class ApplicationInfoInjectingFilter : IAsyncResultFilter

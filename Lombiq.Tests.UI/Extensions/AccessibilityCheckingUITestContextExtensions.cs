@@ -9,16 +9,16 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class AccessibilityCheckingUITestContextExtensions
 {
     /// <summary>
-    /// Executes assertions on the result of an axe accessibility analysis. Note that you need to run this after
-    /// every page load, it won't accumulate during a session.
+    /// Executes assertions on the result of an axe accessibility analysis. Note that you need to run this after every
+    /// page load, it won't accumulate during a session.
     /// </summary>
     /// <param name="assertAxeResult">
-    /// The assertion logic to run on the result of an axe accessibility analysis. If <see langword="null"/> then
-    /// the assertion supplied in the context will be used.
+    /// The assertion logic to run on the result of an axe accessibility analysis. If <see langword="null"/> then the
+    /// assertion supplied in the context will be used.
     /// </param>
     /// <param name="axeBuilderConfigurator">
-    /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator
-    /// supplied in the context.
+    /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator supplied
+    /// in the context.
     /// </param>
     public static void AssertAccessibility(
         this UITestContext context,
@@ -51,12 +51,12 @@ public static class AccessibilityCheckingUITestContextExtensions
     }
 
     /// <summary>
-    /// Runs an axe accessibility analysis. Note that you need to run this after every page load, it won't
-    /// accumulate during a session.
+    /// Runs an axe accessibility analysis. Note that you need to run this after every page load, it won't accumulate
+    /// during a session.
     /// </summary>
     /// <param name="axeBuilderConfigurator">
-    /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator
-    /// supplied in the context.
+    /// A delegate to configure the <see cref="AxeBuilder"/> instance. Will be applied after the configurator supplied
+    /// in the context.
     /// </param>
     public static AxeResult AnalyzeAccessibility(
         this UITestContext context,

@@ -7,9 +7,9 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Here we'll see how to check some web accessibility rules. Keeping our app accessible helps people with
-// disabilities consume the content of our website more easily. Do note though that only checking rules that can be
-// automatically checked is not enough for full compliance.
+// Here we'll see how to check some web accessibility rules. Keeping our app accessible helps people with disabilities
+// consume the content of our website more easily. Do note though that only checking rules that can be automatically
+// checked is not enough for full compliance.
 public class AccessibilityTest : UITestBase
 {
     public AccessibilityTest(ITestOutputHelper testOutputHelper)
@@ -21,8 +21,8 @@ public class AccessibilityTest : UITestBase
     public Task FrontendPagesShoudlBeAccessbile(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
-                // This is just a simple test that visits two pages: The homepage, where the test will start by
-                // default, and another one.
+                // This is just a simple test that visits two pages: The homepage, where the test will start by default,
+                // and another one.
                 context.GoToRelativeUrlAsync("/categories/travel"),
             browser,
             configuration =>
@@ -33,9 +33,8 @@ public class AccessibilityTest : UITestBase
                 configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;
 
                 // We'll check for the WCAG 2.1 AA level. This is the middle level of the latest accessibility
-                // guidelines.
-                // The frontend set up with the Blog recipe actually has a couple of issues. For the sake of this
-                // sample we won't try to fix them but rather disable the corresponding rules.
+                // guidelines. The frontend set up with the Blog recipe actually has a couple of issues. For the sake of
+                // this sample we won't try to fix them but rather disable the corresponding rules.
                 configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator += axeBuilder =>
                     AccessibilityCheckingConfiguration.ConfigureWcag21aa(axeBuilder)
                         .DisableRules("color-contrast", "landmark-one-main", "link-name", "region");

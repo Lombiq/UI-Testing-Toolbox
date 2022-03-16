@@ -16,12 +16,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 {
     /// <summary>
     /// <para>
-    /// Tests all the basic Orchard features. At first sets up Orchard with the recipe with the specified
-    /// <paramref name="setupRecipeId"/>.
+    /// Tests all the basic Orchard features. At first sets up Orchard with the recipe with the specified <paramref
+    /// name="setupRecipeId"/>.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -33,13 +31,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests all the basic Orchard features. At first sets up Orchard with optionally specified
-    /// <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/> instance
-    /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+    /// Tests all the basic Orchard features. At first sets up Orchard with optionally specified <paramref
+    /// name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/> instance with
+    /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -61,12 +57,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests all the basic Orchard features except for registration. At first sets up Orchard with the recipe with
-    /// the specified <paramref name="setupRecipeId"/>.
+    /// Tests all the basic Orchard features except for registration. At first sets up Orchard with the recipe with the
+    /// specified <paramref name="setupRecipeId"/>.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -78,13 +72,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests all the basic Orchard features except for registration. At first sets up Orchard with optionally
-    /// specified <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/>
-    /// instance with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+    /// Tests all the basic Orchard features except for registration. At first sets up Orchard with optionally specified
+    /// <paramref name="setupParameters"/>. By default uses new <see cref="OrchardCoreSetupParameters"/> instance with
+    /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -102,12 +94,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>
-    /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.
-    /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.</para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -119,13 +107,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests the site setup with optionally set <paramref name="setupParameters"/>.
-    /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
-    /// with <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+    /// Tests the site setup with optionally set <paramref name="setupParameters"/>. By default uses new <see
+    /// cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/>
+    /// value.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -144,15 +130,12 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests the site setup negatively with optionally set <paramref name="setupParameters"/>.
-    /// By default uses new <see cref="OrchardCoreSetupParameters"/> instance
-    /// with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>,
-    /// <see cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/>
-    /// and <see cref="OrchardCoreSetupParameters.Password"/>.
+    /// Tests the site setup negatively with optionally set <paramref name="setupParameters"/>. By default uses new <see
+    /// cref="OrchardCoreSetupParameters"/> instance with empty values of properties: <see
+    /// cref="OrchardCoreSetupParameters.SiteName"/>, <see cref="OrchardCoreSetupParameters.UserName"/>, <see
+    /// cref="OrchardCoreSetupParameters.Email"/> and <see cref="OrchardCoreSetupParameters.Password"/>.
     /// </para>
-    /// <para>
-    /// The test method assumes that the site is not set up.
-    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -181,9 +164,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>
     /// Tests the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
     /// </para>
-    /// <para>
-    /// The test method assumes that there is a registered user with the given credentials.
-    /// </para>
+    /// <para>The test method assumes that there is a registered user with the given credentials.</para>
     /// </summary>
     /// <param name="userName">The user name.</param>
     /// <param name="password">The password.</param>
@@ -204,11 +185,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests the login negatively with the specified <paramref name="userName"/> and <paramref name="password"/> values.
+    /// Tests the login negatively with the specified <paramref name="userName"/> and <paramref name="password"/>
+    /// values.
     /// </para>
-    /// <para>
-    /// The test method assumes that there is no registered user with the given credentials.
-    /// </para>
+    /// <para>The test method assumes that there is no registered user with the given credentials.</para>
     /// </summary>
     /// <param name="userName">The user name.</param>
     /// <param name="password">The password.</param>
@@ -232,12 +212,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             });
 
     /// <summary>
-    /// <para>
-    /// Tests the logout.
-    /// </para>
-    /// <para>
-    /// The test method assumes that there is currently a logged in admin user session.
-    /// </para>
+    /// <para>Tests the logout.</para>
+    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
     /// </summary>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestLogoutAsync(this UITestContext context) =>
@@ -264,8 +240,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// registered, the test performs login with the user credentials, then logout.
     /// </para>
     /// <para>
-    /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is no registered
-    /// user with the given values of <see cref="UserRegistrationParameters.Email"/> or <see
+    /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is no registered user
+    /// with the given values of <see cref="UserRegistrationParameters.Email"/> or <see
     /// cref="UserRegistrationParameters.UserName"/>.
     /// </para>
     /// </summary>
@@ -300,13 +276,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests the user registration negatively with optionally specified invalid <paramref name="parameters"/>.
-    /// Fills user registration fields with <paramref name="parameters"/> on registration page, clicks "Register"
-    /// button and verifies that there are validation messages on the page.
+    /// Tests the user registration negatively with optionally specified invalid <paramref name="parameters"/>. Fills
+    /// user registration fields with <paramref name="parameters"/> on registration page, clicks "Register" button and
+    /// verifies that there are validation messages on the page.
     /// </para>
-    /// <para>
-    /// The test method assumes that the "Users Registration" Orchard feature is enabled.
-    /// </para>
+    /// <para>The test method assumes that the "Users Registration" Orchard feature is enabled.</para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -333,10 +307,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>
-    /// Tests the user registration negatively with optionally specified <paramref name="parameters"/> that uses
-    /// email of the already registered user. Fills user registration fields with <paramref name="parameters"/> on
-    /// registration page, clicks "Register" button and verifies that there is a validation message near "Email"
-    /// field on the page.
+    /// Tests the user registration negatively with optionally specified <paramref name="parameters"/> that uses email
+    /// of the already registered user. Fills user registration fields with <paramref name="parameters"/> on
+    /// registration page, clicks "Register" button and verifies that there is a validation message near "Email" field
+    /// on the page.
     /// </para>
     /// <para>
     /// The test method assumes that the "Users Registration" Orchard feature is enabled and there is an already
@@ -365,9 +339,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>
-    /// Tests content operations. The test executes the following steps:
-    /// </para>
+    /// <para>Tests content operations. The test executes the following steps:</para>
     /// <list type="number">
     /// <item><description>Navigate to the "Content / Content Items" page.</description></item>
     /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
@@ -376,9 +348,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <item><description>Navigate to view the published page.</description></item>
     /// <item><description>Verify the page title and header.</description></item>
     /// </list>
-    /// <para>
-    /// The test method assumes that there is currently a logged in admin user session.
-    /// </para>
+    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
     /// </summary>
     /// <param name="pageTitle">The page title to enter.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -406,9 +376,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             });
 
     /// <summary>
-    /// <para>
-    /// Tests turning feature on and off. The test executes the following steps:
-    /// </para>
+    /// <para>Tests turning feature on and off. The test executes the following steps:</para>
     /// <list type="number">
     /// <item><description>Navigate to the "Configuration / Features" page.</description></item>
     /// <item><description>Search the feature with the given <paramref name="featureName"/>.</description></item>
@@ -418,9 +386,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <item><description>Toggle the feature state again.</description></item>
     /// <item><description>Verify that the feature state is changed to the original.</description></item>
     /// </list>
-    /// <para>
-    /// The test method assumes that there is currently a logged in admin user session.
-    /// </para>
+    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
     /// </summary>
     /// <param name="featureName">The name of the feature to use.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>

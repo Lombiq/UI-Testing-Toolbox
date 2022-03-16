@@ -42,22 +42,22 @@ public class SafeWaitAsync<T> : IWait<T>
     }
 
     /// <summary>
-    /// Gets or sets how long to wait for the evaluated condition to be true.
-    /// The default timeout is taken from <see cref="RetrySettings.Timeout"/>.
+    /// Gets or sets how long to wait for the evaluated condition to be true. The default timeout is taken from <see
+    /// cref="RetrySettings.Timeout"/>.
     /// </summary>
     public TimeSpan Timeout { get; set; } = RetrySettings.Timeout;
 
     /// <summary>
-    /// Gets or sets how often the condition should be evaluated.
-    /// The default interval is taken from <see cref="RetrySettings.Interval"/>.
+    /// Gets or sets how often the condition should be evaluated. The default interval is taken from <see
+    /// cref="RetrySettings.Interval"/>.
     /// </summary>
     public TimeSpan PollingInterval { get; set; } = RetrySettings.Interval;
 
     public string Message { get; set; }
 
     /// <summary>
-    /// Configures this instance to ignore specific types of exceptions while waiting for a condition.
-    /// Any exceptions not whitelisted will be allowed to propagate, terminating the wait.
+    /// Configures this instance to ignore specific types of exceptions while waiting for a condition. Any exceptions
+    /// not whitelisted will be allowed to propagate, terminating the wait.
     /// </summary>
     /// <param name="exceptionTypes">The types of exceptions to ignore.</param>
     public void IgnoreExceptionTypes(params Type[] exceptionTypes)
@@ -77,8 +77,7 @@ public class SafeWaitAsync<T> : IWait<T>
     /// there.
     /// </summary>
     /// <typeparam name="TResult">The delegate's expected return type.</typeparam>
-    /// <param name="condition">A delegate taking an object of type T as its parameter, and returning a
-    /// TResult.</param>
+    /// <param name="condition">A delegate taking an object of type T as its parameter, and returning a TResult.</param>
     /// <returns>The delegate's return value.</returns>
     // Implements the same logic as <see cref="SafeWait{T}.Until{TResult}(Func{T, TResult})"/>, the complexity is
     // okay.

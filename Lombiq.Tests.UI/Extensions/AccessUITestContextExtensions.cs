@@ -7,8 +7,8 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class AccessUITestContextExtensions
 {
     /// <summary>
-    /// Clicks on the Content > ContentItems > New > <paramref name="contentType"/> button and verifies if it shows
-    /// the content item editor or an error page according to expectation.
+    /// Clicks on the Content &gt; ContentItems &gt; New &gt; <paramref name="contentType"/> button and verifies if it
+    /// shows the content item editor or an error page according to expectation.
     /// </summary>
     public static async Task CheckContentItemCreationAccessAsync(
         this UITestContext context,
@@ -38,8 +38,8 @@ public static class AccessUITestContextExtensions
     }
 
     /// <summary>
-    /// Signs in and the navigates to the content item display URL with the ID of <paramref name="contentItemId"/>
-    /// and checks if this causes an exception or not.
+    /// Signs in and the navigates to the content item display URL with the ID of <paramref name="contentItemId"/> and
+    /// checks if this causes an exception or not.
     /// </summary>
     public static async Task SignInDirectlyAndCheckContentItemDisplayAccessAsync(
         this UITestContext context,

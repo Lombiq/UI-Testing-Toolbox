@@ -21,8 +21,8 @@ public class BrowserConfiguration
     public bool Headless { get; set; } = TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: true);
 
     /// <summary>
-    /// Gets or sets the action that will be invoked with the browser's options object so you can modify the options
-    /// as necessary.
+    /// Gets or sets the action that will be invoked with the browser's options object so you can modify the options as
+    /// necessary.
     /// </summary>
     public Action<object> BrowserOptionsConfigurator { get; set; }
 

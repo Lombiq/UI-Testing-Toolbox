@@ -19,15 +19,15 @@ public static class ByHelper
             .Within(TimeSpan.FromMinutes(2));
 
     /// <summary>
-    /// Returns an XPath selector that looks up elements with exactly matching <paramref name="innerText"/> and
-    /// optional element name restriction.
+    /// Returns an XPath selector that looks up elements with exactly matching <paramref name="innerText"/> and optional
+    /// element name restriction.
     /// </summary>
     public static By Text(string innerText, string element = "*") =>
         By.XPath($"//{element}[. = {JsonConvert.SerializeObject(innerText)}]");
 
     /// <summary>
-    /// Returns an XPath selector that looks up elements whose text contains <paramref name="innerText"/>
-    /// with optional element name restriction.
+    /// Returns an XPath selector that looks up elements whose text contains <paramref name="innerText"/> with optional
+    /// element name restriction.
     /// </summary>
     public static By TextContains(string innerText, string element = "*") =>
         By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(innerText)})]");

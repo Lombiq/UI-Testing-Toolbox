@@ -11,10 +11,10 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // By default, tests are executed with SQLite. However, you can also run them against a full SQL Server instance and
-// tests will get their DBs there (if you run your app with SQL Server in production then it's recommended to also
-// test with it, should there be any incompatibilities). Note that for this, you need an SQL Server instance
-// running; by default, this will be attempted under the default localhost server name. If you're using anything
-// else, check out the settings in SqlServerConfiguration and Docs/Configuration.md, especially if you use Docker.
+// tests will get their DBs there (if you run your app with SQL Server in production then it's recommended to also test
+// with it, should there be any incompatibilities). Note that for this, you need an SQL Server instance running; by
+// default, this will be attempted under the default localhost server name. If you're using anything else, check out the
+// settings in SqlServerConfiguration and Docs/Configuration.md, especially if you use Docker.
 public class SqlServerTests : UITestBase
 {
     public SqlServerTests(ITestOutputHelper testOutputHelper)

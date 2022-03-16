@@ -15,8 +15,8 @@ namespace Lombiq.Tests.UI.MonkeyTesting;
 public sealed class MonkeyTestingOptions
 {
     /// <summary>
-    /// Gets or sets the base random seed. The default value is 1234 for reproducibility. Can be used to reproduce
-    /// a test with a same randomization.
+    /// Gets or sets the base random seed. The default value is 1234 for reproducibility. Can be used to reproduce a
+    /// test with a same randomization.
     /// </summary>
     public int BaseRandomSeed { get; set; } = 1234;
 
@@ -28,8 +28,8 @@ public sealed class MonkeyTestingOptions
 
     /// <summary>
     /// Gets or sets the page marker polling interval. The default value is 200 milliseconds. It is an interval of
-    /// checking whether an inserted unique page marker is still on the page. The page marker not being found means
-    /// the page is changed due to some click or other monkey activity.
+    /// checking whether an inserted unique page marker is still on the page. The page marker not being found means the
+    /// page is changed due to some click or other monkey activity.
     /// </summary>
     public TimeSpan PageMarkerPollingInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
@@ -68,8 +68,8 @@ public sealed class MonkeyTestingOptions
     };
 
     /// <summary>
-    /// Gets or sets the gremlins' attack delay. The default value is 10 milliseconds. Set greater time value to
-    /// make gremlin interaction intervals smaller.
+    /// Gets or sets the gremlins' attack delay. The default value is 10 milliseconds. Set greater time value to make
+    /// gremlin interaction intervals smaller.
     /// </summary>
     public TimeSpan GremlinsAttackDelay { get; set; } = TimeSpan.FromMilliseconds(10);
 
@@ -128,8 +128,8 @@ public sealed class MonkeyTestingOptions
     }
 
     /// <summary>
-    /// Adds the login page (/Login) and the register page (/Register) to the URL filters (i.e. monkey testing will
-    /// not happen on those pages).
+    /// Adds the login page (/Login) and the register page (/Register) to the URL filters (i.e. monkey testing will not
+    /// happen on those pages).
     /// </summary>
     public MonkeyTestingOptions ExcludeLoginAndRegisterPagesFromMonkeyTesting() =>
         ExcludeLoginPageFromMonkeyTesting().ExcludeRegisterPageFromMonkeyTesting();

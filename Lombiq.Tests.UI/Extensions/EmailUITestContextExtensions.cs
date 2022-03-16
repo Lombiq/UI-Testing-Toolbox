@@ -28,9 +28,9 @@ public static class EmailUITestContextExtensions
     }
 
     /// <summary>
-    /// Finds and leaves open the first email in the smtp4dev Web UI whose title contains <paramref
-    /// name="emailTitle"/> and message body contains <paramref name="textToFind"/>. If none are found <see
-    /// cref="NotFoundException"/> is thrown.
+    /// Finds and leaves open the first email in the smtp4dev Web UI whose title contains <paramref name="emailTitle"/>
+    /// and message body contains <paramref name="textToFind"/>. If none are found <see cref="NotFoundException"/> is
+    /// thrown.
     /// </summary>
     public static async Task<IWebElement> FindSpecificEmailInInboxAsync(
         this UITestContext context,

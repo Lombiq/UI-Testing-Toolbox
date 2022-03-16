@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+
 namespace Lombiq.Tests.UI.Services;
 
 internal sealed class UITestExecutionSession : IAsyncDisposable
@@ -198,8 +199,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context == null) return;
 
-            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so
-            // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
+            // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
             if (_dumpConfiguration.CaptureScreenshots)
             {
                 await TakeScreenshotAsync(_context);
@@ -266,8 +267,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
             {
-                // While this depends on the directory creation in the above try block it needs to come after the
-                // catch otherwise the message saved there wouldn't be included.
+                // While this depends on the directory creation in the above try block it needs to come after the catch
+                // otherwise the message saved there wouldn't be included.
 
                 var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
                 await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
@@ -326,8 +327,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
     {
-        // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since
-        // at that point there's no FailureDumps folder yet.
+        // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since at
+        // that point there's no FailureDumps folder yet.
 
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
@@ -388,8 +389,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     throw new SetupFailedFastException(failureCount);
                 }
 
-                // Note that the context creation needs to be done here too because the Orchard app needs the
-                // snapshot config to be available at startup too.
+                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
+                // config to be available at startup too.
                 _context = await CreateContextAsync();
 
                 SetupSqlServerSnapshot();
@@ -437,9 +438,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             return;
         }
 
-        // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
-        // itself (which would be logical). Removing the volume directory instantly severs the connection between
-        // host and the container so that should be avoided at all costs.
+        // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory itself
+        // (which would be logical). Removing the volume directory instantly severs the connection between host and the
+        // container so that should be avoided at all costs.
         docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotDirectoryPath; // Always a Unix path.
         docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotDirectoryPath);
 
@@ -478,10 +479,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        // This is necessary because a simple subtraction wouldn't remove previous instances of the
-        // local function. Thus if anything goes wrong between the below delegate registration and it
-        // being called then it'll remain registered and later during a retry try to run (and fail on
-        // the disposed SqlServerManager.
+        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function. Thus
+        // if anything goes wrong between the below delegate registration and it being called then it'll remain
+        // registered and later during a retry try to run (and fail on the disposed SqlServerManager.
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(
                 SqlServerManagerBeforeTakeSnapshotHandlerAsync);

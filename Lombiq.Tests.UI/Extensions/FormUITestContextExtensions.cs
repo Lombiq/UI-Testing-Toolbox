@@ -77,9 +77,9 @@ public static class FormUITestContextExtensions
 
     /// <summary>
     /// Uses Javascript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
-    /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose
-    /// the CodeMirror library globally for editing the existing instance and this editor can't be filled using
-    /// regular Selenium interactions either.
+    /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose the
+    /// CodeMirror library globally for editing the existing instance and this editor can't be filled using regular
+    /// Selenium interactions either.
     /// </summary>
     public static void SetMarkdownEasyMdeWysiwygEditor(this UITestContext context, string id, string text)
     {
@@ -119,8 +119,8 @@ public static class FormUITestContextExtensions
     /// what's written to it, e.g. when it applies some formatting to numbers.
     /// </para>
     /// <para>
-    /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
-    /// true, sometimes filling form fields still fails. Go figure...
+    /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled == true,
+    /// sometimes filling form fields still fails. Go figure...
     /// </para>
     /// </remarks>
     public static Task FillInWithRetriesAsync(
@@ -138,17 +138,16 @@ public static class FormUITestContextExtensions
                 interval));
 
     /// <summary>
-    /// Fills a form field with the given text, and retries if the field is left blank (but doesn't check the
-    /// value).
+    /// Fills a form field with the given text, and retries if the field is left blank (but doesn't check the value).
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Use this instead of <see cref="FillInWithRetriesAsync"/> if the field will contain a string different than what's
-    /// written to it, e.g. when it applies some formatting to numbers.
+    /// Use this instead of <see cref="FillInWithRetriesAsync"/> if the field will contain a string different than
+    /// what's written to it, e.g. when it applies some formatting to numbers.
     /// </para>
     /// <para>
-    /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled ==
-    /// true, sometimes filling form fields still fails. Go figure...
+    /// Even when the element is absolutely, positively there (Atata's Get() succeeds), Displayed == Enabled == true,
+    /// sometimes filling form fields still fails. Go figure...
     /// </para>
     /// </remarks>
     public static Task FillInWithRetriesUntilNotBlankAsync(
@@ -182,8 +181,8 @@ public static class FormUITestContextExtensions
         context.Get(by).GetAttribute("value").ToInteger(0);
 
     /// <summary>
-    /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value
-    /// is <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/>.
+    /// Returns the title text of the currently selected tab. To avoid race conditions after page load, if the value is
+    /// <paramref name="defaultTitle"/> it will retry within <paramref name="timeout"/>.
     /// </summary>
     public static async Task<string> GetSelectedTabTextAsync(
         this UITestContext context,
@@ -255,14 +254,14 @@ public static class FormUITestContextExtensions
         context.SelectFromBootstrapDropdownReliablyAsync(GetAddNewButton(context), byLocalMenuItem);
 
     /// <summary>
-    /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
-    /// and then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
+    /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries) and
+    /// then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
     /// </summary>
     /// <param name="context">The current UI test context.</param>
     /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
     /// <param name="byLocalMenuItem">
-    /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and
-    /// the dropdown is left open.
+    /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and the
+    /// dropdown is left open.
     /// </param>
     /// <exception cref="InvalidOperationException">
     /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
@@ -290,9 +289,8 @@ public static class FormUITestContextExtensions
     }
 
     /// <summary>
-    /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries)
-    /// and then clicks on the menu item with the <paramref name="menuItemLinkText"/> within the dropdown menu's
-    /// context.
+    /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries) and
+    /// then clicks on the menu item with the <paramref name="menuItemLinkText"/> within the dropdown menu's context.
     /// </summary>
     /// <param name="context">The current UI test context.</param>
     /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>

@@ -19,8 +19,8 @@ namespace Lombiq.Tests.UI.Extensions;
 public class BrowserLogMessage
 {
     /// <summary>
-    /// Gets or sets the source where the message originates from. This can be ultimately anything but you can find
-    /// some common ones under <see cref="Sources"/>.
+    /// Gets or sets the source where the message originates from. This can be ultimately anything but you can find some
+    /// common ones under <see cref="Sources"/>.
     /// </summary>
     public string Source { get; set; }
 
@@ -63,9 +63,9 @@ public static class LoggingWebDriverExtensions
     private static readonly HttpClient _httpClient = new();
 
     /// <summary>
-    /// Retrieves the console logs from the browser. This log will contain all the log messages since the start of
-    /// the session, not just the ones for the current page. NOTE that once you call this the log will be emptied
-    /// and only subsequent entries will be included in it. Supports Chrome only.
+    /// Retrieves the console logs from the browser. This log will contain all the log messages since the start of the
+    /// session, not just the ones for the current page. NOTE that once you call this the log will be emptied and only
+    /// subsequent entries will be included in it. Supports Chrome only.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -77,8 +77,7 @@ public static class LoggingWebDriverExtensions
     /// https://stackoverflow.com/a/36463573/220230) currently doesn't work and every log operation throws an NRE.
     /// Apparently this will work again in WebDriver v4 (Selenium 4) which is currently in alpha
     /// (https://www.nuget.org/packages/Selenium.WebDriver/).Then we'll also have access to the Chrome DevTools
-    /// console: https://codoid.com/selenium-4-chrome-devtools-log-entry-listeners/. All details accessible from
-    /// under
+    /// console: https://codoid.com/selenium-4-chrome-devtools-log-entry-listeners/. All details accessible from under
     /// https://stackoverflow.com/questions/57209503/system-nullreferenceexception-when-reading-browser-log-with-selenium.
     /// </para>
     /// <para>For details on log types see: https://github.com/SeleniumHQ/selenium/wiki/Logging#log-types.</para>

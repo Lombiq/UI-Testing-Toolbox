@@ -96,10 +96,10 @@ public static class UITestExecutor
 
         DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-        // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name,
-        // or volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe
-        // both length and characters play a role (a path containing either the same characters or having the same
-        // length would work but not both). Playing safe here.
+        // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name, or
+        // volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe both
+        // length and characters play a role (a path containing either the same characters or having the same length
+        // would work but not both). Playing safe here.
 
         try
         {

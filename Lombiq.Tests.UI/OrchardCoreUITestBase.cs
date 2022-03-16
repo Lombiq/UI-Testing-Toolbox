@@ -142,8 +142,7 @@ public abstract class OrchardCoreUITestBase
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
 
     /// <summary>
-    /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data
-    /// folder.
+    /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.
     /// </summary>
     protected virtual Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,

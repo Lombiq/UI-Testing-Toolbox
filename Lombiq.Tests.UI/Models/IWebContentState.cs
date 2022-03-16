@@ -9,8 +9,8 @@ namespace Lombiq.Tests.UI.Models;
 public interface IWebContentState
 {
     /// <summary>
-    /// Returns <see langword="true"/> if navigation has occurred or the content has changed based on some
-    /// previously provided content.
+    /// Returns <see langword="true"/> if navigation has occurred or the content has changed based on some previously
+    /// provided content.
     /// </summary>
     bool CheckIfNavigationHasOccurred();
 

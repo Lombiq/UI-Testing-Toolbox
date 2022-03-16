@@ -31,15 +31,17 @@ public static class OrchardCoreDashboardUITestContextExtensions
     public static Task ClickModalOkAsync(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
 
     /// <summary>
-    /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30
-    /// second interval between attempts. This should grant enough time to execute the publish action if the button
-    /// actually got pressed.
+    /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30 second
+    /// interval between attempts. This should grant enough time to execute the publish action if the button actually
+    /// got pressed.
     /// </summary>
-    /// <remarks><para>
-    /// The <paramref name="timeout"/> and <paramref name="interval"/> have different default values from other
-    /// similar methods that get theirs from the test configuration. These defaults are set to minimize the chance
-    /// of an unintended early timeout or bounce effect because the publishing may take a longer time.
-    /// </para></remarks>
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="timeout"/> and <paramref name="interval"/> have different default values from other similar
+    /// methods that get theirs from the test configuration. These defaults are set to minimize the chance of an
+    /// unintended early timeout or bounce effect because the publishing may take a longer time.
+    /// </para>
+    /// </remarks>
     public static Task ClickPublishUntilNavigationAsync(
         this UITestContext context,
         bool withJavaScript = false,

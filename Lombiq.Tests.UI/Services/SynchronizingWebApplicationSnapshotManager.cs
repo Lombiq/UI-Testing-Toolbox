@@ -8,9 +8,9 @@ namespace Lombiq.Tests.UI.Services;
 public delegate Task<(UITestContext Context, Uri ResultUri)> AppInitializer();
 
 /// <summary>
-/// Service for transparently running operations on a web application and snapshotting them just a single time, so
-/// the snapshot can be used for further operations. Create a single instance of this for every kind of snapshot
-/// (like an Orchard application already set up).
+/// Service for transparently running operations on a web application and snapshotting them just a single time, so the
+/// snapshot can be used for further operations. Create a single instance of this for every kind of snapshot (like an
+/// Orchard application already set up).
 /// </summary>
 public class SynchronizingWebApplicationSnapshotManager
 {

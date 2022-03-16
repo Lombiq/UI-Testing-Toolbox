@@ -26,8 +26,8 @@ public class UITestContext
     public OrchardCoreUITestExecutorConfiguration Configuration { get; }
 
     /// <summary>
-    /// Gets the context for the currently used SQL Server instance and database, if SQL Server is the DB used for
-    /// the test.
+    /// Gets the context for the currently used SQL Server instance and database, if SQL Server is the DB used for the
+    /// test.
     /// </summary>
     public SqlServerRunningContext SqlServerRunningContext { get; }
 
@@ -72,8 +72,8 @@ public class UITestContext
 
     /// <summary>
     /// Gets or sets the current tenant name when testing multi-tenancy. When testing sites with multi-tenancy you
-    /// should set the value to the tenant in question so methods (e.g. <see
-    /// cref="TypedRouteUITestContextExtensions"/>) that use this property can refer to it.
+    /// should set the value to the tenant in question so methods (e.g. <see cref="TypedRouteUITestContextExtensions"/>)
+    /// that use this property can refer to it.
     /// </summary>
     public string TenantName { get; set; } = "Default";
 
@@ -147,7 +147,7 @@ public class UITestContext
     }
 
     /// <summary>
-    /// Invokes the registered <see cref="PageChangeEventHandler"/>s. Should be called when the browser loads a new
+    /// Invokes the registered <see cref="PageChangeEventHandler"/> s. Should be called when the browser loads a new
     /// page in the app.
     /// </summary>
     /// <exception cref="PageChangeAssertionException">
@@ -169,9 +169,9 @@ public class UITestContext
     }
 
     /// <summary>
-    /// Invokes the registered <see cref="PageChangeEventHandler"/>s and refreshes the Atata context with <see
-    /// cref="NavigationUITestContextExtensions.RefreshCurrentAtataContext(UITestContext)"/>. Should be called when
-    /// the browser loads a new page in the app.
+    /// Invokes the registered <see cref="PageChangeEventHandler"/> s and refreshes the Atata context with <see
+    /// cref="NavigationUITestContextExtensions.RefreshCurrentAtataContext(UITestContext)"/>. Should be called when the
+    /// browser loads a new page in the app.
     /// </summary>
     public async Task TriggerAfterPageChangeEventAndRefreshAtataContextAsync()
     {
@@ -181,9 +181,9 @@ public class UITestContext
 
     private bool IsNoAlert()
     {
-        // If there's an alert (which can happen mostly after a click but also after navigating) then all other
-        // driver operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need
-        // to check if an alert is present and that's only possible by catching exceptions.
+        // If there's an alert (which can happen mostly after a click but also after navigating) then all other driver
+        // operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need to check if
+        // an alert is present and that's only possible by catching exceptions.
         try
         {
             Driver.SwitchTo().Alert();
