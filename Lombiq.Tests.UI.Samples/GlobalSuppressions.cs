@@ -1,7 +1,7 @@
 // Do you know static code analysis? It can make your life easier and your code better by automatically checking for all
 // kinds of formatting mistakes, potential bugs, and security issues. However, one of the analyzers don't really
-// understand UI tests so we have to disable it here.
-// If you'd like to learn more about analyzers check out our project: https://github.com/Lombiq/.NET-Analyzers.
+// understand UI tests so we have to disable it here. If you'd like to learn more about analyzers check out our project:
+// https://github.com/Lombiq/.NET-Analyzers.
 
 using System.Diagnostics.CodeAnalysis;
 
