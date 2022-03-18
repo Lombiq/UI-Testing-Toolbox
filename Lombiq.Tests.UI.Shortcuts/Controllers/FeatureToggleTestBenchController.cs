@@ -2,18 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Modules;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Lombiq.Tests.UI.Shortcuts.Controllers
+namespace Lombiq.Tests.UI.Shortcuts.Controllers;
+
+[Feature(ShortcutsFeatureIds.FeatureToggleTestBench)]
+public class FeatureToggleTestBenchController : Controller
 {
-    [Feature(ShortcutsFeatureIds.FeatureToggleTestBench)]
-    public class FeatureToggleTestBenchController : Controller
-    {
-        // While the warning doesn't show up in VS it does with dotnet build.
+    // While the warning doesn't show up in VS it does with dotnet build.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
-        [SuppressMessage(
-            "Performance",
-            "CA1822:Mark members as static",
-            Justification = "It's a controller action that needs to be instance-level.")]
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "It's a controller action that needs to be instance-level.")]
 #pragma warning restore IDE0079 // Remove unnecessary suppression
-        public string Index() => "The Feature Toggle Test Bench worked.";
-    }
+    public string Index() => "The Feature Toggle Test Bench worked.";
 }

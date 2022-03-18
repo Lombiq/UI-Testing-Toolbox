@@ -1,9 +1,8 @@
 using Lombiq.Tests.UI.Services;
 
-namespace Lombiq.Tests.UI.Attributes
+namespace Lombiq.Tests.UI.Attributes;
+
+public sealed class InternetExplorerAttribute : BrowserAttributeBase
 {
-    public sealed class InternetExplorerAttribute : BrowserAttributeBase
-    {
-        protected override Browser Browser => Browser.InternetExplorer;
-    }
+    protected override Browser Browser => Browser.InternetExplorer;
 }

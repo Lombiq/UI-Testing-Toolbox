@@ -1,9 +1,8 @@
 using Lombiq.Tests.UI.Services;
 
-namespace Lombiq.Tests.UI.Attributes
+namespace Lombiq.Tests.UI.Attributes;
+
+public sealed class FirefoxAttribute : BrowserAttributeBase
 {
-    public sealed class FirefoxAttribute : BrowserAttributeBase
-    {
-        protected override Browser Browser => Browser.Firefox;
-    }
+    protected override Browser Browser => Browser.Firefox;
 }
