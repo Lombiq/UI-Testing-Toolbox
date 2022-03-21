@@ -141,8 +141,9 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         argumentsBuilder = argumentsBuilder
             .Add("--urls").Add(url)
             .Add("--contentRoot").Add(_contentRootPath)
-            .Add("--webroot=").Add(Path.Combine(_contentRootPath, "wwwroot"))
-            .Add("--environment").Add("Development");
+            .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
+            .Add("--environment").Add("Development")
+            .Add("--Logging:LogLevel:Microsoft.Hosting.Lifetime").Add("Information");
 
         if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
 
