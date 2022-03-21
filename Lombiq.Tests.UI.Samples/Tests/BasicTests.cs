@@ -126,6 +126,9 @@ public class BasicTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
+                await context.EnableFeatureDirectlyAsync("Lombiq.Privacy.ConsentBanner");
+                await context.GoToHomePageAsync();
+
                 // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test recipe
                 // and shows its privacy consent banner. For tracking to be enabled, even in offline mode, the user
                 // needs to give consent. This is what we do now:
