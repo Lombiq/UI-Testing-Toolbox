@@ -3,7 +3,9 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
+using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -79,7 +81,12 @@ public class MonkeyTests : UITestBase
                 await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            browser);
+            browser,
+            configuration =>
+                // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
+                configuration.AssertBrowserLog = messages => messages.ShouldNotContain(
+                    message => IsValidAdminBrowserLogMessage(message),
+                    messages.Where(IsValidAdminBrowserLogMessage).ToFormattedString()));
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
@@ -87,6 +94,12 @@ public class MonkeyTests : UITestBase
         {
             PageTestTime = TimeSpan.FromSeconds(10),
         };
+
+    private static bool IsValidAdminBrowserLogMessage(BrowserLogMessage message) =>
+        OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogMessage(message) &&
+        !(message.Source == BrowserLogMessage.Sources.Intervention &&
+            message.Message.ContainsOrdinalIgnoreCase(
+                "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load."));
 }
 
 // END OF TRAINING SECTION: Monkey tests.
