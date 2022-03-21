@@ -60,7 +60,12 @@ public class MonkeyTests : UITestBase
             context =>
                 // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
                 context.TestAdminAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions()),
-            browser);
+            browser,
+            configuration =>
+                // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
+                configuration.AssertBrowserLog = messages => messages.ShouldNotContain(
+                    message => IsValidAdminBrowserLogMessage(message),
+                    messages.Where(IsValidAdminBrowserLogMessage).ToFormattedString()));
 
     // Let's just test the background tasks management admin area.
     [Theory, Chrome]
@@ -81,12 +86,7 @@ public class MonkeyTests : UITestBase
                 await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            browser,
-            configuration =>
-                // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
-                configuration.AssertBrowserLog = messages => messages.ShouldNotContain(
-                    message => IsValidAdminBrowserLogMessage(message),
-                    messages.Where(IsValidAdminBrowserLogMessage).ToFormattedString()));
+            browser);
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
