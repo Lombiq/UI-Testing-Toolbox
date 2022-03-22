@@ -142,7 +142,13 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
             .Add("--urls").Add(url)
             .Add("--contentRoot").Add(_contentRootPath)
             .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
-            .Add("--environment").Add("Development");
+            .Add("--environment").Add("Development")
+            // This logging provider is a hard requirement, because we identify when the web server has started by the
+            // information log with the message "Application started. Press Ctrl+C to shut down.". The MS Docs says
+            // (https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio#new-hosting-model)
+            // that you don't need the Microsoft.Hosting.Lifetime provider so some consumers may remove it during the
+            // .NET 6 migration, which would cause Lombiq.Tests.UI to wait indefinitely.
+            .Add("--Logging:LogLevel:Microsoft.Hosting.Lifetime").Add("Information");
 
         if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
 
