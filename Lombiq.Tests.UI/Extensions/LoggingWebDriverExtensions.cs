@@ -45,6 +45,7 @@ public class BrowserLogMessage
     {
         public const string ConsoleApi = "console-api";
         public const string Deprecation = "deprecation";
+        public const string Intervention = "intervention";
         public const string Javascript = "javascript";
         public const string Network = "network";
         public const string Recommendation = "recommendation";
