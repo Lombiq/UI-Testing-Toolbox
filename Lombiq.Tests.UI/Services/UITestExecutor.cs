@@ -1,4 +1,4 @@
-using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
