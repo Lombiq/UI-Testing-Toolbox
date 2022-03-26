@@ -43,12 +43,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" Condition="Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj" Condition="!Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.AspNetCore\Lombiq.HelpfulLibraries.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries" Version="3.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.AspNetCore" Version="3.0.0" />
   </ItemGroup>
 
 </Project>
