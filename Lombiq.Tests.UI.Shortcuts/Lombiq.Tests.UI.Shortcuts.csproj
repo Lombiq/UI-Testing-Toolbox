@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <DefaultItemExcludes>$(DefaultItemExcludes);.git*;node_modules\**</DefaultItemExcludes>
@@ -16,11 +16,11 @@
     <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox/tree/dev/Lombiq.Tests.UI.Shortcuts</PackageProjectUrl>
-    <PackageLicenseFile>Licence.md</PackageLicenseFile>
+    <PackageLicenseFile>License.md</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Licence.md" Pack="true" PackagePath="" />
+    <None Include="License.md" Pack="true" PackagePath="" />
     <None Include="Readme.md" />
     <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
@@ -34,25 +34,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Module.Targets" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Users.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.2.2" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.2.2" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="1.3.0" />
+    <PackageReference Include="OrchardCore.Users.Abstractions" Version="1.3.0" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.3.0" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.3.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.3.0" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference
-      Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj"
-      Condition="Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
-    <ProjectReference
-      Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj"
-      Condition="!Exists('..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.csproj')" />
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries" Version="2.0.1" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.0.0" />
   </ItemGroup>
 
 </Project>

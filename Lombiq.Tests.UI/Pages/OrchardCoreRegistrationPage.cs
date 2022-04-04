@@ -6,59 +6,65 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Pages
-{
-    // Atata convention.
+namespace Lombiq.Tests.UI.Pages;
+
+// Atata convention.
 #pragma warning disable IDE0065 // Misplaced using directive
-    using _ = OrchardCoreRegistrationPage;
+using _ = OrchardCoreRegistrationPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-    [Url(DefaultUrl)]
-    [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByNameAttribute))]
-    public class OrchardCoreRegistrationPage : Page<_>
+[Url(DefaultUrl)]
+[TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByNameAttribute))]
+public class OrchardCoreRegistrationPage : Page<_>
+{
+    public const string DefaultUrl = "Register";
+
+    [FindByName]
+    public TextInput<_> UserName { get; private set; }
+
+    [FindByName]
+    [SetsValueReliably]
+    public TextInput<_> Email { get; private set; }
+
+    [FindByName]
+    public PasswordInput<_> Password { get; private set; }
+
+    [FindByName]
+    public PasswordInput<_> ConfirmPassword { get; private set; }
+
+    [FindByName("RegistrationCheckbox")]
+    public CheckBox<_> PrivacyPolicyAgreement { get; private set; }
+
+    [FindByAttribute("type", "submit")]
+    public Button<_> Register { get; private set; }
+
+    public ValidationMessageList<_> ValidationMessages { get; private set; }
+
+    public _ ShouldStayOnRegistrationPage() =>
+        PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
+
+    public _ ShouldLeaveRegistrationPage() =>
+        PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
+
+    public async Task<_> RegisterWithAsync(
+        UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
-        public const string DefaultUrl = "Register";
+        UserName.Set(parameters.UserName);
+        Email.Set(parameters.Email);
+        Password.Set(parameters.Password);
+        ConfirmPassword.Set(parameters.ConfirmPassword);
 
-        [FindByName]
-        public TextInput<_> UserName { get; private set; }
-
-        [FindByName]
-        [SetsValueReliably]
-        public TextInput<_> Email { get; private set; }
-
-        [FindByName]
-        public PasswordInput<_> Password { get; private set; }
-
-        [FindByName]
-        public PasswordInput<_> ConfirmPassword { get; private set; }
-
-        [FindByName("RegistrationCheckbox")]
-        public CheckBox<_> PrivacyPolicyAgreement { get; private set; }
-
-        [FindByAttribute("type", "submit")]
-        public Button<_> Register { get; private set; }
-
-        public ValidationMessageList<_> ValidationMessages { get; private set; }
-
-        public _ ShouldStayOnRegistrationPage() =>
-            PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
-
-        public _ ShouldLeaveRegistrationPage() =>
-            PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
-
-        public async Task<_> RegisterWithAsync(UITestContext context, UserRegistrationParameters parameters)
+        if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
         {
-            UserName.Set(parameters.UserName);
-            Email.Set(parameters.Email);
-            Password.Set(parameters.Password);
-            ConfirmPassword.Set(parameters.ConfirmPassword);
-            Register.Click();
-
-            await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
-
-            context.RefreshCurrentAtataContext();
-
-            return this;
+            PrivacyPolicyAgreement.Click();
         }
+
+        Register.Click();
+
+        await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+
+        context.RefreshCurrentAtataContext();
+
+        return this;
     }
 }

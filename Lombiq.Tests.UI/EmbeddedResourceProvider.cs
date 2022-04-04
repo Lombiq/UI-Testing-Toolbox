@@ -1,18 +1,17 @@
 using System.IO;
 using System.Text;
 
-namespace Lombiq.Tests.UI
+namespace Lombiq.Tests.UI;
+
+internal static class EmbeddedResourceProvider
 {
-    internal static class EmbeddedResourceProvider
+    internal static string ReadEmbeddedFile(string fileName)
     {
-        internal static string ReadEmbeddedFile(string fileName)
-        {
-            var assembly = typeof(EmbeddedResourceProvider).Assembly;
-            var resourceStream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.{fileName}");
+        var assembly = typeof(EmbeddedResourceProvider).Assembly;
+        var resourceStream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.{fileName}");
 
-            using var reader = new StreamReader(resourceStream, Encoding.UTF8);
+        using var reader = new StreamReader(resourceStream, Encoding.UTF8);
 
-            return reader.ReadToEnd();
-        }
+        return reader.ReadToEnd();
     }
 }
