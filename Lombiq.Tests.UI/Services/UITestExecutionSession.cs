@@ -217,7 +217,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 if (_configuration.ReportTeamCityMetadata)
                 {
                     TeamCityMetadataReporter.ReportImage(
-                        _testManifest.Name, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
+                        _testManifest, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
                 }
             }
 
@@ -228,7 +228,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "PageSource", htmlPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", htmlPath);
                 }
             }
 
@@ -242,7 +242,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "BrowserLog", browserLogPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
                 }
             }
 
@@ -275,7 +275,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "TestOutput", testOutputPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "TestOutput", testOutputPath);
                 }
             }
         }
@@ -338,7 +338,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "AccessibilityReport", accessbilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessbilityReportPath);
             }
         }
 
@@ -353,7 +353,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest.Name, "HtmlValidationReport", htmlValidationReportPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "HtmlValidationReport", htmlValidationReportPath);
                 }
             }
             else
@@ -566,7 +566,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration);
 
         return new UITestContext(
-            _testManifest.Name,
+            _testManifest,
             _configuration,
             sqlServerContext,
             _applicationInstance,

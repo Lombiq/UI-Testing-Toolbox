@@ -6,8 +6,6 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Drawing;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -240,13 +238,8 @@ public abstract class OrchardCoreUITestBase
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest
+        var testManifest = new UITestManifest(_testOutputHelper)
         {
-            Name = (_testOutputHelper.GetType()
-                .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                .FirstOrDefault(field => field.FieldType == typeof(ITest))
-                ?.GetValue(_testOutputHelper) as ITest)
-                ?.DisplayName,
             TestAsync = testAsync,
         };
 

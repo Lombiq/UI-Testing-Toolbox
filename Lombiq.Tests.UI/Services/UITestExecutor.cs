@@ -69,7 +69,7 @@ public static class UITestExecutor
             {
                 if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                 {
-                    TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
+                    TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
             }
 
