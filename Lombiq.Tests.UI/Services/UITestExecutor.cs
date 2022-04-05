@@ -46,7 +46,7 @@ public static class UITestExecutor
         if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
         {
             var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-            DirectoryHelper.CreateDirectoryIfNotExists(directoryPath);
+            FileSystemHelper.EnsureDirectoryExists(directoryPath);
         }
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);

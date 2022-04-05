@@ -1,6 +1,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Lombiq.Tests.UI.Helpers;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -74,7 +74,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     {
         var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
 
-        DirectoryHelper.CreateDirectoryIfNotExists(mediaFolderPath);
+        FileSystemHelper.EnsureDirectoryExists(mediaFolderPath);
 
         return IterateThroughBlobsAsync(
             blobClient =>
@@ -82,7 +82,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                 var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
                 var blobPath = blobUrl.ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
                 var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
-                DirectoryHelper.CreateDirectoryIfNotExists(Path.GetDirectoryName(blobFullPath));
+                FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(blobFullPath));
                 return blobClient.DownloadToAsync(blobFullPath);
             });
     }
