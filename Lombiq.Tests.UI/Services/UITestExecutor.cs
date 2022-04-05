@@ -1,4 +1,4 @@
-using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -46,7 +46,7 @@ public static class UITestExecutor
         if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
         {
             var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-            DirectoryHelper.CreateDirectoryIfNotExists(directoryPath);
+            FileSystemHelper.EnsureDirectoryExists(directoryPath);
         }
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
@@ -69,7 +69,7 @@ public static class UITestExecutor
             {
                 if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                 {
-                    TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
+                    TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
             }
 

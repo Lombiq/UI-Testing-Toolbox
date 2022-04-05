@@ -52,7 +52,7 @@ public class BasicTests : UITestBase
 
                 // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                 // actually sure that the values are indeed there! To make things more reliable, we've added a lot of
-                // useful methods like FillInWithRetries().
+                // useful methods like FillInWithRetriesAsync().
                 await context.FillInWithRetriesAsync(By.Id("UserName"), DefaultUser.UserName);
                 await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
 
@@ -126,6 +126,9 @@ public class BasicTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
+                await context.EnableFeatureDirectlyAsync("Lombiq.Privacy.ConsentBanner");
+                await context.GoToHomePageAsync();
+
                 // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test recipe
                 // and shows its privacy consent banner. For tracking to be enabled, even in offline mode, the user
                 // needs to give consent. This is what we do now:

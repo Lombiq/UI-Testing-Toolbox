@@ -5,7 +5,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Lombiq.HelpfulLibraries.Libraries.Mvc;
+namespace Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 
 public static class TypedRouteUITestContextExtensions
 {

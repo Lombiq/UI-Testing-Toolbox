@@ -1,4 +1,5 @@
-using Lombiq.HelpfulLibraries.Libraries.Mvc;
+using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Extensions.Features;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [DevelopmentAndLocalhostOnly]
+[AllowAnonymous]
 public class ShellFeaturesController : Controller
 {
     private readonly IShellFeaturesManager _shellFeatureManager;

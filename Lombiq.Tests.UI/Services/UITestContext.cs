@@ -1,6 +1,7 @@
-using Lombiq.HelpfulLibraries.Libraries.Mvc;
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System;
@@ -16,9 +17,9 @@ public class UITestContext
     private readonly List<BrowserLogMessage> _historicBrowserLog = new();
 
     /// <summary>
-    /// Gets the technical name of the current test.
+    /// Gets data about the currently executing test.
     /// </summary>
-    public string TestName { get; }
+    public UITestManifest TestManifest { get; }
 
     /// <summary>
     /// Gets the configuration of the test execution.
@@ -78,7 +79,7 @@ public class UITestContext
     public string TenantName { get; set; } = "Default";
 
     public UITestContext(
-        string testName,
+        UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         SqlServerRunningContext sqlServerContext,
         IWebApplicationInstance application,
@@ -86,7 +87,7 @@ public class UITestContext
         SmtpServiceRunningContext smtpContext,
         AzureBlobStorageRunningContext blobStorageContext)
     {
-        TestName = testName;
+        TestManifest = testManifest;
         Configuration = configuration;
         SqlServerRunningContext = sqlServerContext;
         Application = application;
