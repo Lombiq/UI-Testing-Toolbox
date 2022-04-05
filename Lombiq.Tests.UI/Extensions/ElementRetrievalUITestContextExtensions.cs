@@ -38,6 +38,16 @@ public static class ElementRetrievalUITestContextExtensions
         context.ExecuteLogged(nameof(GetAll), by, () => context.CreateSearchContext().FindElements(by));
 
     /// <summary>
+    /// Retrieves all the matching elements with retries within the configured timeout. At least 1 item must exist
+    /// otherwise it will throw <see cref="NotFoundException"/>.
+    /// </summary>
+    public static ReadOnlyCollection<IWebElement> GetAllWhenOneExists(this UITestContext context, By by)
+    {
+        context.Exists(by);
+        return context.GetAll(by);
+    }
+
+    /// <summary>
     /// Conditionally checks the existence of the element with retries within the configured timeout.
     /// </summary>
     public static bool CheckExistence(this UITestContext context, By by, bool exists) =>
