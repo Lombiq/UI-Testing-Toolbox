@@ -46,7 +46,7 @@ public static class AccessibilityCheckingUITestContextExtensions
                 axeResult,
                 Path.Combine(
                     accessibilityConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath,
-                    context.TestName.MakeFileSystemFriendly() + ".html"));
+                    context.TestManifest.Name.MakeFileSystemFriendly() + ".html"));
         }
     }
 
