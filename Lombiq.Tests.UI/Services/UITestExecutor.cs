@@ -12,8 +12,8 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class UITestExecutor
 {
-    private static readonly object _initLock = new();
-    private static SemaphoreSlim _semaphoreSlim;
+    private static readonly object _lockObjectOfSemaphoreSlimInitialization = new();
+    private static SemaphoreSlim _numberOfTestsLimit;
 
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
@@ -55,11 +55,11 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        if (_semaphoreSlim == null && configuration.MaxRunningConcurrentTests > 0)
+        if (_numberOfTestsLimit == null && configuration.MaxRunningConcurrentTests > 0)
         {
-            lock (_initLock)
+            lock (_lockObjectOfSemaphoreSlimInitialization)
             {
-                _semaphoreSlim ??= new SemaphoreSlim(configuration.MaxRunningConcurrentTests);
+                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxRunningConcurrentTests);
             }
         }
 
@@ -69,9 +69,9 @@ public static class UITestExecutor
         {
             try
             {
-                if (_semaphoreSlim != null)
+                if (_numberOfTestsLimit != null)
                 {
-                    await _semaphoreSlim.WaitAsync();
+                    await _numberOfTestsLimit.WaitAsync();
                 }
 
                 await using var instance = new UITestExecutionSession(testManifest, configuration);
@@ -89,7 +89,7 @@ public static class UITestExecutor
                     TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
 
-                _semaphoreSlim?.Release();
+                _numberOfTestsLimit?.Release();
             }
 
             retryCount++;
