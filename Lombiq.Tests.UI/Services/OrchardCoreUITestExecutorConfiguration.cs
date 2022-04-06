@@ -25,10 +25,20 @@ public class OrchardCoreUITestExecutorConfiguration
     public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }
 
     public int MaxRetryCount { get; set; } =
-        TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:MaxRetryCount", 2);
+        TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxRetryCount)}",
+            2);
 
     public TimeSpan RetryInterval { get; set; } =
-        TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:RetryIntervalSeconds", 0));
+        TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
+            0));
+
+    public int MaxRunningConcurrentTests { get; set; } =
+            TestConfigurationManager.GetIntConfiguration(
+                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxRunningConcurrentTests)}") is not { } intValue || intValue == 0
+                ? Environment.ProcessorCount
+                : intValue;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
     public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
