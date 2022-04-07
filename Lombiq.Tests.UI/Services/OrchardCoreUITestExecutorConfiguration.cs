@@ -47,7 +47,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </para>
     /// <para>
     /// This is important only for UI tests as there will be a running instance of the site for each UI test, which can
-    /// cause performance issues, like out of memory.
+    /// cause performance issues, like running out of memory.
     /// </para>
     /// </remarks>
     public int MaxRunningConcurrentTests { get; set; } =
