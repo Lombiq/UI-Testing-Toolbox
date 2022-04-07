@@ -6,8 +6,8 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
@@ -27,7 +27,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly List<Screenshot> _screenshots = new();
 
     // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
     private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -35,6 +34,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private static readonly object _dockerSetupLock = new();
 
     private static bool _dockerIsSetup;
+
+    private int _screenshotCount;
 
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
@@ -155,7 +156,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
-        if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
+        _screenshotCount = 0;
 
         if (_context != null)
         {
@@ -212,19 +213,19 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             {
                 await TakeScreenshotAsync(_context);
 
-                var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
-                Directory.CreateDirectory(pageScreenshotsPath);
-                var digitCount = _screenshots.Count.DigitCount();
-
-                string GetScreenshotPath(int index) =>
-                    Path.Combine(pageScreenshotsPath, index.PadZeroes(digitCount) + ".png");
-
-                for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
-
-                if (_configuration.ReportTeamCityMetadata)
+                var screenshotsSourcePath = Paths.GetTempSubDirectoryPath(_context.Id, "Screenshots");
+                if (Directory.Exists(screenshotsSourcePath))
                 {
-                    TeamCityMetadataReporter.ReportImage(
-                        _testManifest, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
+                    var screenshotsDestinationPath = Path.Combine(debugInformationPath, "Screenshots");
+                    FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
+
+                    if (_configuration.ReportTeamCityMetadata)
+                    {
+                        TeamCityMetadataReporter.ReportImage(
+                            _testManifest,
+                            "FailureScreenshot",
+                            Path.Combine(screenshotsDestinationPath, (_screenshotCount - 1).ToTechnicalString() + ".png"));
+                    }
                 }
             }
 
@@ -715,7 +716,15 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private Task TakeScreenshotAsync(UITestContext context)
     {
-        _screenshots.Add(context.TakeScreenshot());
+        var screnshotsPath = Paths.GetTempSubDirectoryPath(context.Id, "Screenshots");
+        FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
+
+        context
+            .TakeScreenshot()
+            .SaveAsFile(Path.Combine(screnshotsPath, _screenshotCount.ToTechnicalString() + ".png"));
+
+        _screenshotCount++;
+
         return Task.CompletedTask;
     }
 }
