@@ -209,25 +209,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
             // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-            if (_dumpConfiguration.CaptureScreenshots)
-            {
-                await TakeScreenshotAsync(_context);
-
-                var screenshotsSourcePath = Paths.GetTempSubDirectoryPath(_context.Id, "Screenshots");
-                if (Directory.Exists(screenshotsSourcePath))
-                {
-                    var screenshotsDestinationPath = Path.Combine(debugInformationPath, "Screenshots");
-                    FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
-
-                    if (_configuration.ReportTeamCityMetadata)
-                    {
-                        TeamCityMetadataReporter.ReportImage(
-                            _testManifest,
-                            "FailureScreenshot",
-                            Path.Combine(screenshotsDestinationPath, (_screenshotCount - 1).ToTechnicalString() + ".png"));
-                    }
-                }
-            }
+            if (_dumpConfiguration.CaptureScreenshots) await CreateScreenshotsDumpAsync(debugInformationPath);
 
             if (_dumpConfiguration.CaptureHtmlSource)
             {
@@ -726,5 +708,25 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _screenshotCount++;
 
         return Task.CompletedTask;
+    }
+
+    private async Task CreateScreenshotsDumpAsync(string debugInformationPath)
+    {
+        await TakeScreenshotAsync(_context);
+
+        var screenshotsSourcePath = Paths.GetTempSubDirectoryPath(_context.Id, "Screenshots");
+        if (Directory.Exists(screenshotsSourcePath))
+        {
+            var screenshotsDestinationPath = Path.Combine(debugInformationPath, "Screenshots");
+            FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportImage(
+                    _testManifest,
+                    "FailureScreenshot",
+                    Path.Combine(screenshotsDestinationPath, (_screenshotCount - 1).ToTechnicalString() + ".png"));
+            }
+        }
     }
 }
