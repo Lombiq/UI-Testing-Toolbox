@@ -42,7 +42,7 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
     "OrchardCoreUITestExecutorConfiguration": {
       "MaxRetryCount": 0,
       "RetryIntervalSeconds": 0,
-      "MaxParrallelTests": 0
+      "MaxParallelTests": 0
     },
     "BrowserConfiguration": {
       "Headless": true
@@ -56,7 +56,7 @@ Note that this will execute tests in headless mode, so no browser windows will b
 
 We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 
-`MaxParrallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
+`MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
 ## <a name="multi-process"></a>Multi-process test execution
 

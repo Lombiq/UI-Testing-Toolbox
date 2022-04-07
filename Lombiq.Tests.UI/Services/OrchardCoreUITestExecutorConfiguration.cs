@@ -50,9 +50,9 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cause performance issues, like running out of memory.
     /// </para>
     /// </remarks>
-    public int MaxParrallelTests { get; set; } =
+    public int MaxParallelTests { get; set; } =
             TestConfigurationManager.GetIntConfiguration(
-                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParrallelTests)}") is not { } intValue || intValue == 0
+                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is not { } intValue || intValue == 0
                 ? Environment.ProcessorCount
                 : intValue;
 

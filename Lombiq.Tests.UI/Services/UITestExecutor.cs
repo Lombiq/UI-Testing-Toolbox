@@ -55,11 +55,11 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        if (_numberOfTestsLimit == null && configuration.MaxParrallelTests > 0)
+        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
         {
             lock (_numberOfTestsLimitLock)
             {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParrallelTests);
+                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
             }
         }
 
