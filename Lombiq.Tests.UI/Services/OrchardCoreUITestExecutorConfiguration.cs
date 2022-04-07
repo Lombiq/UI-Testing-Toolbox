@@ -35,10 +35,10 @@ public class OrchardCoreUITestExecutorConfiguration
             0));
 
     /// <summary>
-    /// Gets or sets how many tests should run at the same time. Use a value of '0' to indicate that you would like the
-    /// default behavior. Use a value of '-1' to indicate that you do not wish to limit the number of tests running at
-    /// the same time. The default behaviour and '0' uses the <see cref="Environment.ProcessorCount"/> property. Set any
-    /// other positive integer to limit to the exact number.
+    /// Gets or sets how many tests should run at the same time. Use a value of 0 to indicate that you would like the
+    /// default behavior. Use a value of -1 to indicate that you do not wish to limit the number of tests running at the
+    /// same time. The default behavior and 0 uses the <see cref="Environment.ProcessorCount"/> property. Set any other
+    /// positive integer to limit to the exact number.
     /// </summary>
     /// <remarks>
     /// <para>
