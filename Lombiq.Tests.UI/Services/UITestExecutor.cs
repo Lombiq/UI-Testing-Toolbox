@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class UITestExecutor
 {
-    private static readonly object _lockObjectOfSemaphoreSlimInitialization = new();
+    private static readonly object _numberOfTestsLimitLock = new();
     private static SemaphoreSlim _numberOfTestsLimit;
 
     /// <summary>
@@ -55,11 +55,11 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        if (_numberOfTestsLimit == null && configuration.MaxRunningConcurrentTests > 0)
+        if (_numberOfTestsLimit == null && configuration.MaxParrallelTests > 0)
         {
-            lock (_lockObjectOfSemaphoreSlimInitialization)
+            lock (_numberOfTestsLimitLock)
             {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxRunningConcurrentTests);
+                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParrallelTests);
             }
         }
 

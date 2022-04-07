@@ -52,7 +52,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </remarks>
     public int MaxParrallelTests { get; set; } =
             TestConfigurationManager.GetIntConfiguration(
-                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxRunningConcurrentTests)}") is not { } intValue || intValue == 0
+                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParrallelTests)}") is not { } intValue || intValue == 0
                 ? Environment.ProcessorCount
                 : intValue;
 
