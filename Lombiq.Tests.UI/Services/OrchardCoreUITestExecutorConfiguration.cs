@@ -42,7 +42,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The XUnit MaxParrallelThreads property controls only the threads, not the actual processes started. See <see
+    /// The XUnit MaxParallelThreads property controls only the threads, not the actual processes started. See <see
     /// href="https://github.com/xunit/xunit/issues/2003"></see>.
     /// </para>
     /// <para>
