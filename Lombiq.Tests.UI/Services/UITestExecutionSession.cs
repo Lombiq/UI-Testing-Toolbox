@@ -133,6 +133,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
         finally
         {
+            await ShutdownAsync();
+
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "Finishing execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
         }
@@ -150,18 +152,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
+        if (_context != null)
+        {
+            _context.Scope?.Dispose();
+
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(Paths.GetTempSubDirectoryPath(_context.Id, string.Empty));
+        }
+
         _sqlServerManager?.Dispose();
-        _context?.Scope?.Dispose();
 
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
         _screenshotCount = 0;
 
-        if (_context != null)
-        {
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(Paths.GetTempSubDirectoryPath(_context.Id, string.Empty));
-        }
+        _context = null;
     }
 
     private Exception PrepareAndLogException(Exception ex)
@@ -550,8 +555,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         if (_dumpConfiguration.CaptureScreenshots)
         {
-            _configuration.Events.AfterPageChange -= TakeScreenshotAsync;
-            _configuration.Events.AfterPageChange += TakeScreenshotAsync;
+            _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
         var atataScope = AtataFactory.StartAtataScope(
@@ -696,14 +701,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return smtpContext;
     }
 
-    private Task TakeScreenshotAsync(UITestContext context)
+    private Task TakeScreenshotIfEnabledAsync(UITestContext context)
     {
-        var screnshotsPath = Paths.GetTempSubDirectoryPath(context.Id, "Screenshots");
+        if (!_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
+
+        var screnshotsPath = Paths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
 
         context
             .TakeScreenshot()
-            .SaveAsFile(Path.Combine(screnshotsPath, _screenshotCount.ToTechnicalString() + ".png"));
+            .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
 
         _screenshotCount++;
 
@@ -712,12 +719,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task CreateScreenshotsDumpAsync(string debugInformationPath)
     {
-        await TakeScreenshotAsync(_context);
+        await TakeScreenshotIfEnabledAsync(_context);
 
-        var screenshotsSourcePath = Paths.GetTempSubDirectoryPath(_context.Id, "Screenshots");
+        var screenshotsSourcePath = Paths.GetScreenshotsDirectoryPath(_context.Id);
         if (Directory.Exists(screenshotsSourcePath))
         {
-            var screenshotsDestinationPath = Path.Combine(debugInformationPath, "Screenshots");
+            var screenshotsDestinationPath = Path.Combine(debugInformationPath, Paths.ScreenshotsDirectoryName);
             FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
 
             if (_configuration.ReportTeamCityMetadata)
@@ -725,8 +732,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 TeamCityMetadataReporter.ReportImage(
                     _testManifest,
                     "FailureScreenshot",
-                    Path.Combine(screenshotsDestinationPath, (_screenshotCount - 1).ToTechnicalString() + ".png"));
+                    GetScreenshotPath(screenshotsDestinationPath, _screenshotCount - 1));
             }
         }
     }
+
+    private static string GetScreenshotPath(string parentDirectoryPath, int index) =>
+        Path.Combine(parentDirectoryPath, index.ToTechnicalString() + ".png");
 }
