@@ -1,5 +1,6 @@
 using CliWrap;
 using CliWrap.Builders;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
@@ -215,7 +216,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
+        _contentRootPath = Path.Combine(Environment.CurrentDirectory, Paths.TempFolderPath, Guid.NewGuid().ToString());
         Directory.CreateDirectory(_contentRootPath);
         _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }
