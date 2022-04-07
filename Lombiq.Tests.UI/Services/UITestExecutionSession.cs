@@ -708,9 +708,20 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var screnshotsPath = Paths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
 
-        context
-            .TakeScreenshot()
-            .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
+        try
+        {
+            context
+                .TakeScreenshot()
+                .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
+        }
+        catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
+        {
+            // Random "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two
+            // padding characters, or an illegal character among the padding characters." exceptions can happen.
+
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                $"Taking the screenshot #{_screenshotCount.ToTechnicalString()} failed with the following exception: {ex}");
+        }
 
         _screenshotCount++;
 
