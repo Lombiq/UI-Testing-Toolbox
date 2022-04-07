@@ -56,7 +56,7 @@ Note that this will execute tests in headless mode, so no browser windows will b
 
 We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 
-`MaxRunningConcurrentTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests parallel, checkout the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
+`MaxRunningConcurrentTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
 ## <a name="multi-process"></a>Multi-process test execution
 
