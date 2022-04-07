@@ -55,6 +55,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private static readonly object _exeCopyLock = new();
 
     private readonly OrchardCoreConfiguration _configuration;
+    private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
     private Command _command;
     private CancellationTokenSource _cancellationTokenSource;
@@ -75,9 +76,10 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         _portLeaseManager = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
 
-    public OrchardCoreInstance(OrchardCoreConfiguration configuration, ITestOutputHelper testOutputHelper)
+    public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
         _configuration = configuration;
+        _contextId = contextId;
         _testOutputHelper = testOutputHelper;
     }
 
@@ -216,7 +218,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = Path.Combine(Environment.CurrentDirectory, Paths.TempFolderPath, Guid.NewGuid().ToString());
+        _contentRootPath = Paths.GetTempSubDirectoryPath(_contextId, "App");
         Directory.CreateDirectory(_contentRootPath);
         _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }

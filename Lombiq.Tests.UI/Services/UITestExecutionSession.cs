@@ -1,8 +1,10 @@
 using Atata.HtmlValidation;
 using CliWrap.Builders;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -154,6 +156,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
         if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
+
+        if (_context != null)
+        {
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(Paths.GetTempSubDirectoryPath(_context.Id, string.Empty));
+        }
     }
 
     private Exception PrepareAndLogException(Exception ex)
@@ -507,6 +514,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task<UITestContext> CreateContextAsync()
     {
+        var contextId = Guid.NewGuid().ToString();
+
+        FileSystemHelper.EnsureDirectoryExists(Paths.GetTempSubDirectoryPath(contextId, string.Empty));
+
         SqlServerRunningContext sqlServerContext = null;
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
         SmtpServiceRunningContext smtpContext = null;
@@ -533,7 +544,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
+        _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, contextId, _testOutputHelper);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
@@ -566,13 +577,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration);
 
         return new UITestContext(
+            contextId,
             _testManifest,
             _configuration,
-            sqlServerContext,
             _applicationInstance,
             atataScope,
-            smtpContext,
-            azureBlobStorageContext);
+            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext));
     }
 
     private string GetSetupHashCode() =>
