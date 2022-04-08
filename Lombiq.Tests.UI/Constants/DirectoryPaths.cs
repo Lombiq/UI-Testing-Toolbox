@@ -11,7 +11,7 @@ public static class DirectoryPaths
     public const string Screenshots = nameof(Screenshots);
 
     public static string GetTempSubDirectoryPath(string contextId, params string[] subDirectoryNames) =>
-        Path.Combine(new[] { Environment.CurrentDirectory, Temp, contextId }.Union(subDirectoryNames).ToArray());
+        Path.Combine(new[] { Environment.CurrentDirectory, Temp, contextId }.Concat(subDirectoryNames).ToArray());
 
     public static string GetScreenshotsDirectoryPath(string contextId) =>
         GetTempSubDirectoryPath(contextId, Screenshots);
