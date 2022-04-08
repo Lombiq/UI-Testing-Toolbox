@@ -156,7 +156,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _context.Scope?.Dispose();
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id, string.Empty));
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
         }
 
         _sqlServerManager?.Dispose();
@@ -504,7 +504,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var contextId = Guid.NewGuid().ToString();
 
-        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempSubDirectoryPath(contextId, string.Empty));
+        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
 
         SqlServerRunningContext sqlServerContext = null;
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
