@@ -46,7 +46,10 @@ public sealed class MonkeyTestingOptions
     /// </summary>
     public List<string> GremlinsSpecies { get; } = new()
     {
-        "gremlins.species.clicker({ log: true })",
+        @"gremlins.species.clicker({
+            log: true,
+            canClick: (element) => element.getAttribute(""href"").includes(""localhost:"")})",
+
         "gremlins.species.toucher()",
         "gremlins.species.formFiller()",
         "gremlins.species.scroller()",
