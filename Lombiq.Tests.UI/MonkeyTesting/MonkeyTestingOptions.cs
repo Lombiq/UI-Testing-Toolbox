@@ -48,7 +48,7 @@ public sealed class MonkeyTestingOptions
     {
         @"gremlins.species.clicker({
             log: true,
-            canClick: (element) => element.getAttribute(""href"").includes(""localhost:"")})",
+            canClick: (element) => element.href?.includes(""localhost:"")})",
 
         "gremlins.species.toucher()",
         "gremlins.species.formFiller()",
