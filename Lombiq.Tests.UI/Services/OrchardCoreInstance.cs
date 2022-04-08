@@ -218,7 +218,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = Paths.GetTempSubDirectoryPath(_contextId, "App");
+        _contentRootPath = DirectoryPaths.GetTempSubDirectoryPath(_contextId, "App");
         Directory.CreateDirectory(_contentRootPath);
         _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }

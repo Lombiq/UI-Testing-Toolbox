@@ -156,7 +156,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _context.Scope?.Dispose();
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(Paths.GetTempSubDirectoryPath(_context.Id, string.Empty));
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id, string.Empty));
         }
 
         _sqlServerManager?.Dispose();
@@ -436,8 +436,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory itself
         // (which would be logical). Removing the volume directory instantly severs the connection between host and the
         // container so that should be avoided at all costs.
-        docker.ContainerSnapshotPath += '/' + Paths.DefaultSetupSnapshotDirectoryPath; // Always a Unix path.
-        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Paths.DefaultSetupSnapshotDirectoryPath);
+        docker.ContainerSnapshotPath += '/' + DirectoryPaths.SetupSnapshot; // Always a Unix path.
+        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, DirectoryPaths.SetupSnapshot);
 
         _dockerConfiguration = docker;
 
@@ -504,7 +504,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var contextId = Guid.NewGuid().ToString();
 
-        FileSystemHelper.EnsureDirectoryExists(Paths.GetTempSubDirectoryPath(contextId, string.Empty));
+        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempSubDirectoryPath(contextId, string.Empty));
 
         SqlServerRunningContext sqlServerContext = null;
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
@@ -705,7 +705,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
 
-        var screnshotsPath = Paths.GetScreenshotsDirectoryPath(_context.Id);
+        var screnshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
 
         try
@@ -732,10 +732,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         await TakeScreenshotIfEnabledAsync(_context);
 
-        var screenshotsSourcePath = Paths.GetScreenshotsDirectoryPath(_context.Id);
+        var screenshotsSourcePath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
         if (Directory.Exists(screenshotsSourcePath))
         {
-            var screenshotsDestinationPath = Path.Combine(debugInformationPath, Paths.ScreenshotsDirectoryName);
+            var screenshotsDestinationPath = Path.Combine(debugInformationPath, DirectoryPaths.Screenshots);
             FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
 
             if (_configuration.ReportTeamCityMetadata)

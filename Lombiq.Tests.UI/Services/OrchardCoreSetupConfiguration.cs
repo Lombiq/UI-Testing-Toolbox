@@ -30,7 +30,7 @@ public class OrchardCoreSetupConfiguration
     /// </summary>
     public bool FastFailSetup { get; set; } = true;
 
-    public string SetupSnapshotDirectoryPath { get; set; } = Paths.DefaultSetupSnapshotDirectoryPath;
+    public string SetupSnapshotDirectoryPath { get; set; } = DirectoryPaths.SetupSnapshot;
 
     public BeforeSetupHandler BeforeSetup { get; set; }
 }
