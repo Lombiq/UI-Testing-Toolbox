@@ -1,6 +1,7 @@
-using Lombiq.HelpfulLibraries.Libraries.Mvc;
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System;
@@ -16,9 +17,15 @@ public class UITestContext
     private readonly List<BrowserLogMessage> _historicBrowserLog = new();
 
     /// <summary>
-    /// Gets the technical name of the current test.
+    /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
+    /// external systems, or in file names.
     /// </summary>
-    public string TestName { get; }
+    public string Id { get; }
+
+    /// <summary>
+    /// Gets data about the currently executing test.
+    /// </summary>
+    public UITestManifest TestManifest { get; }
 
     /// <summary>
     /// Gets the configuration of the test execution.
@@ -78,21 +85,21 @@ public class UITestContext
     public string TenantName { get; set; } = "Default";
 
     public UITestContext(
-        string testName,
+        string id,
+        UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
-        SqlServerRunningContext sqlServerContext,
         IWebApplicationInstance application,
         AtataScope scope,
-        SmtpServiceRunningContext smtpContext,
-        AzureBlobStorageRunningContext blobStorageContext)
+        RunningContextContainer runningContextContainer)
     {
-        TestName = testName;
+        Id = id;
+        TestManifest = testManifest;
         Configuration = configuration;
-        SqlServerRunningContext = sqlServerContext;
+        SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
-        SmtpServiceRunningContext = smtpContext;
-        AzureBlobStorageRunningContext = blobStorageContext;
+        SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
+        AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
     }
 
     /// <summary>

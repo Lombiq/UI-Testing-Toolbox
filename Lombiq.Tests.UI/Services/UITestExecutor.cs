@@ -1,9 +1,10 @@
-using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -11,6 +12,9 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class UITestExecutor
 {
+    private static readonly object _numberOfTestsLimitLock = new();
+    private static SemaphoreSlim _numberOfTestsLimit;
+
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
@@ -46,10 +50,18 @@ public static class UITestExecutor
         if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
         {
             var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-            DirectoryHelper.CreateDirectoryIfNotExists(directoryPath);
+            FileSystemHelper.EnsureDirectoryExists(directoryPath);
         }
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
+
+        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
+        {
+            lock (_numberOfTestsLimitLock)
+            {
+                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
+            }
+        }
 
         var retryCount = 0;
         var passed = false;
@@ -57,6 +69,11 @@ public static class UITestExecutor
         {
             try
             {
+                if (_numberOfTestsLimit != null)
+                {
+                    await _numberOfTestsLimit.WaitAsync();
+                }
+
                 await using var instance = new UITestExecutionSession(testManifest, configuration);
                 passed = await instance.ExecuteAsync(retryCount, dumpRootPath);
             }
@@ -69,8 +86,10 @@ public static class UITestExecutor
             {
                 if (configuration.ReportTeamCityMetadata && (passed || retryCount == configuration.MaxRetryCount))
                 {
-                    TeamCityMetadataReporter.ReportInt(testManifest.Name, "TryCount", retryCount + 1);
+                    TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
+
+                _numberOfTestsLimit?.Release();
             }
 
             retryCount++;

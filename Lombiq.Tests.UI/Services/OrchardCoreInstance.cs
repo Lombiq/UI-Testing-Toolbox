@@ -1,6 +1,7 @@
 using CliWrap;
 using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using System;
@@ -28,9 +29,8 @@ public class OrchardCoreConfiguration
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 
     /// <summary>
-    /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline
-    /// mode. This way it won't try to reach out to a remote server with telemetry and the test remains
-    /// self-sufficient.
+    /// Adds a command line argument to the app during <see cref="BeforeAppStart"/> that switches AI into offline mode.
+    /// This way it won't try to reach out to a remote server with telemetry and the test remains self-sufficient.
     /// </summary>
     public void EnableApplicationInsightsOfflineOperation() =>
         BeforeAppStart +=
@@ -58,6 +58,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     private readonly OrchardCoreConfiguration _configuration;
+    private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
     private Command _command;
     private CancellationTokenSource _cancellationTokenSource;
@@ -80,9 +81,10 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         _portLeaseManager = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
 
-    public OrchardCoreInstance(OrchardCoreConfiguration configuration, ITestOutputHelper testOutputHelper)
+    public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
         _configuration = configuration;
+        _contextId = contextId;
         _testOutputHelper = testOutputHelper;
     }
 
@@ -148,8 +150,14 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         argumentsBuilder = argumentsBuilder
             .Add("--urls").Add(url)
             .Add("--contentRoot").Add(_contentRootPath)
-            .Add("--webroot=" + Path.Combine(_contentRootPath, "wwwroot"))
-            .Add("--environment").Add("Development");
+            .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
+            .Add("--environment").Add("Development")
+            // This logging provider is a hard requirement, because we identify when the web server has started by the
+            // information log with the message "Application started. Press Ctrl+C to shut down.". The MS Docs says
+            // (https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio#new-hosting-model)
+            // that you don't need the Microsoft.Hosting.Lifetime provider so some consumers may remove it during the
+            // .NET 6 migration, which would cause Lombiq.Tests.UI to wait indefinitely.
+            .Add("--Logging:LogLevel:Microsoft.Hosting.Lifetime").Add("Information");
 
         if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
 
@@ -217,7 +225,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
+        _contentRootPath = DirectoryPaths.GetTempSubDirectoryPath(_contextId, "App");
         Directory.CreateDirectory(_contentRootPath);
         _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }

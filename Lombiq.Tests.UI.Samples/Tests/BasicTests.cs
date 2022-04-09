@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -20,20 +19,25 @@ public class BasicTests : UITestBase
     {
     }
 
-    // Checking that everything is OK with the homepage as an anonymous user. Note the attributes: [Theory] is
-    // necessary for xUnit, while [Chrome] is an input parameter of the test. The latter is an important concept:
-    // You can create so-called data-driven tests. See here for more info:
+    // Checking that everything is OK with the homepage as an anonymous user. Note the attributes: [Theory] is necessary
+    // for xUnit, while [Chrome] is an input parameter of the test. The latter is an important concept: You can create
+    // so-called data-driven tests. See here for more info:
     // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
-    //
-    // See the extension method for the test body. It's reused in other tests to verify different features too.
     [Theory, Chrome]
     public Task AnonymousHomePageShouldExist(Browser browser) =>
         ExecuteTestAfterSetupAsync(
-            context => context.CheckIfAnonymousHomePageExistsAsync(),
-            browser,
-            // We make sure this test uses SQLite even if you enabled it in the TestConfiguration.json, because
-            // there is already an equivalent test in SqlServerTests that uses SQL Server
-            configuration => configuration.UseSqlServer = false);
+            async context =>
+            {
+                // Is the title correct?
+                context
+                    .Get(By.ClassName("navbar-brand"))
+                    .Text
+                    .ShouldBe("Lombiq's OSOCE - UI Testing");
+
+                // Are we logged out?
+                (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
+            },
+            browser);
 
     // Let's click around now. The login page is quite important, so let's make sure it works. While it's an Orchard
     // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
@@ -42,13 +46,13 @@ public class BasicTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate
-                // to any URL.
+                // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate to
+                // any URL.
                 await context.GoToRelativeUrlAsync("/Login");
 
                 // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
-                // actually sure that the values are indeed there! To make things more reliable, we've added a lot
-                // of useful methods like FillInWithRetries().
+                // actually sure that the values are indeed there! To make things more reliable, we've added a lot of
+                // useful methods like FillInWithRetriesAsync().
                 await context.FillInWithRetriesAsync(By.Id("UserName"), DefaultUser.UserName);
                 await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
 
@@ -60,8 +64,8 @@ public class BasicTests : UITestBase
                 (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
 
                 // Note that if you want the user to be logged in for the test (instead of testing the login feature
-                // itself), you don't need to log in via the login form every time: That would be slow and you'd
-                // test the login process multiple times. Use context.SignInDirectly() instead. Check out the
+                // itself), you don't need to log in via the login form every time: That would be slow and you'd test
+                // the login process multiple times. Use context.SignInDirectly() instead. Check out the
                 // ShortcutsShouldWork test below.
             },
             browser);
@@ -75,21 +79,15 @@ public class BasicTests : UITestBase
             browser,
             // You can change the configuration even for each test.
             configuration =>
-            {
-                // We make sure this test uses SQLite even if you enabled it in the TestConfiguration.json, because
-                // there is already an equivalent test in SqlServerTests that uses SQL Server
-                configuration.UseSqlServer = false;
-
-                // ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on that.
                 // By default, apart from some commonly known exceptions, the browser log should be empty. However,
+                // ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on that.
                 configuration.AssertBrowserLog =
                     messages =>
-                    {
-                        var messagesWithoutToggle = messages.Where(message =>
-                            !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
-                        OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
-                    };
-            });
+                        {
+                            var messagesWithoutToggle = messages.Where(message =>
+                                !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                            OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
+                        });
 
     // Let's see a couple more useful shortcuts in action.
     [Theory, Chrome]
@@ -97,8 +95,8 @@ public class BasicTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                // If you need an authenticated user but you aren't testing the login specifically then you can use
-                // this shortcut to authenticate (note that you can specify a different user in an argument too):
+                // If you need an authenticated user but you aren't testing the login specifically then you can use this
+                // shortcut to authenticate (note that you can specify a different user in an argument too):
                 await context.SignInDirectlyAsync();
 
                 // You know this shortcut already:
@@ -118,19 +116,22 @@ public class BasicTests : UITestBase
             },
             browser);
 
-    // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry
-    // in Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during
-    // UI testing since tests should be self-contained and only test the app. However, it would be still nice to at
-    // least have some idea that the module works: Thus we've built an offline mode into it, what we turned on back
-    // in UITestBase. Thus we can check at least that.
+    // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry in
+    // Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during UI
+    // testing since tests should be self-contained and only test the app. However, it would be still nice to at least
+    // have some idea that the module works: Thus we've built an offline mode into it, what we turned on back in
+    // UITestBase. Thus we can check at least that.
     [Theory, Chrome]
     public Task ApplicationInsightsTrackingShouldBePresent(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test
-                // recipe and shows its privacy consent banner. For tracking to be enabled, even in offline mode,
-                // the user needs to give consent. This is what we do now:
+                await context.EnableFeatureDirectlyAsync("Lombiq.Privacy.ConsentBanner");
+                await context.GoToHomePageAsync();
+
+                // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test recipe
+                // and shows its privacy consent banner. For tracking to be enabled, even in offline mode, the user
+                // needs to give consent. This is what we do now:
                 await context.ClickReliablyOnAsync(By.Id("privacy-consent-accept-button"));
                 context.Refresh();
 
@@ -139,8 +140,8 @@ public class BasicTests : UITestBase
                 var appInsightsExist = context
                     .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
 
-                // Our custom message helps debugging, otherwise from the test output you could only tell that a
-                // a value should be true but is false which is less than helpful.
+                // Our custom message helps debugging, otherwise from the test output you could only tell that a a value
+                // should be true but is false which is less than helpful.
                 appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
             },
             browser);

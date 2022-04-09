@@ -1,4 +1,4 @@
-using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 

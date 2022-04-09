@@ -14,5 +14,9 @@ public class FeatureToggleTestBenchController : Controller
         "CA1822:Mark members as static",
         Justification = "It's a controller action that needs to be instance-level.")]
 #pragma warning restore IDE0079 // Remove unnecessary suppression
+    [SuppressMessage(
+        "Minor Code Smell",
+        "S3400:Methods should not return constants",
+        Justification = "Necessary to check that it works when run from a test.")]
     public string Index() => "The Feature Toggle Test Bench worked.";
 }
