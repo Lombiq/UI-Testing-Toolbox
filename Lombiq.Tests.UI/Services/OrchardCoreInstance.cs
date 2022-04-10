@@ -1,6 +1,6 @@
 using CliWrap;
 using CliWrap.Builders;
-using Lombiq.HelpfulLibraries.Libraries.Utilities;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
