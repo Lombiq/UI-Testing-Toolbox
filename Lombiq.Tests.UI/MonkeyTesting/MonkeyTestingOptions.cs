@@ -38,7 +38,8 @@ public sealed class MonkeyTestingOptions
     /// <para>By default contains:</para>
     /// <list type="number">
     /// <item><description><c>"gremlins.species.clicker({ log: true, canClick: On HTML elements that have a href
-    /// attribute with an URL to a local site, or on HTML elements that do not have a href attribute.
+    /// attribute with an URL to a local site, or on HTML elements that do not have a href attribute (if the parent has
+    /// an invalid URL the child will not be clicked).
     /// })"</c></description></item>
     /// <item><description><c>"gremlins.species.toucher()"</c></description></item>
     /// <item><description><c>"gremlins.species.formFiller()"</c></description></item>
@@ -50,9 +51,15 @@ public sealed class MonkeyTestingOptions
     {
         @"gremlins.species.clicker({
             log: true,
-            canClick: (element) =>
-                /https:\/\/localhost:\d\d\d\d.*/.test(element.href) ||
-                !element.hasAttribute('href')})",
+            canClick: (element) => {
+                    for ( ; element && element !== document; element = element.parentNode ) {
+                        if(!(/https:\/\/localhost:\d\d\d\d.*/.test(element.href) || !element.hasAttribute('href'))) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }})",
 
         "gremlins.species.toucher()",
         "gremlins.species.formFiller()",
