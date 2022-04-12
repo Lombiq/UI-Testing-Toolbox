@@ -25,10 +25,36 @@ public class OrchardCoreUITestExecutorConfiguration
     public OrchardCoreConfiguration OrchardCoreConfiguration { get; set; }
 
     public int MaxRetryCount { get; set; } =
-        TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:MaxRetryCount", 2);
+        TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxRetryCount)}",
+            2);
 
     public TimeSpan RetryInterval { get; set; } =
-        TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration("OrchardCoreUITestExecutorConfiguration:RetryIntervalSeconds", 0));
+        TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
+            0));
+
+    /// <summary>
+    /// Gets or sets how many tests should run at the same time. Use a value of 0 to indicate that you would like the
+    /// default behavior. Use a value of -1 to indicate that you do not wish to limit the number of tests running at the
+    /// same time. The default behavior and 0 uses the <see cref="Environment.ProcessorCount"/> property. Set any other
+    /// positive integer to limit to the exact number.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The XUnit MaxParallelThreads property controls only the threads, not the actual processes started. See <see
+    /// href="https://github.com/xunit/xunit/issues/2003"></see>.
+    /// </para>
+    /// <para>
+    /// This is important only for UI tests as there will be a running instance of the site for each UI test, which can
+    /// cause performance issues, like running out of memory.
+    /// </para>
+    /// </remarks>
+    public int MaxParallelTests { get; set; } =
+            TestConfigurationManager.GetIntConfiguration(
+                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is not { } intValue || intValue == 0
+                ? Environment.ProcessorCount
+                : intValue;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
     public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;

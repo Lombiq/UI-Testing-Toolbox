@@ -17,6 +17,12 @@ public class UITestContext
     private readonly List<BrowserLogMessage> _historicBrowserLog = new();
 
     /// <summary>
+    /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
+    /// external systems, or in file names.
+    /// </summary>
+    public string Id { get; }
+
+    /// <summary>
     /// Gets data about the currently executing test.
     /// </summary>
     public UITestManifest TestManifest { get; }
@@ -79,21 +85,21 @@ public class UITestContext
     public string TenantName { get; set; } = "Default";
 
     public UITestContext(
+        string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
-        SqlServerRunningContext sqlServerContext,
         IWebApplicationInstance application,
         AtataScope scope,
-        SmtpServiceRunningContext smtpContext,
-        AzureBlobStorageRunningContext blobStorageContext)
+        RunningContextContainer runningContextContainer)
     {
+        Id = id;
         TestManifest = testManifest;
         Configuration = configuration;
-        SqlServerRunningContext = sqlServerContext;
+        SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
-        SmtpServiceRunningContext = smtpContext;
-        AzureBlobStorageRunningContext = blobStorageContext;
+        SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
+        AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
     }
 
     /// <summary>
