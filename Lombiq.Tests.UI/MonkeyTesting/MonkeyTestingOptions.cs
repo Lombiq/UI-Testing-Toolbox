@@ -52,8 +52,8 @@ public sealed class MonkeyTestingOptions
         @"gremlins.species.clicker({
             log: true,
             canClick: (element) => {
-                    for ( ; element && element !== document; element = element.parentNode ) {
-                        if(!(/https:\/\/localhost:\d\d\d\d.*/.test(element.href) || !element.hasAttribute('href'))) {
+                    for (; element && element !== document; element = element.parentNode) {
+                        if (!(/https:\/\/localhost:\d\d\d\d.*/.test(element.href) || !element.hasAttribute('href'))) {
                             return false;
                         }
                     }
