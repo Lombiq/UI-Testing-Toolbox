@@ -37,7 +37,9 @@ public sealed class MonkeyTestingOptions
     /// <para>Gets the gremlins' species.</para>
     /// <para>By default contains:</para>
     /// <list type="number">
-    /// <item><description><c>"gremlins.species.clicker({ log: true })"</c></description></item>
+    /// <item><description><c>"gremlins.species.clicker({ log: true, canClick: On HTML elements that have a href
+    /// attribute with an URL to a local site, or on HTML elements that do not have a href attribute.
+    /// })"</c></description></item>
     /// <item><description><c>"gremlins.species.toucher()"</c></description></item>
     /// <item><description><c>"gremlins.species.formFiller()"</c></description></item>
     /// <item><description><c>"gremlins.species.scroller()"</c></description></item>
