@@ -43,16 +43,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null)
     {
-        await context.TestSetupWithInvalidDataAsync();
-        await context.TestSetupAsync(setupParameters);
-        await context.TestRegistrationWithInvalidDataAsync();
-        await context.TestRegistrationAsync();
-        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
-        await context.TestLoginWithInvalidDataAsync();
-        await context.TestLoginAsync();
-        await context.TestContentOperationsAsync();
-        await context.TestTurningFeatureOnAndOffAsync();
-        await context.TestLogoutAsync();
+        await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
+        await context.TestBasicOrchardFeaturesExceptSetupAsync();
     }
 
     /// <summary>
@@ -84,13 +76,72 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null)
     {
-        await context.TestSetupWithInvalidDataAsync();
-        await context.TestSetupAsync(setupParameters);
+        await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync();
+    }
+
+    /// <summary>
+    /// <para>Tests all the basic Orchard features except for setup.</para>
+    /// <para>The test method assumes that the site is set up.</para>
+    /// </summary>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestBasicOrchardFeaturesExceptSetupAsync(this UITestContext context)
+    {
+        await context.TestRegistrationWithInvalidDataAsync();
+        await context.TestRegistrationAsync();
+        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
         await context.TestContentOperationsAsync();
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestLogoutAsync();
+    }
+
+    /// <summary>
+    /// <para>Tests all the basic Orchard features except for setup and registration.</para>
+    /// <para>The test method assumes that the site is set up.</para>
+    /// </summary>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(this UITestContext context)
+    {
+        await context.TestLoginWithInvalidDataAsync();
+        await context.TestLoginAsync();
+        await context.TestContentOperationsAsync();
+        await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestLogoutAsync();
+    }
+
+    /// <summary>
+    /// <para>Tests the site setup with optionally set <paramref name="setupParameters"/>. By default uses new <see
+    /// cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/>
+    /// value, and tests the site setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/>
+    /// instance with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>, <see
+    /// cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/> and <see
+    /// cref="OrchardCoreSetupParameters.Password"/>.</para>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// </summary>
+    /// <param name="setupParameters">The setup parameters.</param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null)
+    {
+        await context.TestSetupWithInvalidDataAsync();
+        await context.TestSetupAsync(setupParameters);
+    }
+
+    /// <summary>
+    /// <para>Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/> and tests the
+    /// site setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/> instance with empty
+    /// values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>, <see
+    /// cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/> and <see
+    /// cref="OrchardCoreSetupParameters.Password"/>.</para>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// </summary>
+    /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, string setupRecipeId)
+    {
+        await context.TestSetupWithInvalidDataAsync();
+        await context.TestSetupAsync(setupRecipeId);
     }
 
     /// <summary>
