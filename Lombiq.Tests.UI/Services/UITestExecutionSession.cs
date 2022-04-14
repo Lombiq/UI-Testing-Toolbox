@@ -68,22 +68,24 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            var snapshotSubdirectory = "Default";
-            if (_configuration.UseSqlServer)
-            {
-                snapshotSubdirectory = _configuration.UseAzureBlobStorage
-                    ? "SqlServer-AzureBlob"
-                    : "SqlServer";
-            }
-            else if (_configuration.UseAzureBlobStorage)
-            {
-                snapshotSubdirectory = "AzureBlob";
-            }
-
-            _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
-
             if (_hasSetupOperation)
             {
+                var snapshotSubdirectory = "Default";
+                if (_configuration.UseSqlServer)
+                {
+                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                        ? "SqlServer-AzureBlob"
+                        : "SqlServer";
+                }
+                else if (_configuration.UseAzureBlobStorage)
+                {
+                    snapshotSubdirectory = "AzureBlob";
+                }
+
+                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation.GetHashCode().ToTechnicalString();
+
+                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
 
                 _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
