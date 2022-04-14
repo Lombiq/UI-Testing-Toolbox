@@ -39,6 +39,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
+    private bool _hasSetupOperation;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
@@ -65,24 +66,26 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         try
         {
             var setupConfiguration = _configuration.SetupConfiguration;
-            var hasSetupOperation = setupConfiguration.SetupOperation != null;
+            _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            var snapshotSubdirectory = "Default";
-            if (_configuration.UseSqlServer)
+            if (_hasSetupOperation)
             {
-                snapshotSubdirectory = _configuration.UseAzureBlobStorage
-                    ? "SqlServer-AzureBlob"
-                    : "SqlServer";
-            }
-            else if (_configuration.UseAzureBlobStorage)
-            {
-                snapshotSubdirectory = "AzureBlob";
-            }
+                var snapshotSubdirectory = "Default";
+                if (_configuration.UseSqlServer)
+                {
+                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                        ? "SqlServer-AzureBlob"
+                        : "SqlServer";
+                }
+                else if (_configuration.UseAzureBlobStorage)
+                {
+                    snapshotSubdirectory = "AzureBlob";
+                }
 
-            _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation.GetHashCode().ToTechnicalString();
 
-            if (hasSetupOperation)
-            {
+                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
 
                 _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
@@ -622,7 +625,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _dockerConfiguration?.ContainerSnapshotPath ??
                 _snapshotDirectoryPath;
 
-            if (!Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath)) return;
+            if (!_hasSetupOperation || !Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath))
+            {
+                return;
+            }
 
             _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
@@ -669,7 +675,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             argumentsBuilder.Add("--OrchardCore:OrchardCore_Media_Azure:CreateContainer").Add("true");
             argumentsBuilder.Add("--Lombiq_Tests_UI:UseAzureBlobStorage").Add("true");
 
-            if (!Directory.Exists(_snapshotDirectoryPath)) return;
+            if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
             await _azureBlobStorageManager.RestoreSnapshotAsync(_snapshotDirectoryPath);
         }

@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Constants;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -30,7 +31,8 @@ public class OrchardCoreSetupConfiguration
     /// </summary>
     public bool FastFailSetup { get; set; } = true;
 
-    public string SetupSnapshotDirectoryPath { get; set; } = DirectoryPaths.SetupSnapshot;
+    public string SetupSnapshotDirectoryPath { get; set; } =
+        Path.Combine(DirectoryPaths.Temp, DirectoryPaths.SetupSnapshot);
 
     public BeforeSetupHandler BeforeSetup { get; set; }
 }
