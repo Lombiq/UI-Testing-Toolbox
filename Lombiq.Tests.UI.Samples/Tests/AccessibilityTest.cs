@@ -18,7 +18,7 @@ public class AccessibilityTest : UITestBase
     }
 
     [Theory, Chrome]
-    public Task FrontendPagesShoudlBeAccessbile(Browser browser) =>
+    public Task FrontendPagesShouldBeAccessible(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
                 // This is just a simple test that visits two pages: The homepage, where the test will start by default,
