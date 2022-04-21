@@ -13,7 +13,7 @@ public static class MediaLibraryUITestContextExtensions
     /// <param name="folderName">The folder containing the desired file.</param>
     /// <param name="fileName">The file to select.</param>
     /// <param name="useRootFolder">Determines whether to search for the file in the root Media Library folder.</param>
-    public static async Task SelectExistingFileFromMediaLibraryAsync(
+    public static async Task SetMediaFieldUsingExistingFileFromMediaLibraryAsync(
         this UITestContext context,
         string fieldId,
         string folderName,
