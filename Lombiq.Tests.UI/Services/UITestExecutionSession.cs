@@ -1,11 +1,13 @@
 using Atata.HtmlValidation;
 using CliWrap.Builders;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
@@ -25,7 +27,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly List<Screenshot> _screenshots = new();
 
     // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
     private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
@@ -34,8 +35,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private static bool _dockerIsSetup;
 
+    private int _screenshotCount;
+
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
+    private bool _hasSetupOperation;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
@@ -62,24 +66,26 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         try
         {
             var setupConfiguration = _configuration.SetupConfiguration;
-            var hasSetupOperation = setupConfiguration.SetupOperation != null;
+            _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            var snapshotSubdirectory = "Default";
-            if (_configuration.UseSqlServer)
+            if (_hasSetupOperation)
             {
-                snapshotSubdirectory = _configuration.UseAzureBlobStorage
-                    ? "SqlServer-AzureBlob"
-                    : "SqlServer";
-            }
-            else if (_configuration.UseAzureBlobStorage)
-            {
-                snapshotSubdirectory = "AzureBlob";
-            }
+                var snapshotSubdirectory = "Default";
+                if (_configuration.UseSqlServer)
+                {
+                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                        ? "SqlServer-AzureBlob"
+                        : "SqlServer";
+                }
+                else if (_configuration.UseAzureBlobStorage)
+                {
+                    snapshotSubdirectory = "AzureBlob";
+                }
 
-            _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation.GetHashCode().ToTechnicalString();
 
-            if (hasSetupOperation)
-            {
+                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
 
                 _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
@@ -130,6 +136,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
         finally
         {
+            await ShutdownAsync();
+
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "Finishing execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
         }
@@ -147,13 +155,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
+        if (_context != null)
+        {
+            _context.Scope?.Dispose();
+
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
+        }
+
         _sqlServerManager?.Dispose();
-        _context?.Scope?.Dispose();
 
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
 
-        if (_dumpConfiguration.CaptureScreenshots) _screenshots.Clear();
+        _screenshotCount = 0;
+
+        _context = null;
     }
 
     private Exception PrepareAndLogException(Exception ex)
@@ -201,25 +217,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
             // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-            if (_dumpConfiguration.CaptureScreenshots)
-            {
-                await TakeScreenshotAsync(_context);
-
-                var pageScreenshotsPath = Path.Combine(debugInformationPath, "Screenshots");
-                Directory.CreateDirectory(pageScreenshotsPath);
-                var digitCount = _screenshots.Count.DigitCount();
-
-                string GetScreenshotPath(int index) =>
-                    Path.Combine(pageScreenshotsPath, index.PadZeroes(digitCount) + ".png");
-
-                for (int i = 0; i < _screenshots.Count; i++) _screenshots[i].SaveAsFile(GetScreenshotPath(i));
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportImage(
-                        _testManifest, "FailureScreenshot", GetScreenshotPath(_screenshots.Count - 1));
-                }
-            }
+            if (_dumpConfiguration.CaptureScreenshots) await CreateScreenshotsDumpAsync(debugInformationPath);
 
             if (_dumpConfiguration.CaptureHtmlSource)
             {
@@ -441,8 +439,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory itself
         // (which would be logical). Removing the volume directory instantly severs the connection between host and the
         // container so that should be avoided at all costs.
-        docker.ContainerSnapshotPath += '/' + Snapshots.DefaultSetupSnapshotDirectoryPath; // Always a Unix path.
-        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, Snapshots.DefaultSetupSnapshotDirectoryPath);
+        docker.ContainerSnapshotPath += '/' + DirectoryPaths.SetupSnapshot; // Always a Unix path.
+        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, DirectoryPaths.SetupSnapshot);
 
         _dockerConfiguration = docker;
 
@@ -507,6 +505,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task<UITestContext> CreateContextAsync()
     {
+        var contextId = Guid.NewGuid().ToString();
+
+        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+
         SqlServerRunningContext sqlServerContext = null;
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
         SmtpServiceRunningContext smtpContext = null;
@@ -533,7 +535,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, _testOutputHelper);
+        _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, contextId, _testOutputHelper);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
@@ -556,8 +558,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         if (_dumpConfiguration.CaptureScreenshots)
         {
-            _configuration.Events.AfterPageChange -= TakeScreenshotAsync;
-            _configuration.Events.AfterPageChange += TakeScreenshotAsync;
+            _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
         var atataScope = AtataFactory.StartAtataScope(
@@ -566,13 +568,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration);
 
         return new UITestContext(
+            contextId,
             _testManifest,
             _configuration,
-            sqlServerContext,
             _applicationInstance,
             atataScope,
-            smtpContext,
-            azureBlobStorageContext);
+            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext));
     }
 
     private string GetSetupHashCode() =>
@@ -624,7 +625,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _dockerConfiguration?.ContainerSnapshotPath ??
                 _snapshotDirectoryPath;
 
-            if (!Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath)) return;
+            if (!_hasSetupOperation || !Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath))
+            {
+                return;
+            }
 
             _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
 
@@ -671,7 +675,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             argumentsBuilder.Add("--OrchardCore:OrchardCore_Media_Azure:CreateContainer").Add("true");
             argumentsBuilder.Add("--Lombiq_Tests_UI:UseAzureBlobStorage").Add("true");
 
-            if (!Directory.Exists(_snapshotDirectoryPath)) return;
+            if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
             await _azureBlobStorageManager.RestoreSnapshotAsync(_snapshotDirectoryPath);
         }
@@ -703,9 +707,53 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return smtpContext;
     }
 
-    private Task TakeScreenshotAsync(UITestContext context)
+    private Task TakeScreenshotIfEnabledAsync(UITestContext context)
     {
-        _screenshots.Add(context.TakeScreenshot());
+        if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
+
+        var screnshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
+
+        try
+        {
+            context
+                .TakeScreenshot()
+                .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
+        }
+        catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
+        {
+            // Random "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two
+            // padding characters, or an illegal character among the padding characters." exceptions can happen.
+
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                $"Taking the screenshot #{_screenshotCount.ToTechnicalString()} failed with the following exception: {ex}");
+        }
+
+        _screenshotCount++;
+
         return Task.CompletedTask;
     }
+
+    private async Task CreateScreenshotsDumpAsync(string debugInformationPath)
+    {
+        await TakeScreenshotIfEnabledAsync(_context);
+
+        var screenshotsSourcePath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        if (Directory.Exists(screenshotsSourcePath))
+        {
+            var screenshotsDestinationPath = Path.Combine(debugInformationPath, DirectoryPaths.Screenshots);
+            FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportImage(
+                    _testManifest,
+                    "FailureScreenshot",
+                    GetScreenshotPath(screenshotsDestinationPath, _screenshotCount - 1));
+            }
+        }
+    }
+
+    private static string GetScreenshotPath(string parentDirectoryPath, int index) =>
+        Path.Combine(parentDirectoryPath, index.ToTechnicalString() + ".png");
 }
