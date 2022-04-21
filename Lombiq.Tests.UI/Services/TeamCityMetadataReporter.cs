@@ -39,7 +39,7 @@ public static class TeamCityMetadataReporter
 
     public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
         uiTestManifest.TestOutputHelper.WriteLine(
-            $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(uiTestManifest.Name)}' " +
+            $"##teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}' " +
             $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
     // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
