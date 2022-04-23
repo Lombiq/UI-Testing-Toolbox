@@ -6,7 +6,5 @@ bin/
 artifacts/
 wwwroot/
 node_modules/
-Localization/
 *.user
 .pnpm-debug.log
-/.editorconfig
