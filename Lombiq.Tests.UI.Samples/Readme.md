@@ -4,6 +4,8 @@
 
 Example UI testing project. The whole project is heavily documented to teach you how to write UI tests with the UI Testing Toolbox. It guides you through this process just like the [Lombiq Training Demo for Orchard Core](https://github.com/Lombiq/Orchard-Training-Demo-Module) teaches Orchard Core and Orchard 1 development.
 
+You can find further UI testing examples in [the test project of Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions/tree/dev/test/Lombiq.OSOCE.Tests.UI).
+
 For general details about and on using the Toolbox see the [root Readme](../Readme.md).
 
 

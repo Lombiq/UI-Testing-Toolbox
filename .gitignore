@@ -1,12 +1,10 @@
 .vs/
+.idea/
+.vscode/
 obj/
 bin/
-*.user
 artifacts/
-.vs/
-wwwroot
+wwwroot/
 node_modules/
+*.user
 .pnpm-debug.log
-package-lock.json
-Localization/
-/.editorconfig
