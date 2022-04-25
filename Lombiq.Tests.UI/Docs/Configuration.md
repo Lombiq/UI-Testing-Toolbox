@@ -84,10 +84,10 @@ docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Passwo
 
 On Linux you need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
 ```shell
-mkdir -p "$HOME/.local/docker/mssql/data"
+mkdir -p ~/.local/docker/mssql/data
 docker pull mcr.microsoft.com/mssql/server
 docker volume create --driver local -o o=bind -o type=none -o device="$HOME/.local/docker/mssql/data" mssql-data
-docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -v mssql-data:/data -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
 ```
 Docker needs to access the shared folders so you must reassign them to the _docker_ group with write access. You may need to be root to do this:
 ```shell
