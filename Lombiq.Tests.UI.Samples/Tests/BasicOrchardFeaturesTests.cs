@@ -27,10 +27,17 @@ public class BasicOrchardFeaturesTests : UITestBase
             browser);
 
     [Theory, Chrome]
-    public Task BasicOrchardFeaturesShouldWorkWithExistingDBSetup(Browser browser) =>
-    ExecuteTestFromExistingDBAsync(
-        async context => await context.TestBasicOrchardFeaturesExceptSetupAsync(),
-        browser);
+    public async Task<Task> BasicOrchardFeaturesShouldWorkWithExistingDBSetup(Browser browser)
+    {
+        await ExecuteTestAsync(
+                async context =>
+                    await context.GoToSetupPageAndSetupOrchardCoreAsync("Lombiq.OSOCE.BasicOrchardFeaturesTests"),
+                browser);
+
+        return ExecuteTestFromExistingDBAsync(
+             async context => await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(),
+             browser);
+    }
 }
 
 // END OF TRAINING SECTION: Basic Orchard features tests.
