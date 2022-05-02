@@ -40,6 +40,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
+    private bool _hasSetupSnapshotDirectoryPath;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
@@ -68,7 +69,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            if (_hasSetupOperation)
+            _hasSetupSnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath != null;
+
+            if (_hasSetupOperation || _hasSetupSnapshotDirectoryPath)
             {
                 var snapshotSubdirectory = "Default";
                 if (_configuration.UseSqlServer)
