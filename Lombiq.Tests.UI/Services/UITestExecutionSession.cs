@@ -71,7 +71,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _hasSetupSnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath != null;
 
-            if (_hasSetupOperation || _hasSetupSnapshotDirectoryPath)
+            if (_hasSetupOperation)
             {
                 var snapshotSubdirectory = "Default";
                 if (_configuration.UseSqlServer)
@@ -96,6 +96,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     path => new SynchronizingWebApplicationSnapshotManager(path));
 
                 await SetupAsync();
+            }
+            else
+            {
+                if (_hasSetupSnapshotDirectoryPath)
+                {
+                    _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
+                }
             }
 
             _context ??= await CreateContextAsync();
