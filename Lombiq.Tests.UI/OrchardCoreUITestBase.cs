@@ -145,6 +145,16 @@ public abstract class OrchardCoreUITestBase
     protected virtual Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
+        ExecuteTestFromExistingDBAsync(testAsync, browser, customAppAssemblyPath: null, changeConfigurationAsync);
+
+    /// <summary>
+    /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data in the
+    /// given folder.
+    /// </summary>
+    protected virtual Task ExecuteTestFromExistingDBAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
         string customAppAssemblyPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
