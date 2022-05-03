@@ -103,3 +103,4 @@ public class MonkeyTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Monkey tests.
+// NEXT STATION: Head over to Tests/DataBaseSnapshotTests.cs.
