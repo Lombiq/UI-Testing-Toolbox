@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,29 +14,38 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // the whole test suite.
 public class BasicOrchardFeaturesTests : UITestBase
 {
+    // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
+    // these tests.
+    private const string BasicOrchardFeaturesTestsRecipeId = "Lombiq.OSOCE.BasicOrchardFeaturesTests";
+
     public BasicOrchardFeaturesTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }
 
-    // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
-    // this tests.
     [Theory, Chrome]
     public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
         ExecuteTestAsync(
-            context => context.TestBasicOrchardFeaturesAsync("Lombiq.OSOCE.BasicOrchardFeaturesTests"),
+            context => context.TestBasicOrchardFeaturesAsync(BasicOrchardFeaturesTestsRecipeId),
             browser);
 
+    // For testing, we can use the already existing databases. Here, we set up the application, then we take a snapshot
+    // of it, then we use the "ExecuteTestFromExistingDBAsync()" to run the test on that. Then we test the basic Orchard
+    // features as we did above.
     [Theory, Chrome]
     public Task BasicOrchardFeaturesShouldWorkWithExistingDBSetup(Browser browser) =>
          ExecuteTestAsync(
                 async context =>
                 {
-                    await context.GoToSetupPageAndSetupOrchardCoreAsync("Lombiq.OSOCE.BasicOrchardFeaturesTests");
+                    const string AppForDataBaseTestFolder = "AppForDataBaseTest";
+
+                    await context.GoToSetupPageAndSetupOrchardCoreAsync(BasicOrchardFeaturesTestsRecipeId);
+                    await context.Application.TakeSnapshotAsync(AppForDataBaseTestFolder);
 
                     await ExecuteTestFromExistingDBAsync(
-                        async context => await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(),
-                        browser);
+                         async context => await context.TestBasicOrchardFeaturesExceptSetupAsync(),
+                         browser,
+                         Directory.GetCurrentDirectory() + "//" + AppForDataBaseTestFolder);
                 },
                 browser);
 }

@@ -145,6 +145,7 @@ public abstract class OrchardCoreUITestBase
     protected virtual Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
+        string customAppAssemblyPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
         var appFolder = "AppFolder";
@@ -156,7 +157,7 @@ public abstract class OrchardCoreUITestBase
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(appFolder);
 
                 OrchardCoreDirectoryHelper.CopyAppFolder(
-                    OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
+                    customAppAssemblyPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
                     appFolder);
 
                 _appFolderCreated = true;
