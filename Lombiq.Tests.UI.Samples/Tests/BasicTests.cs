@@ -30,7 +30,7 @@ public class BasicTests : UITestBase
             {
                 // Is the title correct?
                 context
-                    .Get(By.ClassName("navbar-brandsdfds"))
+                    .Get(By.ClassName("navbar-brand"))
                     .Text
                     .ShouldBe("Lombiq's OSOCE - UI Testing");
 
