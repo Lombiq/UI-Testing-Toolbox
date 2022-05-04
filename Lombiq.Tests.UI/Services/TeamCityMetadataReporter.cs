@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Models;
 using System;
 using System.IO;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -40,10 +39,9 @@ public static class TeamCityMetadataReporter
 
     public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
         // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
-        uiTestManifest.TestOutputHelper.WriteLineTimestampedAndDebug(
+        Console.WriteLine(
             Environment.NewLine +
-            $"##teamcity[Lombiq.Tests.UI.Samples: testMetadata testName='{Escape(uiTestManifest.Name)}'" +
-            $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+            $"##teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
     // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
     private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
@@ -52,7 +50,7 @@ public static class TeamCityMetadataReporter
     private static string Escape(string value) => value
         .Replace("|", "||", StringComparison.Ordinal)
         .Replace("'", "|'", StringComparison.Ordinal)
-        .Replace("\n", "|n", StringComparison.Ordinal)
+        .Replace("\n", "n", StringComparison.Ordinal)
         .Replace("\r", "|r", StringComparison.Ordinal)
         .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
         .Replace("[", "|[", StringComparison.Ordinal)
