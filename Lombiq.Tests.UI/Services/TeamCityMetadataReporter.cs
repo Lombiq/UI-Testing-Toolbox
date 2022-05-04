@@ -41,7 +41,8 @@ public static class TeamCityMetadataReporter
         // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
         Console.WriteLine(
             Environment.NewLine +
-            $"##teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}' name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
+            $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(uiTestManifest.Name)}'" +
+            $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
     // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
     private static string PreparePath(string artifactPath) => artifactPath.Replace(Path.DirectorySeparatorChar, '/');
