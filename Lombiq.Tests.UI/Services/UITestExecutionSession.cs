@@ -31,7 +31,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
     private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
-    private static readonly ConcurrentDictionary<string, int> _setupOperationFailureCount = new();
+    private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
     private static readonly object _dockerSetupLock = new();
 
     private static bool _dockerIsSetup;
@@ -382,10 +382,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                 if (setupConfiguration.FastFailSetup &&
-                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
-                    failureCount > _configuration.MaxRetryCount)
+                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var pair) &&
+                    pair.FailureCount > _configuration.MaxRetryCount)
                 {
-                    throw new SetupFailedFastException(failureCount);
+                    throw new SetupFailedFastException(pair.FailureCount, pair.LatestException);
                 }
 
                 // Note that the context creation needs to be done here too because the Orchard app needs the
@@ -422,7 +422,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             if (setupConfiguration.FastFailSetup)
             {
-                _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (_, value) => value + 1);
+                _setupOperationFailureCount.AddOrUpdate(
+                    GetSetupHashCode(),
+                    (1, ex),
+                    (_, pair) => (pair.FailureCount, ex));
             }
 
             throw;
@@ -441,7 +444,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (docker.HostSnapshotPath.StartsWithOrdinal("~/"))
         {
             docker.HostSnapshotPath = Path.Combine(
-                Environment.GetEnvironmentVariable("HOME"),
+                Environment.GetEnvironmentVariable("HOME")!,
                 docker.HostSnapshotPath[2..]);
         }
 
