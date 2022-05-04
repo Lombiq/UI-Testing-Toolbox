@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Models;
 using System;
 using System.IO;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -39,7 +40,7 @@ public static class TeamCityMetadataReporter
 
     public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
         // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
-        uiTestManifest.TestOutputHelper.WriteLine(
+        uiTestManifest.TestOutputHelper.WriteLineTimestamped(
             Environment.NewLine +
             $"##teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}'" +
             $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
