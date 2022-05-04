@@ -38,8 +38,7 @@ public static class TeamCityMetadataReporter
         Report(uiTestManifest, name, "video", PreparePath(videoArtifactPath));
 
     public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
-        Console.WriteLine(
-            Environment.NewLine +
+        uiTestManifest.TestOutputHelper.WriteLine(
             $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(uiTestManifest.Name)}' " +
             $"name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
