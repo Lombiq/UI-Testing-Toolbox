@@ -41,7 +41,7 @@ public static class TeamCityMetadataReporter
         // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
         uiTestManifest.TestOutputHelper.WriteLine(
             Environment.NewLine +
-            $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(uiTestManifest.Name)}'" +
+            $"##teamcity[testMetadata testName='{Escape(uiTestManifest.Name)}'" +
             $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
 
     // TeamCity needs forward slashes to replacing backslashes if the platform uses that.
