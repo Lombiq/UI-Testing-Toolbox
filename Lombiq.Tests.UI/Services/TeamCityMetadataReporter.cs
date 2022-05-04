@@ -39,7 +39,7 @@ public static class TeamCityMetadataReporter
 
     public static void Report(UITestManifest uiTestManifest, string name, string type, string value) =>
         // Starting with a line break is sometimes necessary not to mix up these messages in the build output.
-        Console.WriteLine(
+        uiTestManifest.TestOutputHelper.WriteLine(
             Environment.NewLine +
             $"##teamcity[testMetadata testName='Lombiq.Tests.UI.Samples: {Escape(uiTestManifest.Name)}'" +
             $" name='{Escape(name)}' type='{type}' value='{Escape(value)}']");
