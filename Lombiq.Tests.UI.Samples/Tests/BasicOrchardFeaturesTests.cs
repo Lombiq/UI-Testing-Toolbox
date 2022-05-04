@@ -20,7 +20,7 @@ public class BasicOrchardFeaturesTests : UITestBase
     }
 
     // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
-    // these tests.
+    // this tests.
     [Theory, Chrome]
     public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
         ExecuteTestAsync(
