@@ -69,7 +69,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            _doesSetupSnapshotDirectoryExists = Directory.Exists(setupConfiguration.SetupSnapshotDirectoryPath + "\\App_Data");
+            _setupSnapshotDirectoryExists = Directory.Exists(
+                Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, "App_Data"));
 
             if (_hasSetupOperation)
             {
@@ -99,7 +100,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             }
             else
             {
-                if (_doesSetupSnapshotDirectoryExists)
+                if (_setupSnapshotDirectoryExists)
                 {
                     _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
                 }

@@ -23,7 +23,7 @@ public class DatabaseSnapshotTests : UITestBase
     // "ExecuteTestFromExistingDBAsync()" to run the test on that. Finally, we test the basic Orchard features to check
     // that the application was set up correctly.
     [Theory, Chrome]
-    public Task BasicOrchardFeaturesShouldWorkWithExistingDatabaseSetup(Browser browser) =>
+    public Task BasicOrchardFeaturesShouldWorkWithExistingDatabase(Browser browser) =>
          ExecuteTestAsync(
                 async context =>
                 {
