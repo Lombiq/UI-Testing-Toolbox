@@ -18,7 +18,7 @@ public class AccessibilityTest : UITestBase
     }
 
     [Theory, Chrome]
-    public Task FrontendPagesShoudlBeAccessbile(Browser browser) =>
+    public Task FrontendPagesShouldBeAccessible(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
                 // This is just a simple test that visits two pages: The homepage, where the test will start by default,
@@ -33,11 +33,11 @@ public class AccessibilityTest : UITestBase
                 configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;
 
                 // We'll check for the WCAG 2.1 AA level. This is the middle level of the latest accessibility
-                // guidelines. The frontend set up with the Blog recipe actually has a couple of issues. For the sake of
-                // this sample we won't try to fix them but rather disable the corresponding rules.
+                // guidelines. The footer widget created by the Blog recipe actually has a couple of issues. For the
+                // sake of this sample we won't try to fix them but rather disable the corresponding rules.
                 configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator += axeBuilder =>
                     AccessibilityCheckingConfiguration.ConfigureWcag21aa(axeBuilder)
-                        .DisableRules("color-contrast", "landmark-one-main", "link-name", "region");
+                        .DisableRules("color-contrast", "link-name");
             });
 }
 
