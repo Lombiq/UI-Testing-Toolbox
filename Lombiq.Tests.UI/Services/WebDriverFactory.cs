@@ -11,12 +11,14 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
+using Architecture = WebDriverManager.Helpers.Architecture;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -138,9 +140,17 @@ public static class WebDriverFactory
     private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
         where TDriver : RemoteWebDriver
     {
+        string version = "<UNKNOWN>";
+        string url = "<UNKNOWN>";
         try
         {
-            var version = await TryFindVersionAsync(driverConfig);
+            version = await TryFindVersionAsync(driverConfig);
+            url = UrlHelper.BuildUrl(
+                ArchitectureHelper.GetArchitecture().Equals(Architecture.X32)
+                    ? driverConfig.GetUrl32()
+                    : driverConfig.GetUrl64(),
+                version); // This is copied from DriverManager.SetUpDriver.
+
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup
             // was already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
@@ -152,11 +162,18 @@ public static class WebDriverFactory
 
             return driverFactory();
         }
+        catch (WebException ex)
+        {
+            throw new WebDriverException(
+                $"Failed to download the web driver version {version} from {url} with the message \"{ex.Message}\". " +
+                $"If it's a 404 error, then likely there is no driver available for your specific browser version.",
+                ex);
+        }
         catch (Exception ex)
         {
             throw new WebDriverException(
-                $"Creating the web driver failed with the message \"{ex.Message}\". " +
-                $"Note that this can mean that there is a leftover web driver process that you have to kill manually. Full exception: {ex}",
+                $"Creating the web driver failed with the message \"{ex.Message}\". This can mean that there is a " +
+                $"leftover web driver process that you have to kill manually. Full exception: {ex}",
                 ex);
         }
     }
