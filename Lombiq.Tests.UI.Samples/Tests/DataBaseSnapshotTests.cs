@@ -8,9 +8,10 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// We can execute tests on already existing databases.To demo this, we will take a snapshot of the running application,
+// We can execute tests on already existing databases. To demo this, we will take a snapshot of the running application,
 // and use that, because we don't have a pre-beaked database. Normally this feature is used to run tests when there is
-// an already existing database, so you don't need to take a snapshot before using it.
+// an already existing database, so you don't need to take a snapshot before using the
+// "ExecuteTestFromExistingDBAsync()" method.
 public class DatabaseSnapshotTests : UITestBase
 {
     public DatabaseSnapshotTests(ITestOutputHelper testOutputHelper)
