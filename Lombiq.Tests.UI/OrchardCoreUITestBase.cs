@@ -155,7 +155,7 @@ public abstract class OrchardCoreUITestBase
     protected virtual Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        string customAppFolderPath = null,
+        string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
         var appFolder = "AppFolder";
