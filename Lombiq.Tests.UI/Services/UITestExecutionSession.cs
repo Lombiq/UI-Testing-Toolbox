@@ -40,7 +40,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
-    private bool _doesSetupSnapshotDirectoryExists;
+    private bool _setupSnapshotDirectoryExists;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
