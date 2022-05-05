@@ -218,7 +218,8 @@ public static class WebDriverFactory
                 // Chrome doesn't always have the driver for the same revision you have installed, especially if you use
                 // a package manager instead of the browser's auto-updater. To get around this, download the latest of
                 // the same build version instead, which should still be compatible.
-                version = $"LATEST_RELEASE_{chromeVersion.Major}.{chromeVersion.Minor}.{chromeVersion.Build}";
+                version = FormattableString.Invariant(
+                    $"LATEST_RELEASE_{chromeVersion.Major}.{chromeVersion.Minor}.{chromeVersion.Build}");
             }
 
             return version;
