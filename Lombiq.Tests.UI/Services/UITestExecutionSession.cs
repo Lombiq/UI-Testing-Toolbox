@@ -40,7 +40,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
-    private bool _IsDBSetupSnapshotDirectoryPath;
+    private bool _doesSetupSnapshotDirectoryExists;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
@@ -69,7 +69,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
-            _IsDBSetupSnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath == "AppFolder";
+            _doesSetupSnapshotDirectoryExists = Directory.Exists(setupConfiguration.SetupSnapshotDirectoryPath + "\\App_Data");
 
             if (_hasSetupOperation)
             {
@@ -99,7 +99,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             }
             else
             {
-                if (_IsDBSetupSnapshotDirectoryPath)
+                if (_doesSetupSnapshotDirectoryExists)
                 {
                     _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
                 }
