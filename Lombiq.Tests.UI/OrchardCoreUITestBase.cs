@@ -146,7 +146,7 @@ public abstract class OrchardCoreUITestBase
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
-        ExecuteTestFromExistingDBAsync(testAsync, browser, customAppAssemblyPath: null, changeConfigurationAsync);
+        ExecuteTestFromExistingDBAsync(testAsync, browser, customAppFolderPath: null, changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data or in
@@ -155,7 +155,7 @@ public abstract class OrchardCoreUITestBase
     protected virtual Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        string customAppAssemblyPath = null,
+        string customAppFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
         var appFolder = "AppFolder";
@@ -167,7 +167,7 @@ public abstract class OrchardCoreUITestBase
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(appFolder);
 
                 OrchardCoreDirectoryHelper.CopyAppFolder(
-                    customAppAssemblyPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
+                    customAppFolderPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
                     appFolder);
 
                 _appFolderCreated = true;

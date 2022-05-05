@@ -27,6 +27,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Using Azure Blob Storage](Tests/AzureBlobStorageTests.cs)
 - [Error handling](Tests/ErrorHandlingtests.cs)
 - [Monkey tests](Tests/MonkeyTests.cs)
+- [Database snapshot tests](Tests/DatabaseSnapshotTests.cs)
 
 
 ## Adding new tutorials
