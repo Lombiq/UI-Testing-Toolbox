@@ -98,12 +98,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 await SetupAsync();
             }
-            else
+            else if (_setupSnapshotDirectoryExists)
             {
-                if (_setupSnapshotDirectoryExists)
-                {
-                    _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
-                }
+                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
             _context ??= await CreateContextAsync();
