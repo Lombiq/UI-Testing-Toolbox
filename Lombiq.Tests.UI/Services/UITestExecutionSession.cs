@@ -98,6 +98,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 await SetupAsync();
             }
+
+            // In some cases, there is a temporary setup snapshot directory path but no setup operation. For example,
+            // when calling the "ExecuteTestAsync()" method without setup operation.
             else if (_setupSnapshotDirectoryContainsApp)
             {
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
