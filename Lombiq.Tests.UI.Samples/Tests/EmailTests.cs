@@ -26,17 +26,16 @@ public class EmailTests : UITestBase
                 // A shortcut to sign in without going through (and thus testing) the login screen.
                 await context.SignInDirectlyAsync();
 
-                // Let's go to the e-mail admin page.
-                await context.GoToRelativeUrlAsync("/Admin/Settings/email");
-
-                // The default sender is configured in the test recipe so we can use the test feature.
-                context.ClickReliablyOnUntilPageLeave(By.LinkText("Test settings"));
+                // Let's go to the "Test settings" option of the e-mail admin page. The default sender is configured in
+                // the test recipe so we can use the test feature.
+                await context.GoToRelativeUrlAsync("/Admin/Email/Index");
 
                 // Let's send a basic e-mail.
                 await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
                 await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
                 await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
-                await context.ClickReliablyOnSubmitAsync();
+                await context.ClickReliablyOnAsync(By.Id("emailtestsend"));
+                context.ShouldBeSuccess();
 
                 // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
                 // e-mails and check if everything's alright.
