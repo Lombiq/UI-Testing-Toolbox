@@ -45,7 +45,10 @@ public static class WebDriverFactory
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                return new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+                var service = ChromeDriverService.CreateDefaultService();
+                service.WhitelistedIPAddresses += "::ffff:127.0.0.1";
+                return new ChromeDriver(service, options, pageLoadTimeout)
+                    .SetCommonTimeouts(pageLoadTimeout);
             },
             new ChromeConfig());
 
