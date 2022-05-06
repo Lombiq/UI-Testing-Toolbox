@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using WebDriverManager;
@@ -216,10 +217,13 @@ public static class WebDriverFactory
             if (driverConfig is ChromeConfig && Version.TryParse(version, out var chromeVersion))
             {
                 // Chrome doesn't always have the driver for the same revision you have installed, especially if you use
-                // a package manager instead of the browser's auto-updater. To get around this, download the latest of
-                // the same build version instead, which should still be compatible.
-                version = FormattableString.Invariant(
-                    $"LATEST_RELEASE_{chromeVersion.Major}.{chromeVersion.Minor}.{chromeVersion.Build}");
+                // a package manager instead of the browser's auto-updater. To get around this, interrogate the API for
+                // the latest revision of the same build version, as that should be still compatible.
+                var versionApiUri = new Uri(
+                    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" +
+                    FormattableString.Invariant($"{chromeVersion.Major}.{chromeVersion.Minor}.{chromeVersion.Build}"));
+                using var client = new HttpClient();
+                version = await (await client.GetAsync(versionApiUri)).Content.ReadAsStringAsync();
             }
 
             return version;
