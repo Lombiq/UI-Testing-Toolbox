@@ -41,6 +41,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
+    private bool _setupSnapshotDirectoryContainsApp;
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
@@ -69,6 +70,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
+            _setupSnapshotDirectoryContainsApp = Directory.Exists(
+                Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, "App_Data"));
+
             if (_hasSetupOperation)
             {
                 var snapshotSubdirectory = "Default";
@@ -94,6 +98,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     path => new SynchronizingWebApplicationSnapshotManager(path));
 
                 await SetupAsync();
+            }
+
+            // In some cases, there is a temporary setup snapshot directory path but no setup operation. For example,
+            // when calling the "ExecuteTestAsync()" method without setup operation.
+            else if (_setupSnapshotDirectoryContainsApp)
+            {
+                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
             _context ??= await CreateContextAsync();
