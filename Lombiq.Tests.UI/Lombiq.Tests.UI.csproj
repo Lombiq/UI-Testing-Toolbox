@@ -56,7 +56,6 @@
     <PackageReference Include="Atata.HtmlValidation" Version="1.4.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="1.5.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.8.0" />
-    <PackageReference Include="CliWrap" Version="3.3.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="150.5164.1" />
@@ -74,6 +73,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Cli\Lombiq.HelpfulLibraries.Cli.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.RestEase\Lombiq.HelpfulLibraries.RestEase.csproj" />
   </ItemGroup>

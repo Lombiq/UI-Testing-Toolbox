@@ -1,6 +1,6 @@
 using CliWrap;
 using CliWrap.Buffered;
-using Lombiq.Tests.UI.Helpers;
+using Lombiq.HelpfulLibraries.Cli.Helpers;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -19,7 +19,6 @@ using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
-using Architecture = WebDriverManager.Helpers.Architecture;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -141,16 +140,10 @@ public static class WebDriverFactory
     private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
         where TDriver : RemoteWebDriver
     {
-        string version = "<UNKNOWN>";
-        string url = "<UNKNOWN>";
+        var version = "<UNKNOWN>";
         try
         {
             version = await TryFindVersionAsync(driverConfig);
-            url = UrlHelper.BuildUrl(
-                ArchitectureHelper.GetArchitecture().Equals(Architecture.X32)
-                    ? driverConfig.GetUrl32()
-                    : driverConfig.GetUrl64(),
-                version); // This is copied from DriverManager.SetUpDriver.
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup
             // was already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
@@ -166,8 +159,8 @@ public static class WebDriverFactory
         catch (WebException ex)
         {
             throw new WebDriverException(
-                $"Failed to download the web driver version {version} from {url} with the message \"{ex.Message}\". " +
-                $"If it's a 404 error, then likely there is no driver available for your specific browser version.",
+                $"Failed to download the web driver version {version} with the message \"{ex.Message}\". If it's a " +
+                $"404 error, then likely there is no driver available for your specific browser version.",
                 ex);
         }
         catch (Exception ex)
@@ -186,35 +179,37 @@ public static class WebDriverFactory
 
     private static async Task<string> TryFindVersionAsync(IDriverConfig driverConfig)
     {
-        const string versionArgument = "--version";
+        static (string Executable, string[] Arguments) GetWithPowershell(string name) =>
+            ("powershell", new[] { "-command", $"(Get-Command '{name}').Version.ToString()" });
+        static (string Executable, string[] Arguments) GetWithCli(string name) =>
+            (name, new[] { "--version" });
 
-        var (executableName, arguments) = driverConfig switch
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        var (executableName, arguments) = (driverConfig, isWindows) switch
         {
-            ChromeConfig =>
-                (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "chromium" : "chrome", versionArgument),
-            FirefoxConfig => ("firefox", versionArgument),
-            EdgeConfig => ("powershell", "(Get-AppxPackage Microsoft.MicrosoftEdge).Version"),
-            InternetExplorerConfig =>
-                ("reg", @"query HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer /v svcVersion"),
+            (ChromeConfig, true) => GetWithPowershell("chrome"),
+            (ChromeConfig, false) => GetWithCli("chromium"),
+            (FirefoxConfig, true) => GetWithPowershell("firefox"),
+            (FirefoxConfig, false) => GetWithCli("firefox"),
+            (EdgeConfig, true) => ("powershell", new[] { "(Get-AppxPackage Microsoft.MicrosoftEdge).Version" }),
+            (InternetExplorerConfig, _) =>
+                ("reg", new[] { "query", @"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "/v", "svcVersion" }),
             _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, message: null),
         };
-        executableName += OperatingSystemHelpers.GetExecutableExtension();
 
-        // Version selection based on the locally installed version is only available for Chrome, see:
-        // https://github.com/rosolko/WebDriverManager.Net/pull/91.
-        var fallbackVersion = driverConfig is ChromeConfig
-            ? VersionResolveStrategy.MatchingBrowser
-            : VersionResolveStrategy.Latest;
+        string version;
 
         try
         {
+            executableName = (await CliHelper.WhichAsync(executableName)).First().FullName;
+
             var result = await Cli
                 .Wrap(executableName)
                 .WithArguments(arguments)
                 .ExecuteBufferedAsync();
-            var version = result.StandardOutput.Split().FirstOrDefault(word => Version.TryParse(word, out _)) ?? fallbackVersion;
+            version = result.StandardOutput.Split().Reverse().FirstOrDefault(word => Version.TryParse(word, out _));
 
-            if (driverConfig is ChromeConfig && Version.TryParse(version, out var chromeVersion))
+            if (version != null && driverConfig is ChromeConfig && Version.TryParse(version, out var chromeVersion))
             {
                 // Chrome doesn't always have the driver for the same revision you have installed, especially if you use
                 // a package manager instead of the browser's auto-updater. To get around this, interrogate the API for
@@ -225,12 +220,16 @@ public static class WebDriverFactory
                 using var client = new HttpClient();
                 version = await (await client.GetAsync(versionApiUri)).Content.ReadAsStringAsync();
             }
-
-            return version;
         }
         catch
         {
-            return fallbackVersion;
+            version = null;
         }
+
+        // Version selection based on the locally installed version is only available for Chrome, see:
+        // https://github.com/rosolko/WebDriverManager.Net/pull/91.
+        return version ?? (driverConfig is ChromeConfig
+            ? VersionResolveStrategy.MatchingBrowser
+            : VersionResolveStrategy.Latest);
     }
 }
