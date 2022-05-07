@@ -26,36 +26,50 @@ public static class WebDriverFactory
 {
     private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
 
-    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(
-            () =>
-            {
-                var options = new ChromeOptions().SetCommonOptions();
+    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    {
+        var state = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions(), Service = null };
 
-                options.AddArgument("--lang=" + configuration.AcceptLanguage);
+        ChromeDriver CreateDriver()
+        {
+            state.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
-                // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of
-                // timeouts during parallel execution:
-                // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
-                // However, this makes the executing machine vulnerable to browser-based attacks so it should only
-                // be used with trusted code (i.e. our own).
-                options.AddArgument("no-sandbox");
+            // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of
+            // timeouts during parallel execution:
+            // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
+            // However, this makes the executing machine vulnerable to browser-based attacks so it should only
+            // be used with trusted code (i.e. our own).
+            state.Options.AddArgument("no-sandbox");
 
-                // Linux-specific setting, may be necessary for running in containers, see
-                // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips
-                options.AddArgument("disable-dev-shm-usage");
+            // Linux-specific setting, may be necessary for running in containers, see
+            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips
+            state.Options.AddArgument("disable-dev-shm-usage");
 
-                if (configuration.Headless) options.AddArgument("headless");
+            if (configuration.Headless) state.Options.AddArgument("headless");
 
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
+            configuration.BrowserOptionsConfigurator?.Invoke(state.Options);
 
-                var service = ChromeDriverService.CreateDefaultService();
-                service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
-                if (service.HostName == "localhost") service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
-                return new ChromeDriver(service, options, pageLoadTimeout)
-                    .SetCommonTimeouts(pageLoadTimeout);
-            },
-            new ChromeConfig());
+            state.Service ??= ChromeDriverService.CreateDefaultService();
+            state.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
+            if (state.Service.HostName == "localhost") state.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
+
+            return new ChromeDriver(state.Service, state.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+        }
+
+        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath &&
+            Directory.Exists(driverPath))
+        {
+            Console.WriteLine($"Chromedriver found: '{driverPath}'");
+            state.Service = ChromeDriverService.CreateDefaultService(driverPath);
+            return Task.FromResult(CreateDriver());
+        }
+
+#pragma warning disable CA1303
+        Console.WriteLine("Chromedriver not found.");
+#pragma warning restore CA1303
+
+        return CreateDriverAsync(CreateDriver, new ChromeConfig());
+    }
 
     public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
         CreateDriverAsync(
@@ -239,5 +253,11 @@ public static class WebDriverFactory
         return version ?? (driverConfig is ChromeConfig
             ? VersionResolveStrategy.MatchingBrowser
             : VersionResolveStrategy.Latest);
+    }
+
+    internal sealed class ChromeConfiguration
+    {
+        public ChromeOptions Options { get; set; }
+        public ChromeDriverService Service { get; set; }
     }
 }
