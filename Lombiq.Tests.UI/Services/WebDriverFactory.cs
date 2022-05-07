@@ -28,6 +28,12 @@ public static class WebDriverFactory
 
     public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
+        // Force headless mode if we are in Linux without a working graphical environment.
+        if (!configuration.Headless && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            configuration.Headless = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DISPLAY"));
+        }
+
         var state = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions(), Service = null };
 
         ChromeDriver CreateDriver()
