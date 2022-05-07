@@ -41,6 +41,10 @@ public static class WebDriverFactory
                 // be used with trusted code (i.e. our own).
                 options.AddArgument("no-sandbox");
 
+                // Linux-specific setting, may be necessary for running in containers, see
+                // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips
+                options.AddArgument("disable-dev-shm-usage");
+
                 if (configuration.Headless) options.AddArgument("headless");
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
