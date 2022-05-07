@@ -65,14 +65,9 @@ public static class WebDriverFactory
         if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath &&
             Directory.Exists(driverPath))
         {
-            Console.WriteLine($"Chromedriver found: '{driverPath}'");
             state.Service = ChromeDriverService.CreateDefaultService(driverPath);
             return Task.FromResult(CreateDriver());
         }
-
-#pragma warning disable CA1303
-        Console.WriteLine("Chromedriver not found.");
-#pragma warning restore CA1303
 
         return CreateDriverAsync(CreateDriver, new ChromeConfig());
     }
