@@ -65,8 +65,7 @@ public static class TestConfigurationManager
     private static IConfiguration BuildConfiguration()
     {
         Console.WriteLine(
-            "LOMBIQ_SHARED_TEST_CONFIGURATION: {0}",
-            Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? "<NULL>");
+            $"LOMBIQ_SHARED_TEST_CONFIGURATION: {Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? "<NULL>"}");
         return new ConfigurationBuilder()
             .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
             .AddJsonFile(
