@@ -88,14 +88,12 @@ mkdir -p ~/.local/docker/mssql/data
 docker pull mcr.microsoft.com/mssql/server
 docker volume create --driver local -o o=bind -o type=none -o device="$HOME/.local/docker/mssql/data" mssql-data
 docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -v mssql-data:/data -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
-```
-Docker needs to access the shared folders so you must reassign them to the _docker_ group with write access. You may need to be root to do this:
-```shell
 chown $USER:docker ~/.local/docker/ -R
 chmod g+w ~/.local/docker/ -R
+docker exec -u 0 sql2019 chown 'mssql:root' /data
 ```
 
-Now log in as root using `docker exec -u 0 -it sql2019 bash` and give access to the data directory with `chown 'mssql:root' /data`.
+If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "yourStrong(!)Password"` to access the SQL console.
 
 You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
 
