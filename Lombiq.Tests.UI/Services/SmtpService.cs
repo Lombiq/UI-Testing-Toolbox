@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
