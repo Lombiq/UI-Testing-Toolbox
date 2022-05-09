@@ -62,8 +62,12 @@ public static class TestConfigurationManager
         return result;
     }
 
-    private static IConfiguration BuildConfiguration() =>
-        new ConfigurationBuilder()
+    private static IConfiguration BuildConfiguration()
+    {
+        Console.WriteLine(
+            "LOMBIQ_SHARED_TEST_CONFIGURATION: {0}",
+            Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? "<NULL>");
+        return new ConfigurationBuilder()
             .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
             .AddJsonFile(
                 Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? $"dummy_{Guid.NewGuid()}",
@@ -71,4 +75,5 @@ public static class TestConfigurationManager
                 reloadOnChange: false)
             .AddEnvironmentVariables()
             .Build();
+    }
 }
