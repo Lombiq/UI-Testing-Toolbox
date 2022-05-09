@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -86,6 +87,11 @@ public sealed class SmtpService : IAsyncDisposable
         _smtpPort = _smtpPortLeaseManager.LeaseAvailableRandomPort();
         _webUIPort = _webUIPortLeaseManager.LeaseAvailableRandomPort();
 
+        var webUIPortString = _webUIPort.ToTechnicalString();
+        var smtpPortString = _smtpPort.ToTechnicalString();
+
+        var webUIUri = new Uri("http://localhost:" + webUIPortString);
+
         try
         {
             await _restoreSemaphore.WaitAsync(_cancellationTokenSource.Token);
@@ -112,7 +118,7 @@ public sealed class SmtpService : IAsyncDisposable
             _restoreSemaphore.Release();
         }
 
-        var webUIUri = new Uri("http://localhost:" + _webUIPort.ToTechnicalString());
+        StringBuilder standardError = null;
 
         // Starting smtp4dev with a command like this:
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
@@ -124,16 +130,25 @@ public sealed class SmtpService : IAsyncDisposable
                 .Add("tool").Add("run").Add("smtp4dev")
                 // An empty db parameter means an in-memory DB.
                 .Add("--db").Add(string.Empty)
-                .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
+                .Add("--smtpport").Add(smtpPortString)
                 .Add("--urls").Add(webUIUri.ToString()))
+            .WithValidation(CommandResultValidation.None)
             .ExecuteDotNetApplicationAsync(
                 stdErr =>
-                    throw new IOException(
-                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()} " +
-                        $"and web UI port {_webUIPort.ToTechnicalString()} due to the following error: " +
-                        Environment.NewLine +
-                        stdErr.Text),
+                {
+                    // Don't throw just yet, wait until the application runs to completion so the complete error message
+                    // can be attached instead of only the first line.
+                    standardError ??= new();
+                    standardError.AppendLine(stdErr.Text);
+                },
                 _cancellationTokenSource.Token);
+
+        if (standardError != null)
+        {
+            throw new IOException(
+                $"The smtp4dev service didn't start properly on SMTP port {smtpPortString} and web UI port " +
+                $"{webUIPortString} due to the following error:{Environment.NewLine}{standardError}");
+        }
 
         return new SmtpServiceRunningContext(_smtpPort, webUIUri);
     }
