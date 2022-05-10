@@ -151,14 +151,14 @@ public sealed class SqlServerManager : IDisposable
         backup.Devices.Add(destination);
         // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
         // which is messy.
-        backup.SqlBackup(server);
+        await Task.Run(() => backup.SqlBackup(server));
 
         if (!string.IsNullOrEmpty(containerName))
         {
             if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
             await Cli.Wrap("docker")
-                .WithArguments(new[] {"cp", $"{containerName}:{filePathRemote}", filePathLocal})
+                .WithArguments(new[] { "cp", $"{containerName}:{filePathRemote}", filePathLocal })
                 .ExecuteAsync();
         }
 
@@ -196,12 +196,12 @@ public sealed class SqlServerManager : IDisposable
 
             // Clean up leftovers.
             await Cli.Wrap("docker")
-                .WithArguments(new[] {"exec", "-u", "0", containerName, "rm", "-f", remote})
+                .WithArguments(new[] { "exec", "-u", "0", containerName, "rm", "-f", remote })
                 .ExecuteAsync();
 
             // Copy back snapshot.
             await Cli.Wrap("docker")
-                .WithArguments(new[] {"cp", Path.Combine(local), $"{containerName}:{remote}"})
+                .WithArguments(new[] { "cp", Path.Combine(local), $"{containerName}:{remote}" })
                 .ExecuteAsync();
         }
 
@@ -229,9 +229,9 @@ public sealed class SqlServerManager : IDisposable
         restore.RelocateFiles.Add(dataFile);
         restore.RelocateFiles.Add(logFile);
 
-        // We're not using SqlRestoreAsync() and SqlVerifyAsync() due to the same reason we're not using
+        // We're not using SqlRestoreAsync() due to the same reason we're not using
         // SqlBackupAsync().
-        restore.SqlRestore(server);
+        await Task.Run(() => restore.SqlRestore(server));
     }
 
     public void Dispose()
@@ -304,7 +304,7 @@ public sealed class SqlServerManager : IDisposable
         {
             // Extract "~" home character when working with Unix path from Unix host.
             '~' => Path.Combine(
-                Environment.GetEnvironmentVariable("HOME"),
+                Environment.GetEnvironmentVariable("HOME")!,
                 snapshotDirectoryPath[2..],
                 DbSnapshotName),
             // Ensure proper Unix path in Windows host.
