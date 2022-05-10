@@ -89,13 +89,9 @@ docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Passwo
 You need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
 
 ```shell
-mkdir -p ~/.local/docker/mssql/data
 docker pull mcr.microsoft.com/mssql/server
-docker volume create --driver local -o o=bind -o type=none -o device="$HOME/.local/docker/mssql/data" mssql-data
-docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -v mssql-data:/data -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
-chown $USER:docker ~/.local/docker/ -R
-chmod g+w ~/.local/docker/ -R
-docker exec -u 0 sql2019 bash -c 'chown mssql:root /data -R'
+docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
+docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:root /data'
 ```
 
 If you haven't yet done it yet, add your user to the `docker` group.
@@ -118,9 +114,9 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
     "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
 },
 "DockerConfiguration": {
-    "ContainerSnapshotPath": "/data",
-    "HostSnapshotPath": "C:\\docker\\data"
+    "ContainerSnapshotPath": "/data/Snapshots",
+    "ContainerName": "sql2019"
 }
 ```
 
-On Linux replace the `"C:\\docker\\data"` with `"~/.local/docker/mssql/data/"` or similar.
+The default value of `ContainerSnapshotPath` is `"/data/Snapshots"` so you can omit that.

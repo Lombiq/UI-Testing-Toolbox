@@ -1,11 +1,15 @@
+using CliWrap;
+using CliWrap.Buffered;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Dmf;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
 namespace Lombiq.Tests.UI.Services;
@@ -34,7 +38,7 @@ public class SqlServerRunningContext
 
 public sealed class SqlServerManager : IDisposable
 {
-    private const string DbSnasphotName = "Database.bak";
+    private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
 
@@ -104,14 +108,17 @@ public sealed class SqlServerManager : IDisposable
     /// If set to <see langword="true"/> and the database engine supports it, then
     /// <see cref="BackupCompressionOptions.On"/> will be used.
     /// </param>
-    public void TakeSnapshot(
+    public async Task TakeSnapshotAsync(
         string snapshotDirectoryPathRemote,
         string snapshotDirectoryPathLocal = null,
+        string containerName = null,
         bool useCompressionIfAvailable = false)
     {
         var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
         var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
-        var directoryPathLocal = Path.GetDirectoryName(filePathLocal);
+        var directoryPathLocal =
+            Path.GetDirectoryName(filePathLocal) ??
+            throw new InvalidOperandException($"Failed to get the directory path for local path \"{filePathLocal}\".");
 
         if (!Directory.Exists(directoryPathLocal)) Directory.CreateDirectory(directoryPathLocal);
         if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
@@ -147,6 +154,15 @@ public sealed class SqlServerManager : IDisposable
         // which is messy.
         backup.SqlBackup(server);
 
+        if (!string.IsNullOrEmpty(containerName))
+        {
+            if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
+
+            await Cli.Wrap("docker")
+                .WithArguments(new[] {"cp", $"{containerName}:{filePathRemote}", filePathLocal})
+                .ExecuteAsync();
+        }
+
         if (!File.Exists(filePathLocal))
         {
             throw filePathLocal == filePathRemote
@@ -157,7 +173,10 @@ public sealed class SqlServerManager : IDisposable
         }
     }
 
-    public void RestoreSnapshot(string snapshotDirectoryPath)
+    public async Task RestoreSnapshotAsync(
+        string snapshotDirectoryPathRemote,
+        string snapshotDirectoryPathLocal,
+        string containerName)
     {
         if (_isDisposed)
         {
@@ -171,10 +190,26 @@ public sealed class SqlServerManager : IDisposable
             throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
         }
 
+        if (!string.IsNullOrEmpty(containerName))
+        {
+            var remote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+            var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
+
+            // Clean up leftovers.
+            await Cli.Wrap("docker")
+                .WithArguments(new[] {"exec", "-u", "0", containerName, "rm", "-f", remote})
+                .ExecuteAsync();
+
+            // Copy back snapshot.
+            await Cli.Wrap("docker")
+                .WithArguments(new[] {"cp", Path.Combine(local), $"{containerName}:{remote}"})
+                .ExecuteAsync();
+        }
+
         KillDatabaseProcesses(server);
 
         var restore = new Restore();
-        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPathRemote), DeviceType.File);
         restore.Database = _databaseName;
         restore.ReplaceDatabase = true;
 
@@ -272,9 +307,9 @@ public sealed class SqlServerManager : IDisposable
             '~' => Path.Combine(
                 Environment.GetEnvironmentVariable("HOME"),
                 snapshotDirectoryPath[2..],
-                DbSnasphotName),
+                DbSnapshotName),
             // Ensure proper Unix path in Windows host.
-            '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}",
-            _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName),
+            '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnapshotName}",
+            _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnapshotName),
         };
 }

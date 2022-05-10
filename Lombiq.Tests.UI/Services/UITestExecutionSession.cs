@@ -1,4 +1,5 @@
 using Atata.HtmlValidation;
+using CliWrap;
 using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -32,9 +33,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
     private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
     private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
-    private static readonly object _dockerSetupLock = new();
-
-    private static bool _dockerIsSetup;
 
     private int _screenshotCount;
 
@@ -306,13 +304,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             try
             {
                 var remotePath = appDumpPath;
-                if (_dockerConfiguration != null)
-                {
-                    appDumpPath = _dockerConfiguration.HostSnapshotPath;
-                    remotePath = _dockerConfiguration.ContainerSnapshotPath;
-                }
+                var containerName = _dockerConfiguration?.ContainerName;
+                if (!string.IsNullOrEmpty(containerName)) remotePath = _dockerConfiguration.ContainerSnapshotPath;
 
-                _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, useCompressionIfAvailable: true);
+                await _sqlServerManager.TakeSnapshotAsync(
+                    remotePath,
+                    appDumpPath,
+                    _dockerConfiguration?.ContainerName,
+                    useCompressionIfAvailable: true);
             }
             catch (Exception failureException)
             {
@@ -384,7 +383,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
-            SetupDocker();
+            _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
             var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
@@ -443,41 +442,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private void SetupDocker()
-    {
-        if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is not { } docker ||
-            string.IsNullOrEmpty(docker.HostSnapshotPath))
-        {
-            return;
-        }
-
-        // .Net doesn't resolve ~ to $HOME, but on non-Windows your host path is likely there so we must expand it.
-        if (docker.HostSnapshotPath.StartsWithOrdinal("~/"))
-        {
-            docker.HostSnapshotPath = Path.Combine(
-                Environment.GetEnvironmentVariable("HOME")!,
-                docker.HostSnapshotPath[2..]);
-        }
-
-        // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory
-        // itself (which would be logical). Removing the volume directory instantly severs the connection between
-        // host and the container so that should be avoided at all costs.
-        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, "Snapshots");
-
-        _dockerConfiguration = docker;
-
-        lock (_dockerSetupLock)
-        {
-            if (!_dockerIsSetup && Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
-            {
-                Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
-            }
-
-            // Outside of the previous if so it'll be set even if there's no host snapshot.
-            _dockerIsSetup = true;
-        }
-    }
-
     private void SetupSqlServerSnapshot()
     {
         if (!_configuration.UseSqlServer) return;
@@ -491,7 +455,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var remotePath = snapshotDirectoryPath;
             if (_dockerConfiguration != null)
             {
-                snapshotDirectoryPath = _dockerConfiguration.HostSnapshotPath;
                 remotePath = _dockerConfiguration.ContainerSnapshotPath;
 
                 // Due to the multiuser focus of Unix-like platforms it's very common that docker will be a
@@ -506,8 +469,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 }
             }
 
-            _sqlServerManager.TakeSnapshot(remotePath, snapshotDirectoryPath);
-            return Task.CompletedTask;
+            return _sqlServerManager.TakeSnapshotAsync(
+                remotePath,
+                snapshotDirectoryPath,
+                _dockerConfiguration?.ContainerName);
         }
 
         // This is necessary because a simple subtraction wouldn't remove previous instances of the
@@ -626,16 +591,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
-            var snapshotDirectoryPath =
-                _dockerConfiguration?.ContainerSnapshotPath ??
-                _snapshotDirectoryPath;
+            var snapshotDirectoryPath = _snapshotDirectoryPath;
 
-            if (!_hasSetupOperation || !Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath))
+            if (!_hasSetupOperation || !Directory.Exists(snapshotDirectoryPath))
             {
                 return;
             }
 
-            _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+            await _sqlServerManager.RestoreSnapshotAsync(
+                _dockerConfiguration?.ContainerSnapshotPath,
+                snapshotDirectoryPath,
+                _dockerConfiguration?.ContainerName);
 
             var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
 
@@ -646,7 +612,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             }
 
             var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
-            appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
+            appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
             await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
         }
 
