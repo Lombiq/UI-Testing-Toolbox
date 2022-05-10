@@ -1,4 +1,5 @@
 using CliWrap;
+using Lombiq.HelpfulLibraries.Cli;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Dmf;
@@ -41,6 +42,7 @@ public sealed class SqlServerManager : IDisposable
 
     private static readonly PortLeaseManager _portLeaseManager;
 
+    private readonly CliProgram _docker = new CliProgram("docker");
     private readonly SqlServerConfiguration _configuration;
     private int _databaseId;
     private string _serverName;
@@ -195,14 +197,13 @@ public sealed class SqlServerManager : IDisposable
             var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
 
             // Clean up leftovers.
-            await Cli.Wrap("docker")
-                .WithArguments(new[] { "exec", "-u", "0", containerName, "rm", "-f", remote })
-                .ExecuteAsync();
+            await DockerExecuteAsync("rm", "-f", remote);
 
             // Copy back snapshot.
-            await Cli.Wrap("docker")
-                .WithArguments(new[] { "cp", Path.Combine(local), $"{containerName}:{remote}" })
-                .ExecuteAsync();
+            await _docker.CommandAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
+
+            // Reset ownership.
+            await DockerExecuteAsync("bash", "-c", $"chown mssql:root '{remote}'");
         }
 
         KillDatabaseProcesses(server);
@@ -232,6 +233,13 @@ public sealed class SqlServerManager : IDisposable
         // We're not using SqlRestoreAsync() due to the same reason we're not using
         // SqlBackupAsync().
         await Task.Run(() => restore.SqlRestore(server));
+    }
+
+    private Task DockerExecuteAsync(string containerName, params string[] command)
+    {
+        var arguments = new List<object> { "exec", "-u", 0, containerName };
+        arguments.AddRange(command);
+        return _docker.CommandAsync(CancellationToken.None, arguments);
     }
 
     public void Dispose()

@@ -224,7 +224,7 @@ public static class WebDriverFactory
 
         try
         {
-            executableName = (await CliHelper.WhichAsync(executableName)).First().FullName;
+            executableName = (await CliWrapHelper.WhichAsync(executableName)).First().FullName;
 
             var result = await Cli
                 .Wrap(executableName)

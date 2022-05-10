@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Cli.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
@@ -95,7 +96,7 @@ public sealed class SmtpService : IAsyncDisposable
             if (!_wasRestored)
             {
                 // Running dotnet tool restore the first time to make sure smtp4dev is installed.
-                await DotnetCli.CommandAsync(token, "tool", "restore");
+                await CliProgram.DotNet.CommandAsync(token, "tool", "restore");
 
                 _wasRestored = true;
             }
@@ -109,7 +110,7 @@ public sealed class SmtpService : IAsyncDisposable
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
-        await DotnetCli.CommandAsync(
+        await CliProgram.DotNet.CommandAsync(
             new object[] { "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri },
             $"The service port was {smtpPortString} and the web UI port was {webUIPortString}.",
             token);
