@@ -235,11 +235,11 @@ public sealed class SqlServerManager : IDisposable
         await Task.Run(() => restore.SqlRestore(server));
     }
 
-    private Task DockerExecuteAsync(string containerName, params string[] command)
+    private Task DockerExecuteAsync(string containerName, params object[] command)
     {
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
-        return _docker.CommandAsync(CancellationToken.None, arguments);
+        return _docker.CommandAsync(arguments, additionalExceptionText: null, CancellationToken.None);
     }
 
     public void Dispose()
