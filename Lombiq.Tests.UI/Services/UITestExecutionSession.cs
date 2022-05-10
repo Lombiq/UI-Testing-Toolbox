@@ -113,7 +113,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _testManifest.TestAsync(_context);
 
-            await AssertLogsAsync();
+            await _context.AssertLogsAsync();
 
             return true;
         }
@@ -410,7 +410,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
-                await AssertLogsAsync();
+                await _context.AssertLogsAsync();
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -615,36 +615,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.UseSqlServer +
         _configuration.UseAzureBlobStorage;
 
-    private Task OnAssertLogsAsync(UITestContext context) => AssertLogsAsync();
-
-    private async Task AssertLogsAsync()
-    {
-        await _context.UpdateHistoricBrowserLogAsync();
-
-        try
-        {
-            if (_configuration.AssertAppLogsAsync != null) await _configuration.AssertAppLogsAsync(_context.Application);
-        }
-        catch (Exception)
-        {
-            _testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-            _testOutputHelper.WriteLine(await _context.Application.GetLogOutputAsync());
-
-            throw;
-        }
-
-        try
-        {
-            _configuration.AssertBrowserLog?.Invoke(_context.HistoricBrowserLog);
-        }
-        catch (Exception)
-        {
-            _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-            _testOutputHelper.WriteLine(_context.HistoricBrowserLog.ToFormattedString());
-
-            throw;
-        }
-    }
+    private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 
     private SqlServerRunningContext SetUpSqlServer()
     {

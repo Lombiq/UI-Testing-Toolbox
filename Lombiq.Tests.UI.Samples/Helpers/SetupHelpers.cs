@@ -38,7 +38,7 @@ public static class SetupHelpers
         // quickly also allows to the UI Testing Toolbox not to run all the other tests (since without a working setup
         // that would be pointless). Check out OrchardCoreSetupConfiguration.FastFailSetup if you're interested how that
         // works.
-        AssertSetupSuccessful(context);
+        await AssertSetupSuccessfulAsync(context);
 
         return homepageUri;
     }
@@ -61,9 +61,21 @@ public static class SetupHelpers
     public static async Task<Uri> RunAutoSetupAsync(UITestContext context)
     {
         await context.GoToHomePageAsync();
-        AssertSetupSuccessful(context);
+        await AssertSetupSuccessfulAsync(context);
         return context.GetCurrentUri();
     }
 
-    private static void AssertSetupSuccessful(UITestContext context) => context.Exists(By.Id("navbar"));
+    private static async Task AssertSetupSuccessfulAsync(UITestContext context)
+    {
+        try
+        {
+            context.Exists(By.Id("navbar"));
+        }
+        catch
+        {
+            // Before throwing a not-too-helpful NoSuchElementException, verify if the browser log has something to say.
+            await context.AssertLogsAsync();
+            throw;
+        }
+    }
 }
