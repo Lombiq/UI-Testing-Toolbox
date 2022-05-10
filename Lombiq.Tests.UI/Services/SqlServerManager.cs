@@ -42,7 +42,7 @@ public sealed class SqlServerManager : IDisposable
 
     private static readonly PortLeaseManager _portLeaseManager;
 
-    private readonly CliProgram _docker = new CliProgram("docker");
+    private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
     private int _databaseId;
     private string _serverName;
