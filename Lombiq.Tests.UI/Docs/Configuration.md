@@ -75,7 +75,8 @@ If you have multiple UI test projects in a single solution and you're executing 
 
 You can learn more about the *microsoft-mssql-server* container [here](https://hub.docker.com/_/microsoft-mssql-server). You have to mount a local volume that can be shared between the host and the container. Update the values of `device` and `SA_PASSWORD` in the code below and execute it.
 
-On Windows:
+#### On Windows
+
 ```powershell
 New-Item -Type Directory -Path "C:\docker\data\mssql"
 docker pull mcr.microsoft.com/mssql/server
@@ -83,7 +84,10 @@ docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\
 docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 ```
 
-On Linux you need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
+#### On Linux
+
+You need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
+
 ```shell
 mkdir -p ~/.local/docker/mssql/data
 docker pull mcr.microsoft.com/mssql/server
@@ -93,7 +97,12 @@ chown $USER:docker ~/.local/docker/ -R
 chmod g+w ~/.local/docker/ -R
 docker exec -u 0 sql2019 bash -c 'chown mssql:root /data -R'
 ```
+
 If you haven't yet done it yet, add your user to the `docker` group.
+
+If you get `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround temporarily set the project's runtime identifier to `linux-x64` either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430) or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
+
+#### On Both
 
 If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "yourStrong(!)Password"` to access the SQL console.
 
