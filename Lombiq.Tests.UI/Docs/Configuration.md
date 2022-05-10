@@ -77,6 +77,7 @@ You can learn more about the *microsoft-mssql-server* container [here](https://h
 
 On Windows:
 ```powershell
+New-Item -Type Directory -Path "C:\docker\data\mssql"
 docker pull mcr.microsoft.com/mssql/server
 docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data\mssql" mssql-data
 docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
@@ -90,8 +91,9 @@ docker volume create --driver local -o o=bind -o type=none -o device="$HOME/.loc
 docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -v mssql-data:/data -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
 chown $USER:docker ~/.local/docker/ -R
 chmod g+w ~/.local/docker/ -R
-docker exec -u 0 sql2019 chown 'mssql:root' /data
+docker exec -u 0 sql2019 bash -c 'chown mssql:root /data -R'
 ```
+If you haven't yet done it yet, add your user to the `docker` group.
 
 If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "yourStrong(!)Password"` to access the SQL console.
 
