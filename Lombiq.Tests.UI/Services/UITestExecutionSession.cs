@@ -1,5 +1,4 @@
 using Atata.HtmlValidation;
-using CliWrap;
 using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
