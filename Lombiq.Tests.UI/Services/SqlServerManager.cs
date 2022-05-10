@@ -203,7 +203,7 @@ public sealed class SqlServerManager : IDisposable
             await _docker.CommandAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
 
             // Reset ownership.
-            await DockerExecuteAsync(containerName, "-c", $"chown mssql:root '{remote}'");
+            await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
         }
 
         KillDatabaseProcesses(server);
