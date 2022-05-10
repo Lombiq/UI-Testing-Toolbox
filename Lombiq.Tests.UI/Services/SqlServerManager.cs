@@ -1,5 +1,4 @@
 using CliWrap;
-using CliWrap.Buffered;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Dmf;
