@@ -110,12 +110,14 @@ You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or 
 SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and `HostSnapshotPath` property as needed.
 
 ```json
-"SqlServerDatabaseConfiguration": {
+{
+  "SqlServerDatabaseConfiguration": {
     "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
-},
-"DockerConfiguration": {
+  },
+  "DockerConfiguration": {
     "ContainerSnapshotPath": "/data/Snapshots",
     "ContainerName": "sql2019"
+  }
 }
 ```
 
