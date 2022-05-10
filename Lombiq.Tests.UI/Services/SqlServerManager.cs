@@ -197,13 +197,13 @@ public sealed class SqlServerManager : IDisposable
             var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
 
             // Clean up leftovers.
-            await DockerExecuteAsync("rm", "-f", remote);
+            await DockerExecuteAsync(containerName, "rm", "-f", remote);
 
             // Copy back snapshot.
             await _docker.CommandAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
 
             // Reset ownership.
-            await DockerExecuteAsync("bash", "-c", $"chown mssql:root '{remote}'");
+            await DockerExecuteAsync(containerName, "-c", $"chown mssql:root '{remote}'");
         }
 
         KillDatabaseProcesses(server);
