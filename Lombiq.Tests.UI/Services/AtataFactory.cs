@@ -1,6 +1,5 @@
 using Atata;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -33,24 +32,25 @@ public static class AtataFactory
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
-            .AddDebugLogging()
-            .AddLogConsumer(new TestOutputLogConsumer(testOutputHelper))
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
             .UseUtcTimeZone();
+
+        builder.LogConsumers.AddDebug();
+        builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
 
         configuration.AtataConfiguration.ContextBuilder?.Invoke(builder);
 
         return new AtataScope(builder.Build(), baseUri);
     }
 
-    private static async Task<RemoteWebDriver> CreateDriverAsync(
+    private static async Task<IWebDriver> CreateDriverAsync(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
         ITestOutputHelper testOutputHelper)
     {
-        async Task<RemoteWebDriver> CastDriverFactoryAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
-            where T : RemoteWebDriver =>
+        async Task<IWebDriver> CastDriverFactoryAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
+            where T : IWebDriver =>
             await factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
 
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions

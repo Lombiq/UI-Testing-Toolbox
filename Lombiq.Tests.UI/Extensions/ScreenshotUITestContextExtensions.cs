@@ -15,5 +15,5 @@ public static class ScreenshotUITestContextExtensions
     /// Takes a screenshot of the current browser tab.
     /// </summary>
     public static Screenshot TakeScreenshot(this UITestContext context) =>
-        context.Scope.Driver.GetScreenshot();
+        ((WebDriver)context.Scope.Driver).GetScreenshot();
 }

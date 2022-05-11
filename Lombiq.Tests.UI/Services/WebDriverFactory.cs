@@ -6,7 +6,6 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
-using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -148,10 +147,10 @@ public static class WebDriverFactory
     }
 
     private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout)
-        where TDriver : RemoteWebDriver
+        where TDriver : IWebDriver
     {
         // Setting timeouts for cases when tests randomly hang up a bit more for some reason (like the test machine
-        // load momentarily spiking). We're not increasing ImplicityWait, the default of which is 0, since that
+        // load momentarily spiking). We're not increasing ImplicitlyWait, the default of which is 0, since that
         // would make all tests slower.
         // See: https://stackoverflow.com/a/7312740/220230
         var timeouts = driver.Manage().Timeouts();
@@ -161,7 +160,7 @@ public static class WebDriverFactory
     }
 
     private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
-        where TDriver : RemoteWebDriver
+        where TDriver : IWebDriver
     {
         var version = "<UNKNOWN>";
         try

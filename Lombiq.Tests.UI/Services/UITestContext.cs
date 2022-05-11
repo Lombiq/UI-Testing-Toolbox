@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -51,7 +50,7 @@ public class UITestContext
     /// <summary>
     /// Gets the Selenium web driver driving the app via a browser.
     /// </summary>
-    public RemoteWebDriver Driver => Scope.Driver;
+    public IWebDriver Driver => Scope.Driver;
 
     /// <summary>
     /// Gets the context for the SMTP service running for the test, if it was requested.
