@@ -167,26 +167,24 @@ internal sealed class MonkeyTester
         // If Gremlin interactions cause the new tabs/windows to open, we need to switch back to the original one.
         _context.SwitchToCurrentWindow();
 
-        var driver = (WebDriver)_context.Driver;
-
-        driver.ExecuteScript(GremlinsScripts.GremlinsScript);
+        _context.ExecuteScript(GremlinsScripts.GremlinsScript);
 
         string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
-        driver.ExecuteScript(gremlinsRunScript);
+        _context.ExecuteScript(gremlinsRunScript);
 
         var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
             _context.Driver,
-            _ => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
+            _ => !(bool)_context.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
             timeout: testTime,
             pollingInterval: _options.PageMarkerPollingInterval);
 
         _context.SwitchToCurrentWindow();
 
-        driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
+        _context.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
         WaitForGremlinsIndicatorsToDisappear();
 
-        var lastGremlinsClickLogMessage = (string)driver.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
+        var lastGremlinsClickLogMessage = (string)_context.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
 
         if (!string.IsNullOrEmpty(lastGremlinsClickLogMessage))
             Log.Info($"Last Gremlins click: {lastGremlinsClickLogMessage}.");

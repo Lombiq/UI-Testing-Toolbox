@@ -1,16 +1,16 @@
+using Atata;
 using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json;
-using OpenQA.Selenium;
 
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class ScriptingUITestContextExtensions
 {
     public static object ExecuteScript(this UITestContext context, string script, params object[] args) =>
-        context.ExecuteLogged(nameof(ExecuteScript), script, () => ((IJavaScriptExecutor)context.Driver).ExecuteScript(script, args));
+        context.ExecuteLogged(nameof(ExecuteScript), script, () => context.Driver.AsScriptExecutor().ExecuteScript(script, args));
 
     public static object ExecuteAsyncScript(this UITestContext context, string script, params object[] args) =>
-        context.ExecuteLogged(nameof(ExecuteAsyncScript), script, () => ((IJavaScriptExecutor)context.Driver).ExecuteAsyncScript(script, args));
+        context.ExecuteLogged(nameof(ExecuteAsyncScript), script, () => context.Driver.AsScriptExecutor().ExecuteAsyncScript(script, args));
 
     /// <summary>
     /// Uses Javascript to set form inputs to values that are hard or impossible by normal means.

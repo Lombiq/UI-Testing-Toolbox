@@ -96,7 +96,7 @@ public static class FormUITestContextExtensions
                 /* Finally set the value programmatically. */
                 mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
 
-        ((WebDriver)context.Driver).ExecuteScript(script);
+        context.ExecuteScript(script);
     }
 
     public static void ClickAndClear(this UITestContext context, By by) =>
