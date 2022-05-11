@@ -87,19 +87,12 @@ public static class WebDriverFactory
 
                 var options = new EdgeOptions().SetCommonOptions();
 
-                // Will be available with Selenium 4: https://stackoverflow.com/a/60894335/220230.
                 if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
                 {
-                    throw new NotSupportedException("Edge doesn't support configuring Accept Language.");
+                    options.AddArgument("--lang=" + configuration.AcceptLanguage);
                 }
 
-                // Edge will soon have headless support too, see:
-                // https://techcommunity.microsoft.com/t5/discussions/chromium-edge-automation-with-selenium-best-practice/m-p/436338
-                // Maybe not like this but in Selenium 4 at least.
-                if (configuration.Headless)
-                {
-                    throw new NotSupportedException("Edge doesn't support headless mode.");
-                }
+                if (configuration.Headless) options.AddArgument("headless");
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
 
@@ -255,9 +248,9 @@ public static class WebDriverFactory
             : VersionResolveStrategy.Latest);
     }
 
-    internal sealed class ChromeConfiguration
+    private sealed class ChromeConfiguration
     {
-        public ChromeOptions Options { get; set; }
+        public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
     }
 }
