@@ -131,20 +131,12 @@ public static class LoggingWebDriverExtensions
     }
 
     private static T GetField<T>(string name, object instance, Type type = null)
-        where T : class
-    {
-        var result = (type ?? instance.GetType())
-            .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
-            .GetValue(instance) as T;
-
-        if (result == null)
-        {
-            throw new InvalidOperandException(
-                $"Couldn't find the field \"{name}\" of type {typeof(T).Name} in the provided {type.Name} instance");
-        }
-
-        return result;
-    }
+        where T : class =>
+        (type ?? instance.GetType())
+        .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
+        .GetValue(instance) as T ??
+        throw new InvalidOperandException(
+            $"Couldn't find the field \"{name}\" of type {typeof(T).Name} in the provided {type.Name} instance");
 
     private static SessionId GetSession(IWebDriver driver) =>
         driver is IHasSessionId id ? id.SessionId : new SessionId($"gravity-{Guid.NewGuid()}");
