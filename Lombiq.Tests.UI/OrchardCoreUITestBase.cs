@@ -1,3 +1,4 @@
+using Atata.Cli;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Delegates;
 using Lombiq.Tests.UI.Extensions;
@@ -260,6 +261,10 @@ public abstract class OrchardCoreUITestBase
             TestOutputHelper = _testOutputHelper,
             BrowserConfiguration = { Browser = browser },
         };
+
+        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
+            .UseCmdForWindows()
+            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 
         configuration.SetupConfiguration.SetupOperation = setupOperation;
 
