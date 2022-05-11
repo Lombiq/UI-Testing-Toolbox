@@ -1,3 +1,4 @@
+using Microsoft.SqlServer.Management.Dmf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -109,28 +110,40 @@ public static class LoggingWebDriverExtensions
 
     private static string GetEndpoint(IWebDriver driver)
     {
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
-
-        var remoteWebDriver = GetRemoteWebDriver(driver.GetType());
-
-        var executor = remoteWebDriver.GetField("executor", Flags).GetValue(driver) as DriverServiceCommandExecutor;
-        var internalExecutor = executor.GetType().GetField("internalExecutor", Flags).GetValue(executor) as HttpCommandExecutor;
-
-        var uri = internalExecutor.GetType().GetField("remoteServerUri", Flags).GetValue(internalExecutor) as Uri;
+        var executor = GetField<DriverServiceCommandExecutor>("executor", driver, GetWebDriverType(driver));
+        var internalExecutor = GetField<HttpCommandExecutor>("internalExecutor", executor);
+        var uri = GetField<Uri>("remoteServerUri", internalExecutor);
 
         return uri.AbsoluteUri;
     }
 
-    private static Type GetRemoteWebDriver(Type type)
+    private static Type GetWebDriverType(IWebDriver driver)
     {
-        if (!typeof(RemoteWebDriver).IsAssignableFrom(type)) return type;
+        var type = driver.GetType();
+        if (!typeof(WebDriver).IsAssignableFrom(type)) return type;
 
-        while (type != typeof(RemoteWebDriver))
+        while (type != typeof(WebDriver))
         {
             type = type.BaseType;
         }
 
         return type;
+    }
+
+    private static T GetField<T>(string name, object instance, Type type = null)
+        where T : class
+    {
+        var result = (type ?? instance.GetType())
+            .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetValue(instance) as T;
+
+        if (result == null)
+        {
+            throw new InvalidOperandException(
+                $"Couldn't find the field \"{name}\" of type {typeof(T).Name} in the provided {type.Name} instance");
+        }
+
+        return result;
     }
 
     private static SessionId GetSession(IWebDriver driver) =>
