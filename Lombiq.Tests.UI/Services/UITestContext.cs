@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestContext
 {
-    private readonly List<BrowserLogMessage> _historicBrowserLog = new();
+    private readonly List<LogEntry> _historicBrowserLog = new();
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -65,7 +65,7 @@ public class UITestContext
     /// <summary>
     /// Gets a cumulative log of browser console entries.
     /// </summary>
-    public IReadOnlyList<BrowserLogMessage> HistoricBrowserLog => _historicBrowserLog;
+    public IReadOnlyList<LogEntry> HistoricBrowserLog => _historicBrowserLog;
 
     /// <summary>
     /// Gets a dictionary storing some custom contextual data.
@@ -104,7 +104,7 @@ public class UITestContext
     /// <summary>
     /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.
     /// </summary>
-    public async Task<IReadOnlyList<BrowserLogMessage>> UpdateHistoricBrowserLogAsync()
+    public Task<IReadOnlyList<LogEntry>> UpdateHistoricBrowserLogAsync()
     {
         var windowHandles = Driver.WindowHandles;
 
@@ -116,7 +116,7 @@ public class UITestContext
             {
                 // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
                 Driver.SwitchTo().Window(windowHandle);
-                _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+                _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
             }
 
             try
@@ -131,10 +131,10 @@ public class UITestContext
         }
         else
         {
-            _historicBrowserLog.AddRange(await Driver.GetAndEmptyBrowserLogAsync());
+            _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
         }
 
-        return _historicBrowserLog;
+        return Task.FromResult<IReadOnlyList<LogEntry>>(_historicBrowserLog);
     }
 
     /// <summary>
@@ -146,10 +146,10 @@ public class UITestContext
     /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
     /// cref="Configuration"/>. This doesn't use <see cref="HistoricBrowserLog"/>.
     /// </summary>
-    public async Task AssertCurrentBrowserLogAsync()
+    public Task AssertCurrentBrowserLogAsync()
     {
-        var browserLog = await Scope.Driver.GetAndEmptyBrowserLogAsync();
-        Configuration.AssertBrowserLog?.Invoke(browserLog);
+        Configuration.AssertBrowserLog?.Invoke(Scope.Driver.GetAndEmptyBrowserLog());
+        return Task.CompletedTask;
     }
 
     /// <summary>

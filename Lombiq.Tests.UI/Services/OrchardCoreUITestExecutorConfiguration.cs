@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ public class OrchardCoreUITestExecutorConfiguration
                 : intValue;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
-    public Action<IEnumerable<BrowserLogMessage>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
     public ITestOutputHelper TestOutputHelper { get; set; }
 
     /// <summary>
@@ -157,7 +158,7 @@ public class OrchardCoreUITestExecutorConfiguration
         }
     }
 
-    public void AssertBrowserLogMaybe(IList<BrowserLogMessage> browserLogs, Action<string> log)
+    public void AssertBrowserLogMaybe(IList<LogEntry> browserLogs, Action<string> log)
     {
         if (AssertBrowserLog == null) return;
 
@@ -179,14 +180,14 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
-    public static readonly Action<IEnumerable<BrowserLogMessage>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for every
         // page.
         messages => messages.ShouldNotContain(
             message => IsValidBrowserLogMessage(message),
             messages.Where(IsValidBrowserLogMessage).ToFormattedString());
 
-    public static readonly Func<BrowserLogMessage, bool> IsValidBrowserLogMessage =
+    public static readonly Func<LogEntry, bool> IsValidBrowserLogMessage =
         message =>
             !message.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
