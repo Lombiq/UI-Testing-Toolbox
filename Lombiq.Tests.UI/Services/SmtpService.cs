@@ -1,3 +1,4 @@
+using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Newtonsoft.Json.Linq;
 using System;
@@ -109,10 +110,16 @@ public sealed class SmtpService : IAsyncDisposable
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
-        await CliProgram.DotNet.CommandAsync(
-            new object[] { "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri },
-            $"The service port was {smtpPortString} and the web UI port was {webUIPortString}.",
-            token);
+        await CliProgram.DotNet.GetCommand(
+            new object[] { "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri })
+            .ExecuteDotNetApplicationAsync(
+                stdErr =>
+                    throw new IOException(
+                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()} " +
+                        $"and web UI port {_webUIPort.ToTechnicalString()} due to the following error: " +
+                        Environment.NewLine +
+                        stdErr.Text),
+                token);
 
         return new SmtpServiceRunningContext(_smtpPort, webUIUri);
     }
