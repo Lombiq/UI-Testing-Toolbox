@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,7 +21,8 @@ public class EmailTests : UITestBase
 
     [Theory, Chrome]
     public Task SendingTestEmailShouldWork(Browser browser) =>
-        ExecuteTestAfterSetupAsync(
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? ExecuteTestAfterSetupAsync(
             async context =>
             {
                 // A shortcut to sign in without going through (and thus testing) the login screen.
@@ -47,7 +49,8 @@ public class EmailTests : UITestBase
             browser,
             // UseSmtpService = true automatically enables the Email module too so you don't have to enable it in a
             // recipe.
-            configuration => configuration.UseSmtpService = true);
+            configuration => configuration.UseSmtpService = true)
+        : Task.CompletedTask;
 }
 
 // END OF TRAINING SECTION: E-mail tests.
