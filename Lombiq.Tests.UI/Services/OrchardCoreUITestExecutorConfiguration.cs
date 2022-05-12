@@ -189,6 +189,7 @@ public class OrchardCoreUITestExecutorConfiguration
 
     public static readonly Func<LogEntry, bool> IsValidBrowserLogMessage =
         message =>
+            message.Level >= LogLevel.Warning &&
             !message.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
             // under a different URL.
