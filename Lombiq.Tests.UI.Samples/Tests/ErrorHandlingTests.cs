@@ -74,20 +74,25 @@ public class ErrorHandlingTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                const string testLog = "<<test log>>";
+                const string testLog = "--test log--";
                 void WriteConsoleLog() => context.ExecuteScript($"console.info('{testLog}');");
 
                 await context.SignInDirectlyAndGoToHomepageAsync();
+
                 WriteConsoleLog();
                 WriteConsoleLog();
 
                 await context.GoToDashboardAsync();
+
                 WriteConsoleLog();
 
                 await context.GoToHomePageAsync();
+
                 WriteConsoleLog();
                 WriteConsoleLog();
                 WriteConsoleLog();
+
+                await context.UpdateHistoricBrowserLogAsync();
 
                 context
                     .HistoricBrowserLog
