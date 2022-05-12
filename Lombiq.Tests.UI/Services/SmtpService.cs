@@ -115,10 +115,8 @@ public sealed class SmtpService : IAsyncDisposable
             .ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
-                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()} " +
-                        $"and web UI port {_webUIPort.ToTechnicalString()} due to the following error: " +
-                        Environment.NewLine +
-                        stdErr.Text),
+                        $"The smtp4dev service didn't start properly on SMTP port {smtpPortString} and web UI port " +
+                        $"{webUIPortString} due to the following error:{Environment.NewLine}{stdErr.Text}"),
                 token);
 
         return new SmtpServiceRunningContext(_smtpPort, webUIUri);
