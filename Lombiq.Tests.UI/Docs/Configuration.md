@@ -78,10 +78,9 @@ You can learn more about the *microsoft-mssql-server* container [here](https://h
 #### On Windows
 
 ```powershell
-New-Item -Type Directory -Path "C:\docker\data\mssql"
 docker pull mcr.microsoft.com/mssql/server
-docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data\mssql" mssql-data
-docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v mssql-data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker exec -u 0 sql2019 bash -c "mkdir /data; chmod 777 /data -R; chown mssql:root /data"
 ```
 
 #### On Linux

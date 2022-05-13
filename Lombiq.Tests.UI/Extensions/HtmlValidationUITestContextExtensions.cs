@@ -41,8 +41,8 @@ public static class HtmlValidationUITestContextExtensions
     }
 
     /// <summary>
-    /// Runs an HTML markup validation with the html-validate library. Note that you need to run this after every
-    /// page load, it won't accumulate during a session.
+    /// Runs an HTML markup validation with the html-validate library. Note that you need to run this after every page
+    /// load, it won't accumulate during a session.
     /// </summary>
     /// <param name="htmlValidationOptionsAdjuster">
     /// A delegate to adjust the <see cref="HtmlValidationOptions"/> instance supplied in the context.

@@ -144,9 +144,9 @@ public static class WebDriverFactory
     private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout)
         where TDriver : IWebDriver
     {
-        // Setting timeouts for cases when tests randomly hang up a bit more for some reason (like the test machine
-        // load momentarily spiking). We're not increasing ImplicitlyWait, the default of which is 0, since that
-        // would make all tests slower.
+        // Setting timeouts for cases when tests randomly hang up a bit more for some reason (like the test machine load
+        // momentarily spiking). We're not increasing ImplicitlyWait, the default of which is 0, since that would make
+        // all tests slower.
         // See: https://stackoverflow.com/a/7312740/220230
         var timeouts = driver.Manage().Timeouts();
         // Default is 5 minutes.
@@ -162,8 +162,8 @@ public static class WebDriverFactory
         {
             version = await TryFindVersionAsync(driverConfig);
 
-            // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup
-            // was already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
+            // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
+            // already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
             _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
             {
