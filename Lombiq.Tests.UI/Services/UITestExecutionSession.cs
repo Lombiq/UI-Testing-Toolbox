@@ -224,8 +224,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context == null) return;
 
-            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so
-            // they show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
+            // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
             if (_dumpConfiguration.CaptureScreenshots) await CreateScreenshotsDumpAsync(debugInformationPath);
 
             if (_dumpConfiguration.CaptureHtmlSource)
@@ -274,8 +274,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
             {
-                // While this depends on the directory creation in the above try block it needs to come after the
-                // catch otherwise the message saved there wouldn't be included.
+                // While this depends on the directory creation in the above try block it needs to come after the catch
+                // otherwise the message saved there wouldn't be included.
 
                 var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
                 await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
@@ -335,8 +335,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
     {
-        // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since
-        // at that point there's no FailureDumps folder yet.
+        // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since at
+        // that point there's no FailureDumps folder yet.
 
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
@@ -397,8 +397,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     throw new SetupFailedFastException(pair.FailureCount, pair.LatestException);
                 }
 
-                // Note that the context creation needs to be done here too because the Orchard app needs the
-                // snapshot config to be available at startup too.
+                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
+                // config to be available at startup too.
                 _context = await CreateContextAsync();
 
                 SetupSqlServerSnapshot();
@@ -456,10 +456,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             {
                 remotePath = _dockerConfiguration.ContainerSnapshotPath;
 
-                // Due to the multiuser focus of Unix-like platforms it's very common that docker will be a
-                // different user without access to freshly created directories by the current user. Since this is a
-                // subdirectory that third parties can't list without prior knowledge and it only contains freshly
-                // created data this is not a security concern.
+                // Due to the multiuser focus of Unix-like platforms it's very common that Docker will be a different
+                // user without access to freshly created directories by the current user. Since this is a subdirectory
+                // that third parties can't list without prior knowledge and it only contains freshly created data this
+                // is not a security concern.
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     if (!Directory.Exists(snapshotDirectoryPath)) Directory.CreateDirectory(snapshotDirectoryPath);
@@ -474,10 +474,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _dockerConfiguration?.ContainerName);
         }
 
-        // This is necessary because a simple subtraction wouldn't remove previous instances of the
-        // local function. Thus if anything goes wrong between the below delegate registration and it
-        // being called then it'll remain registered and later during a retry try to run (and fail on
-        // the disposed SqlServerManager.
+        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function. Thus
+        // if anything goes wrong between the below delegate registration and it being called then it'll remain
+        // registered and later during a retry try to run (and fail on the disposed SqlServerManager.
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(
                 SqlServerManagerBeforeTakeSnapshotHandlerAsync);

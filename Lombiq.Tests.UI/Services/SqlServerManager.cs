@@ -138,8 +138,8 @@ public sealed class SqlServerManager : IDisposable
             Checksum = true,
             Incremental = false,
             ContinueAfterError = false,
-            // We don't need compression for setup snapshots as those backups will be only short-lived and we want
-            // them to be fast.
+            // We don't need compression for setup snapshots as those backups will be only short-lived and we want them
+            // to be fast.
             CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
             SkipTapeHeader = true,
             UnloadTapeAfter = false,
@@ -151,8 +151,8 @@ public sealed class SqlServerManager : IDisposable
 
         var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
         backup.Devices.Add(destination);
-        // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
-        // which is messy.
+        // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event which
+        // is messy.
         await Task.Run(() => backup.SqlBackup(server));
 
         if (!string.IsNullOrEmpty(containerName))
@@ -230,8 +230,7 @@ public sealed class SqlServerManager : IDisposable
         restore.RelocateFiles.Add(dataFile);
         restore.RelocateFiles.Add(logFile);
 
-        // We're not using SqlRestoreAsync() due to the same reason we're not using
-        // SqlBackupAsync().
+        // We're not using SqlRestoreAsync() due to the same reason we're not using SqlBackupAsync().
         await Task.Run(() => restore.SqlRestore(server));
     }
 
@@ -253,8 +252,8 @@ public sealed class SqlServerManager : IDisposable
         _portLeaseManager.StopLease(_databaseId);
     }
 
-    // It's easier to use the server name directly instead of the connection string as that also requires the
-    // referenced database to exist.
+    // It's easier to use the server name directly instead of the connection string as that also requires the referenced
+    // database to exist.
     private Server CreateServer() =>
         string.IsNullOrWhiteSpace(_password)
             ? new Server(_serverName)
