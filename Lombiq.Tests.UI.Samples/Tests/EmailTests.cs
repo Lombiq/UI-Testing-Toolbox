@@ -3,8 +3,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,12 +20,7 @@ public class EmailTests : UITestBase
 
     [Theory, Chrome]
     public Task SendingTestEmailShouldWork(Browser browser) =>
-        // Currently smtp4dev throws an exception on GitHub Actions. The same happens even if you call it directly, it's
-        // not related to this app. See issue: https://github.com/rnwood/smtp4dev/issues/1064
-        RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ENV"))
-        ? Task.CompletedTask
-        : ExecuteTestAfterSetupAsync(
+        ExecuteTestAfterSetupAsync(
             async context =>
             {
                 // A shortcut to sign in without going through (and thus testing) the login screen.
