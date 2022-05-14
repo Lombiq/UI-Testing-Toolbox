@@ -42,6 +42,7 @@ public static class StringExtensions
         '\u001e',
         '\u001f',
         '|',
+        ':',
         '"',
         '<',
         '>',
