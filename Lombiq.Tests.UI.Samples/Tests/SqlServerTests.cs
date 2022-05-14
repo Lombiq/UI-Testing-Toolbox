@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -27,11 +26,7 @@ public class SqlServerTests : UITestBase
     [Theory, Chrome]
     public Task AnonymousHomePageShouldExistWithSqlServer(Browser browser) =>
         ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                await context.CheckIfAnonymousHomePageExistsAsync();
-                throw new InvalidOperandException("Intentional test error.");
-            },
+            context => context.CheckIfAnonymousHomePageExistsAsync(),
             browser,
             // Note the configuration! We could also set this globally in UITestBase.
             configuration => configuration.UseSqlServer = true);
