@@ -3,9 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -109,21 +107,6 @@ public static class UITestExecutor
             var dumpFolderNameBeginningIndex =
                 dumpFolderNameBase[..dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)].LastIndexOf('.') + 1;
             dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
-        }
-
-        if (dumpConfiguration.StrictSanitizeDirectoryPath)
-        {
-            var invalid = UITestExecutorFailureDumpConfiguration.InvalidPathCharacters
-                .Concat(Path.GetInvalidPathChars())
-                .Concat(Path.GetInvalidFileNameChars())
-                .Distinct()
-                .ToList();
-
-            dumpFolderNameBase = string.Join(
-                string.Empty,
-                dumpFolderNameBase
-                    .ToCharArray()
-                    .WhereNot(invalid.Contains));
         }
 
         dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
