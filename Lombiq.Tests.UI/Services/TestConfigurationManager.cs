@@ -10,8 +10,8 @@ namespace Lombiq.Tests.UI.Services;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The reason we're using environment variables because this is the only way apart from files to pass configuration
-/// to xUnit tests, see <see href="https://github.com/xunit/xunit/issues/1908"/>.
+/// The reason we're using environment variables because this is the only way apart from files to pass configuration to
+/// xUnit tests, see <see href="https://github.com/xunit/xunit/issues/1908"/>.
 /// </para>
 /// </remarks>
 public static class TestConfigurationManager
