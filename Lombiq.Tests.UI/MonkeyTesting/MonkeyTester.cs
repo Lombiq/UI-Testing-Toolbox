@@ -174,7 +174,7 @@ internal sealed class MonkeyTester
 
         var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
             _context.Driver,
-            _ => !(bool)_context.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
+            driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
             timeout: testTime,
             pollingInterval: _options.PageMarkerPollingInterval);
 
