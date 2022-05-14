@@ -309,7 +309,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 await _sqlServerManager.TakeSnapshotAsync(
                     remotePath,
                     appDumpPath,
-                    _dockerConfiguration?.ContainerName,
+                    containerName,
                     useCompressionIfAvailable: true);
             }
             catch (Exception failureException)
@@ -448,11 +448,15 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // This is only necessary for the setup snapshot.
         Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
         {
+            ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
+
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -=
                 SqlServerManagerBeforeTakeSnapshotHandlerAsync;
 
+            var containerName = _dockerConfiguration?.ContainerName;
             var remotePath = snapshotDirectoryPath;
-            if (_dockerConfiguration != null)
+
+            if (!string.IsNullOrEmpty(containerName))
             {
                 remotePath = _dockerConfiguration.ContainerSnapshotPath;
 
@@ -468,10 +472,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 }
             }
 
-            return _sqlServerManager.TakeSnapshotAsync(
-                remotePath,
-                snapshotDirectoryPath,
-                _dockerConfiguration?.ContainerName);
+            return _sqlServerManager.TakeSnapshotAsync(remotePath, snapshotDirectoryPath, containerName);
         }
 
         // This is necessary because a simple subtraction wouldn't remove previous instances of the local function. Thus
@@ -596,10 +597,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 return;
             }
 
-            await _sqlServerManager.RestoreSnapshotAsync(
-                _dockerConfiguration?.ContainerSnapshotPath,
-                snapshotDirectoryPath,
-                _dockerConfiguration?.ContainerName);
+            var containerName = _dockerConfiguration?.ContainerName;
+            var containerPath = string.IsNullOrEmpty(containerName)
+                ? snapshotDirectoryPath
+                : _dockerConfiguration.ContainerSnapshotPath;
+
+            await _sqlServerManager.RestoreSnapshotAsync(containerPath, snapshotDirectoryPath, containerName);
 
             var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
 
