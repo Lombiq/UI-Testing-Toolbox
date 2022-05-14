@@ -157,7 +157,7 @@ public sealed class SqlServerManager : IDisposable
         backup.Devices.Add(destination);
         // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event which
         // is messy.
-        await Task.Run(() => backup.SqlBackup(server));
+        backup.SqlBackup(server);
 
         if (!string.IsNullOrEmpty(containerName))
         {
@@ -235,7 +235,7 @@ public sealed class SqlServerManager : IDisposable
         restore.RelocateFiles.Add(logFile);
 
         // We're not using SqlRestoreAsync() due to the same reason we're not using SqlBackupAsync().
-        await Task.Run(() => restore.SqlRestore(server));
+        restore.SqlRestore(server);
     }
 
     private Task DockerExecuteAsync(string containerName, params object[] command)
