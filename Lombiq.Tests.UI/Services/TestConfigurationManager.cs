@@ -64,14 +64,15 @@ public static class TestConfigurationManager
 
     private static IConfiguration BuildConfiguration()
     {
-        Console.WriteLine(
-            $"LOMBIQ_SHARED_TEST_CONFIGURATION: {Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? "<NULL>"}");
+        // Look for a file path in the environment variable. If the variable is not set, we must use a random dummy path
+        // because AddJsonFile throws if the path is null or empty.
+        var sharedTestConfigurationPath =
+            Environment.GetEnvironmentVariable("LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION") ??
+            $"dummy_{Guid.NewGuid()}";
+
         return new ConfigurationBuilder()
             .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
-            .AddJsonFile(
-                Environment.GetEnvironmentVariable("LOMBIQ_SHARED_TEST_CONFIGURATION") ?? $"dummy_{Guid.NewGuid()}",
-                optional: true,
-                reloadOnChange: false)
+            .AddJsonFile(sharedTestConfigurationPath, optional: true, reloadOnChange: false)
             .AddEnvironmentVariables()
             .Build();
     }
