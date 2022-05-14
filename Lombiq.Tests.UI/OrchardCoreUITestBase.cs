@@ -262,16 +262,17 @@ public abstract class OrchardCoreUITestBase
             BrowserConfiguration = { Browser = browser },
         };
 
-        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
-            .UseCmdForWindows()
-            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
-
         configuration.SetupConfiguration.SetupOperation = setupOperation;
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
         await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
     }
+
+    static OrchardCoreUITestBase() =>
+        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
+            .UseCmdForWindows()
+            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 
     private static MultiSizeTestAsync ConvertMultiSizeTestToAsynchronous(MultiSizeTest test) =>
         (context, isStandardSize) =>

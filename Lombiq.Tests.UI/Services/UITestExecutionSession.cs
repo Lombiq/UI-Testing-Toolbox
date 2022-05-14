@@ -84,7 +84,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     snapshotSubdirectory = "AzureBlob";
                 }
 
-                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation.GetHashCode().ToTechnicalString();
+                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
 
                 _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
 
@@ -128,7 +128,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
-                    "on why it's failing in the FailureDumps folder: {1}",
+                        "on why it's failing in the FailureDumps folder: {1}",
                     retryCount + 1,
                     dumpFolderAbsolutePath);
 
@@ -391,10 +391,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                 if (setupConfiguration.FastFailSetup &&
-                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var pair) &&
-                    pair.FailureCount > _configuration.MaxRetryCount)
+                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
+                    failure.FailureCount > _configuration.MaxRetryCount)
                 {
-                    throw new SetupFailedFastException(pair.FailureCount, pair.LatestException);
+                    throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
                 }
 
                 // Note that the context creation needs to be done here too because the Orchard app needs the snapshot

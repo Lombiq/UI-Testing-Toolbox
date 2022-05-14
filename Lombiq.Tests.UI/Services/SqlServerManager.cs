@@ -1,5 +1,6 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Dmf;
@@ -123,15 +124,16 @@ public sealed class SqlServerManager : IDisposable
             Path.GetDirectoryName(filePathLocal) ??
             throw new InvalidOperandException($"Failed to get the directory path for local path \"{filePathLocal}\".");
 
-        if (!Directory.Exists(directoryPathLocal)) Directory.CreateDirectory(directoryPathLocal);
+        FileSystemHelper.EnsureDirectoryExists(directoryPathLocal);
         if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
         var server = CreateServer();
 
         KillDatabaseProcesses(server);
 
-        var useCompression = useCompressionIfAvailable &&
-                             (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
+        var useCompression =
+            useCompressionIfAvailable &&
+            (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
 
         var backup = new Backup
         {

@@ -1,6 +1,7 @@
 using Atata;
 using OpenQA.Selenium;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -57,6 +58,12 @@ public static class AtataFactory
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
         const int maxTryCount = 3;
         var currentTryIndex = 0;
+
+        // Force headless mode if we are in Linux without a working graphical environment.
+        if (!browserConfiguration.Headless && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            browserConfiguration.Headless = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DISPLAY"));
+        }
 
         while (true)
         {
