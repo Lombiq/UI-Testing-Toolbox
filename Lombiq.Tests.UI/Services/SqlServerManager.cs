@@ -26,7 +26,7 @@ public class SqlServerConfiguration
     public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
         $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
-        $"MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
+            "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
 }
 
 public class SqlServerRunningContext
@@ -90,24 +90,26 @@ public sealed class SqlServerManager : IDisposable
 
     /// <summary>
     /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
-    /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and
-    /// <paramref name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default
-    /// <see langword="null"/> value. If the server is on a remote location or within a container, then the
-    /// <paramref name="snapshotDirectoryPathRemote"/> directory must be mounted to the
-    /// <paramref name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted
-    /// volume on Docker or an (S)FTP network location mounted as a drive.
+    /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and <paramref
+    /// name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default <see
+    /// langword="null"/> value.
     /// </summary>
     /// <param name="snapshotDirectoryPathRemote">
-    /// The location of the save directory on the SQL Server's machine.
+    /// The location of the save directory on the SQL Server's machine. If it's a path in a Docker machine it must
+    /// follow the container's conventions (e.g. A Linux SQL Server container should have forward slash paths even on a
+    /// Windows host).
     /// </param>
     /// <param name="snapshotDirectoryPathLocal">
-    /// The location of the directory where the saved database snapshot can be accessed from the local system. If
-    /// <see langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if
-    /// for local server only calls.
+    /// The location of the directory where the saved database snapshot can be accessed from the local system. If <see
+    /// langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>.
+    /// </param>
+    /// <param name="containerName">
+    /// The identifier of the Docker container where <paramref name="snapshotDirectoryPathRemote"/> is. If the server is
+    /// not in a Docker container then it should be <see langword="null"/>.
     /// </param>
     /// <param name="useCompressionIfAvailable">
-    /// If set to <see langword="true"/> and the database engine supports it, then
-    /// <see cref="BackupCompressionOptions.On"/> will be used.
+    /// If set to <see langword="true"/> and the database engine supports it, then <see
+    /// cref="BackupCompressionOptions.On"/> will be used.
     /// </param>
     public async Task TakeSnapshotAsync(
         string snapshotDirectoryPathRemote,
