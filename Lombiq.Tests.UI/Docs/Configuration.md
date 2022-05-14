@@ -79,7 +79,7 @@ You can learn more about the *microsoft-mssql-server* container [here](https://h
 
 ```powershell
 docker pull mcr.microsoft.com/mssql/server
-docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password1!" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 docker exec -u 0 sql2019 bash -c "mkdir /data; chmod 777 /data -R; chown mssql:root /data"
 ```
 
@@ -89,7 +89,7 @@ You need to put the shared directory inside your _$HOME_, in this example _~/.lo
 
 ```shell
 docker pull mcr.microsoft.com/mssql/server
-docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
+docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Password1!' -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
 docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:root /data'
 ```
 
@@ -99,7 +99,7 @@ If you get `PlatformNotSupportedException`, that's a known problem with _Microso
 
 #### On Both
 
-If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "yourStrong(!)Password"` to access the SQL console.
+If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Password1!"` to access the SQL console.
 
 You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
 
@@ -111,7 +111,7 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
 ```json
 {
   "SqlServerDatabaseConfiguration": {
-    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
   },
   "DockerConfiguration": {
     "ContainerSnapshotPath": "/data/Snapshots",
