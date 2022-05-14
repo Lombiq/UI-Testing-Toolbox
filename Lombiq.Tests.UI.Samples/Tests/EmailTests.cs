@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
@@ -34,7 +35,23 @@ public class EmailTests : UITestBase
                 await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
                 await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
                 await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
-                await context.ClickReliablyOnAsync(By.Id("emailtestsend"));
+
+                // With the button being under the fold in the configured screen size, we need to make sure it's
+                // actually clicked. Scrolling there first doesn't work for some reason.
+                await ReliabilityHelper.DoWithRetriesOrFailAsync(
+                    async () =>
+                    {
+                        try
+                        {
+                            await context.ClickReliablyOnAsync(By.Id("emailtestsend"));
+                            return true;
+                        }
+                        catch (WebDriverException ex) when (ex.Message.Contains("move target out of bounds"))
+                        {
+                            return false;
+                        }
+                    });
+
                 context.ShouldBeSuccess();
 
                 // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
