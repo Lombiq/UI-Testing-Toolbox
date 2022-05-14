@@ -20,8 +20,8 @@ public class SqlServerConfiguration
 
     /// <summary>
     /// Gets or sets the template to use to generate SQL Server connection strings. It needs to contain the <see
-    /// cref="DatabaseIdPlaceholder"/> placeholder in the database name so unique database names can be generated
-    /// for concurrently running UI tests.
+    /// cref="DatabaseIdPlaceholder"/> placeholder in the database name so unique database names can be generated for
+    /// concurrently running UI tests.
     /// </summary>
     public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",

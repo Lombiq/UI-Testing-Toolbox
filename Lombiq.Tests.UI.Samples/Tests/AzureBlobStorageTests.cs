@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Up until now the Orchard app always used the default local Media storage for managing Media files. However, you  may
+// Up until now the Orchard app always used the default local Media storage for managing Media files. However, you may
 // use Azure Blob Storage in production. You can also test your app with it!
 public class AzureBlobStorageTests : UITestBase
 {
@@ -26,8 +26,8 @@ public class AzureBlobStorageTests : UITestBase
         ExecuteTestAfterSetupAsync(
             context => context.CheckIfAnonymousHomePageExistsAsync(),
             browser,
-            // Note the configuration! We could also set this globally in UITestBase.
-            // You'll need an accessible Azure Blob Storage account. For testing we recommend the Azurite emulator
+            // Note the configuration! We could also set this globally in UITestBase. You'll need an accessible Azure
+            // Blob Storage account. For testing we recommend the Azurite emulator
             // (https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite) that can be used from tests
             // without any further configuration.
             configuration => configuration.UseAzureBlobStorage = true);
