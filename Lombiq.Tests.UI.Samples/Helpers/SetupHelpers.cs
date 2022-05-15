@@ -2,8 +2,11 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Samples.Helpers;
@@ -38,7 +41,7 @@ public static class SetupHelpers
         // quickly also allows to the UI Testing Toolbox not to run all the other tests (since without a working setup
         // that would be pointless). Check out OrchardCoreSetupConfiguration.FastFailSetup if you're interested how that
         // works.
-        await AssertSetupSuccessfulAsync(context);
+        AssertSetupSuccessful(context);
 
         return homepageUri;
     }
@@ -61,21 +64,31 @@ public static class SetupHelpers
     public static async Task<Uri> RunAutoSetupAsync(UITestContext context)
     {
         await context.GoToHomePageAsync();
-        await AssertSetupSuccessfulAsync(context);
+        AssertSetupSuccessful(context);
         return context.GetCurrentUri();
     }
 
-    private static async Task AssertSetupSuccessfulAsync(UITestContext context)
+    private static void AssertSetupSuccessful(UITestContext context)
     {
         try
         {
             context.Exists(By.Id("navbar"));
         }
-        catch
+        catch (NoSuchElementException)
         {
-            // Before throwing a not-too-helpful NoSuchElementException, verify if the browser log has something to say.
-            await context.AssertLogsAsync();
-            throw;
+            var validationErrors = context.GetAll(By.ClassName("field-validation-error"));
+
+            if (!validationErrors.Any()) throw;
+
+            var isSingle = validationErrors.Count == 1;
+            var plural = isSingle ? string.Empty : "s";
+            var errors = isSingle
+                ? " " + validationErrors.Single().Text.Trim()
+                : validationErrors
+                    .Select(element => "\n- " + element.Text.Trim())
+                    .Join(string.Empty);
+
+            throw new InvalidOperationException($"Setup has failed with the following validation error{plural}:{errors}");
         }
     }
 }
