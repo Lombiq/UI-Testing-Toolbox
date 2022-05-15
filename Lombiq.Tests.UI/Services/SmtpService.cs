@@ -95,7 +95,7 @@ public sealed class SmtpService : IAsyncDisposable
             if (!_wasRestored)
             {
                 // Running dotnet tool restore the first time to make sure smtp4dev is installed.
-                await CliProgram.DotNet.CommandAsync(token, "tool", "restore");
+                await CliProgram.DotNet.ExecuteAsync(token, "tool", "restore");
 
                 _wasRestored = true;
             }

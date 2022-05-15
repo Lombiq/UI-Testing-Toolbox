@@ -204,7 +204,7 @@ public sealed class SqlServerManager : IDisposable
             await DockerExecuteAsync(containerName, "rm", "-f", remote);
 
             // Copy back snapshot.
-            await _docker.CommandAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
+            await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
 
             // Reset ownership.
             await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
@@ -242,7 +242,7 @@ public sealed class SqlServerManager : IDisposable
     {
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
-        return _docker.CommandAsync(arguments, additionalExceptionText: null, CancellationToken.None);
+        return _docker.ExecuteAsync(arguments, additionalExceptionText: null, CancellationToken.None);
     }
 
     public void Dispose()
