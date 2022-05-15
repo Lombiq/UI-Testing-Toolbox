@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
@@ -6,6 +7,7 @@ using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -88,7 +90,7 @@ public static class SetupHelpers
                     .Select(element => "\n- " + element.Text.Trim())
                     .Join(string.Empty);
 
-            throw new InvalidOperationException($"Setup has failed with the following validation error{plural}:{errors}");
+            throw new AssertionException($"Setup has failed with the following validation error{plural}:{errors}");
         }
     }
 }
