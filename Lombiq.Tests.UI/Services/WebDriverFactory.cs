@@ -194,8 +194,8 @@ public static class WebDriverFactory
                 (ChromeConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("chromium", "--version"),
                 (FirefoxConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("firefox", "--version"),
                 (FirefoxConfig, Platform.Windows) => RegistryHelper.GetInstalledBrowserVersionWin("firefox.exe"),
-                (FirefoxConfig, Platform.MacOs) => GetInstalledBrowserVersionOsx("Firefox", "firefox", "-version"),
-                (InternetExplorerConfig, _) =>
+                (FirefoxConfig, Platform.MacOs) => RegistryHelper.GetInstalledBrowserVersionOsx("Firefox", "--version"),
+                (InternetExplorerConfig, Platform.Windows) =>
                     (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "svcVersion", "Latest"),
                 _ => driverConfig.GetMatchingBrowserVersion(),
             };
@@ -218,25 +218,6 @@ public static class WebDriverFactory
         }
 
         return Version.TryParse(version, out _) ? version : VersionResolveStrategy.Latest;
-    }
-
-
-    private static string GetInstalledBrowserVersionOsx(string programName, string executableFileName, string arguments)
-    {
-        try
-        {
-            string executableFilePath = $"/Applications/{programName}.app/Contents/MacOS/{executableFileName}";
-            return Task
-                .Run(() => VersionHelper.GetVersionFromProcess(executableFilePath, arguments))
-                .Result
-                .Replace(executableFileName + " ", string.Empty);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException(
-                $"An error occured trying to locate installed browser version for runtime platform {Environment.OSVersion.Platform}",
-                ex);
-        }
     }
 
     private static Platform GetPlatform()
