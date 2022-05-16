@@ -97,7 +97,7 @@ public sealed class SqlServerManager : IDisposable
     /// </summary>
     /// <param name="snapshotDirectoryPathRemote">
     /// The location of the save directory on the SQL Server's machine. If it's a path in a Docker machine it must
-    /// follow the container's conventions (e.g. A Linux SQL Server container should have forward slash paths even on a
+    /// follow the container's conventions (e.g. a Linux SQL Server container should have forward slash paths even on a
     /// Windows host).
     /// </param>
     /// <param name="snapshotDirectoryPathLocal">
