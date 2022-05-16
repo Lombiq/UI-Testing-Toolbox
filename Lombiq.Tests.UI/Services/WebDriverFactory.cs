@@ -184,6 +184,8 @@ public static class WebDriverFactory
         public override string GetLatestVersion() => "83.0.478.37";
     }
 
+    // This can be removed if https://github.com/rosolko/WebDriverManager.Net/pull/186 is merged and a new version of
+    // WebDriverManager.Net is published. Then we can use VersionResolveStrategy.MatchingBrowser for every driver.
     private static async Task<string> TryFindVersionAsync(IDriverConfig driverConfig)
     {
         string version;
