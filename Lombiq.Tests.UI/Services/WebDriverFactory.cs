@@ -196,7 +196,9 @@ public static class WebDriverFactory
                 (FirefoxConfig, Platform.Windows) => RegistryHelper.GetInstalledBrowserVersionWin("firefox.exe"),
                 (FirefoxConfig, Platform.MacOs) => RegistryHelper.GetInstalledBrowserVersionOsx("Firefox", "--version"),
                 (InternetExplorerConfig, Platform.Windows) =>
+#pragma warning disable CA1416 // This call site is reachable on all platforms. False positive.
                     (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "svcVersion", "Latest"),
+#pragma warning restore CA1416 // This call site is reachable on all platforms. False positive.
                 _ => driverConfig.GetMatchingBrowserVersion(),
             };
 
