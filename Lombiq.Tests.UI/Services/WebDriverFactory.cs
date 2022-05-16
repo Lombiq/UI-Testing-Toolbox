@@ -1,6 +1,4 @@
-using CliWrap;
-using CliWrap.Buffered;
-using Lombiq.HelpfulLibraries.Cli.Helpers;
+using Microsoft.Win32;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -9,7 +7,6 @@ using OpenQA.Selenium.IE;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -189,35 +186,19 @@ public static class WebDriverFactory
 
     private static async Task<string> TryFindVersionAsync(IDriverConfig driverConfig)
     {
-        static (string Executable, string[] Arguments) GetWithPowershell(string name) =>
-            ("powershell", new[] { "-command", $"(Get-Command '{name}').Version.ToString()" });
-        static (string Executable, string[] Arguments) GetWithCli(string name) =>
-            (name, new[] { "--version" });
-
-        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        var (executableName, arguments) = (driverConfig, isWindows) switch
-        {
-            (ChromeConfig, true) => GetWithPowershell("chrome"),
-            (ChromeConfig, false) => GetWithCli("chromium"),
-            (FirefoxConfig, true) => GetWithPowershell("firefox"),
-            (FirefoxConfig, false) => GetWithCli("firefox"),
-            (EdgeConfig, true) => ("powershell", new[] { "(Get-AppxPackage Microsoft.MicrosoftEdge).Version" }),
-            (InternetExplorerConfig, _) =>
-                ("reg", new[] { "query", @"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "/v", "svcVersion" }),
-            _ => throw new ArgumentOutOfRangeException(nameof(driverConfig), driverConfig, message: null),
-        };
-
         string version;
-
         try
         {
-            executableName = (await CliWrapHelper.WhichAsync(executableName)).First().FullName;
-
-            var result = await Cli
-                .Wrap(executableName)
-                .WithArguments(arguments)
-                .ExecuteBufferedAsync();
-            version = result.StandardOutput.Split().Reverse().FirstOrDefault(word => Version.TryParse(word, out _));
+            version = (driverConfig, GetPlatform()) switch
+            {
+                (ChromeConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("chromium", "--version"),
+                (FirefoxConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("firefox", "--version"),
+                (FirefoxConfig, Platform.Windows) => RegistryHelper.GetInstalledBrowserVersionWin("firefox.exe"),
+                (FirefoxConfig, Platform.MacOs) => GetInstalledBrowserVersionOsx("Firefox", "firefox", "-version"),
+                (InternetExplorerConfig, _) =>
+                    (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "svcVersion", "Latest"),
+                _ => driverConfig.GetMatchingBrowserVersion(),
+            };
 
             if (version != null && driverConfig is ChromeConfig && Version.TryParse(version, out var chromeVersion))
             {
@@ -233,19 +214,50 @@ public static class WebDriverFactory
         }
         catch
         {
-            version = null;
+            return VersionResolveStrategy.Latest;
         }
 
-        // Version selection based on the locally installed version is only available for Chrome, see:
-        // https://github.com/rosolko/WebDriverManager.Net/pull/91.
-        return version ?? (driverConfig is ChromeConfig
-            ? VersionResolveStrategy.MatchingBrowser
-            : VersionResolveStrategy.Latest);
+        return Version.TryParse(version, out _) ? version : VersionResolveStrategy.Latest;
+    }
+
+
+    private static string GetInstalledBrowserVersionOsx(string programName, string executableFileName, string arguments)
+    {
+        try
+        {
+            string executableFilePath = $"/Applications/{programName}.app/Contents/MacOS/{executableFileName}";
+            return Task
+                .Run(() => VersionHelper.GetVersionFromProcess(executableFilePath, arguments))
+                .Result
+                .Replace(executableFileName + " ", string.Empty);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"An error occured trying to locate installed browser version for runtime platform {Environment.OSVersion.Platform}",
+                ex);
+        }
+    }
+
+    private static Platform GetPlatform()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return Platform.Windows;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return Platform.Linux;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return Platform.MacOs;
+        return Platform.Unknown;
     }
 
     private sealed class ChromeConfiguration
     {
         public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
+    }
+
+    private enum Platform
+    {
+        Unknown,
+        Windows,
+        Linux,
+        MacOs,
     }
 }
