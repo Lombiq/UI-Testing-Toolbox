@@ -1,4 +1,3 @@
-using Atata.Cli;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Delegates;
 using Lombiq.Tests.UI.Extensions;
@@ -269,10 +268,7 @@ public abstract class OrchardCoreUITestBase
         await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
     }
 
-    static OrchardCoreUITestBase() =>
-        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
-            .UseCmdForWindows()
-            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
+    static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
 
     private static MultiSizeTestAsync ConvertMultiSizeTestToAsynchronous(MultiSizeTest test) =>
         (context, isStandardSize) =>

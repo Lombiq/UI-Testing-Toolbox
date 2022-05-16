@@ -1,4 +1,5 @@
 using Atata;
+using Atata.Cli;
 using OpenQA.Selenium;
 using System;
 using System.Runtime.InteropServices;
@@ -99,4 +100,9 @@ public static class AtataFactory
             }
         }
     }
+
+    public static void SetupShellCliCommandFactory() =>
+        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
+            .UseCmdForWindows()
+            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 }
