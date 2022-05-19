@@ -22,9 +22,7 @@
     {
       "form": {
         "attributes": {
-          "method": {
-            "enum": [ "get", "post", "GET", "POST" ]
-          }
+          "method": [ "get", "post", "GET", "POST" ]
         }
       }
     }
