@@ -147,10 +147,13 @@ public static class WebDriverFactory
     private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
         where TDriver : IWebDriver
     {
+        // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
+        // But this way the version is also stored and can be used in the exception message if there is a problem.
         var version = "<UNKNOWN>";
+
         try
         {
-            version = await TryFindVersionAsync(driverConfig);
+            version = driverConfig.GetMatchingBrowserVersion();
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
             // already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
@@ -184,65 +187,9 @@ public static class WebDriverFactory
         public override string GetLatestVersion() => "83.0.478.37";
     }
 
-    // This can be removed if https://github.com/rosolko/WebDriverManager.Net/pull/186 is merged and a new version of
-    // WebDriverManager.Net is published. Then we can use VersionResolveStrategy.MatchingBrowser for every driver.
-    private static async Task<string> TryFindVersionAsync(IDriverConfig driverConfig)
-    {
-        string version;
-        try
-        {
-            version = (driverConfig, GetPlatform()) switch
-            {
-                (ChromeConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("chromium", "--version"),
-                (FirefoxConfig, Platform.Linux) => RegistryHelper.GetInstalledBrowserVersionLinux("firefox", "--version"),
-                (FirefoxConfig, Platform.Windows) => RegistryHelper.GetInstalledBrowserVersionWin("firefox.exe"),
-                (FirefoxConfig, Platform.MacOs) => RegistryHelper.GetInstalledBrowserVersionOsx("Firefox", "--version"),
-                (InternetExplorerConfig, Platform.Windows) =>
-#pragma warning disable CA1416 // This call site is reachable on all platforms. False positive.
-                    (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer", "svcVersion", "Latest"),
-#pragma warning restore CA1416 // This call site is reachable on all platforms. False positive.
-                _ => driverConfig.GetMatchingBrowserVersion(),
-            };
-
-            if (version != null && driverConfig is ChromeConfig && Version.TryParse(version, out var chromeVersion))
-            {
-                // Chrome doesn't always have the driver for the same revision you have installed, especially if you use
-                // a package manager instead of the browser's auto-updater. To get around this, interrogate the API for
-                // the latest revision of the same build version, as that should be still compatible.
-                var versionApiUri = new Uri(
-                    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" +
-                    FormattableString.Invariant($"{chromeVersion.Major}.{chromeVersion.Minor}.{chromeVersion.Build}"));
-                using var client = new HttpClient();
-                version = await (await client.GetAsync(versionApiUri)).Content.ReadAsStringAsync();
-            }
-        }
-        catch
-        {
-            return VersionResolveStrategy.Latest;
-        }
-
-        return Version.TryParse(version, out _) ? version : VersionResolveStrategy.Latest;
-    }
-
-    private static Platform GetPlatform()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return Platform.Windows;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return Platform.Linux;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return Platform.MacOs;
-        return Platform.Unknown;
-    }
-
     private sealed class ChromeConfiguration
     {
         public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
-    }
-
-    private enum Platform
-    {
-        Unknown,
-        Windows,
-        Linux,
-        MacOs,
     }
 }
