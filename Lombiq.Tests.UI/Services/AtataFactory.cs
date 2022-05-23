@@ -3,7 +3,6 @@ using Atata.Cli;
 using OpenQA.Selenium;
 using System;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
