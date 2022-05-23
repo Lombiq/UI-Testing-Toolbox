@@ -16,7 +16,7 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
-    public static async Task<AtataScope> StartAtataScopeAsync(
+    public static AtataScope StartAtataScope(
         ITestOutputHelper testOutputHelper,
         Uri baseUri,
         OrchardCoreUITestExecutorConfiguration configuration)
@@ -29,7 +29,7 @@ public static class AtataFactory
         var builder = AtataContext.Configure()
             // The drivers are disposed when disposing AtataScope.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
+            .UseDriver(CreateDriver(browserConfiguration, timeoutConfiguration, testOutputHelper))
 #pragma warning restore CA2000 // Dispose objects before losing scope
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
@@ -46,14 +46,14 @@ public static class AtataFactory
         return new AtataScope(builder.Build(), baseUri);
     }
 
-    private static async Task<IWebDriver> CreateDriverAsync(
+    private static IWebDriver CreateDriver(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
         ITestOutputHelper testOutputHelper)
     {
-        async Task<IWebDriver> CastDriverFactoryAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
+        IWebDriver CastDriverFactory<T>(Func<BrowserConfiguration, TimeSpan, T> factory)
             where T : IWebDriver =>
-            await factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
+            factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
 
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
@@ -70,15 +70,14 @@ public static class AtataFactory
         {
             try
             {
-                var task = browserConfiguration.Browser switch
+                return browserConfiguration.Browser switch
                 {
-                    Browser.Chrome => CastDriverFactoryAsync(WebDriverFactory.CreateChromeDriverAsync),
-                    Browser.Edge => CastDriverFactoryAsync(WebDriverFactory.CreateEdgeDriverAsync),
-                    Browser.Firefox => CastDriverFactoryAsync(WebDriverFactory.CreateFirefoxDriverAsync),
-                    Browser.InternetExplorer => CastDriverFactoryAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
+                    Browser.Chrome => CastDriverFactory(WebDriverFactory.CreateChromeDriver),
+                    Browser.Edge => CastDriverFactory(WebDriverFactory.CreateEdgeDriver),
+                    Browser.Firefox => CastDriverFactory(WebDriverFactory.CreateFirefoxDriver),
+                    Browser.InternetExplorer => CastDriverFactory(WebDriverFactory.CreateInternetExplorerDriver),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
-                return await task;
             }
             catch (WebDriverException ex)
             {

@@ -560,7 +560,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        var atataScope = await AtataFactory.StartAtataScopeAsync(
+        var atataScope = AtataFactory.StartAtataScope(
             _testOutputHelper,
             uri,
             _configuration);

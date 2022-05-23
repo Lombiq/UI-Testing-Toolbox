@@ -7,7 +7,6 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
@@ -19,11 +18,11 @@ public static class WebDriverFactory
 {
     private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
 
-    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         var state = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions(), Service = null };
 
-        ChromeDriver CreateDriver()
+        ChromeDriver CreateDriverInner()
         {
             state.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
@@ -55,14 +54,14 @@ public static class WebDriverFactory
             Directory.Exists(driverPath))
         {
             state.Service = ChromeDriverService.CreateDefaultService(driverPath);
-            return Task.FromResult(CreateDriver());
+            return CreateDriverInner();
         }
 
-        return CreateDriverAsync(CreateDriver, new ChromeConfig());
+        return CreateDriver(CreateDriverInner, new ChromeConfig());
     }
 
-    public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(
+    public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriver(
             () =>
             {
                 // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
@@ -92,7 +91,7 @@ public static class WebDriverFactory
             },
             new StaticVersionEdgeConfig());
 
-    public static Task<FirefoxDriver> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         var options = new FirefoxOptions().SetCommonOptions();
 
@@ -101,13 +100,13 @@ public static class WebDriverFactory
         if (configuration.Headless) options.AddArgument("--headless");
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriverAsync(
+        return CreateDriver(
             () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
             new FirefoxConfig());
     }
 
-    public static Task<InternetExplorerDriver> CreateInternetExplorerDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(
+    public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriver(
             () =>
             {
                 var options = new InternetExplorerOptions().SetCommonOptions();
@@ -141,7 +140,7 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static async Task<TDriver> CreateDriverAsync<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
+    private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
         where TDriver : IWebDriver
     {
         // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
