@@ -1,4 +1,3 @@
-using Microsoft.Win32;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -8,8 +7,6 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
