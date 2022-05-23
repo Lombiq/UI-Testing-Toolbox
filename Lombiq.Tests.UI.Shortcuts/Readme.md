@@ -1,4 +1,4 @@
-# Shortcuts - Lombiq UI Testing Toolbox
+# Lombiq UI Testing Toolbox - Shortcuts
 
 
 
