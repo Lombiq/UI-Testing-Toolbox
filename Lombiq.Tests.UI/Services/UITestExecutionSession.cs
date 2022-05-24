@@ -450,8 +450,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
-            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -=
-                SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
 
             var containerName = _dockerConfiguration?.ContainerName;
             var remotePath = snapshotDirectoryPath;
@@ -475,14 +474,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             return _sqlServerManager.TakeSnapshotAsync(remotePath, snapshotDirectoryPath, containerName);
         }
 
-        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function. Thus
-        // if anything goes wrong between the below delegate registration and it being called then it'll remain
-        // registered and later during a retry try to run (and fail on the disposed SqlServerManager.
+        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function.
+        // Thus, if anything goes wrong between the below delegate registration and its invocation, it will remain
+        // registered and fail on the disposed SqlServerManager during a retry.
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(
-                SqlServerManagerBeforeTakeSnapshotHandlerAsync);
-        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot +=
-            SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
     }
 
     private void SetupAzureBlobStorageSnapshot()
@@ -560,10 +557,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        var atataScope = AtataFactory.StartAtataScope(
-            _testOutputHelper,
-            uri,
-            _configuration);
+        var atataScope = AtataFactory.StartAtataScope(_testOutputHelper, uri, _configuration);
 
         return new UITestContext(
             contextId,
@@ -590,19 +584,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
-            var snapshotDirectoryPath = _snapshotDirectoryPath;
-
-            if (!_hasSetupOperation || !Directory.Exists(snapshotDirectoryPath))
+            if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath))
             {
                 return;
             }
 
             var containerName = _dockerConfiguration?.ContainerName;
             var containerPath = string.IsNullOrEmpty(containerName)
-                ? snapshotDirectoryPath
+                ? _snapshotDirectoryPath
                 : _dockerConfiguration.ContainerSnapshotPath;
 
-            await _sqlServerManager.RestoreSnapshotAsync(containerPath, snapshotDirectoryPath, containerName);
+            await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
 
             var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
 
@@ -696,7 +688,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             // Random "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two
             // padding characters, or an illegal character among the padding characters." exceptions can happen.
-
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 $"Taking the screenshot #{_screenshotCount.ToTechnicalString()} failed with the following exception: {ex}");
         }
