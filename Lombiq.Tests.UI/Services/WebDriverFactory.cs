@@ -20,10 +20,10 @@ public static class WebDriverFactory
 
     public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions(), Service = null };
-
-        ChromeDriver CreateDriverInner()
+        ChromeDriver CreateDriverInner(ChromeDriverService service)
         {
+            var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
+
             chromeConfig.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
             chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
@@ -36,60 +36,57 @@ public static class WebDriverFactory
             chromeConfig.Options.AddArgument("no-sandbox");
 
             // Linux-specific setting, may be necessary for running in containers, see
-           // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
             chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
-            chromeConfig.Service ??= ChromeDriverService.CreateDefaultService();
+            chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
             chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
             if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
 
             return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
 
-        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath &&
-            Directory.Exists(driverPath))
+        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath && Directory.Exists(driverPath))
         {
-            chromeConfig.Service = ChromeDriverService.CreateDefaultService(driverPath);
-            return CreateDriverInner();
+            return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(CreateDriverInner, new ChromeConfig());
+        return CreateDriver(new ChromeConfig(), () => CreateDriverInner(service: null));
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(
-            () =>
+        CreateDriver(new StaticVersionEdgeConfig(), () =>
+        {
+            // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
+            var config = new StaticVersionEdgeConfig();
+            var architecture = ArchitectureHelper.GetArchitecture();
+            // Using a hard-coded version for now to use the latest released one instead of canary that would be
+            // returned by EdgeConfig.GetLatestVersion(). See:
+            // https://github.com/rosolko/WebDriverManager.Net/issues/74
+            var version = config.GetLatestVersion();
+            var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+
+            var options = new EdgeOptions().SetCommonOptions();
+
+            if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
             {
-                // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
-                var config = new StaticVersionEdgeConfig();
-                var architecture = ArchitectureHelper.GetArchitecture();
-                // Using a hard-coded version for now to use the latest released one instead of canary that would be
-                // returned by EdgeConfig.GetLatestVersion(). See:
-                // https://github.com/rosolko/WebDriverManager.Net/issues/74
-                var version = config.GetLatestVersion();
-                var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+                options.AddArgument("--lang=" + configuration.AcceptLanguage);
+            }
 
-                var options = new EdgeOptions().SetCommonOptions();
+            if (configuration.Headless) options.AddArgument("headless");
 
-                if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
-                {
-                    options.AddArgument("--lang=" + configuration.AcceptLanguage);
-                }
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                if (configuration.Headless) options.AddArgument("headless");
-
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
-
-                return new EdgeDriver(
+            return
+                new EdgeDriver(
                         EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
                         options)
                     .SetCommonTimeouts(pageLoadTimeout);
-            },
-            new StaticVersionEdgeConfig());
+        });
 
     public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
@@ -98,26 +95,23 @@ public static class WebDriverFactory
         options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
         if (configuration.Headless) options.AddArgument("--headless");
+
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriver(
-            () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
-            new FirefoxConfig());
+        return CreateDriver(new FirefoxConfig(), () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
     }
 
     public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(
-            () =>
-            {
-                var options = new InternetExplorerOptions().SetCommonOptions();
+        CreateDriver(new InternetExplorerConfig(), () =>
+        {
+            var options = new InternetExplorerOptions().SetCommonOptions();
 
-                // IE doesn't support this.
-                options.AcceptInsecureCertificates = false;
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
+            // IE doesn't support this.
+            options.AcceptInsecureCertificates = false;
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
-            },
-            new InternetExplorerConfig());
+            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+        });
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
@@ -140,7 +134,7 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
+    private static TDriver CreateDriver<TDriver>(IDriverConfig driverConfig, Func<TDriver> driverFactory)
         where TDriver : IWebDriver
     {
         // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
@@ -152,7 +146,7 @@ public static class WebDriverFactory
             version = driverConfig.GetMatchingBrowserVersion();
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
-            // already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
+            // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
             _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
             {
