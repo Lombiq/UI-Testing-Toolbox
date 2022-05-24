@@ -55,39 +55,38 @@ public static class WebDriverFactory
             return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(() => CreateDriverInner(service: null), new ChromeConfig());
+        return CreateDriver(new ChromeConfig(), () => CreateDriverInner(service: null));
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(
-            () =>
+        CreateDriver(new StaticVersionEdgeConfig(), () =>
+        {
+            // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
+            var config = new StaticVersionEdgeConfig();
+            var architecture = ArchitectureHelper.GetArchitecture();
+            // Using a hard-coded version for now to use the latest released one instead of canary that would be
+            // returned by EdgeConfig.GetLatestVersion(). See:
+            // https://github.com/rosolko/WebDriverManager.Net/issues/74
+            var version = config.GetLatestVersion();
+            var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+
+            var options = new EdgeOptions().SetCommonOptions();
+
+            if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
             {
-                // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
-                var config = new StaticVersionEdgeConfig();
-                var architecture = ArchitectureHelper.GetArchitecture();
-                // Using a hard-coded version for now to use the latest released one instead of canary that would be
-                // returned by EdgeConfig.GetLatestVersion(). See:
-                // https://github.com/rosolko/WebDriverManager.Net/issues/74
-                var version = config.GetLatestVersion();
-                var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
+                options.AddArgument("--lang=" + configuration.AcceptLanguage);
+            }
 
-                var options = new EdgeOptions().SetCommonOptions();
+            if (configuration.Headless) options.AddArgument("headless");
 
-                if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
-                {
-                    options.AddArgument("--lang=" + configuration.AcceptLanguage);
-                }
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                if (configuration.Headless) options.AddArgument("headless");
-
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
-
-                return new EdgeDriver(
+            return
+                new EdgeDriver(
                         EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
                         options)
                     .SetCommonTimeouts(pageLoadTimeout);
-            },
-            new StaticVersionEdgeConfig());
+        });
 
     public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
@@ -96,26 +95,23 @@ public static class WebDriverFactory
         options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
         if (configuration.Headless) options.AddArgument("--headless");
+
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriver(
-            () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout),
-            new FirefoxConfig());
+        return CreateDriver(new FirefoxConfig(), () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
     }
 
     public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(
-            () =>
-            {
-                var options = new InternetExplorerOptions().SetCommonOptions();
+        CreateDriver(new InternetExplorerConfig(), () =>
+        {
+            var options = new InternetExplorerOptions().SetCommonOptions();
 
-                // IE doesn't support this.
-                options.AcceptInsecureCertificates = false;
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
+            // IE doesn't support this.
+            options.AcceptInsecureCertificates = false;
+            configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-                return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
-            },
-            new InternetExplorerConfig());
+            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+        });
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
@@ -138,7 +134,7 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(Func<TDriver> driverFactory, IDriverConfig driverConfig)
+    private static TDriver CreateDriver<TDriver>(IDriverConfig driverConfig, Func<TDriver> driverFactory)
         where TDriver : IWebDriver
     {
         // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
