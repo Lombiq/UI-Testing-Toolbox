@@ -93,16 +93,15 @@ docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Password1!' -p 1433
 docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:root /data'
 ```
 
-If you haven't yet done it yet, add your user to the `docker` group.
+If you haven't yet, add your user to the `docker` group.
 
-If you get `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround temporarily set the project's runtime identifier to `linux-x64` either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430) or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
+If you get a `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround, temporarily set the project's runtime identifier to `linux-x64` - either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430), or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
 
 #### On Both
 
-If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Password1!"` to access the SQL console.
+If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Password1!'` to access the SQL console.
 
 You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
-
 
 ### Extending TestConfiguration.json
 
