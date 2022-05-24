@@ -50,11 +50,10 @@ public class AccountController : Controller
     public async Task<ActionResult> SetUserRegistrationType(UserRegistrationType type)
     {
         var settings = await _siteService.LoadSiteSettingsAsync();
-        var registrationSettings = settings.As<RegistrationSettings>();
 
-        registrationSettings.UsersCanRegister = type;
-
-        settings.Put(registrationSettings);
+        settings.Alter<RegistrationSettings>(
+            nameof(RegistrationSettings),
+            registrationSettings => registrationSettings.UsersCanRegister = type);
 
         await _siteService.UpdateSiteSettingsAsync(settings);
 

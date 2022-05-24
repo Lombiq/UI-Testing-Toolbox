@@ -80,7 +80,6 @@ public static class ShortcutsUITestContextExtensions
 
     /// <summary>
     /// Sets the registration type in site settings.
-    /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
     public static Task SetUserRegistrationTypeAsync(this UITestContext context, UserRegistrationType type) =>
         context.GoToAsync<AccountController>(controller => controller.SetUserRegistrationType(type));
@@ -193,7 +192,6 @@ public static class ShortcutsUITestContextExtensions
 
     /// <summary>
     /// Selects theme by id.
-    /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
     public static Task SelectThemeAsync(this UITestContext context, string id) =>
         context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));

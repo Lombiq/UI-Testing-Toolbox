@@ -51,7 +51,7 @@ public class ThemeController : Controller
         }
 
         var enabledFeatures = await _shellFeaturesManager.GetEnabledFeaturesAsync();
-        var isEnabled = enabledFeatures.Any(x => x.Extension.Id == themeFeature.Id);
+        var isEnabled = enabledFeatures.Any(feature => feature.Extension.Id == themeFeature.Id);
 
         if (!isEnabled)
         {
@@ -62,5 +62,5 @@ public class ThemeController : Controller
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>
-        manifest.Tags.Any(x => string.Equals(x, ManifestConstants.AdminTag, StringComparison.OrdinalIgnoreCase));
+        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(ManifestConstants.AdminTag));
 }
