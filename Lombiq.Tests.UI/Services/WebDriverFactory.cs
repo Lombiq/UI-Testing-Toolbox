@@ -22,32 +22,32 @@ public static class WebDriverFactory
     {
         ChromeDriver CreateDriverInner(ChromeDriverService service)
         {
-            var config = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
+            var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-            config.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
+            chromeConfig.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
-            config.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
+            chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
             // Disabling the Chrome sandbox can speed things up a bit, so it's recommended when you get a lot of
             // timeouts during parallel execution:
             // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
             // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
             // with trusted code (like our own).
-            config.Options.AddArgument("no-sandbox");
+            chromeConfig.Options.AddArgument("no-sandbox");
 
             // Linux-specific setting, may be necessary for running in containers, see
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-            config.Options.AddArgument("disable-dev-shm-usage");
+            chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
-            if (configuration.Headless) config.Options.AddArgument("headless");
+            if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
-            configuration.BrowserOptionsConfigurator?.Invoke(config.Options);
+            configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
-            config.Service = service ?? ChromeDriverService.CreateDefaultService();
-            config.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
-            if (config.Service.HostName == "localhost") config.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
+            chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
+            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
+            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
 
-            return new ChromeDriver(config.Service, config.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
 
         if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath && Directory.Exists(driverPath))
