@@ -103,7 +103,6 @@ If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/
 
 You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
 
-
 ### Extending TestConfiguration.json
 
 SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and `HostSnapshotPath` property as needed.
