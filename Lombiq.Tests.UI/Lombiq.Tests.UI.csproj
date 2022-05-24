@@ -57,6 +57,7 @@
     <PackageReference Include="Atata.WebDriverExtras" Version="1.5.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
     <PackageReference Include="CliWrap" Version="3.4.1" />
+    <PackageReference Include="ImageSharpCompare" Version="1.2.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="160.5400.1" />
