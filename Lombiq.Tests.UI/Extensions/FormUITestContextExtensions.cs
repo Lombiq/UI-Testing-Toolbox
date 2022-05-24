@@ -235,10 +235,10 @@ public static class FormUITestContextExtensions
             CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Finds the first submit button and clicks on it reliably.
+    /// Finds the first submit button (excluding any "Log off" buttons) and clicks on it reliably.
     /// </summary>
     public static Task ClickReliablyOnSubmitAsync(this UITestContext context) =>
-        context.ClickReliablyOnAsync(By.CssSelector("button[type='submit']"));
+        context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
 
     /// <summary>
     /// Finds the "Add New" button.
