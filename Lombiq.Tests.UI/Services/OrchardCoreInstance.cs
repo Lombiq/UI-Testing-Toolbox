@@ -144,9 +144,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                 });
         }
 
-        var argumentsBuilder = new ArgumentsBuilder();
-
-        argumentsBuilder = argumentsBuilder
+        var argumentsBuilder = new ArgumentsBuilder()
             .Add("--urls").Add(url)
             .Add("--contentRoot").Add(_contentRootPath)
             .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
@@ -197,16 +195,16 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
 
         var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
-        return Directory.Exists(logFolderPath) ?
-            Directory
+        return Directory.Exists(logFolderPath)
+            ? Directory
                 .EnumerateFiles(logFolderPath, "*.log")
                 .Select(filePath => (IApplicationLog)new ApplicationLog
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
                     ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
-                }) :
-            Enumerable.Empty<IApplicationLog>();
+                })
+            : Enumerable.Empty<IApplicationLog>();
     }
 
     public async ValueTask DisposeAsync()
@@ -280,9 +278,9 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private class ApplicationLog : IApplicationLog
     {
-        public string Name { get; set; }
-        public string FullName { get; set; }
-        public Func<Task<string>> ContentLoader { get; set; }
+        public string Name { get; init; }
+        public string FullName { get; init; }
+        public Func<Task<string>> ContentLoader { get; init; }
 
         public Task<string> GetContentAsync() => ContentLoader();
 
