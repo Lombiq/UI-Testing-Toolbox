@@ -24,17 +24,16 @@ namespace Lombiq.Tests.UI.Services;
 
 internal sealed class UITestExecutionSession : IAsyncDisposable
 {
+    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
+    private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
+    private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
+
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
     private readonly ITestOutputHelper _testOutputHelper;
 
-    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
-    private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
-    private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
-
     private int _screenshotCount;
-
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
