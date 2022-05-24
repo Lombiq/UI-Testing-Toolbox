@@ -95,7 +95,7 @@ docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:r
 
 If you haven't yet, add your user to the `docker` group.
 
-If you get `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround temporarily set the project's runtime identifier to `linux-x64` either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430) or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
+If you get a `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround, temporarily set the project's runtime identifier to `linux-x64` - either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430), or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
 
 #### On Both
 
