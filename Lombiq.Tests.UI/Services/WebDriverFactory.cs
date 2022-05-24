@@ -20,44 +20,42 @@ public static class WebDriverFactory
 
     public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        var state = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions(), Service = null };
-
-        ChromeDriver CreateDriverInner()
+        ChromeDriver CreateDriverInner(ChromeDriverService service)
         {
-            state.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
+            var config = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-            state.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
+            config.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
-            // Disabling the Chrome sandbox can speed things up a bit, so recommended when you get a lot of timeouts
-            // during parallel execution:
+            config.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
+
+            // Disabling the Chrome sandbox can speed things up a bit, so it's recommended when you get a lot of
+            // timeouts during parallel execution:
             // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
             // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
             // with trusted code (like our own).
-            state.Options.AddArgument("no-sandbox");
+            config.Options.AddArgument("no-sandbox");
 
             // Linux-specific setting, may be necessary for running in containers, see
-            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips
-            state.Options.AddArgument("disable-dev-shm-usage");
+            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+            config.Options.AddArgument("disable-dev-shm-usage");
 
-            if (configuration.Headless) state.Options.AddArgument("headless");
+            if (configuration.Headless) config.Options.AddArgument("headless");
 
-            configuration.BrowserOptionsConfigurator?.Invoke(state.Options);
+            configuration.BrowserOptionsConfigurator?.Invoke(config.Options);
 
-            state.Service ??= ChromeDriverService.CreateDefaultService();
-            state.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
-            if (state.Service.HostName == "localhost") state.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
+            config.Service = service ?? ChromeDriverService.CreateDefaultService();
+            config.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
+            if (config.Service.HostName == "localhost") config.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
 
-            return new ChromeDriver(state.Service, state.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            return new ChromeDriver(config.Service, config.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
 
-        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath &&
-            Directory.Exists(driverPath))
+        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath && Directory.Exists(driverPath))
         {
-            state.Service = ChromeDriverService.CreateDefaultService(driverPath);
-            return CreateDriverInner();
+            return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(CreateDriverInner, new ChromeConfig());
+        return CreateDriver(() => CreateDriverInner(service: null), new ChromeConfig());
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
@@ -152,7 +150,7 @@ public static class WebDriverFactory
             version = driverConfig.GetMatchingBrowserVersion();
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
-            // already done. For 100 such calls it's around 16 s vs <100 ms. The Lazy<T> trick taken from:
+            // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
             _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
             {
