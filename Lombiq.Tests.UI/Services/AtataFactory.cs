@@ -57,7 +57,7 @@ public static class AtataFactory
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
         const int maxTryCount = 3;
-        var currentTryIndex = 0;
+        var currentTry = 1;
 
         // Force headless mode if we are in Linux without a working graphical environment.
         if (!browserConfiguration.Headless && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -80,21 +80,18 @@ public static class AtataFactory
             }
             catch (WebDriverException ex)
             {
-                if (ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") &&
-                    currentTryIndex < maxTryCount - 1)
-                {
-                    currentTryIndex++;
-                    var retryCount = maxTryCount - currentTryIndex;
-
-                    // Not using parameters because the exception can throw off the string format.
-                    testOutputHelper.WriteLineTimestampedAndDebug(
-                        "While creating the web driver failed with the following exception, it'll be retried " +
-                        FormattableString.Invariant($"{retryCount} more time(s). Exception: {ex}"));
-                }
-                else
+                if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || currentTry >= maxTryCount)
                 {
                     throw;
                 }
+
+                currentTry++;
+                var retryCount = maxTryCount - currentTry + 1;
+
+                // Not using parameters because the exception can throw off the string format.
+                testOutputHelper.WriteLineTimestampedAndDebug(
+                    "While creating the web driver failed with the following exception, it'll be retried " +
+                    FormattableString.Invariant($"{retryCount} more time(s). Exception: {ex}"));
             }
         }
     }
