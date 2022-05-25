@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -55,7 +54,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private static readonly PortLeaseManager _portLeaseManager;
     private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
     private static readonly object _exeCopyLock = new();
-    private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    private static readonly bool _isWindows = OperatingSystem.IsWindows();
 
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
