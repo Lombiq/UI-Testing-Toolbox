@@ -109,8 +109,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                 .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
         }
 
-        // If you try to use the dotnet command to run a DLL published for a different platform (seen this with running
-        // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
+        // If you try to use the dotnet command to run a dll published for a different platform (seen this with running
+        // win10-x86 dll files on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
         // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
         var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ExecutableExtension);
         var useExeToExecuteApp = File.Exists(exePath);

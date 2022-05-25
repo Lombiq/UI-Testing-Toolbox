@@ -301,9 +301,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                var remotePath = appDumpPath;
                 var containerName = _dockerConfiguration?.ContainerName;
-                if (!string.IsNullOrEmpty(containerName)) remotePath = _dockerConfiguration.ContainerSnapshotPath;
+                var remotePath = string.IsNullOrEmpty(containerName)
+                    ? appDumpPath
+                    : _dockerConfiguration.ContainerSnapshotPath;
 
                 await _sqlServerManager.TakeSnapshotAsync(
                     remotePath,
