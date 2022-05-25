@@ -125,7 +125,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                     lock (_exeCopyLock)
                     {
                         var copyExePath = Path.Combine(
-                            Path.GetDirectoryName(exePathKey),
+                            Path.GetDirectoryName(exePathKey) ?? throw new InvalidOperationException(
+                                $"Unable to find the directory of \"{exePathKey}\"."),
                             "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
 
                         if (File.Exists(copyExePath) &&
@@ -175,6 +176,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
     {
+        ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
+
         await PauseAsync();
 
         if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
