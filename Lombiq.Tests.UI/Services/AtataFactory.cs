@@ -45,6 +45,11 @@ public static class AtataFactory
         return new AtataScope(builder.Build(), baseUri);
     }
 
+    public static void SetupShellCliCommandFactory() =>
+        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
+            .UseCmdForWindows()
+            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
+
     private static IWebDriver CreateDriver(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
@@ -95,9 +100,4 @@ public static class AtataFactory
             }
         }
     }
-
-    public static void SetupShellCliCommandFactory() =>
-        ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
-            .UseCmdForWindows()
-            .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 }
