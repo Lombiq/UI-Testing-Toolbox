@@ -80,15 +80,8 @@ public static class SetupHelpers
 
             if (!validationErrors.Any()) throw;
 
-            var isSingle = validationErrors.Count == 1;
-            var plural = isSingle ? string.Empty : "s";
-            var errors = isSingle
-                ? " " + validationErrors.Single().Text.Trim()
-                : validationErrors
-                    .Select(element => "\n- " + element.Text.Trim())
-                    .Join(string.Empty);
-
-            throw new AssertionException($"Setup has failed with the following validation error{plural}:{errors}");
+            var errors = new[] { string.Empty }.Concat(validationErrors).Select(element => element.Text.Trim()).Join("\n- ");
+            throw new AssertionException($"Setup has failed with the following validation errors:{errors}");
         }
     }
 }
