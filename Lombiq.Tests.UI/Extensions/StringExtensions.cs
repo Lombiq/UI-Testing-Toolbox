@@ -6,12 +6,12 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class StringExtensions
 {
-    // The first array contains every invalid character in Windows. This is the union of GetInvalidFileNameChars and
-    // GetInvalidPathChars on Windows (for FAT and NTFS). Linux file systems aren't as strict, they only forbid forward
-    // slash ('/') and null character ('\0'). This is a subset of the invalid characters on Windows. So to make the
-    // paths work across all systems (e.g. when we plan to back up to an NTFS store or use GitHub's
+    // The first array contains every invalid character in Windows. This is the union of GetInvalidFileNameChars() and
+    // GetInvalidPathChars() evaluated on Windows (for FAT and NTFS). Linux file systems aren't as strict, they only
+    // forbid forward slash ('/') and null character ('\0'). This is a subset of the invalid characters on Windows. So
+    // to make the paths work across all systems (e.g. when we plan to back up to an NTFS store or use GitHub's
     // "actions/upload-artifact" action) we have to carry the banned Windows characters across operating systems.
-    // GetInvalidFileNameChars and GetInvalidPathChars are still included in case they contain more characters on
+    // GetInvalidFileNameChars() and GetInvalidPathChars() are still included in case they contain more characters on
     // untested operating systems.
     private static readonly Lazy<char[]> _invalidPathCharacters = new(() =>
     new[]
