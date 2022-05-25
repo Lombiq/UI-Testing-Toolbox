@@ -50,7 +50,7 @@ public static class AtataFactory
         TimeoutConfiguration timeoutConfiguration,
         ITestOutputHelper testOutputHelper)
     {
-        IWebDriver CastDriverFactory<T>(Func<BrowserConfiguration, TimeSpan, T> factory)
+        IWebDriver From<T>(Func<BrowserConfiguration, TimeSpan, T> factory)
             where T : IWebDriver =>
             factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
 
@@ -71,10 +71,10 @@ public static class AtataFactory
             {
                 return browserConfiguration.Browser switch
                 {
-                    Browser.Chrome => CastDriverFactory(WebDriverFactory.CreateChromeDriver),
-                    Browser.Edge => CastDriverFactory(WebDriverFactory.CreateEdgeDriver),
-                    Browser.Firefox => CastDriverFactory(WebDriverFactory.CreateFirefoxDriver),
-                    Browser.InternetExplorer => CastDriverFactory(WebDriverFactory.CreateInternetExplorerDriver),
+                    Browser.Chrome => From(WebDriverFactory.CreateChromeDriver),
+                    Browser.Edge => From(WebDriverFactory.CreateEdgeDriver),
+                    Browser.Firefox => From(WebDriverFactory.CreateFirefoxDriver),
+                    Browser.InternetExplorer => From(WebDriverFactory.CreateInternetExplorerDriver),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }
