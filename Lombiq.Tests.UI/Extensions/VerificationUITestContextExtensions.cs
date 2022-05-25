@@ -13,7 +13,7 @@ public static class VerificationUITestContextExtensions
     public static PageNavigationState AsPageNavigationState(this UITestContext context) => new(context);
 
     /// <summary>
-    /// Ensures all the logs pass successfully and throws if they didn't.
+    /// Verifies all logs and throws an exception if they didn't pass the checks.
     /// </summary>
     public static async Task AssertLogsAsync(this UITestContext context)
     {
