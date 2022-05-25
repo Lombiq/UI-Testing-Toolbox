@@ -54,7 +54,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private static readonly PortLeaseManager _portLeaseManager;
     private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
     private static readonly object _exeCopyLock = new();
-    private static readonly bool _isWindows = OperatingSystem.IsWindows();
+    private static readonly string _executableExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
@@ -64,8 +64,6 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private int _port;
     private string _contentRootPath;
     private bool _isDisposed;
-
-    private static string ExecutableExtension => _isWindows ? ".exe" : string.Empty;
 
     // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -111,7 +109,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         // If you try to use the dotnet command to run a dll published for a different platform (seen this with running
         // win10-x86 dll files on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
         // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
-        var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ExecutableExtension);
+        var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", _executableExtension);
         var useExeToExecuteApp = File.Exists(exePath);
 
         // Running randomly named executables will make it harder to kill leftover processes in the event of an
@@ -160,7 +158,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, argumentsBuilder));
 
-        _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + ExecutableExtension))
+        _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + _executableExtension))
             .WithArguments(argumentsBuilder.Build());
 
         _testOutputHelper.WriteLineTimestampedAndDebug(
@@ -242,7 +240,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         await _command.ExecuteDotNetApplicationAsync(
             stdErr =>
             {
-                var dotnet = "dotnet" + ExecutableExtension;
+                var dotnet = "dotnet" + _executableExtension;
                 var note = stdErr.Text.ContainsOrdinalIgnoreCase("Failed to bind to address")
                     ? " This can happen when there are leftover " + dotnet +
                       " processes after an aborted test run or some other app is listening on the same port too."
