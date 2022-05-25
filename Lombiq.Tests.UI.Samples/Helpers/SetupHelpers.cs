@@ -80,7 +80,7 @@ public static class SetupHelpers
 
             if (!validationErrors.Any()) throw;
 
-            var errors = new[] { string.Empty }.Concat(validationErrors).Select(element => element.Text.Trim()).Join("\n- ");
+            var errors = "\n- " + validationErrors.Select(element => element.Text.Trim()).Join("\n- ");
             throw new AssertionException($"Setup has failed with the following validation errors:{errors}");
         }
     }
