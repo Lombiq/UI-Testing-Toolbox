@@ -11,8 +11,8 @@ public class AlertMessage<TOwner> : Control<TOwner>
     [GetsContentFromSource(ContentSource.FirstChildTextNode)]
     public Text<TOwner> Text { get; private set; }
 
-    public DataProvider<bool, TOwner> IsSuccess =>
-        GetOrCreateDataProvider("success state", GetIsSuccess);
+    public ValueProvider<bool, TOwner> IsSuccess =>
+        CreateValueProvider("success state", GetIsSuccess);
 
     private bool GetIsSuccess() =>
         Attributes.Class.Value.Contains("message-success");
