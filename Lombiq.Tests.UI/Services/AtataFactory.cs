@@ -91,7 +91,7 @@ public static class AtataFactory
                 }
 
                 currentTry++;
-                var retryCount = maxTryCount - currentTry + 1;
+                var retryCount = maxTryCount - currentTry;
 
                 // Not using parameters because the exception can throw off the string format.
                 testOutputHelper.WriteLineTimestampedAndDebug(
