@@ -1,7 +1,10 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
+using Microsoft.SqlServer.Management.Dmf;
 using Shouldly;
 using System;
 using System.Linq;
@@ -100,6 +103,34 @@ public class ErrorHandlingTests : UITestBase
                     .ShouldBe(6);
             },
             browser);
+
+    [Theory, Chrome]
+    public Task ErrorDuringSetupShouldHaltTest(Browser browser) =>
+        Should.ThrowAsync<PageChangeAssertionException>(() =>
+            ExecuteTestAfterSetupAsync(
+                _ => throw new InvalidOperandException("This point shouldn't be reachable because setup fails."),
+                browser,
+                configuration =>
+                {
+                    // The test is guaranteed to fail so we don't want to retry it needlessly.
+                    configuration.MaxRetryCount = 0;
+
+                    // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
+                    configuration.SetupConfiguration.SetupOperation = async context =>
+                    {
+                        await context.GoToSetupPageAndSetupOrchardCoreAsync(
+                            new OrchardCoreSetupParameters(context)
+                            {
+                                SiteName = "Setup Error Test",
+                                RecipeId = SetupHelpers.RecipeId,
+                                DatabaseProvider = OrchardCoreSetupPage.DatabaseType.SqlServer,
+                                ConnectionString = "An invalid connection string which causes an error during setup.",
+                            });
+
+                        throw new InvalidOperandException(
+                            "This point shouldn't be reachable if the logs are properly kept..");
+                    };
+                }));
 }
 
 // END OF TRAINING SECTION: Error handling.
