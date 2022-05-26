@@ -21,6 +21,7 @@ public static class AtataFactory
         OrchardCoreUITestExecutorConfiguration configuration)
     {
         AtataContext.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
+        AtataContext.GlobalConfiguration.UseDefaultControlVisibility(Visibility.Visible);
 
         var timeoutConfiguration = configuration.TimeoutConfiguration;
         var browserConfiguration = configuration.BrowserConfiguration;
