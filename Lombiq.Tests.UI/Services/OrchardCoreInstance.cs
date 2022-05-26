@@ -1,5 +1,6 @@
 using CliWrap;
 using CliWrap.Builders;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.VisualBasic.FileIO;
@@ -53,6 +54,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     private static readonly PortLeaseManager _portLeaseManager;
     private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
     private static readonly object _exeCopyLock = new();
+    private static readonly string _executableExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
@@ -104,14 +106,14 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                 .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
         }
 
-        // If you try to use dotnet.exe to run a DLL published for a different platform (seen this with running
-        // win10-x86 DLLs on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
+        // If you try to use the dotnet command to run a dll published for a different platform (seen this with running
+        // win10-x86 dll files on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
         // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
-        var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", ".exe");
+        var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", _executableExtension);
         var useExeToExecuteApp = File.Exists(exePath);
 
-        // Running randomly named exes will make it harder to kill leftover processes in the event of an interrupted
-        // test execution. So using a unified name pattern for such exes.
+        // Running randomly named executables will make it harder to kill leftover processes in the event of an
+        // interrupted test execution. So using a unified name pattern for such executables.
         if (useExeToExecuteApp)
         {
             exePath = _exeCopyMarkers.GetOrAdd(
@@ -123,7 +125,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                     lock (_exeCopyLock)
                     {
                         var copyExePath = Path.Combine(
-                            Path.GetDirectoryName(exePathKey),
+                            Path.GetDirectoryName(exePathKey) ?? throw new InvalidOperationException(
+                                $"Unable to find the directory of \"{exePathKey}\"."),
                             "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
 
                         if (File.Exists(copyExePath) &&
@@ -139,9 +142,7 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
                 });
         }
 
-        var argumentsBuilder = new ArgumentsBuilder();
-
-        argumentsBuilder = argumentsBuilder
+        var argumentsBuilder = new ArgumentsBuilder()
             .Add("--urls").Add(url)
             .Add("--contentRoot").Add(_contentRootPath)
             .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
@@ -158,7 +159,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, argumentsBuilder));
 
-        _command = Cli.Wrap(useExeToExecuteApp ? exePath : "dotnet.exe").WithArguments(argumentsBuilder.Build());
+        _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + _executableExtension))
+            .WithArguments(argumentsBuilder.Build());
 
         _testOutputHelper.WriteLineTimestampedAndDebug(
             "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
@@ -174,6 +176,8 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
     {
+        ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
+
         await PauseAsync();
 
         if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
@@ -191,16 +195,16 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
 
         var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
-        return Directory.Exists(logFolderPath) ?
-            Directory
+        return Directory.Exists(logFolderPath)
+            ? Directory
                 .EnumerateFiles(logFolderPath, "*.log")
                 .Select(filePath => (IApplicationLog)new ApplicationLog
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
                     ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
-                }) :
-            Enumerable.Empty<IApplicationLog>();
+                })
+            : Enumerable.Empty<IApplicationLog>();
     }
 
     public async ValueTask DisposeAsync()
@@ -238,14 +242,18 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
         await _command.ExecuteDotNetApplicationAsync(
             stdErr =>
+            {
+                var dotnet = "dotnet" + _executableExtension;
+                var note = stdErr.Text.ContainsOrdinalIgnoreCase("Failed to bind to address")
+                    ? " This can happen when there are leftover " + dotnet +
+                      " processes after an aborted test run or some other app is listening on the same port too."
+                    : string.Empty;
+
                 throw new IOException(
-                    "Starting the Orchard Core application via dotnet.exe failed with the following output:" +
-                    Environment.NewLine +
-                    stdErr.Text +
-                    (stdErr.Text.Contains("Failed to bind to address", StringComparison.OrdinalIgnoreCase)
-                        ? " This can happen when there are leftover dotnet.exe processes after an aborted test run " +
-                            "or some other app is listening on the same port too."
-                        : string.Empty)),
+                    StringHelper.Concatenate(
+                        $"Starting the Orchard Core application via {dotnet} failed with the following output:",
+                        $"{Environment.NewLine}{stdErr.Text}{note}"));
+            },
             _cancellationTokenSource.Token);
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
@@ -270,9 +278,9 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
 
     private class ApplicationLog : IApplicationLog
     {
-        public string Name { get; set; }
-        public string FullName { get; set; }
-        public Func<Task<string>> ContentLoader { get; set; }
+        public string Name { get; init; }
+        public string FullName { get; init; }
+        public Func<Task<string>> ContentLoader { get; init; }
 
         public Task<string> GetContentAsync() => ContentLoader();
 

@@ -1,11 +1,16 @@
+using CliWrap;
+using Lombiq.HelpfulLibraries.Cli;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Dmf;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
 namespace Lombiq.Tests.UI.Services;
@@ -22,7 +27,7 @@ public class SqlServerConfiguration
     public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
         $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
-            $"MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
+            "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
 }
 
 public class SqlServerRunningContext
@@ -34,10 +39,11 @@ public class SqlServerRunningContext
 
 public sealed class SqlServerManager : IDisposable
 {
-    private const string DbSnasphotName = "Database.bak";
+    private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
 
+    private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
     private int _databaseId;
     private string _serverName;
@@ -87,36 +93,46 @@ public sealed class SqlServerManager : IDisposable
     /// Takes a snapshot of the SQL Server database and saves it to the specified directory. If the SQL Server is
     /// running on the local machine's file system, then <paramref name="snapshotDirectoryPathRemote"/> and <paramref
     /// name="snapshotDirectoryPathLocal"/> should be the same or the latter can be left at the default <see
-    /// langword="null"/> value. If the server is on a remote location or within a container, then the <paramref
-    /// name="snapshotDirectoryPathRemote"/> directory must be mounted to the <paramref
-    /// name="snapshotDirectoryPathLocal"/> location on the local file system. For example via a mounted volume on
-    /// Docker or an (S)FTP network location mounted as a drive.
+    /// langword="null"/> value.
     /// </summary>
-    /// <param name="snapshotDirectoryPathRemote">The location of the save directory on the SQL Server's machine.</param>
+    /// <param name="snapshotDirectoryPathRemote">
+    /// The location of the save directory on the SQL Server's machine. If it's a path in a Docker machine it must
+    /// follow the container's conventions (e.g. a Linux SQL Server container should have forward slash paths even on a
+    /// Windows host).
+    /// </param>
     /// <param name="snapshotDirectoryPathLocal">
     /// The location of the directory where the saved database snapshot can be accessed from the local system. If <see
-    /// langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>. Useful if for local
-    /// server only calls.
+    /// langword="null"/>, it takes on the value of <paramref name="snapshotDirectoryPathRemote"/>.
+    /// </param>
+    /// <param name="containerName">
+    /// The identifier of the Docker container where <paramref name="snapshotDirectoryPathRemote"/> is. If the server is
+    /// not in a Docker container then it should be <see langword="null"/>.
     /// </param>
     /// <param name="useCompressionIfAvailable">
     /// If set to <see langword="true"/> and the database engine supports it, then <see
     /// cref="BackupCompressionOptions.On"/> will be used.
     /// </param>
-    public void TakeSnapshot(
+    public async Task TakeSnapshotAsync(
         string snapshotDirectoryPathRemote,
         string snapshotDirectoryPathLocal = null,
+        string containerName = null,
         bool useCompressionIfAvailable = false)
     {
         var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
         var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
+        var directoryPathLocal =
+            Path.GetDirectoryName(filePathLocal) ??
+            throw new InvalidOperandException($"Failed to get the directory path for local path \"{filePathLocal}\".");
 
+        FileSystemHelper.EnsureDirectoryExists(directoryPathLocal);
         if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
         var server = CreateServer();
 
         KillDatabaseProcesses(server);
 
-        var useCompression = useCompressionIfAvailable &&
+        var useCompression =
+            useCompressionIfAvailable &&
             (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
 
         var backup = new Backup
@@ -143,6 +159,15 @@ public sealed class SqlServerManager : IDisposable
         // is messy.
         backup.SqlBackup(server);
 
+        if (!string.IsNullOrEmpty(containerName))
+        {
+            if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
+
+            await Cli.Wrap("docker")
+                .WithArguments(new[] { "cp", $"{containerName}:{filePathRemote}", filePathLocal })
+                .ExecuteAsync();
+        }
+
         if (!File.Exists(filePathLocal))
         {
             throw filePathLocal == filePathRemote
@@ -153,7 +178,10 @@ public sealed class SqlServerManager : IDisposable
         }
     }
 
-    public void RestoreSnapshot(string snapshotDirectoryPath)
+    public async Task RestoreSnapshotAsync(
+        string snapshotDirectoryPathRemote,
+        string snapshotDirectoryPathLocal,
+        string containerName)
     {
         if (_isDisposed)
         {
@@ -167,10 +195,25 @@ public sealed class SqlServerManager : IDisposable
             throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
         }
 
+        if (!string.IsNullOrEmpty(containerName))
+        {
+            var remote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+            var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
+
+            // Clean up leftovers.
+            await DockerExecuteAsync(containerName, "rm", "-f", remote);
+
+            // Copy back snapshot.
+            await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
+
+            // Reset ownership.
+            await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
+        }
+
         KillDatabaseProcesses(server);
 
         var restore = new Restore();
-        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPath), DeviceType.File);
+        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPathRemote), DeviceType.File);
         restore.Database = _databaseName;
         restore.ReplaceDatabase = true;
 
@@ -191,9 +234,15 @@ public sealed class SqlServerManager : IDisposable
         restore.RelocateFiles.Add(dataFile);
         restore.RelocateFiles.Add(logFile);
 
-        // We're not using SqlRestoreAsync() and SqlVerifyAsync() due to the same reason we're not using
-        // SqlBackupAsync().
+        // We're not using SqlRestoreAsync() due to the same reason we're not using SqlBackupAsync().
         restore.SqlRestore(server);
+    }
+
+    private Task DockerExecuteAsync(string containerName, params object[] command)
+    {
+        var arguments = new List<object> { "exec", "-u", 0, containerName };
+        arguments.AddRange(command);
+        return _docker.ExecuteAsync(arguments, additionalExceptionText: null, CancellationToken.None);
     }
 
     public void Dispose()
@@ -262,7 +311,15 @@ public sealed class SqlServerManager : IDisposable
     }
 
     private static string GetSnapshotFilePath(string snapshotDirectoryPath) =>
-        snapshotDirectoryPath[0] == '/'
-            ? $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnasphotName}" // Ensure proper Unix path from Windows.
-            : Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnasphotName);
+        snapshotDirectoryPath[0] switch
+        {
+            // Extract "~" home character when working with Unix path from Unix host.
+            '~' => Path.Combine(
+                Environment.GetEnvironmentVariable("HOME")!,
+                snapshotDirectoryPath[2..],
+                DbSnapshotName),
+            // Ensure proper Unix path in Windows host.
+            '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnapshotName}",
+            _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnapshotName),
+        };
 }

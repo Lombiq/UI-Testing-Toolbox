@@ -1,5 +1,5 @@
 using Atata;
-using OpenQA.Selenium.Remote;
+using OpenQA.Selenium;
 using System;
 
 namespace Lombiq.Tests.UI.Services;
@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Services;
 public sealed class AtataScope : IDisposable
 {
     public AtataContext AtataContext { get; }
-    public RemoteWebDriver Driver => AtataContext.Driver;
+    public IWebDriver Driver => AtataContext.Driver;
     public Uri BaseUri { get; }
 
     public AtataScope(AtataContext atataContext, Uri baseUri)

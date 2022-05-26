@@ -47,6 +47,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
+- [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
 
 
 ## Contributing and support

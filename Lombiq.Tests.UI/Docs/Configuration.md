@@ -49,14 +49,16 @@ Here's a full *TestConfiguration.json* file example, something appropriate durin
     }
   }
 }
-
 ```
 
 Note that this will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode.
 
 We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 
+If you have several UI test projects it can be cumbersome to maintain a *TestConfiguration.json* file for each. Instead you can set the value of the `LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION` environment variable to the absolute path of a central configuration file and then each project will look it up. If you place an individual *TestConfiguration.json* into a test directory it will still take precedence in case you need special configuration for just that one.
+
 `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
+
 
 ## <a name="multi-process"></a>Multi-process test execution
 
@@ -73,27 +75,48 @@ If you have multiple UI test projects in a single solution and you're executing 
 
 You can learn more about the *microsoft-mssql-server* container [here](https://hub.docker.com/_/microsoft-mssql-server). You have to mount a local volume that can be shared between the host and the container. Update the values of `device` and `SA_PASSWORD` in the code below and execute it.
 
+#### On Windows
+
 ```powershell
 docker pull mcr.microsoft.com/mssql/server
-docker volume create --driver local -o o=bind -o type=none -o device="C:\docker\data" data
-docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -v data:/data -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker run --name sql2019 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password1!" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+docker exec -u 0 sql2019 bash -c "mkdir /data; chmod 777 /data -R; chown mssql:root /data"
 ```
 
-Now log in as root using `docker exec -u 0 -it sql2019 bash` and give access to the data directory with `chown 'mssql:root' /data`.
+#### On Linux
 
-You can use Docker Desktop to stop or start the container going forward. 
+You need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
 
+```shell
+docker pull mcr.microsoft.com/mssql/server
+docker run --name sql2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Password1!' -p 1433:1433 -d 'mcr.microsoft.com/mssql/server:2019-latest'
+docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:root /data'
+```
+
+If you haven't yet, add your user to the `docker` group.
+
+If you get a `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround, temporarily set the project's runtime identifier to `linux-x64` - either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430), or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
+
+#### On Both
+
+If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Password1!'` to access the SQL console.
+
+You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
 
 ### Extending TestConfiguration.json
 
 SQL Server on Linux only has SQL Authentication and you still have to tell the toolbox about your backup paths. Add the following properties to your `Lombiq_Tests_UI`. Adjust the Password field of the connection string and `HostSnapshotPath` property as needed.
 
 ```json
-"SqlServerDatabaseConfiguration": {
-    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
-},
-"DockerConfiguration": {
-    "ContainerSnapshotPath": "/data",
-    "HostSnapshotPath": "C:\\docker\\data"
+{
+  "SqlServerDatabaseConfiguration": {
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5"
+  },
+  "DockerConfiguration": {
+    "ContainerSnapshotPath": "/data/Snapshots",
+    "ContainerName": "sql2019"
+  }
 }
 ```
+
+The default value of `ContainerSnapshotPath` is `"/data/Snapshots"` so you can omit that.

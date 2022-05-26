@@ -268,6 +268,8 @@ public abstract class OrchardCoreUITestBase
         await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
     }
 
+    static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
+
     private static MultiSizeTestAsync ConvertMultiSizeTestToAsynchronous(MultiSizeTest test) =>
         (context, isStandardSize) =>
         {

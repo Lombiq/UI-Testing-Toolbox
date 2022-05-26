@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Linq;
@@ -95,11 +96,10 @@ public class MonkeyTests : UITestBase
             PageTestTime = TimeSpan.FromSeconds(10),
         };
 
-    private static bool IsValidAdminBrowserLogMessage(BrowserLogMessage message) =>
+    private static bool IsValidAdminBrowserLogMessage(LogEntry message) =>
         OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogMessage(message) &&
-        !(message.Source == BrowserLogMessage.Sources.Intervention &&
-            message.Message.ContainsOrdinalIgnoreCase(
-                "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load."));
+        !message.Message.ContainsOrdinalIgnoreCase(
+            "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load.");
 }
 
 // END OF TRAINING SECTION: Monkey tests.

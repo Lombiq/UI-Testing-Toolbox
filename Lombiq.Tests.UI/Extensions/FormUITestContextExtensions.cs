@@ -96,7 +96,7 @@ public static class FormUITestContextExtensions
                 /* Finally set the value programmatically. */
                 mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
 
-        context.Driver.ExecuteScript(script);
+        context.ExecuteScript(script);
     }
 
     public static void ClickAndClear(this UITestContext context, By by) =>
@@ -168,12 +168,12 @@ public static class FormUITestContextExtensions
     /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
     /// </summary>
     public static bool IsElementChecked(this UITestContext context, By by) =>
-        context.Get(by.OfAnyVisibility()).GetProperty("checked") == bool.TrueString;
+        context.Get(by.OfAnyVisibility()).GetDomProperty("checked") == bool.TrueString;
 
     public static async Task SetCheckboxValueAsync(this UITestContext context, By by, bool isChecked)
     {
         var element = context.Get(by.OfAnyVisibility());
-        var currentValue = element.GetProperty("checked") == bool.TrueString;
+        var currentValue = element.GetDomProperty("checked") == bool.TrueString;
         if (currentValue != isChecked) await element.ClickReliablyAsync(context);
     }
 
