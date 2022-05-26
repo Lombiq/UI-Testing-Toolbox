@@ -7,14 +7,15 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Microsoft.VisualBasic.FileIO;
+using Mono.Unix;
 using Newtonsoft.Json.Linq;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -23,20 +24,16 @@ namespace Lombiq.Tests.UI.Services;
 
 internal sealed class UITestExecutionSession : IAsyncDisposable
 {
+    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
+    private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
+    private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
+
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
     private readonly ITestOutputHelper _testOutputHelper;
 
-    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
-    private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
-    private static readonly ConcurrentDictionary<string, int> _setupOperationFailureCount = new();
-    private static readonly object _dockerSetupLock = new();
-
-    private static bool _dockerIsSetup;
-
     private int _screenshotCount;
-
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
     private string _snapshotDirectoryPath;
     private bool _hasSetupOperation;
@@ -86,7 +83,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     snapshotSubdirectory = "AzureBlob";
                 }
 
-                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation.GetHashCode().ToTechnicalString();
+                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
 
                 _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
 
@@ -112,7 +109,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _testManifest.TestAsync(_context);
 
-            await AssertLogsAsync();
+            await _context.AssertLogsAsync();
 
             return true;
         }
@@ -304,14 +301,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                var remotePath = appDumpPath;
-                if (_dockerConfiguration != null)
-                {
-                    appDumpPath = _dockerConfiguration.HostSnapshotPath;
-                    remotePath = _dockerConfiguration.ContainerSnapshotPath;
-                }
+                var containerName = _dockerConfiguration?.ContainerName;
+                var remotePath = string.IsNullOrEmpty(containerName)
+                    ? appDumpPath
+                    : _dockerConfiguration.ContainerSnapshotPath;
 
-                _sqlServerManager.TakeSnapshot(remotePath, appDumpPath, useCompressionIfAvailable: true);
+                await _sqlServerManager.TakeSnapshotAsync(
+                    remotePath,
+                    appDumpPath,
+                    containerName,
+                    useCompressionIfAvailable: true);
             }
             catch (Exception failureException)
             {
@@ -383,7 +382,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
-            SetupDocker();
+            _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
             var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
@@ -392,10 +391,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                 if (setupConfiguration.FastFailSetup &&
-                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failureCount) &&
-                    failureCount > _configuration.MaxRetryCount)
+                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
+                    failure.FailureCount > _configuration.MaxRetryCount)
                 {
-                    throw new SetupFailedFastException(failureCount);
+                    throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
                 }
 
                 // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
@@ -409,7 +408,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
-                await AssertLogsAsync();
+                await _context.AssertLogsAsync();
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -432,38 +431,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             if (setupConfiguration.FastFailSetup)
             {
-                _setupOperationFailureCount.AddOrUpdate(GetSetupHashCode(), 1, (_, value) => value + 1);
+                _setupOperationFailureCount.AddOrUpdate(
+                    GetSetupHashCode(),
+                    (1, ex),
+                    (_, pair) => (pair.FailureCount, ex));
             }
 
             throw;
-        }
-    }
-
-    private void SetupDocker()
-    {
-        if (TestConfigurationManager.GetConfiguration<DockerConfiguration>() is not { } docker ||
-            string.IsNullOrEmpty(docker.HostSnapshotPath))
-        {
-            return;
-        }
-
-        // We add this subdirectory to ensure the HostSnapshotPath isn't set to the mounted volume's directory itself
-        // (which would be logical). Removing the volume directory instantly severs the connection between host and the
-        // container so that should be avoided at all costs.
-        docker.ContainerSnapshotPath += '/' + DirectoryPaths.SetupSnapshot; // Always a Unix path.
-        docker.HostSnapshotPath = Path.Combine(docker.HostSnapshotPath, DirectoryPaths.SetupSnapshot);
-
-        _dockerConfiguration = docker;
-
-        lock (_dockerSetupLock)
-        {
-            if (!_dockerIsSetup && Directory.Exists(_dockerConfiguration?.HostSnapshotPath))
-            {
-                Directory.Delete(_dockerConfiguration!.HostSnapshotPath, recursive: true);
-            }
-
-            // Outside of the previous if so it'll be set even if there's no host snapshot.
-            _dockerIsSetup = true;
         }
     }
 
@@ -474,28 +448,38 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // This is only necessary for the setup snapshot.
         Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
         {
-            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -=
-                SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+            ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+
+            var containerName = _dockerConfiguration?.ContainerName;
             var remotePath = snapshotDirectoryPath;
-            if (_dockerConfiguration != null)
+
+            if (!string.IsNullOrEmpty(containerName))
             {
-                snapshotDirectoryPath = _dockerConfiguration.HostSnapshotPath;
                 remotePath = _dockerConfiguration.ContainerSnapshotPath;
+
+                // Due to the multiuser focus of Unix-like platforms it's very common that Docker will be a different
+                // user without access to freshly created directories by the current user. Since this is a subdirectory
+                // that third parties can't list without prior knowledge and it only contains freshly created data this
+                // is not a security concern.
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (!Directory.Exists(snapshotDirectoryPath)) Directory.CreateDirectory(snapshotDirectoryPath);
+                    var unixFileInfo = new UnixFileInfo(snapshotDirectoryPath);
+                    unixFileInfo.FileAccessPermissions |= FileAccessPermissions.OtherReadWriteExecute;
+                }
             }
 
-            _sqlServerManager.TakeSnapshot(remotePath, snapshotDirectoryPath);
-            return Task.CompletedTask;
+            return _sqlServerManager.TakeSnapshotAsync(remotePath, snapshotDirectoryPath, containerName);
         }
 
-        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function. Thus
-        // if anything goes wrong between the below delegate registration and it being called then it'll remain
-        // registered and later during a retry try to run (and fail on the disposed SqlServerManager.
+        // This is necessary because a simple subtraction wouldn't remove previous instances of the local function.
+        // Thus, if anything goes wrong between the below delegate registration and its invocation, it will remain
+        // registered and fail on the disposed SqlServerManager during a retry.
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(
-                SqlServerManagerBeforeTakeSnapshotHandlerAsync);
-        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot +=
-            SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
     }
 
     private void SetupAzureBlobStorageSnapshot()
@@ -573,10 +557,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        var atataScope = AtataFactory.StartAtataScope(
-            _testOutputHelper,
-            uri,
-            _configuration);
+        var atataScope = AtataFactory.StartAtataScope(_testOutputHelper, uri, _configuration);
 
         return new UITestContext(
             contextId,
@@ -592,36 +573,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.UseSqlServer +
         _configuration.UseAzureBlobStorage;
 
-    private Task OnAssertLogsAsync(UITestContext context) => AssertLogsAsync();
-
-    private async Task AssertLogsAsync()
-    {
-        await _context.UpdateHistoricBrowserLogAsync();
-
-        try
-        {
-            if (_configuration.AssertAppLogsAsync != null) await _configuration.AssertAppLogsAsync(_context.Application);
-        }
-        catch (Exception)
-        {
-            _testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-            _testOutputHelper.WriteLine(await _context.Application.GetLogOutputAsync());
-
-            throw;
-        }
-
-        try
-        {
-            _configuration.AssertBrowserLog?.Invoke(_context.HistoricBrowserLog);
-        }
-        catch (Exception)
-        {
-            _testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-            _testOutputHelper.WriteLine(_context.HistoricBrowserLog.ToFormattedString());
-
-            throw;
-        }
-    }
+    private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 
     private SqlServerRunningContext SetUpSqlServer()
     {
@@ -632,16 +584,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
-            var snapshotDirectoryPath =
-                _dockerConfiguration?.ContainerSnapshotPath ??
-                _snapshotDirectoryPath;
-
-            if (!_hasSetupOperation || !Directory.Exists(_dockerConfiguration?.HostSnapshotPath ?? snapshotDirectoryPath))
+            if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath))
             {
                 return;
             }
 
-            _sqlServerManager.RestoreSnapshot(snapshotDirectoryPath);
+            var containerName = _dockerConfiguration?.ContainerName;
+            var containerPath = string.IsNullOrEmpty(containerName)
+                ? _snapshotDirectoryPath
+                : _dockerConfiguration.ContainerSnapshotPath;
+
+            await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
 
             var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
 
@@ -652,7 +605,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             }
 
             var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
-            appSettings["ConnectionString"] = sqlServerContext.ConnectionString;
+            appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
             await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
         }
 
@@ -735,7 +688,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             // Random "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two
             // padding characters, or an illegal character among the padding characters." exceptions can happen.
-
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 $"Taking the screenshot #{_screenshotCount.ToTechnicalString()} failed with the following exception: {ex}");
         }

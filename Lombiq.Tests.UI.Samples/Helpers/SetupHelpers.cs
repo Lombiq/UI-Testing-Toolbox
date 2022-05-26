@@ -1,9 +1,12 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Samples.Helpers;
@@ -65,5 +68,20 @@ public static class SetupHelpers
         return context.GetCurrentUri();
     }
 
-    private static void AssertSetupSuccessful(UITestContext context) => context.Exists(By.Id("navbar"));
+    private static void AssertSetupSuccessful(UITestContext context)
+    {
+        try
+        {
+            context.Exists(By.Id("navbar"));
+        }
+        catch (NoSuchElementException)
+        {
+            var validationErrors = context.GetAll(By.ClassName("field-validation-error"));
+
+            if (!validationErrors.Any()) throw;
+
+            var errors = "\n- " + validationErrors.Select(element => element.Text.Trim()).Join("\n- ");
+            throw new AssertionException($"Setup has failed with the following validation errors:{errors}");
+        }
+    }
 }
