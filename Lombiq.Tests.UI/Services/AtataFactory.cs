@@ -21,7 +21,10 @@ public static class AtataFactory
         OrchardCoreUITestExecutorConfiguration configuration)
     {
         AtataContext.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
+
+        // Since Atata 2.0 the default visibility option is Visibility.Any, these lines restore it to the 1.x behavior.
         AtataContext.GlobalConfiguration.UseDefaultControlVisibility(Visibility.Visible);
+        SearchOptions.DefaultVisibility = Visibility.Visible;
 
         var timeoutConfiguration = configuration.TimeoutConfiguration;
         var browserConfiguration = configuration.BrowserConfiguration;
