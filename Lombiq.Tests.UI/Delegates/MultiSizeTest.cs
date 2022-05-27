@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Delegates;
@@ -16,3 +17,18 @@ public delegate void MultiSizeTest(UITestContext context, bool isStandardSize);
 
 /// <inheritdoc cref="MultiSizeTest"/>
 public delegate Task MultiSizeTestAsync(UITestContext context, bool isStandardSize);
+
+public static class MultiSizeTestExtensions
+{
+    [SuppressMessage(
+        "Minor Code Smell",
+        "S4261:Methods should be named according to their synchronicities",
+        Justification =
+            "This is a conversion method, and we want to make it explicit that the result has an async signature.")]
+    public static MultiSizeTestAsync ToAsync(this MultiSizeTest test) =>
+        (context, isStandardSize) =>
+        {
+            test(context, isStandardSize);
+            return Task.CompletedTask;
+        };
+}
