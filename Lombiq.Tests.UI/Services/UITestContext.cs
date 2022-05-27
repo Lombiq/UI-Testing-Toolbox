@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -75,6 +76,15 @@ public class UITestContext
         "MA0016:Prefer return collection abstraction instead of implementation",
         Justification = "Deliberately modifiable by consumer code.")]
     public Dictionary<string, object> CustomContext { get; } = new();
+
+    /// <summary>
+    /// Gets a dictionary storing some custom data for collecting in failure dump.
+    /// </summary>
+    [SuppressMessage(
+        "Design",
+        "MA0016:Prefer return collection abstraction instead of implementation",
+        Justification = "Deliberately modifiable by consumer code.")]
+    public Dictionary<string, Func<Task<Stream>>> FailureDumpContainer { get; } = new();
 
     /// <summary>
     /// Gets or sets the current tenant name when testing multi-tenancy. When testing sites with multi-tenancy you

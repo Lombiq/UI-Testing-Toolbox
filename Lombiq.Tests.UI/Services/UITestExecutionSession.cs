@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -58,6 +59,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
         var startTime = DateTime.UtcNow;
+        Dictionary<string, Func<Task<Stream>>> failureDumpContainer = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
@@ -105,6 +107,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context ??= await CreateContextAsync();
 
+            _context.FailureDumpContainer.Clear();
+            failureDumpContainer = _context.FailureDumpContainer;
+
             _context.SetDefaultBrowserSize();
 
             await _testManifest.TestAsync(_context);
@@ -119,7 +124,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (ex is SetupFailedFastException) throw;
 
-            await CreateFailureDumpAsync(ex, dumpRootPath, retryCount);
+            await CreateFailureDumpAsync(ex, dumpRootPath, retryCount, failureDumpContainer);
 
             if (retryCount == _configuration.MaxRetryCount)
             {
@@ -168,6 +173,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context.Scope?.Dispose();
 
             DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
+
+            _context.FailureDumpContainer.Clear();
         }
 
         _sqlServerManager?.Dispose();
@@ -209,7 +216,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return ex;
     }
 
-    private async Task CreateFailureDumpAsync(Exception ex, string dumpRootPath, int retryCount)
+    private async Task CreateFailureDumpAsync(
+        Exception ex,
+        string dumpRootPath,
+        int retryCount,
+        Dictionary<string, Func<Task<Stream>>> failureDumpContainer)
     {
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
@@ -255,6 +266,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
             CaptureMarkupValidationResults(ex, debugInformationPath);
+
+            if (failureDumpContainer != null)
+            {
+                foreach (var toDump in failureDumpContainer)
+                {
+                    await SaveFailureDumpFromContextAsync(debugInformationPath, toDump.Key, toDump.Value);
+                }
+            }
         }
         catch (Exception dumpException)
         {
@@ -264,6 +283,30 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         finally
         {
             await SaveTestOutputAsync(debugInformationPath);
+        }
+    }
+
+    private async Task SaveFailureDumpFromContextAsync(
+        string debugInformationPath,
+        string dumpRelativePath,
+        Func<Task<Stream>> dumpAction)
+    {
+        try
+        {
+            using var dumpStream = await dumpAction();
+            string filePath = Path.Combine(debugInformationPath, dumpRelativePath);
+            FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
+
+            using var dumpFile = File.Open(
+                filePath,
+                FileMode.Create,
+                FileAccess.Write);
+            await dumpStream.CopyToAsync(dumpFile);
+        }
+        catch (Exception dumpException)
+        {
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                $"Saving dump({dumpRelativePath}) of the test from context failed with the following exception: {dumpException}");
         }
     }
 
