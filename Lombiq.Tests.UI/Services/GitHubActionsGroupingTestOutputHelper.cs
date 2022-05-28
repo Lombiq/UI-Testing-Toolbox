@@ -1,9 +1,13 @@
-﻿using Xunit.Abstractions;
+﻿using System;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
 internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
 {
+    public static Lazy<bool> IsGitHubEnvironment { get; } = new(() =>
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ENV")));
+
     private readonly ITestOutputHelper _inner;
     private readonly string _groupName;
 
