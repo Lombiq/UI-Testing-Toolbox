@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Microsoft.SqlServer.Management.Dmf;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -245,4 +246,6 @@ public abstract class OrchardCoreUITestBase
         _testOutputHelper = originalTestOutputHelper;
         afterTest?.Invoke();
     }
+
+    public static void Throw() => throw new InvalidOperandException("Intentional failure.");
 }
