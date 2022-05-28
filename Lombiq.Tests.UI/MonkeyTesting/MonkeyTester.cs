@@ -3,7 +3,6 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -168,10 +167,10 @@ internal sealed class MonkeyTester
         // If Gremlin interactions cause the new tabs/windows to open, we need to switch back to the original one.
         _context.SwitchToCurrentWindow();
 
-        _context.Driver.ExecuteScript(GremlinsScripts.GremlinsScript);
+        _context.ExecuteScript(GremlinsScripts.GremlinsScript);
 
         string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
-        _context.Driver.ExecuteScript(gremlinsRunScript);
+        _context.ExecuteScript(gremlinsRunScript);
 
         var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
             _context.Driver,
@@ -181,11 +180,11 @@ internal sealed class MonkeyTester
 
         _context.SwitchToCurrentWindow();
 
-        _context.Driver.ExecuteScript(GremlinsScripts.StopGremlinsScript);
+        _context.ExecuteScript(GremlinsScripts.StopGremlinsScript);
 
         WaitForGremlinsIndicatorsToDisappear();
 
-        var lastGremlinsClickLogMessage = (string)_context.Driver.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
+        var lastGremlinsClickLogMessage = (string)_context.ExecuteScript(GremlinsScripts.GetLastGremlinsClickLogMessageScript);
 
         if (!string.IsNullOrEmpty(lastGremlinsClickLogMessage))
             Log.Info($"Last Gremlins click: {lastGremlinsClickLogMessage}.");
@@ -211,12 +210,12 @@ internal sealed class MonkeyTester
         .Build();
 
     private static TimeSpan MeasureTimeLeftOfMeetingPredicate(
-        RemoteWebDriver webDriver,
-        Func<RemoteWebDriver, bool> predicate,
+        IWebDriver webDriver,
+        Func<IWebDriver, bool> predicate,
         TimeSpan timeout,
         TimeSpan pollingInterval)
     {
-        var wait = new SafeWait<RemoteWebDriver>(webDriver)
+        var wait = new SafeWait<IWebDriver>(webDriver)
         {
             Timeout = timeout,
             PollingInterval = pollingInterval,

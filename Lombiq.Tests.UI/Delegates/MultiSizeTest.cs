@@ -16,3 +16,13 @@ public delegate void MultiSizeTest(UITestContext context, bool isStandardSize);
 
 /// <inheritdoc cref="MultiSizeTest"/>
 public delegate Task MultiSizeTestAsync(UITestContext context, bool isStandardSize);
+
+public static class MultiSizeTestExtensions
+{
+    public static MultiSizeTestAsync AsCompletedTask(this MultiSizeTest test) =>
+        (context, isStandardSize) =>
+        {
+            test(context, isStandardSize);
+            return Task.CompletedTask;
+        };
+}

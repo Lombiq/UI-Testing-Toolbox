@@ -1,3 +1,4 @@
+using Atata.Cli;
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
@@ -52,6 +53,17 @@ public static class HtmlValidationUITestContextExtensions
     {
         var options = context.Configuration.HtmlValidationConfiguration.HtmlValidationOptions.Clone();
         htmlValidationOptionsAdjuster?.Invoke(options);
-        return new HtmlValidator(options).Validate(context.Driver.PageSource);
+        try
+        {
+            return new HtmlValidator(options).Validate(context.Driver.PageSource);
+        }
+        catch (CliCommandException exception) when (exception.Message.Contains("'EACCES'"))
+        {
+            throw new InvalidOperationException(
+                "Permission error while trying to install \"html-validate\". This is likely an issue with your " +
+                "NPM installation. See https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally " +
+                "for information on how to resolve this problem.",
+                exception);
+        }
     }
 }

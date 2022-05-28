@@ -2,7 +2,9 @@ using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -62,6 +64,40 @@ public class ErrorHandlingTests : UITestBase
                     // Remove logs to have a clean slate.
                     context.ClearHistoricBrowserLog();
                 }
+            },
+            browser);
+
+    // To be able to trust the test above, we have to be sure that the browser logs survive the navigation events and
+    // all get collected into the historic browser log.
+    [Theory, Chrome]
+    public Task BrowserLogsShouldPersist(Browser browser) =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                const string testLog = "--test log--";
+                void WriteConsoleLog() => context.ExecuteScript($"console.info('{testLog}');");
+
+                await context.SignInDirectlyAndGoToHomepageAsync();
+
+                WriteConsoleLog();
+                WriteConsoleLog();
+
+                await context.GoToDashboardAsync();
+
+                WriteConsoleLog();
+
+                await context.GoToHomePageAsync();
+
+                WriteConsoleLog();
+                WriteConsoleLog();
+                WriteConsoleLog();
+
+                await context.UpdateHistoricBrowserLogAsync();
+
+                context
+                    .HistoricBrowserLog
+                    .Count(entry => entry.Message.Contains(testLog))
+                    .ShouldBe(6);
             },
             browser);
 }

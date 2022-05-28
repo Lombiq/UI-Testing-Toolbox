@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Services;
 
 /// <summary>
-/// A web application instance, like an Orchard Core app executing via dotnet.exe.
+/// A web application instance, like an Orchard Core app executing via <c>dotnet</c>.
 /// </summary>
 public interface IWebApplicationInstance : IAsyncDisposable
 {

@@ -26,13 +26,14 @@ public class HtmlValidationConfiguration
     /// <see href="https://gitlab.com/html-validate/html-validate/-/tree/master/docs/usage#getting-started">the
     /// corresponding docs</see>.
     /// </summary>
-    public HtmlValidationOptions HtmlValidationOptions { get; set; } = new HtmlValidationOptions
+    public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
         // This is necessary so no long folder names will be generated, see:
         // https://github.com/atata-framework/atata-htmlvalidation/issues/5
         WorkingDirectory = "HtmlValidationTemp",
+        HtmlValidatePackageVersion = "7.1.1",
     };
 
     /// <summary>

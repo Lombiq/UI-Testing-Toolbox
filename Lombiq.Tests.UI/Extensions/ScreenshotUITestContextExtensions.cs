@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Drawing;
@@ -17,7 +18,7 @@ public static class ScreenshotUITestContextExtensions
     /// Takes a screenshot of the current browser tab.
     /// </summary>
     public static Screenshot TakeScreenshot(this UITestContext context) =>
-        context.Scope.Driver.GetScreenshot();
+        context.Driver.AsScreenshotTaker().GetScreenshot();
 
     /// <summary>
     /// Takes a screenshot of an element regeion only.

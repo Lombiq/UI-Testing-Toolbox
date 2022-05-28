@@ -1,7 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -142,7 +141,7 @@ public static class ElementRetrievalUITestContextExtensions
     public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
         VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
 
-    private static ExtendedSearchContext<RemoteWebDriver> CreateSearchContext(this UITestContext context) =>
+    private static ExtendedSearchContext<IWebDriver> CreateSearchContext(this UITestContext context) =>
         new(
             context.Driver,
             context.Configuration.TimeoutConfiguration.RetryTimeout,

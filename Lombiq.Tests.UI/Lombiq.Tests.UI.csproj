@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="1.14.0" />
+    <PackageReference Include="Atata" Version="2.0.0" />
     <PackageReference Include="Atata.Bootstrap" Version="1.1.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="1.4.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="1.5.0" />
@@ -62,10 +62,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="160.5400.1" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47008.0" />
-    <PackageReference Include="Selenium.Axe" Version="2.1.3" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
+    <PackageReference Include="Selenium.Axe" Version="3.1.5" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
-    <PackageReference Include="WebDriverManager" Version="2.12.3" />
+    <PackageReference Include="WebDriverManager" Version="2.13.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
 
@@ -74,6 +74,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Cli\Lombiq.HelpfulLibraries.Cli.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.RestEase\Lombiq.HelpfulLibraries.RestEase.csproj" />
   </ItemGroup>
@@ -82,8 +83,9 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.2.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="4.2.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="4.3.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.3.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="4.3.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.0.1" />
   </ItemGroup>
 

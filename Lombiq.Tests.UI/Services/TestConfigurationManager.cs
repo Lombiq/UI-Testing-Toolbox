@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Globalization;
+using System.IO;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -62,9 +63,20 @@ public static class TestConfigurationManager
         return result;
     }
 
-    private static IConfiguration BuildConfiguration() =>
-        new ConfigurationBuilder()
-            .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false)
+    private static IConfiguration BuildConfiguration()
+    {
+        var sharedTestConfigurationPath =
+            Environment.GetEnvironmentVariable("LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION");
+
+        var builder = new ConfigurationBuilder()
+            .AddJsonFile("TestConfiguration.json", optional: true, reloadOnChange: false);
+
+        if (File.Exists(sharedTestConfigurationPath))
+            builder = builder
+                .AddJsonFile(sharedTestConfigurationPath, optional: true, reloadOnChange: false);
+
+        return builder
             .AddEnvironmentVariables()
             .Build();
+    }
 }

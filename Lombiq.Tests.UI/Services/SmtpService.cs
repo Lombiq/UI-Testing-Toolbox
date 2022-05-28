@@ -1,9 +1,8 @@
 using CliWrap;
-using CliWrap.Buffered;
+using Lombiq.HelpfulLibraries.Cli;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,8 +60,8 @@ public sealed class SmtpService : IAsyncDisposable
     {
         // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as a
         // local tool (on local tools see: https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
-        // The local tool manifest was already created with dotnet new tool-manifest and the tool installed with: dotnet
-        // tool install Rnwood.Smtp4dev --version "3.1.0-*"
+        // The local tool manifest was already created with dotnet new tool-manifest and the tool installed with:
+        // dotnet tool install Rnwood.Smtp4dev --version "3.1.4"
         var dotnetToolsConfigFilePath = Path.Combine(".config", "dotnet-tools.json");
 
         if (!File.Exists(dotnetToolsConfigFilePath))
@@ -71,8 +70,9 @@ public sealed class SmtpService : IAsyncDisposable
         }
 
         _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
 
-        var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, _cancellationTokenSource.Token));
+        var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
 
         var smtp4devConfig = (manifest["tools"] as JObject)?["rnwood.smtp4dev"];
         if (smtp4devConfig == null)
@@ -83,23 +83,19 @@ public sealed class SmtpService : IAsyncDisposable
         _smtpPort = _smtpPortLeaseManager.LeaseAvailableRandomPort();
         _webUIPort = _webUIPortLeaseManager.LeaseAvailableRandomPort();
 
+        var webUIPortString = _webUIPort.ToTechnicalString();
+        var smtpPortString = _smtpPort.ToTechnicalString();
+
+        var webUIUri = new Uri("http://localhost:" + webUIPortString);
+
         try
         {
-            await _restoreSemaphore.WaitAsync(_cancellationTokenSource.Token);
+            await _restoreSemaphore.WaitAsync(token);
 
             if (!_wasRestored)
             {
                 // Running dotnet tool restore the first time to make sure smtp4dev is installed.
-                var restoreResult = await Cli
-                    .Wrap("dotnet.exe")
-                    .WithArguments(a => a.Add("tool").Add("restore"))
-                    .ExecuteBufferedAsync(_cancellationTokenSource.Token);
-
-                if (restoreResult.ExitCode != 0)
-                {
-                    throw new InvalidOperationException(
-                        $"The dotnet tool restore command failed with the following output: {restoreResult.StandardError}");
-                }
+                await CliProgram.DotNet.ExecuteAsync(token, "tool", "restore");
 
                 _wasRestored = true;
             }
@@ -109,27 +105,18 @@ public sealed class SmtpService : IAsyncDisposable
             _restoreSemaphore.Release();
         }
 
-        var webUIUri = new Uri("http://localhost:" + _webUIPort.ToTechnicalString());
-
-        // Starting smtp4dev with a command like this: dotnet.exe tool run smtp4dev --db "" --smtpport 11308 --urls
-        // http://localhost:12360/ For the possible command line arguments see:
+        // Starting smtp4dev with a command like this:
+        // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
+        // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
-        await Cli
-            .Wrap("dotnet.exe")
-            .WithArguments(a => a
-                .Add("tool").Add("run").Add("smtp4dev")
-                // An empty db parameter means an in-memory DB.
-                .Add("--db").Add(string.Empty)
-                .Add("--smtpport").Add(_smtpPort, CultureInfo.InvariantCulture)
-                .Add("--urls").Add(webUIUri.ToString()))
+        await CliProgram.DotNet.GetCommand(
+            new object[] { "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri })
             .ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
-                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()} " +
-                        $"and web UI port {_webUIPort.ToTechnicalString()} due to the following error: " +
-                        Environment.NewLine +
-                        stdErr.Text),
-                _cancellationTokenSource.Token);
+                        $"The smtp4dev service didn't start properly on SMTP port {smtpPortString} and web UI port " +
+                        $"{webUIPortString} due to the following error:{Environment.NewLine}{stdErr.Text}"),
+                token);
 
         return new SmtpServiceRunningContext(_smtpPort, webUIUri);
     }
