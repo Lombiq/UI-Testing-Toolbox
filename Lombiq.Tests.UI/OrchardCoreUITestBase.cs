@@ -17,7 +17,7 @@ public abstract class OrchardCoreUITestBase
 
     private static readonly object _snapshotCopyLock = new();
 
-    protected readonly ITestOutputHelper _testOutputHelper;
+    protected ITestOutputHelper _testOutputHelper;
 
     private static bool _appFolderCreated;
 
@@ -218,6 +218,18 @@ public abstract class OrchardCoreUITestBase
     {
         var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
 
+        var originalTestOutputHelper = _testOutputHelper;
+        Action afterTest = null;
+
+        if (GitHubActionsConfiguration.IsGitHubEnvironment.Value)
+        {
+            var gitHubActionsGroupingTestOutputHelper = new GitHubActionsGroupingTestOutputHelper(
+                _testOutputHelper,
+                testManifest.XunitTest.DisplayName);
+            _testOutputHelper = gitHubActionsGroupingTestOutputHelper;
+            afterTest += () => gitHubActionsGroupingTestOutputHelper.EndGroup();
+        }
+
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
             OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
@@ -229,5 +241,8 @@ public abstract class OrchardCoreUITestBase
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
         await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
+
+        _testOutputHelper = originalTestOutputHelper;
+        afterTest?.Invoke();
     }
 }

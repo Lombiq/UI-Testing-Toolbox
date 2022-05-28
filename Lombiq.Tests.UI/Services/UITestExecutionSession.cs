@@ -44,6 +44,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private IWebApplicationInstance _applicationInstance;
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
+    private GitHubActionsConfiguration _gitHubActionsConfiguration;
 
     public UITestExecutionSession(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
     {
@@ -383,6 +384,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
+            _gitHubActionsConfiguration = TestConfigurationManager.GetConfiguration<GitHubActionsConfiguration>();
 
             var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
