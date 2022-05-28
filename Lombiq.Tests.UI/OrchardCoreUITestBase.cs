@@ -13,49 +13,48 @@ namespace Lombiq.Tests.UI;
 
 public abstract class OrchardCoreUITestBase
 {
+    private const string AppFolder = nameof(AppFolder);
+
     private static readonly object _snapshotCopyLock = new();
 
     protected readonly ITestOutputHelper _testOutputHelper;
 
     private static bool _appFolderCreated;
 
+    protected abstract string AppAssemblyPath { get; }
+
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
-    protected abstract string AppAssemblyPath { get; }
+    static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
 
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
+    protected abstract Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(
-            standardAndMobileBrowserSizeTest,
-            browser,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+            standardAndMobileBrowserSizeTest, browser, changeConfiguration.AsCompletedTask());
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteMultiSizeTestAfterSetupAsync(
-            (context, isStandardSize) =>
-            {
-                standardAndMobileBrowserSizeTest(context, isStandardSize);
-                return Task.CompletedTask;
-            },
-            browser,
-            changeConfigurationAsync);
+            standardAndMobileBrowserSizeTest.AsCompletedTask(), browser, changeConfigurationAsync);
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(
-            standardAndMobileBrowserSizeTestAsync,
-            browser,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+            standardAndMobileBrowserSizeTestAsync, browser, changeConfiguration.AsCompletedTask());
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
@@ -73,10 +72,7 @@ public abstract class OrchardCoreUITestBase
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(
-            standardBrowserSizeTest,
-            mobileBrowserSizeTest,
-            browser,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+            standardBrowserSizeTest, mobileBrowserSizeTest, browser, changeConfiguration.AsCompletedTask());
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardBrowserSizeTest,
@@ -84,8 +80,8 @@ public abstract class OrchardCoreUITestBase
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteMultiSizeTestAfterSetupAsync(
-            ConvertMultiSizeTestToAsynchronous(standardBrowserSizeTest),
-            ConvertMultiSizeTestToAsynchronous(mobileBrowserSizeTest),
+            standardBrowserSizeTest.AsCompletedTask(),
+            mobileBrowserSizeTest.AsCompletedTask(),
             browser,
             changeConfigurationAsync);
 
@@ -98,7 +94,7 @@ public abstract class OrchardCoreUITestBase
             standardBrowserSizeTestAsync,
             mobileBrowserSizeTestAsync,
             browser,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+            changeConfiguration.AsCompletedTask());
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardBrowserSizeTestAsync,
@@ -120,24 +116,13 @@ public abstract class OrchardCoreUITestBase
         Action<UITestContext> test,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(
-            ConvertTestToAsynchronous(test),
-            browser,
-            changeConfiguration);
+        ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
     protected virtual Task ExecuteTestAfterSetupAsync(
-       Func<UITestContext, Task> tesAsynct,
-       Browser browser,
-       Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(
-            tesAsynct,
-            browser,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
-
-    protected abstract Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
+        Func<UITestContext, Task> tesAsynct,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(tesAsynct, browser, changeConfiguration.AsCompletedTask());
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.
@@ -158,17 +143,15 @@ public abstract class OrchardCoreUITestBase
         string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
-        var appFolder = "AppFolder";
-
         lock (_snapshotCopyLock)
         {
             if (!_appFolderCreated)
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(appFolder);
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(AppFolder);
 
                 OrchardCoreDirectoryHelper.CopyAppFolder(
                     customSnapshotFolderPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
-                    appFolder);
+                    AppFolder);
 
                 _appFolderCreated = true;
             }
@@ -180,7 +163,7 @@ public abstract class OrchardCoreUITestBase
             setupOperation: null,
             async configuration =>
             {
-                configuration.SetupConfiguration.SetupSnapshotDirectoryPath = appFolder;
+                configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder;
                 if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
             });
     }
@@ -193,11 +176,7 @@ public abstract class OrchardCoreUITestBase
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation = null,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAsync(
-            test,
-            browser,
-            setupOperation,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+        ExecuteTestAsync(test, browser, setupOperation, changeConfiguration.AsCompletedTask());
 
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
@@ -207,11 +186,7 @@ public abstract class OrchardCoreUITestBase
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(
-            ConvertTestToAsynchronous(test),
-            browser,
-            setupOperation,
-            changeConfigurationAsync);
+        ExecuteTestAsync(test.AsCompletedTask(), browser, setupOperation, changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
@@ -221,11 +196,7 @@ public abstract class OrchardCoreUITestBase
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation = null,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAsync(
-            testAsync,
-            browser,
-            setupOperation,
-            ConvertChangeConfigurationToAsynchronous(changeConfiguration));
+        ExecuteTestAsync(testAsync, browser, setupOperation, changeConfiguration.AsCompletedTask());
 
     /// <summary>
     /// Executes the given UI test.
@@ -234,11 +205,7 @@ public abstract class OrchardCoreUITestBase
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(
-            testAsync,
-            browser,
-            setupOperation: null,
-            changeConfigurationAsync);
+        ExecuteTestAsync(testAsync, browser, setupOperation: null, changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
@@ -249,46 +216,18 @@ public abstract class OrchardCoreUITestBase
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest(_testOutputHelper)
-        {
-            TestAsync = testAsync,
-        };
+        var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
             OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
             TestOutputHelper = _testOutputHelper,
             BrowserConfiguration = { Browser = browser },
+            SetupConfiguration = { SetupOperation = setupOperation },
         };
-
-        configuration.SetupConfiguration.SetupOperation = setupOperation;
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
         await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
     }
-
-    static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
-
-    private static MultiSizeTestAsync ConvertMultiSizeTestToAsynchronous(MultiSizeTest test) =>
-        (context, isStandardSize) =>
-        {
-            test(context, isStandardSize);
-            return Task.CompletedTask;
-        };
-
-    private static Func<UITestContext, Task> ConvertTestToAsynchronous(Action<UITestContext> test) =>
-        context =>
-        {
-            test?.Invoke(context);
-            return Task.CompletedTask;
-        };
-
-    private static Func<OrchardCoreUITestExecutorConfiguration, Task> ConvertChangeConfigurationToAsynchronous(
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration) =>
-        configuration =>
-        {
-            changeConfiguration?.Invoke(configuration);
-            return Task.CompletedTask;
-        };
 }
