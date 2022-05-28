@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Management.Dmf;
+using System;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
@@ -41,4 +42,6 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
         _inner.WriteLine($"::group::{_groupName}");
         IsStarted = true;
     }
+
+    public static void Throw() => throw new InvalidOperandException("Intentional failure.");
 }
