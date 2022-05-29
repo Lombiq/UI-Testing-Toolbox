@@ -17,8 +17,10 @@ public class UITestManifest
     public Func<UITestContext, Task> TestAsync { get; set; }
 
     public UITestManifest(ITestOutputHelper testOutputHelper) =>
-        XunitTest = testOutputHelper.GetType()
+        XunitTest = testOutputHelper
+            .GetType()
             .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
             .FirstOrDefault(field => field.FieldType == typeof(ITest))
-            ?.GetValue(testOutputHelper) as ITest;
+            ?.GetValue(testOutputHelper) as ITest ??
+                throw new InvalidOperationException("Unable to acquire the {nameof(ITestOutputHelper)}'s unit test.");
 }
