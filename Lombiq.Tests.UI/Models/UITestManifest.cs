@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Models;
 public class UITestManifest
 {
     public ITest XunitTest { get; }
-    public string Name => XunitTest.DisplayName;
+    public string Name => XunitTest?.DisplayName;
     public Func<UITestContext, Task> TestAsync { get; set; }
 
     public UITestManifest(ITestOutputHelper testOutputHelper) =>
