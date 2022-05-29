@@ -241,10 +241,15 @@ public abstract class OrchardCoreUITestBase
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
-        await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
-
-        _testOutputHelper = originalTestOutputHelper;
-        afterTest?.Invoke();
+        try
+        {
+            await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
+        }
+        finally
+        {
+            _testOutputHelper = originalTestOutputHelper;
+            afterTest?.Invoke();
+        }
     }
 
     public static void Throw() => throw new InvalidOperandException("Intentional failure.");
