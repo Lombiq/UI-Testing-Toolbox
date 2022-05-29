@@ -33,8 +33,17 @@ public class GitHubAnnotationWriter
                 $"Only {nameof(LogLevel.Information)} - {nameof(LogLevel.Critical)} are valid."),
         };
 
+        // We replace commas with reversed commas and double colons with the squared four dots character to avoid
+        // conflicts with the command parser. These are reasonably similar to carry the meaning, yet distinct enough to
+        // avoid misleading the reader. (For example if we replaced colons with "Armenian full stop" that looks
+        // identical, the user would have no idea why copying the output to a search yields no results when it should.)
+        title = title.Replace(',', '⹁').Replace("::", "⸬");
+
+        // Sanitize message:
+        message = message.Replace("\r", string.Empty).Replace("\n", " ");
+
         _testOutputHelper.WriteLine(FormattableString.Invariant(
-            $"::{command} file={file},line={line},title={title}::{message.Replace("\r", string.Empty).Replace("\n", "\\n")}"));
+            $"::{command} file={file},line={line},title={title}::{message}"));
     }
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
@@ -55,6 +64,11 @@ public class GitHubAnnotationWriter
         var file = stackFrame?.GetFileName() ?? "NoFile";
         var line = stackFrame?.GetFileLineNumber() ?? 1;
 
-        Annotate(LogLevel.Error, exception.GetType().Name, exception.ToString(), file, line);
+        Annotate(
+            LogLevel.Error,
+            $"{exception.GetType().Name} in {testCase.DisplayName}",
+            exception.ToString(),
+            file,
+            line);
     }
 }
