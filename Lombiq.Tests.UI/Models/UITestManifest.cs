@@ -16,11 +16,28 @@ public class UITestManifest
     public string Name => XunitTest?.DisplayName;
     public Func<UITestContext, Task> TestAsync { get; set; }
 
-    public UITestManifest(ITestOutputHelper testOutputHelper) =>
-        XunitTest = testOutputHelper
+    public UITestManifest(ITestOutputHelper testOutputHelper)
+    {
+        var original = testOutputHelper;
+
+        do
+        {
+            XunitTest = GetValueOfType<ITest>(testOutputHelper);
+            if (XunitTest == null) testOutputHelper = GetValueOfType<ITestOutputHelper>(testOutputHelper);
+        }
+        while (XunitTest == null && testOutputHelper != null);
+
+        if (XunitTest == null)
+        {
+            throw new InvalidOperationException($"Unable to acquire the {original.GetType()}'s unit test.");
+        }
+    }
+
+    private static T GetValueOfType<T>(object instance)
+        where T : class =>
+        instance
             .GetType()
             .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(field => field.FieldType == typeof(ITest))
-            ?.GetValue(testOutputHelper) as ITest ??
-                throw new InvalidOperationException("Unable to acquire the {nameof(ITestOutputHelper)}'s unit test.");
+            .FirstOrDefault(field => field.FieldType == typeof(T))
+            ?.GetValue(instance) as T;
 }
