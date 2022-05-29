@@ -60,6 +60,7 @@ public class GitHubAnnotationWriter
                 frame.GetMethod() is { } method &&
                 method.Name == testName &&
                 method.DeclaringType?.Name == className) ??
+            stackFrames.FirstOrDefault(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
             stackFrames.FirstOrDefault();
         var file = stackFrame?.GetFileName() ?? "NoFile";
         var line = stackFrame?.GetFileLineNumber() ?? 1;
