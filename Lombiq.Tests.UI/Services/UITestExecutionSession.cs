@@ -59,7 +59,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
         var startTime = DateTime.UtcNow;
-        Dictionary<string, Func<Task<Stream>>> failureDumpContainer = null;
+        IDictionary<string, Func<Task<Stream>>> failureDumpContainer = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
@@ -220,7 +220,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Exception ex,
         string dumpRootPath,
         int retryCount,
-        Dictionary<string, Func<Task<Stream>>> failureDumpContainer)
+        IDictionary<string, Func<Task<Stream>>> failureDumpContainer)
     {
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
