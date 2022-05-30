@@ -43,6 +43,8 @@ public static class WebDriverFactory
             chromeConfig.Options.AddArgument("disable-accelerated-2d-canvas");
             chromeConfig.Options.AddArgument("disable-gpu");
 
+            chromeConfig.Options.AddArgument("force-color-profile=sRGB");
+
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
