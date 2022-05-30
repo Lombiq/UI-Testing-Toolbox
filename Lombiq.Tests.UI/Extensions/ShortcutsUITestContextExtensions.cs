@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
 using OpenQA.Selenium;
+using OrchardCore.Users.Models;
 using RestEase;
 using Shouldly;
 using System;
@@ -76,6 +77,12 @@ public static class ShortcutsUITestContextExtensions
         var userNameContainer = context.Get(By.CssSelector("pre")).Text;
         return userNameContainer["UserName: ".Length..];
     }
+
+    /// <summary>
+    /// Sets the registration type in site settings.
+    /// </summary>
+    public static Task SetUserRegistrationTypeAsync(this UITestContext context, UserRegistrationType type) =>
+        context.GoToAsync<AccountController>(controller => controller.SetUserRegistrationType(type));
 
     /// <summary>
     /// Enables the feature with the given ID directly, without anything else happening on the admin Features page. The
@@ -182,4 +189,10 @@ public static class ShortcutsUITestContextExtensions
         [Get("api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoAsync();
     }
+
+    /// <summary>
+    /// Selects theme by id.
+    /// </summary>
+    public static Task SelectThemeAsync(this UITestContext context, string id) =>
+        context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));
 }

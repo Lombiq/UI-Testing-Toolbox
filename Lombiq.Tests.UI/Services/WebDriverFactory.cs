@@ -39,6 +39,10 @@ public static class WebDriverFactory
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
             chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
+            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+            chromeConfig.Options.AddArgument("disable-accelerated-2d-canvas");
+            chromeConfig.Options.AddArgument("disable-gpu");
+
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
