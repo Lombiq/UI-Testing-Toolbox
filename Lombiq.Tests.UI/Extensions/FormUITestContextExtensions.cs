@@ -14,15 +14,15 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FormUITestContextExtensions
 {
-    public static Task ClickAndFillInWithRetriesAsync(
+    public static async Task ClickAndFillInWithRetriesAsync(
         this UITestContext context,
         By by,
         string text,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        context.Get(by).Click();
-        return context.FillInWithRetriesAsync(by, text, timeout, interval);
+        await context.ClickReliablyOnAsync(by);
+        await context.FillInWithRetriesAsync(by, text, timeout, interval);
     }
 
     public static Task ClickAndFillInWithRetriesUntilNotBlankAsync(
