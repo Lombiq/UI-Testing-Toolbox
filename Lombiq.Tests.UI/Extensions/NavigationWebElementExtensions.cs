@@ -57,7 +57,7 @@ public static class NavigationWebElementExtensions
                         "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
                 {
                     throw new NotSupportedException(
-                        "For this element use the standard Click() method. Add the element as an exception to the documentation.");
+                        "For this element use the standard Click() method.");
                 }
             });
 
