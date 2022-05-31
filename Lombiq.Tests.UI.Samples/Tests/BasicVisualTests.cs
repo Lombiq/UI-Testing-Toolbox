@@ -37,7 +37,7 @@ public class BasicVisualTests : UITestBase
                 var cropOptions = new ResizeOptions
                 {
                     // RoI size.
-                    Size = new Size(1024, 23),
+                    Size = new Size(1400, 23),
                     // We want crop.
                     Mode = ResizeMode.Crop,
                     // Sets the upper left corner for crop operation.
