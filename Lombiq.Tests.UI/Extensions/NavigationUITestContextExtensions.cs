@@ -207,7 +207,7 @@ public static class NavigationUITestContextExtensions
     private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
     {
         var byItem = By.CssSelector(FormattableString.Invariant(
-            $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"));
+            $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option")).Visible();
 
         while (!context.Exists(byItem.Safely()))
         {

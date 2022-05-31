@@ -238,7 +238,7 @@ public static class FormUITestContextExtensions
     /// Finds the first submit button and clicks on it reliably.
     /// </summary>
     public static Task ClickReliablyOnSubmitAsync(this UITestContext context) =>
-        context.ClickReliablyOnAsync(By.CssSelector("button[type='submit']"));
+        context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
 
     /// <summary>
     /// Finds the "Add New" button.
