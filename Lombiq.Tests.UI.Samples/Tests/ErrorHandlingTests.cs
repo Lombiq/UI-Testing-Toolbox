@@ -128,7 +128,7 @@ public class ErrorHandlingTests : UITestBase
                             });
 
                         throw new InvalidOperandException(
-                            "This point shouldn't be reachable if the logs are properly kept..");
+                            "This point shouldn't be reachable if the logs are properly kept.");
                     };
                 }));
 }
