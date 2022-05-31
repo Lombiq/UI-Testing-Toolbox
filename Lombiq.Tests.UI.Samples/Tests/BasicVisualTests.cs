@@ -37,7 +37,7 @@ public class BasicVisualTests : UITestBase
                 var cropOptions = new ResizeOptions
                 {
                     // RoI size.
-                    Size = new Size(350, 23),
+                    Size = new Size(1024, 23),
                     // We want crop.
                     Mode = ResizeMode.Crop,
                     // Sets the upper left corner for crop operation.
@@ -119,7 +119,7 @@ public class BasicVisualTests : UITestBase
                     context => Task.FromResult((Stream)File.OpenRead(diffLogTempFileName)));
                 // All the stuff above are made for this comparison. Here we check that, the erroneous pixels percentage
                 // is less than a threshold.
-                diff.PixelErrorPercentage.ShouldBeLessThan(25);
+                diff.PixelErrorPercentage.ShouldBeLessThan(10);
 
                 return Task.CompletedTask;
             },
