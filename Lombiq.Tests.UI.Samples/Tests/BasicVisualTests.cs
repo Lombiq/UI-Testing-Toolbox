@@ -119,7 +119,7 @@ public class BasicVisualTests : UITestBase
                     context => Task.FromResult((Stream)File.OpenRead(diffLogTempFileName)));
                 // All the stuff above are made for this comparison. Here we check that, the erroneous pixels percentage
                 // is less than a threshold.
-                diff.PixelErrorPercentage.ShouldBeLessThan(15);
+                diff.PixelErrorPercentage.ShouldBeLessThan(25);
 
                 return Task.CompletedTask;
             },
