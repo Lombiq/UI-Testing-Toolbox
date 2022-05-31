@@ -43,6 +43,7 @@ public static class WebDriverFactory
             chromeConfig.Options.AddArgument("disable-accelerated-2d-canvas");
             chromeConfig.Options.AddArgument("disable-gpu");
 
+            // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
             chromeConfig.Options.AddArgument("force-color-profile=sRGB");
 
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
