@@ -12,6 +12,10 @@
     <None Remove=".htmlvalidate.json" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\navbar.dib" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include=".htmlvalidate.json">
