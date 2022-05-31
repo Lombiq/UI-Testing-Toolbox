@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
@@ -29,26 +30,47 @@ public class BasicVisualTests : UITestBase
             context =>
             {
                 var navbarElementSelector = By.ClassName("navbar-brand");
+                // We set the outer window size at the beginning of the test, but not the inner size of the window, and
+                // the element selected by the navbarElementSelector is a div, so it depnds/fits the browser's inner
+                // size. We don't know the exact inner size of the browser, we should select the interested region for
+                // the reference and the captured bitmaps, and use it at the end.
+                var cropOptions = new ResizeOptions
+                {
+                    // RoI size.
+                    Size = new Size(350, 23),
+                    // We want crop.
+                    Mode = ResizeMode.Crop,
+                    // Sets the upper left corner for crop operation.
+                    CenterCoordinates = PointF.Empty,
+                };
 
                 // First we take a screenshot of element area. This will be compared to a reference image what we
                 // prepared before.
                 using var navbarImage = context.TakeElementScreenshot(navbarElementSelector)
-                    .ToImageSharpImage();
+                    .ToImageSharpImage()
+                    .ShouldNotBeNull();
                 var canvasImageTempFileName = $"Temp/navbar_captured.bmp";
+
+                // Here we crop the RoI. Don't be confused about imageContext.Resize(...) remember, we selected
+                // ResizeMode.Crop above, in cropOptions.
+                navbarImage.Mutate(imageContext => imageContext.Resize(cropOptions));
                 // We save it to a temporary folder, and append temporary file to failure dump.
-                navbarImage.ShouldNotBeNull()
-                    .SaveAsBmp(canvasImageTempFileName);
+                navbarImage.SaveAsBmp(canvasImageTempFileName);
                 context.AppendFailureDump(
                     $"navbar_captured.bmp",
                     context => Task.FromResult((Stream)File.OpenRead(canvasImageTempFileName)));
 
                 // Then we load the reference image. This is what we are expecting.
                 using var referenceImage = typeof(BasicVisualTests).Assembly
-                    .GetResourceImageSharpImage("Lombiq.Tests.UI.Samples.Assets.navbar.dib");
+                    .GetResourceImageSharpImage("Lombiq.Tests.UI.Samples.Assets.navbar.dib")
+                    .ShouldNotBeNull();
                 var referenceImageTempFileName = $"Temp/navbar_reference.bmp";
+
+                // Here we crop the RoI. Don't be confused about imageContext.Resize(...) remember, we selected
+                // ResizeMode.Crop above, in cropOptions.
+                referenceImage.Mutate(imageContext => imageContext.Resize(cropOptions));
                 // Just like above, save and append it to failure dump.
-                referenceImage.ShouldNotBeNull()
-                    .SaveAsBmp(referenceImageTempFileName);
+                referenceImage.SaveAsBmp(referenceImageTempFileName);
                 context.AppendFailureDump(
                     $"navbar_reference.bmp",
                     context => Task.FromResult((Stream)File.OpenRead(referenceImageTempFileName)));
