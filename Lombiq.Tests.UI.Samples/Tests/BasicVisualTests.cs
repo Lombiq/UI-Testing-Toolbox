@@ -31,9 +31,9 @@ public class BasicVisualTests : UITestBase
             {
                 var navbarElementSelector = By.ClassName("navbar-brand");
                 // We set the outer window size at the beginning of the test, but not the inner size of the window, and
-                // the element selected by the navbarElementSelector is a div, so it depnds/fits the browser's inner
-                // size. We don't know the exact inner size of the browser, we should select the interested region for
-                // the reference and the captured bitmaps, and use it at the end.
+                // the element selected by the navbarElementSelector is a div, so it depends/fits the browser's inner
+                // size. We don't know the exact inner size of the browser, so we should select the interested region
+                // for the reference and the captured bitmaps, and use it at the end.
                 var cropOptions = new ResizeOptions
                 {
                     // RoI size.
@@ -49,30 +49,32 @@ public class BasicVisualTests : UITestBase
                 using var navbarImage = context.TakeElementScreenshot(navbarElementSelector)
                     .ToImageSharpImage()
                     .ShouldNotBeNull();
-                var canvasImageTempFileName = $"Temp/navbar_captured.bmp";
+                var canvasImageTempFileName = "Temp/navbar_captured.bmp";
 
+                navbarImage.SaveAsBmp("Temp/navbar_captured_full.bmp");
                 // Here we crop the RoI. Don't be confused about imageContext.Resize(...) remember, we selected
                 // ResizeMode.Crop above, in cropOptions.
                 navbarImage.Mutate(imageContext => imageContext.Resize(cropOptions));
                 // We save it to a temporary folder, and append temporary file to failure dump.
                 navbarImage.SaveAsBmp(canvasImageTempFileName);
                 context.AppendFailureDump(
-                    $"navbar_captured.bmp",
+                    "navbar_captured.bmp",
                     context => Task.FromResult((Stream)File.OpenRead(canvasImageTempFileName)));
 
                 // Then we load the reference image. This is what we are expecting.
                 using var referenceImage = typeof(BasicVisualTests).Assembly
                     .GetResourceImageSharpImage("Lombiq.Tests.UI.Samples.Assets.navbar.dib")
                     .ShouldNotBeNull();
-                var referenceImageTempFileName = $"Temp/navbar_reference.bmp";
+                var referenceImageTempFileName = "Temp/navbar_reference.bmp";
 
+                referenceImage.SaveAsBmp("Temp/navbar_reference_full.bmp");
                 // Here we crop the RoI. Don't be confused about imageContext.Resize(...) remember, we selected
                 // ResizeMode.Crop above, in cropOptions.
                 referenceImage.Mutate(imageContext => imageContext.Resize(cropOptions));
                 // Just like above, save and append it to failure dump.
                 referenceImage.SaveAsBmp(referenceImageTempFileName);
                 context.AppendFailureDump(
-                    $"navbar_reference.bmp",
+                    "navbar_reference.bmp",
                     context => Task.FromResult((Stream)File.OpenRead(referenceImageTempFileName)));
 
                 // At this point, we have reference and captured images too.
@@ -82,12 +84,12 @@ public class BasicVisualTests : UITestBase
                 // So lets create it and append it to failure dump.
                 using var diffImage = referenceImage
                     .CalcDiffImage(navbarImage);
-                var diffImageTempFileName = $"Temp/navbar_diff.bmp";
+                var diffImageTempFileName = "Temp/navbar_diff.bmp";
 
                 diffImage.ShouldNotBeNull()
                     .SaveAsBmp(diffImageTempFileName);
                 context.AppendFailureDump(
-                    $"navbar_diff.bmp",
+                    "navbar_diff.bmp",
                     context => Task.FromResult((Stream)File.OpenRead(diffImageTempFileName)));
 
                 // Now we are one step far from the end. Here we create a statistical summary of differences between the
@@ -96,7 +98,7 @@ public class BasicVisualTests : UITestBase
                 // https://github.com/Codeuctivity/ImageSharp.Compare/blob/1.2.11/ImageSharpCompare/ImageSharpCompare.cs#L143.
                 var diff = referenceImage
                     .CompareTo(navbarImage);
-                var diffLogTempFileName = $"Temp/navbar_diff.log";
+                var diffLogTempFileName = "Temp/navbar_diff.log";
 
                 File.WriteAllText(
                     diffLogTempFileName,
@@ -113,11 +115,11 @@ public class BasicVisualTests : UITestBase
                         diff.PixelErrorCount,
                         diff.PixelErrorPercentage));
                 context.AppendFailureDump(
-                    $"navbar_diff.log",
+                    "navbar_diff.log",
                     context => Task.FromResult((Stream)File.OpenRead(diffLogTempFileName)));
                 // All the stuff above are made for this comparison. Here we check that, the erroneous pixels percentage
                 // is less than a threshold.
-                diff.PixelErrorPercentage.ShouldBeLessThan(5);
+                diff.PixelErrorPercentage.ShouldBeLessThan(15);
 
                 return Task.CompletedTask;
             },
