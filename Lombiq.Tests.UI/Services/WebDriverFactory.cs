@@ -46,6 +46,10 @@ public static class WebDriverFactory
             // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
             chromeConfig.Options.AddArgument("force-color-profile=sRGB");
 
+            // Disabling DPI scaling.
+            chromeConfig.Options.AddArgument("force-device-scale-factor=1");
+            chromeConfig.Options.AddArgument("high-dpi-support=1");
+
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
