@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -29,6 +30,9 @@ public class BasicVisualTests : UITestBase
         ExecuteTestAfterSetupAsync(
             context =>
             {
+                context.SetViewportSize(CommonDisplayResolutions.HdPlus);
+                context.TakeScreenshot("Temp/navbar_full_screen.bmp");
+
                 var navbarElementSelector = By.ClassName("navbar-brand");
                 // We set the outer window size at the beginning of the test, but not the inner size of the window, and
                 // the element selected by the navbarElementSelector is a div, so it depends/fits the browser's inner
