@@ -2,7 +2,6 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Drawing;
-using System.IO;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -25,9 +24,9 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
-        var screen = context.TakeScreenshot();
-        using var screenRaw = new MemoryStream(screen.AsByteArray);
-        using var screenImage = (Bitmap)Image.FromStream(screenRaw);
+        using var screenImage = context
+            .TakeScreenshot()
+            .ToBitmap();
 
         return screenImage.Clone(new Rectangle(element.Location, element.Size), screenImage.PixelFormat);
     }
