@@ -1,5 +1,6 @@
 ﻿using Lombiq.Tests.UI.Models;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
@@ -42,6 +43,7 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
         _isStarted = true;
     }
 
+    [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "This is a magic string.")]
     private void EndGroup()
     {
         if (_isStarted) Console.WriteLine("::endgroup::");
