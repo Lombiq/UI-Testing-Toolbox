@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lombiq.Tests.UI.Models;
+using System;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
@@ -40,5 +41,23 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
     {
         _inner.WriteLine($"::group::{_groupName}");
         IsStarted = true;
+    }
+
+    public static (ITestOutputHelper WrappedOutputHelper, Action AfterTest) CreateWrapper(
+        ITestOutputHelper testOutputHelper,
+        UITestManifest testManifest)
+    {
+        if (!IsGitHubEnvironment.Value ||
+            testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.Class?.Name is not { } className ||
+            testManifest.Name is not { } testName)
+        {
+            return (testOutputHelper, () => { });
+        }
+
+        var gitHubActionsGroupingTestOutputHelper = new GitHubActionsGroupingTestOutputHelper(
+            testOutputHelper,
+            $"{className}.{testName}");
+
+        return (gitHubActionsGroupingTestOutputHelper, () => gitHubActionsGroupingTestOutputHelper.EndGroup());
     }
 }

@@ -219,18 +219,8 @@ public abstract class OrchardCoreUITestBase
         var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
 
         var originalTestOutputHelper = _testOutputHelper;
-        Action afterTest = null;
-
-        if (GitHubActionsGroupingTestOutputHelper.IsGitHubEnvironment.Value &&
-            testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.Class?.Name is { } className &&
-            testManifest.Name is { } testName)
-        {
-            var gitHubActionsGroupingTestOutputHelper = new GitHubActionsGroupingTestOutputHelper(
-                _testOutputHelper,
-                $"{className}.{testName}");
-            _testOutputHelper = gitHubActionsGroupingTestOutputHelper;
-            afterTest += () => gitHubActionsGroupingTestOutputHelper.EndGroup();
-        }
+        (_testOutputHelper, var afterTest) =
+            GitHubActionsGroupingTestOutputHelper.CreateWrapper(_testOutputHelper, testManifest);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
