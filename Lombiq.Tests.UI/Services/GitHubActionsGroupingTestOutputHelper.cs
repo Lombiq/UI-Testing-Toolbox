@@ -12,7 +12,7 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
     private readonly ITestOutputHelper _inner;
     private readonly string _groupName;
 
-    public bool IsStarted { get; private set; }
+    private bool _isStarted;
 
     public GitHubActionsGroupingTestOutputHelper(ITestOutputHelper inner, string groupName)
     {
@@ -22,25 +22,29 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
 
     public void WriteLine(string message)
     {
-        if (!IsStarted) Start();
+        Start();
         _inner.WriteLine(message);
     }
 
     public void WriteLine(string format, params object[] args)
     {
-        if (!IsStarted) Start();
+        Start();
         _inner.WriteLine(format, args);
-    }
-
-    public void EndGroup()
-    {
-        if (IsStarted) _inner.WriteLine("::endgroup::");
     }
 
     private void Start()
     {
-        _inner.WriteLine($"::group::{_groupName}");
-        IsStarted = true;
+        if (_isStarted) return;
+
+        // As "::group::name" and "::endgroup::" always has to go to the standard output to be effective these two are
+        // intentionally using Console.WriteLine() instead of _inner.WriteLine().
+        Console.WriteLine($"::group::{_groupName}");
+        _isStarted = true;
+    }
+
+    private void EndGroup()
+    {
+        if (_isStarted) Console.WriteLine("::endgroup::");
     }
 
     public static (ITestOutputHelper WrappedOutputHelper, Action AfterTest) CreateWrapper(
