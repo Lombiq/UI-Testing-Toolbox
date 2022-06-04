@@ -199,7 +199,7 @@ public static class ReliabilityUITestContextExtensions
     /// <param name="timeout">Timeout of the operation.</param>
     /// <param name="interval">Time between retries.</param>
     /// <returns>Hash calculated from captured screen shot of element region.</returns>
-    public static string DoWaitElementToBeReady(
+    public static string WaitElementToNotChange(
         this UITestContext context,
         By elementToWait,
         TimeSpan? timeout = null,
@@ -253,16 +253,15 @@ public static class ReliabilityUITestContextExtensions
         using var elementImageStream = new MemoryStream();
 
         elementImage.Save(elementImageStream, ImageFormat.Bmp);
-        var elementImageRaw = elementImageStream.ToArray();
-        return ComputeSha256Hash(elementImageRaw);
+        return ComputeSha256Hash(elementImageStream);
     }
 
-    private static string ComputeSha256Hash(byte[] raw)
+    private static string ComputeSha256Hash(Stream stream)
     {
         using var sha256Hash = SHA256.Create();
 
         return string.Concat(
-            sha256Hash.ComputeHash(raw)
+            sha256Hash.ComputeHash(stream)
                 .Select(item => item.ToString("x2", CultureInfo.InvariantCulture)));
     }
 }

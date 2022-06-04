@@ -28,7 +28,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Error handling](Tests/ErrorHandlingtests.cs)
 - [Monkey tests](Tests/MonkeyTests.cs)
 - [Database snapshot tests](Tests/DatabaseSnapshotTests.cs)
-- [Basic visual tests](Tests/BasicVisualTests.cs)
+- [Basic visual verification tests](Tests/BasicVisualVerificationTests.cs)
 
 
 ## Adding new tutorials

@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ImageSharpImageExtensions
 {
     /// <summary>
-    /// Calculates difference between the given images.
+    /// Calculates the difference between the given images.
     /// </summary>
     public static ICompareResult CompareTo(this Image actual, Image expected)
     {

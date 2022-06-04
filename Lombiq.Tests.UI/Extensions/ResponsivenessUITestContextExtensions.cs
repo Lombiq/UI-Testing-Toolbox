@@ -54,6 +54,7 @@ public static class ResponsivenessUITestContextExtensions
             "Calculated paddings {0}x{1}.",
             Convert.ToInt32(paddings[0], CultureInfo.InvariantCulture),
             Convert.ToInt32(paddings[1], CultureInfo.InvariantCulture));
+
         context.SetBrowserSize(new Size
         {
             Width = size.Width + Convert.ToInt32(paddings[0], CultureInfo.InvariantCulture),

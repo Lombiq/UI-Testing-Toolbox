@@ -20,7 +20,7 @@ public static class ScreenshotUITestContextExtensions
         context.Driver.AsScreenshotTaker().GetScreenshot();
 
     /// <summary>
-    /// Takes a screenshot of an element regeion only.
+    /// Takes a screenshot of an element region only.
     /// </summary>
     public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
@@ -32,7 +32,7 @@ public static class ScreenshotUITestContextExtensions
     }
 
     /// <summary>
-    /// Takes a screenshot of an element regeion only.
+    /// Takes a screenshot of an element region only.
     /// </summary>
     public static Bitmap TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
