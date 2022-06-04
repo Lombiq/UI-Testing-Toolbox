@@ -1,6 +1,5 @@
 ﻿using Lombiq.Tests.UI.Models;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
