@@ -37,16 +37,13 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
     {
         if (_isStarted) return;
 
-        // As "::group::name" and "::endgroup::" always has to go to the standard output to be effective these two are
-        // intentionally using Console.WriteLine() instead of _inner.WriteLine().
-        Console.WriteLine($"::group::{_groupName}");
+        _inner.WriteLine($"::group::{_groupName}");
         _isStarted = true;
     }
 
-    [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "This is a magic string.")]
     private void EndGroup()
     {
-        if (_isStarted) Console.WriteLine("::endgroup::");
+        if (_isStarted) _inner.WriteLine("::endgroup::");
     }
 
     public static (ITestOutputHelper WrappedOutputHelper, Action AfterTest) CreateWrapper(
