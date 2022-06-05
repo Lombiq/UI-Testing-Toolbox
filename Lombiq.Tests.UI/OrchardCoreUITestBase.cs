@@ -242,6 +242,4 @@ public abstract class OrchardCoreUITestBase
             afterTest?.Invoke();
         }
     }
-
-    protected static void Throw() => throw new InvalidOperationException("Intentional failure.");
 }
