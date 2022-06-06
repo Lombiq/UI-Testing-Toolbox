@@ -14,10 +14,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="Assets\Navbar.dib" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include=".htmlvalidate.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

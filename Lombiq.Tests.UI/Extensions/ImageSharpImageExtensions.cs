@@ -19,7 +19,7 @@ public static class ImageSharpImageExtensions
     }
 
     /// <summary>
-    /// Creates a diff mask image of two images.
+    /// Creates a diff mask <see cref="Image"/> of two images.
     /// </summary>
     public static Image CalcDiffImage(this Image actual, Image expected)
     {
@@ -29,7 +29,23 @@ public static class ImageSharpImageExtensions
         return ImageSharpCompare.CalcDiffMaskImage(actualStream, expectedStream);
     }
 
-    private static Stream ToStream(this Image image)
+    /// <summary>
+    /// Clones the <see cref="Image"/>.
+    /// </summary>
+    /// <param name="image">The source <see cref="Image"/> instance.</param>
+    /// <returns>Cloned <see cref="Image"/> instance.</returns>
+    public static Image Clone(this Image image)
+    {
+        using var imageStream = image.ToStream();
+
+        return Image.Load(imageStream);
+    }
+
+    /// <summary>
+    /// Converts the <see cref="Image"/> to <see cref="Stream"/>.
+    /// </summary>
+    /// <param name="image">The source <see cref="Image"/> instance.</param>
+    public static Stream ToStream(this Image image)
     {
         var imageStream = new MemoryStream();
 

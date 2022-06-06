@@ -13,4 +13,5 @@
 - Accessibility checking can be done with [axe](https://github.com/dequelabs/axe-core) via [Selenium.Axe for .NET](https://github.com/TroyWalshProf/SeleniumAxeDotnet).
 - HTML markup validation can be done with [html-validate](https://gitlab.com/html-validate/html-validate) via [Atata.HtmlValidation](https://github.com/atata-framework/atata-htmlvalidation).
 - Monkey testing is implemented using [Gremlins.js](https://github.com/marmelab/gremlins.js/) library.
-- Visual verification is implemented using [ImageSharpCompare](https://github.com/Codeuctivity/ImageSharp.Compare/blob/1.2.11/README.md)
+- Visual verification is implemented using [ImageSharpCompare](https://github.com/Codeuctivity/ImageSharp.Compare/blob/1.2.11/README.md).
+- [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier) used to simplify stack trace, mainly around async methods.
