@@ -119,42 +119,60 @@ public static class VisualVerificationUITestContextExtensions
             throw new VisualVerificationAttributeNotFoundException();
         }
 
-        if (string.IsNullOrEmpty(testFrame.GetFileName()))
-        {
-            throw new SourceInformationNotAvailableException(
-                $"Source information not available, make sure you are compiling with full debug information."
-                + $"Frame: {testFrame.MethodInfo.DeclaringType.Name}.{testFrame.MethodInfo.Name}");
-        }
-
-        var moduleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
-        var moduleName = Path.GetFileNameWithoutExtension(testFrame.GetFileName());
+        var moduleName = testFrame.MethodInfo.DeclaringType.Name;
         var methodName = testFrame.MethodInfo.Name;
         var referenceFileName = configuration.ReferenceFileNameFormatter(moduleName, methodName);
-        var referenceImagePath = Path.Combine(moduleDirectory, $"{referenceFileName}.bmp");
 
-        if (!File.Exists(referenceImagePath))
+        // Try loading reference image from embedded resources first.
+        var referenceResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{referenceFileName}.bmp";
+        var referenceImage = testFrame.MethodInfo.DeclaringType.Assembly
+            .TryGetResourceBitmap(referenceResourceName);
+
+        if (referenceImage == null)
         {
-            using var suggestedImage = context.TakeElementScreenshot(element);
-            suggestedImage.Save(referenceImagePath, ImageFormat.Bmp);
+            // Then if no resource exists, try load reference image from source.
+            if (string.IsNullOrEmpty(testFrame.GetFileName()))
+            {
+                throw new SourceInformationNotAvailableException(
+                    $"Source information not available, make sure you are compiling with full debug information."
+                    + $"Frame: {testFrame.MethodInfo.DeclaringType.Name}.{testFrame.MethodInfo.Name}");
+            }
 
-            throw new VisualVerificationReferenceImageCreatedException(referenceImagePath);
+            var moduleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
+            var referenceImagePath = Path.Combine(moduleDirectory, $"{referenceFileName}.bmp");
+
+            if (!File.Exists(referenceImagePath))
+            {
+                using var suggestedImage = context.TakeElementScreenshot(element);
+                suggestedImage.Save(referenceImagePath, ImageFormat.Bmp);
+
+                throw new VisualVerificationReferenceImageCreatedException(referenceImagePath);
+            }
+
+            referenceImage = (Bitmap)Image.FromFile(referenceImagePath);
         }
 
-        using var referenceImage = (Bitmap)Image.FromFile(referenceImagePath);
-        context.ShouldVisualMatch(
-            element,
-            referenceImage,
-            comparator,
-            roi,
-            cfg => cfg.WithCroppedElementImageFileName(configuration.CroppedElementImageFileName)
-                .WithCroppedReferenceImageFileName(configuration.CroppedReferenceImageFileName)
-                .WithDiffImageFileName(configuration.DiffImageFileName)
-                .WithDiffLogFileName(configuration.DiffLogFileName)
-                .WithDumpFolderName(configuration.DumpFolderName)
-                .WithElementImageFileName(configuration.ElementImageFileName)
-                .WithFullScreenImageFileName(configuration.FullScreenImageFileName)
-                .WithReferenceImageFileName(configuration.ReferenceImageFileName)
-                .WithDumpFileNamePrefix(configuration.DumpFileNamePrefix));
+        try
+        {
+            context.ShouldVisualMatch(
+                element,
+                referenceImage,
+                comparator,
+                roi,
+                cfg => cfg.WithCroppedElementImageFileName(configuration.CroppedElementImageFileName)
+                    .WithCroppedReferenceImageFileName(configuration.CroppedReferenceImageFileName)
+                    .WithDiffImageFileName(configuration.DiffImageFileName)
+                    .WithDiffLogFileName(configuration.DiffLogFileName)
+                    .WithDumpFolderName(configuration.DumpFolderName)
+                    .WithElementImageFileName(configuration.ElementImageFileName)
+                    .WithFullScreenImageFileName(configuration.FullScreenImageFileName)
+                    .WithReferenceImageFileName(configuration.ReferenceImageFileName)
+                    .WithDumpFileNamePrefix(configuration.DumpFileNamePrefix));
+        }
+        finally
+        {
+            referenceImage?.Dispose();
+        }
     }
 
     /// <summary>
