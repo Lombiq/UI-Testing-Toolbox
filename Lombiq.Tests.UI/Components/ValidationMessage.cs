@@ -3,7 +3,7 @@ using Atata;
 namespace Lombiq.Tests.UI.Components;
 
 [ControlDefinition(
-    "div[contains(concat(' ', normalize-space(@class), ' '), ' form-group ')]" +
+    "div[contains(concat(' ', normalize-space(@class), ' '), ' mb-3 ')]" +
     "//span[contains(concat(' ', normalize-space(@class), ' '), ' field-validation-error ')]")]
 public class ValidationMessage<TOwner> : Text<TOwner>
     where TOwner : PageObject<TOwner>
