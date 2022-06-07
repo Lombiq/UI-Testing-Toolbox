@@ -1,4 +1,4 @@
-using Codeuctivity;
+using Codeuctivity.ImageSharpCompare;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
 using System.IO;

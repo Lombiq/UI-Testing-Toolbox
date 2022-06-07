@@ -1,4 +1,4 @@
-using Codeuctivity;
+using Codeuctivity.ImageSharpCompare;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
