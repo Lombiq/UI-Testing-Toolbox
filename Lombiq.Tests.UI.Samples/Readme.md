@@ -12,7 +12,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 ## Tutorial
 
 1. Be sure to read the [root Readme](../Readme.md) first to understand how the UI Testing Toolbox works and how you can use it with an Orchard Core app.
-2. The web app under test also needs a bit of configuration. For an example of this, check out [the `Startup` class of Lombiq's Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions/blob/dev/src/Lombiq.OSOCE.Web/Startup.cs). This project assumes it's running in that solution.
+2. The web app under test also needs a bit of configuration. For an example of this, check out [the `Program` class of Lombiq's Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions/blob/dev/src/Lombiq.OSOCE.Web/Program.cs). This project assumes it's running in that solution.
 3. Note that the project includes an _xunit.runner.json_ file. This is [xUnit's configuration file](https://xunit.net/docs/configuration-files). You don't necessarily need to include one if you're OK with [the default one](https://github.com/Lombiq/UI-Testing-Toolbox/blob/dev/Lombiq.Tests.UI/xunit.runner.json).
 4. Now that we have the basics out of the way start the tutorial in the [*GlobalSuppressions.cs*](GlobalSuppressions.cs) file.
 
