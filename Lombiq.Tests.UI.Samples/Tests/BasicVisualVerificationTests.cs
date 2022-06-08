@@ -20,7 +20,7 @@ public class BasicVisualVerificationTests : UITestBase
 
     // Checking that everything is OK with the branding of the navbar on the homepage.
     // For this magic we are using the ImageSharp.Compare package. You can find more info about it here:
-    // https://github.com/Codeuctivity/ImageSharp.Compare/blob/1.2.11/README.md.
+    // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/README.md.
     [Theory, Chrome, VisualVerification]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
@@ -42,7 +42,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // ImageSharpCompareException.
                 var cropRegion = new Rectangle(0, 0, 1400, 23);
 
-                context.ShouldVisualMatchApproved(navbarElementSelector, 8, cropRegion);
+                context.VisualAssertApproved(navbarElementSelector, 8, cropRegion);
             },
             browser);
 }

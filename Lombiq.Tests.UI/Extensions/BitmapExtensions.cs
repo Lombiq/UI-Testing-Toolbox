@@ -7,12 +7,6 @@ using System.IO;
 // So we import only Bitmap from System.Drawing here.
 using Bitmap = System.Drawing.Bitmap;
 
-// SixLabors.ImageSharp.Web v2.0.0 which depends on SixLabors.ImageSharp v2.1.1 will be introduced in Orchard in the
-// future.
-// See: https://github.com/OrchardCMS/OrchardCore/pull/11585
-// When it is done and we upgrade to the new version of OC in Lombiq.ChartJs.Samples, we should change from
-// ImageSharpCompare v1.2.11 to Codeuctivity.ImageSharpCompare v2.0.46 in this project
-
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class BitmapExtensions
