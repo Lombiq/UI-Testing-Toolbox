@@ -35,10 +35,10 @@ public class BasicVisualVerificationTests : UITestBase
                 var navbarElementSelector = By.ClassName("navbar-brand");
                 // We set the browser's window size, DPI, and scale settings explicitly to make the test environment
                 // similar on every platform, but we have no control over the fonts. In this case, the selected block
-                // element size, mainly height, is depends on the font used on a given platform.
+                // element size, mainly height, depends on the font used on a given platform.
                 // We don't know the exact size of the selected element, so we should select the interesting region for
-                // reference and be captured as bitmap, and use it at the end. Without cropping the reference and
-                // captured bitmap to the same size, the ImageSharpCompare.CalcDiff(...) throws an
+                // reference and captured it as a bitmap and use it at the end. Without cropping the reference and
+                // captured bitmap to the same size, ImageSharpCompare.CalcDiff(...) throws an
                 // ImageSharpCompareException.
                 var cropRegion = new Rectangle(0, 0, 1400, 23);
 
