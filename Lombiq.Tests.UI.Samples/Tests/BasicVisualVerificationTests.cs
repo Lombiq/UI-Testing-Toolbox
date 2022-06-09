@@ -47,4 +47,4 @@ public class BasicVisualVerificationTests : UITestBase
             browser);
 }
 
-// END OF TRAINING SECTION: Basic visual tests.
+// END OF TRAINING SECTION: Basic visual verification tests.
