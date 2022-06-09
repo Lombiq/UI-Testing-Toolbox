@@ -26,9 +26,9 @@ public class BasicVisualVerificationTests : UITestBase
         ExecuteTestAfterSetupAsync(
             context =>
             {
-                // Instead of using context.SetBrowserSize(...), witch is sets the outer size of the browsers window to
-                // the given size, we are using context.SetViewportSize(...) here. This is because the windows borders,
-                // toolbars, tabs and scroll bars usually have different sizes on different platforms/browsers, but we
+                // Instead of using context.SetBrowserSize(...), which sets the outer size of the browser's window to
+                // the given size, we are using context.SetViewportSize(...) here. This is because the window borders,
+                // toolbars, tabs, and scroll bars usually have different sizes on different platforms/browsers, but we
                 // want the same geometries of rendered content on all platforms.
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
 
