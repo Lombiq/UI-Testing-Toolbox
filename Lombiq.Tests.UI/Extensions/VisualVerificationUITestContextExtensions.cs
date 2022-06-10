@@ -46,7 +46,7 @@ public static class VisualVerificationUITestContextExtensions
         this UITestContext context,
         By elementSelector,
         double meanErrorPercentageThreshold,
-        Rectangle? roi = null,
+        Rectangle? regionOfInterest = null,
         Action<VisualMatchApprovedConfiguration> configurator = null) => context
         .VisualAssertApproved(
             elementSelector,
