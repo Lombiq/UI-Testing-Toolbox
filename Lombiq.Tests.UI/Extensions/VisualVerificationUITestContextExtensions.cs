@@ -495,7 +495,8 @@ calculated differences:
             if (!string.IsNullOrEmpty(loadedFrom))
             {
                 message
-                    .AppendLine()
+            .AppendLine()
+            .AppendLine("Visual verification failed since the asserted element looks different from the reference image.")
                     .AppendLine(
                         CultureInfo.InvariantCulture,
                         $"The reference image was loaded from {loadedFrom}.")
