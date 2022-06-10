@@ -1,6 +1,7 @@
 using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
+
 public class SourceInformationNotAvailableException : Exception
 {
     public SourceInformationNotAvailableException(string message)
