@@ -32,7 +32,22 @@ public static class NavigationWebElementExtensions
                     await context.Configuration.Events.BeforeClick
                         .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
 
-                    context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                    // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
+                    // "move target out of bounds" exception message. In this case it should be retried.
+                    const int maxTries = 3;
+                    var notFound = true;
+                    for (var i = 1; notFound && i <= maxTries; i++)
+                    {
+                        try
+                        {
+                            context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                            notFound = false;
+                        }
+                        catch (WebDriverException ex) when (i < maxTries && ex.Message.Contains("move target out of bounds"))
+                        {
+                            await Task.Delay(RetrySettings.Interval);
+                        }
+                    }
 
                     await context.Configuration.Events.AfterClick
                         .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
@@ -42,7 +57,7 @@ public static class NavigationWebElementExtensions
                         "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
                 {
                     throw new NotSupportedException(
-                        "For this element use the standard Click() method. Add the element as an exception to the documentation.");
+                        "For this element use the standard Click() method.");
                 }
             });
 
