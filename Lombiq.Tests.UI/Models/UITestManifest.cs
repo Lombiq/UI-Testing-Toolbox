@@ -12,18 +12,32 @@ namespace Lombiq.Tests.UI.Models;
 /// </summary>
 public class UITestManifest
 {
-    public ITestOutputHelper TestOutputHelper { get; }
     public ITest XunitTest { get; }
-    public string Name => XunitTest.DisplayName;
+    public string Name => XunitTest?.DisplayName;
     public Func<UITestContext, Task> TestAsync { get; set; }
 
     public UITestManifest(ITestOutputHelper testOutputHelper)
     {
-        TestOutputHelper = testOutputHelper;
+        var original = testOutputHelper;
 
-        XunitTest = testOutputHelper.GetType()
-            .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(field => field.FieldType == typeof(ITest))
-            ?.GetValue(testOutputHelper) as ITest;
+        do
+        {
+            XunitTest = GetValueOfType<ITest>(testOutputHelper);
+            if (XunitTest == null) testOutputHelper = GetValueOfType<ITestOutputHelper>(testOutputHelper);
+        }
+        while (XunitTest == null && testOutputHelper != null);
+
+        if (XunitTest == null)
+        {
+            throw new InvalidOperationException($"Unable to acquire the {original.GetType()}'s unit test.");
+        }
     }
+
+    private static T GetValueOfType<T>(object instance)
+        where T : class =>
+        instance
+            .GetType()
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+            .FirstOrDefault(field => field.FieldType == typeof(T))
+            ?.GetValue(instance) as T;
 }
