@@ -40,7 +40,3 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.Media.Cache",
     }
 )]
-
-
-
-
