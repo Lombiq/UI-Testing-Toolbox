@@ -15,7 +15,7 @@ public class VisualVerificationReferenceImageCreatedException : Exception
     public VisualVerificationReferenceImageCreatedException(string path, Exception innerException)
         : base(
             $"Reference image file not found, thus it was created automatically under the path {path}."
-            + " Please set it's \"Build action\" to \"Embedded resource\" if you want to deploy a self contained UI"
+            + " Please set its \"Build action\" to \"Embedded resource\" if you want to deploy a self-contained UI"
             + " testing assembly.",
             innerException)
     {
