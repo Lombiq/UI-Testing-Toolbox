@@ -17,6 +17,8 @@ public class GitHubAnnotationWriter
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(file);
 
+        // The workflow command uses commas to separate the arguments (see last line of this method) so if the file name
+        // contained a comma, the part after the comma would be chopped off.
         if (file.Contains(',')) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
 
         title ??= severity.ToString();
