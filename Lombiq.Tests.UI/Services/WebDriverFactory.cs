@@ -86,11 +86,10 @@ public static class WebDriverFactory
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return
-                new EdgeDriver(
-                        EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
-                        options)
-                    .SetCommonTimeouts(pageLoadTimeout);
+            var service = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path));
+            service.SuppressInitialDiagnosticInformation = true;
+
+            return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
     public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
