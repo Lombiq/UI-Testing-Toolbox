@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Models;
 
 /// <summary>
-/// Represents a failure dump item.
+/// Represents an item, including the corresponding file, that's in the test's failure dump.
 /// </summary>
 public interface IFailureDumpItem : IDisposable
 {
