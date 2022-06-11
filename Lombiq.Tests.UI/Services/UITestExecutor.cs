@@ -32,11 +32,6 @@ public static class UITestExecutor
             throw new ArgumentException($"{nameof(configuration.OrchardCoreConfiguration)} should be provided.");
         }
 
-        return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration);
-    }
-
-    private static async Task ExecuteOrchardCoreTestInnerAsync(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
-    {
         configuration.TestOutputHelper.WriteLine(
             "NOTE: This log is cumulative for all test execution attempts. If the test fails repeatedly with " +
             "retries then Attempt 0's output will contain only that execution's output, but Attempt 2's will " +
@@ -63,6 +58,14 @@ public static class UITestExecutor
             }
         }
 
+        return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration, dumpRootPath);
+    }
+
+    private static async Task ExecuteOrchardCoreTestInnerAsync(
+        UITestManifest testManifest,
+        OrchardCoreUITestExecutorConfiguration configuration,
+        string dumpRootPath)
+    {
         var retryCount = 0;
         var passed = false;
         while (!passed)
@@ -81,6 +84,18 @@ public static class UITestExecutor
             {
                 configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                     $"Unhandled exception during text execution: {ex}.");
+            }
+            catch (Exception ex)
+            {
+                // When the last try failed.
+
+                if (GitHubActionsGroupingTestOutputHelper.IsGitHubEnvironment.Value)
+                {
+                    new GitHubAnnotationWriter(configuration.TestOutputHelper)
+                        .ErrorInTest(ex, testManifest.XunitTest.TestCase);
+                }
+
+                throw;
             }
             finally
             {

@@ -55,6 +55,7 @@ public static class WebDriverFactory
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
             chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
+            chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
             chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
             if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
 
@@ -92,11 +93,10 @@ public static class WebDriverFactory
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return
-                new EdgeDriver(
-                        EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path)),
-                        options)
-                    .SetCommonTimeouts(pageLoadTimeout);
+            var service = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path));
+            service.SuppressInitialDiagnosticInformation = true;
+
+            return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
     public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)

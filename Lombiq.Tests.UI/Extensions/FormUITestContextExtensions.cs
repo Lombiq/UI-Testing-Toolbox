@@ -14,15 +14,15 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FormUITestContextExtensions
 {
-    public static Task ClickAndFillInWithRetriesAsync(
+    public static async Task ClickAndFillInWithRetriesAsync(
         this UITestContext context,
         By by,
         string text,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        context.Get(by).Click();
-        return context.FillInWithRetriesAsync(by, text, timeout, interval);
+        await context.ClickReliablyOnAsync(by);
+        await context.FillInWithRetriesAsync(by, text, timeout, interval);
     }
 
     public static Task ClickAndFillInWithRetriesUntilNotBlankAsync(
@@ -235,7 +235,7 @@ public static class FormUITestContextExtensions
             CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Finds the first submit button and clicks on it reliably.
+    /// Finds the first submit button (excluding any "Log off" buttons) and clicks on it reliably.
     /// </summary>
     public static Task ClickReliablyOnSubmitAsync(this UITestContext context) =>
         context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
