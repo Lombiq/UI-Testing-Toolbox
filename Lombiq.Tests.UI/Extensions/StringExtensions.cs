@@ -64,4 +64,10 @@ public static class StringExtensions
             .Join("_", text.Split(_invalidPathCharacters.Value))
             .Replace('.', '_')
             .Replace(' ', '-');
+
+    // Concatenates an array of strings, using the specified separator between each member. Empty or null strings are
+    // filtered out.
+    public static string JoinNotEmptySafe(this string[] strings, string separator = "") =>
+        string
+            .Join(separator, strings.Where(item => !string.IsNullOrEmpty(item)));
 }

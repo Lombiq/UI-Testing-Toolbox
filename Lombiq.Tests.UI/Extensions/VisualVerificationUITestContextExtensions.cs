@@ -13,170 +13,216 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class VisualVerificationUITestContextExtensions
 {
-    private const string ConditionLessThenOrEqual = "less then or equal to";
+    private const string ConditionLessThenOrEqualTo = "less than or equal to";
+
+    /// <summary>
+    /// Compares the reference image and screenshot of the whole page. The mean error percentage should be less than or
+    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>. The reference image is automatically
+    /// loaded from assembly resource, if it doesn't exist exists then from the project path based on
+    /// <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over <paramref name="configurator"/> -,
+    /// if the reference image doesn't exist, a new one will be created based on the element's screenshot, and an
+    /// <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The reference image path is
+    /// generated from the method name - annotated with <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file
+    /// name and path, where the method is.
+    /// </summary>
+    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
+    /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
+    /// If no reference image found under project path.
+    /// </exception>
+    [VisualVerificationApprovedMethod]
+    public static void AssertVisualVerificationApproved(
+        this UITestContext context,
+        double meanErrorPercentageThreshold,
+        Rectangle? regionOfInterest = null,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+            context.AssertVisualVerificationApproved(
+                By.TagName("body"),
+                meanErrorPercentageThreshold,
+                regionOfInterest,
+                configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The mean
-    /// error percentage should be less then or equal with the given <paramref name="meanErrorPercentageThreshold"/>.
-    /// The reference image is automatically loaded from assembly resource, if it's not exists then from the project
-    /// path based on <see cref="VisualMatchApprovedConfiguration"/> - it can be configured over
+    /// error percentage should be less than or equal to the given <paramref name="meanErrorPercentageThreshold"/>.
+    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
     /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageCreatedException"/> will be thrown. The
+    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
     /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationAttribute"/> - and the source file name and path, where the method is.
+    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageCreatedException">
+    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
     /// If no reference image found under project path.
     /// </exception>
-    /// <exception cref="VisualVerificationAttributeNotFoundException">
-    /// If no method found annotated with <see cref="VisualVerificationAttribute"/> in stacktrace.
-    /// </exception>
-    public static void VisualAssertApproved(
+    [VisualVerificationApprovedMethod]
+    public static void AssertVisualVerificationApproved(
         this UITestContext context,
         By elementSelector,
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchApprovedConfiguration> configurator = null) => context
-        .VisualAssertApproved(
-            elementSelector,
-            (approvedContext, diff) =>
-                AssertInternal(
-                    approvedContext,
-                    (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
-                    meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
-                    ConditionLessThenOrEqual),
-            roi,
-            configurator);
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+            context.AssertVisualVerificationApproved(
+                elementSelector,
+                (approvedContext, diff) =>
+                    AssertInternal(
+                        approvedContext,
+                        (actual, expected) => actual <= expected,
+                        diff.PixelErrorPercentage,
+                        meanErrorPercentageThreshold,
+                        nameof(diff.PixelErrorPercentage),
+                        ConditionLessThenOrEqualTo),
+                regionOfInterest,
+                configurator);
 
     /// <summary>
-    /// Compares the reference image and screenshot of the element. The mean error percentage should be less then or
-    /// equal with the given <paramref name="meanErrorPercentageThreshold"/>.
-    /// The reference image is automatically loaded from assembly resource, if it's not exists then from the project
-    /// path based on <see cref="VisualMatchApprovedConfiguration"/> - it can be configured over
+    /// Compares the reference image and screenshot of the element. The mean error percentage should be less than or
+    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>.
+    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
     /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageCreatedException"/> will be thrown. The
+    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
     /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationAttribute"/> - and the source file name and path, where the method is.
+    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
     /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageCreatedException">
+    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
     /// If no reference image found under project path.
     /// </exception>
-    /// <exception cref="VisualVerificationAttributeNotFoundException">
-    /// If no method found annotated with <see cref="VisualVerificationAttribute"/> in stacktrace.
-    /// </exception>
-    public static void VisualAssertApproved(
+    [VisualVerificationApprovedMethod]
+    public static void AssertVisualVerificationApproved(
         this UITestContext context,
         IWebElement element,
         double meanErrorPercentageThreshold,
-        Rectangle? roi = null,
-        Action<VisualMatchApprovedConfiguration> configurator = null) => context
-        .VisualAssertApproved(
-            element,
-            (approvedContext, diff) =>
-                AssertInternal(
-                    approvedContext,
-                    (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
-                    meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
-                    ConditionLessThenOrEqual),
-            roi,
-            configurator);
+        Rectangle? regionOfInterest = null,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+            context.AssertVisualVerificationApproved(
+                element,
+                (approvedContext, diff) =>
+                    AssertInternal(
+                        approvedContext,
+                        (actual, expected) => actual <= expected,
+                        diff.PixelErrorPercentage,
+                        meanErrorPercentageThreshold,
+                        nameof(diff.PixelErrorPercentage),
+                        ConditionLessThenOrEqualTo),
+                regionOfInterest,
+                configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>.
-    /// The reference image is automatically loaded from assembly resource, if it's not exists then from the project
-    /// path based on <see cref="VisualMatchApprovedConfiguration"/> - it can be configured over
+    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
     /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageCreatedException"/> will be thrown. The
+    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
     /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationAttribute"/> - and the source file name and path, where the method is.
+    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageCreatedException">
+    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
     /// If no reference image found under project path.
     /// </exception>
-    /// <exception cref="VisualVerificationAttributeNotFoundException">
-    /// If no method found annotated with <see cref="VisualVerificationAttribute"/> in stacktrace.
-    /// </exception>
-    private static void VisualAssertApproved(
+    [VisualVerificationApprovedMethod]
+    private static void AssertVisualVerificationApproved(
         this UITestContext context,
         By elementSelector,
-        Action<VisualMatchApprovedContext, ICompareResult> comparator,
-        Rectangle? roi = null,
-        Action<VisualMatchApprovedConfiguration> configurator = null) => context
-        .VisualAssertApproved(context.Get(elementSelector), comparator, roi, configurator);
+        Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
+        Rectangle? regionOfInterest = null,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+            context.AssertVisualVerificationApproved(
+                context.Get(elementSelector),
+                comparator,
+                regionOfInterest,
+                configuration =>
+                {
+                    configurator?.Invoke(configuration);
+                    configuration.WithFileNameSuffix(
+                        new[]
+                        {
+                            elementSelector.ToString().MakeFileSystemFriendly(),
+                            configuration.FileNameSuffix,
+                        }
+                        .JoinNotEmptySafe("-")
+                    );
+                });
 
     /// <summary>
     /// Compares the reference image and screenshot of the element.
-    /// The reference image is automatically loaded from assembly resource, if it's not exists then from the project
-    /// path based on <see cref="VisualMatchApprovedConfiguration"/> - it can be configured over
+    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
     /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageCreatedException"/> will be thrown. The
+    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
     /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationAttribute"/> - and the source file name and path, where the method is.
+    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
     /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageCreatedException">
+    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
     /// If no reference image found under project path.
     /// </exception>
-    /// <exception cref="VisualVerificationAttributeNotFoundException">
-    /// If no method found annotated with <see cref="VisualVerificationAttribute"/> in stacktrace.
-    /// </exception>
-    private static void VisualAssertApproved(
+    [VisualVerificationApprovedMethod]
+    private static void AssertVisualVerificationApproved(
         this UITestContext context,
         IWebElement element,
-        Action<VisualMatchApprovedContext, ICompareResult> comparator,
-        Rectangle? roi = null,
-        Action<VisualMatchApprovedConfiguration> configurator = null)
+        Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
+        Rectangle? regionOfInterest = null,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
     {
-        var configuration = new VisualMatchApprovedConfiguration();
+        var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);
 
-        var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true));
+        var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
+            .Where(frame => !IsCompilerGenerated(frame));
         var testFrame = stackTrace
-            .FirstOrDefault(frame =>
-                frame.MethodInfo.MethodBase.CustomAttributes
-                    .Any(attribute => attribute.AttributeType == typeof(VisualVerificationAttribute)));
+            .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
+
+        if (testFrame != null && configuration.StackOffset > 0)
+        {
+            testFrame = stackTrace
+                .Reverse()
+                .TakeWhile(frame => frame.MethodInfo.MethodBase != testFrame.MethodInfo.MethodBase)
+                .TakeLast(configuration.StackOffset)
+                .FirstOrDefault();
+        }
 
         if (testFrame == null)
         {
-            throw new VisualVerificationAttributeNotFoundException();
+            throw new VisualVerificationCallerMethodNotFoundException();
         }
 
-        var approvedContext = new VisualMatchApprovedContext
+        var approvedContext = new VisualVerificationMatchApprovedContext
         {
             ModuleName = testFrame.MethodInfo.DeclaringType.Name,
             MethodName = testFrame.MethodInfo.Name,
         };
 
         approvedContext.ReferenceFileName = configuration.ReferenceFileNameFormatter(
+            configuration,
             approvedContext.ModuleName,
             approvedContext.MethodName);
 
@@ -190,7 +236,7 @@ public static class VisualVerificationUITestContextExtensions
             // Then if no resource exists, try load reference image from source.
             if (string.IsNullOrEmpty(testFrame.GetFileName()))
             {
-                throw new SourceInformationNotAvailableException(
+                throw new VisualVerificationSourceInformationNotAvailableException(
                     $"Source information not available, make sure you are compiling with full debug information."
                     + $"Frame: {testFrame.MethodInfo.DeclaringType.Name}.{testFrame.MethodInfo.Name}");
             }
@@ -205,7 +251,7 @@ public static class VisualVerificationUITestContextExtensions
                 using var suggestedImage = context.TakeElementScreenshot(element);
                 suggestedImage.Save(approvedContext.ReferenceImagePath, ImageFormat.Bmp);
 
-                throw new VisualVerificationReferenceImageCreatedException(approvedContext.ReferenceImagePath);
+                throw new VisualVerificationReferenceImageNotFoundException(approvedContext.ReferenceImagePath);
             }
 
             referenceImage = (Bitmap)Image.FromFile(approvedContext.ReferenceImagePath);
@@ -213,11 +259,11 @@ public static class VisualVerificationUITestContextExtensions
 
         try
         {
-            context.VisualAssert(
+            context.AssertVisualVerification(
                 element,
                 referenceImage,
                 diff => comparator(approvedContext, diff),
-                roi,
+                regionOfInterest,
                 cfg => cfg.WithCroppedElementImageFileName(configuration.CroppedElementImageFileName)
                     .WithCroppedReferenceImageFileName(configuration.CroppedReferenceImageFileName)
                     .WithDiffImageFileName(configuration.DiffImageFileName)
@@ -226,7 +272,8 @@ public static class VisualVerificationUITestContextExtensions
                     .WithElementImageFileName(configuration.ElementImageFileName)
                     .WithFullScreenImageFileName(configuration.FullScreenImageFileName)
                     .WithReferenceImageFileName(configuration.ReferenceImageFileName)
-                    .WithDumpFileNamePrefix(configuration.DumpFileNamePrefix));
+                    .WithFileNamePrefix(approvedContext.ReferenceFileName)
+                    .WithFileNameSuffix(string.Empty));
         }
         finally
         {
@@ -235,23 +282,45 @@ public static class VisualVerificationUITestContextExtensions
     }
 
     /// <summary>
+    /// Compares the reference image and screenshot of the whole page. The mean error percentage should be less than or
+    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
+    /// <param name="reference">Reference image.</param>
+    /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    public static void AssertVisualVerification(
+        this UITestContext context,
+        Bitmap reference,
+        double meanErrorPercentageThreshold,
+        Rectangle? regionOfInterest = null,
+        Action<VisualMatchConfiguration> configurator = null) => context
+        .AssertVisualVerification(
+            By.TagName("body"),
+            reference,
+            meanErrorPercentageThreshold,
+            regionOfInterest,
+            configurator);
+
+    /// <summary>
     /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The mean
-    /// error percentage should be less then or equal with the given <paramref name="meanErrorPercentageThreshold"/>.
+    /// error percentage should be less than or equal to the given <paramref name="meanErrorPercentageThreshold"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="reference">Reference image.</param>
     /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    public static void VisualAssert(
+    public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
         Bitmap reference,
         double meanErrorPercentageThreshold,
-        Rectangle? roi = null,
+        Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) => context
-        .VisualAssert(
+        .AssertVisualVerification(
             elementSelector,
             reference,
             diff =>
@@ -260,28 +329,39 @@ public static class VisualVerificationUITestContextExtensions
                     diff.PixelErrorPercentage,
                     meanErrorPercentageThreshold,
                     nameof(diff.PixelErrorPercentage),
-                    ConditionLessThenOrEqual),
-            roi,
-            configurator);
+                    ConditionLessThenOrEqualTo),
+            regionOfInterest,
+            configuration =>
+            {
+                configurator?.Invoke(configuration);
+                configuration.WithFileNameSuffix(
+                    new[]
+                    {
+                            elementSelector.ToString().MakeFileSystemFriendly(),
+                            configuration.FileNameSuffix,
+                    }
+                    .JoinNotEmptySafe("-")
+                );
+            });
 
     /// <summary>
-    /// Compares the reference image and screenshot of the element. The mean error percentage should be less then or
-    /// equal with the given <paramref name="meanErrorPercentageThreshold"/>.
+    /// Compares the reference image and screenshot of the element. The mean error percentage should be less than or
+    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
     /// <param name="reference">Reference image.</param>
     /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    public static void VisualAssert(
+    public static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
         Bitmap reference,
         double meanErrorPercentageThreshold,
-        Rectangle? roi = null,
+        Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) => context
-        .VisualAssert(
+        .AssertVisualVerification(
             element,
             reference,
             diff =>
@@ -290,8 +370,8 @@ public static class VisualVerificationUITestContextExtensions
                     diff.PixelErrorPercentage,
                     meanErrorPercentageThreshold,
                     nameof(diff.PixelErrorPercentage),
-                    ConditionLessThenOrEqual),
-            roi,
+                    ConditionLessThenOrEqualTo),
+            regionOfInterest,
             configurator);
 
     /// <summary>
@@ -301,16 +381,16 @@ public static class VisualVerificationUITestContextExtensions
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="reference">Reference image.</param>
     /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    private static void VisualAssert(
+    private static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
         Bitmap reference,
         Action<ICompareResult> comparator,
-        Rectangle? roi = null,
+        Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) => context
-        .VisualAssert(context.Get(elementSelector), reference, comparator, roi, configurator);
+        .AssertVisualVerification(context.Get(elementSelector), reference, comparator, regionOfInterest, configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element.
@@ -319,20 +399,20 @@ public static class VisualVerificationUITestContextExtensions
     /// <param name="element">Target element.</param>
     /// <param name="reference">Reference image.</param>
     /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="roi">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    private static void VisualAssert(
+    private static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
         Bitmap reference,
         Action<ICompareResult> comparator,
-        Rectangle? roi = null,
+        Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null)
     {
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
 
-        var cropRegion = roi ?? new Rectangle(0, 0, reference.Width, reference.Height);
+        var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
 
         // We take a screenshot and append it to the failure dump.
         var fullScreenImage = context.TakeScreenshot()
@@ -340,7 +420,13 @@ public static class VisualVerificationUITestContextExtensions
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.FullScreenImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.FullScreenImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             fullScreenImage);
 
         // We take a screenshot of the element area. This will be compared to a reference image.
@@ -351,7 +437,13 @@ public static class VisualVerificationUITestContextExtensions
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.ElementImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.ElementImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             elementImage.Clone());
 
         // Checking the size of captured image.
@@ -366,26 +458,44 @@ public static class VisualVerificationUITestContextExtensions
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.ReferenceImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.ReferenceImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             referenceImage.Clone());
 
-        // Here we crop the RoI.
+        // Here we crop the regionOfInterest.
         referenceImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
         elementImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
 
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.CroppedReferenceImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.CroppedReferenceImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             referenceImage.Clone());
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.CroppedElementImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.CroppedElementImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             elementImage.Clone());
 
         // At this point, we have reference and captured images too.
-        // Creating diff image is not required, but it can be very useful to investigate failing tests.
+        // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
         // So lets create it and append it to failure dump.
@@ -396,7 +506,13 @@ public static class VisualVerificationUITestContextExtensions
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.DiffImageFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.DiffImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             diffImage);
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
@@ -409,7 +525,13 @@ public static class VisualVerificationUITestContextExtensions
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
-                $"{configuration.DumpFileNamePrefix ?? string.Empty}{configuration.DiffLogFileName}"),
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    configuration.DiffLogFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotEmptySafe("-")),
             @"
 calculated differences:
     absoluteError={0},
@@ -425,7 +547,7 @@ calculated differences:
     }
 
     private static void AssertInternal<TValue>(
-        VisualMatchApprovedContext approvedContext,
+        VisualVerificationMatchApprovedContext approvedContext,
         Func<TValue, TValue, bool> comparer,
         TValue actual,
         TValue expected,
@@ -437,7 +559,7 @@ calculated differences:
             return;
         }
 
-        throw new VisualVerificationAssertedException(
+        throw new VisualVerificationAssertionException(
             FormatAssertionMessage(
                 approvedContext,
                 actual,
@@ -458,7 +580,7 @@ calculated differences:
             return;
         }
 
-        throw new VisualVerificationAssertedException(
+        throw new VisualVerificationAssertionException(
             FormatAssertionMessage(
                 approvedContext: null,
                 actual,
@@ -468,7 +590,7 @@ calculated differences:
     }
 
     private static string FormatAssertionMessage<TValue>(
-        VisualMatchApprovedContext approvedContext,
+        VisualVerificationMatchApprovedContext approvedContext,
         TValue actual,
         TValue expected,
         string propertyName,
@@ -507,4 +629,10 @@ calculated differences:
 
         return message.ToString();
     }
+
+    private static bool IsVisualVerificationMethod(EnhancedStackFrame frame) =>
+        frame.MethodInfo.MethodBase.IsDefined(typeof(VisualVerificationApprovedMethodAttribute), inherit: true);
+
+    private static bool IsCompilerGenerated(EnhancedStackFrame frame) =>
+        frame.MethodInfo.MethodBase.IsDefined(typeof(CompilerGeneratedAttribute), inherit: true);
 }

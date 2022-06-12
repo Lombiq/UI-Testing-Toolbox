@@ -1,6 +1,6 @@
 namespace Lombiq.Tests.UI.Models;
 
-public record VisualMatchApprovedContext
+public record VisualVerificationMatchApprovedContext
 {
     public string ModuleName { get; set; }
     public string MethodName { get; set; }

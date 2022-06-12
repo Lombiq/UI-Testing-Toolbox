@@ -1,7 +1,7 @@
 namespace Lombiq.Tests.UI.Models;
 
-public class VisualMatchConfiguration<TSelf>
-    where TSelf : VisualMatchConfiguration<TSelf>
+public class VisualVerificationMatchConfiguration<TSelf>
+    where TSelf : VisualVerificationMatchConfiguration<TSelf>
 {
     /// <summary>
     /// Sets <see cref="DumpFolderName"/>.
@@ -92,12 +92,23 @@ public class VisualMatchConfiguration<TSelf>
     }
 
     /// <summary>
-    /// Sets <see cref="DumpFileNamePrefix"/>.
+    /// Sets <see cref="FileNamePrefix"/>.
     /// </summary>
-    /// <param name="value">The prefix applied for all file names in the failure dump.</param>
-    public TSelf WithDumpFileNamePrefix(string value)
+    /// <param name="value">The prefix applied for all file names.</param>
+    public TSelf WithFileNamePrefix(string value)
     {
-        DumpFileNamePrefix = value;
+        FileNamePrefix = value;
+
+        return (TSelf)this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="FileNameSuffix"/>.
+    /// </summary>
+    /// <param name="value">The suffix applied for all file names.</param>
+    public TSelf WithFileNameSuffix(string value)
+    {
+        FileNameSuffix = value;
 
         return (TSelf)this;
     }
@@ -143,9 +154,14 @@ public class VisualMatchConfiguration<TSelf>
     public string DiffLogFileName { get; private set; } = "Diff.log";
 
     /// <summary>
-    /// Gets the prefix applied for all file names in the failure dump.
+    /// Gets the prefix applied for all file names.
     /// </summary>
-    public string DumpFileNamePrefix { get; private set; }
+    public string FileNamePrefix { get; private set; }
+
+    /// <summary>
+    /// Gets the suffix applied for all file names.
+    /// </summary>
+    public string FileNameSuffix { get; private set; }
 }
 
-public class VisualMatchConfiguration : VisualMatchConfiguration<VisualMatchConfiguration> { }
+public class VisualMatchConfiguration : VisualVerificationMatchConfiguration<VisualMatchConfiguration> { }

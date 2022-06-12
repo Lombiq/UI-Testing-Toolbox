@@ -10,8 +10,8 @@ namespace Lombiq.Tests.UI.Models;
 public interface IFailureDumpItem : IDisposable
 {
     /// <summary>
-    /// Return a <see cref="Stream"/> associated to failure dump item.
+    /// Gets the <see cref="Stream"/> associated to failure dump item.
     /// </summary>
-    /// <returns><see cref="Stream"/>.</returns>
+    /// <returns>The <see cref="Stream"/> associated to failure dump item.</returns>
     Task<Stream> GetStreamAsync();
 }

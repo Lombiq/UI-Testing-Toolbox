@@ -1,6 +1,7 @@
 using Codeuctivity.ImageSharpCompare;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.Processing;
 using System.IO;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -34,12 +35,8 @@ public static class ImageSharpImageExtensions
     /// </summary>
     /// <param name="image">The source <see cref="Image"/> instance.</param>
     /// <returns>Cloned <see cref="Image"/> instance.</returns>
-    public static Image Clone(this Image image)
-    {
-        using var imageStream = image.ToStream();
-
-        return Image.Load(imageStream);
-    }
+    public static Image Clone(this Image image) =>
+        image.Clone(processingContext => { });
 
     /// <summary>
     /// Converts the <see cref="Image"/> to <see cref="Stream"/>.
