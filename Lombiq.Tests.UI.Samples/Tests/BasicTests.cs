@@ -153,7 +153,7 @@ public class BasicTests : UITestBase
             {
                 await context.SignInDirectlyAsync();
                 await context.GoToHomePageAsync();
-                await context.GoToRelativeUrlAsync("dasjnkashadkla");
+                await context.GoToRelativeUrlAsync("dasjnkashadklaas");
             },
             browser);
 }
