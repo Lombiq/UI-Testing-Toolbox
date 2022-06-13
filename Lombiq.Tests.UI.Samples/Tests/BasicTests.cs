@@ -145,6 +145,17 @@ public class BasicTests : UITestBase
                 appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
             },
             browser);
+
+    [Theory, Chrome]
+    public Task IntentionalException(Browser browser) =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                await context.SignInDirectlyAsync();
+                await context.GoToHomePageAsync();
+                await context.GoToRelativeUrlAsync("dasjnkashadkla");
+            },
+            browser);
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.
