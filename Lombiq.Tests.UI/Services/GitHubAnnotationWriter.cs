@@ -1,6 +1,4 @@
-﻿using Lombiq.Tests.UI.Models;
-using Microsoft.Extensions.Logging;
-using Octokit;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -11,18 +9,17 @@ namespace Lombiq.Tests.UI.Services;
 public class GitHubAnnotationWriter
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly GitHubConfiguration _gitHubConfiguration;
 
-    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-        _gitHubConfiguration = TestConfigurationManager.GetConfiguration<GitHubConfiguration>();
-    }
+    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
     public void Annotate(LogLevel severity, string title, string message, string file, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(file);
+
+        // The workflow command uses commas to separate the arguments (see last line of this method) so if the file name
+        // contained a comma, the part after the comma would be chopped off.
+        if (file.Contains(',')) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
 
         title ??= severity.ToString();
 
@@ -38,15 +35,14 @@ public class GitHubAnnotationWriter
                 $"Only {nameof(LogLevel.Information)} - {nameof(LogLevel.Critical)} are valid."),
         };
 
-        var client = new GitHubClient(
-            new ProductHeaderValue(_gitHubConfiguration.RepositoryName),
-            GitHubClient.GitHubApiUrl);
-        if (!string.IsNullOrEmpty(_gitHubConfiguration.Token))
-        {
-            client.Credentials = new Credentials(_gitHubConfiguration.Token);
-        }
+        // We replace commas with reversed commas and double colons with the squared four dots character to avoid
+        // conflicts with the command parser. These are reasonably similar to carry the meaning, yet distinct enough to
+        // avoid misleading the reader. (For example if we replaced colons with "Armenian full stop" that looks
+        // identical, the user would have no idea why copying the output to a search yields no results when it should.)
+        title = title.Replace(',', '⹁').Replace("::", "⸬");
 
-        // client.Check.Run.Update(_gitHubConfiguration.RepositoryName)
+        // Sanitize message:
+        message = message.Replace("\r", string.Empty).Replace("\n", " ");
 
         _testOutputHelper.WriteLine(FormattableString.Invariant(
             $"::{command} file={file},line={line},title={title}::{message}"));
