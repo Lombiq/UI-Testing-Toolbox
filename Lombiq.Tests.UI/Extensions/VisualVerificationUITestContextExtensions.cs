@@ -130,23 +130,6 @@ to customize the name of dump item.";
                 regionOfInterest,
                 configurator);
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>.
-    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
-    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
-    /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="elementSelector">Selector for the target element.</param>
-    /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
-    /// If no reference image found under project path.
-    /// </exception>
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
         this UITestContext context,
@@ -171,23 +154,6 @@ to customize the name of dump item.";
                     );
                 });
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element.
-    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
-    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
-    /// reference image path is generated from the method name - annotated with
-    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="element">Target element.</param>
-    /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
-    /// If no reference image found under project path.
-    /// </exception>
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
         this UITestContext context,
@@ -284,15 +250,6 @@ to customize the name of dump item.";
         }
     }
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the whole page. The mean error percentage should be less than or
-    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="reference">Reference image.</param>
-    /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         Bitmap reference,
@@ -306,16 +263,6 @@ to customize the name of dump item.";
             regionOfInterest,
             configurator);
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The mean
-    /// error percentage should be less than or equal to the given <paramref name="meanErrorPercentageThreshold"/>.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="elementSelector">Selector for the target element.</param>
-    /// <param name="reference">Reference image.</param>
-    /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
@@ -347,16 +294,6 @@ to customize the name of dump item.";
                 );
             });
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element. The mean error percentage should be less than or
-    /// equal to the given <paramref name="meanErrorPercentageThreshold"/>.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="element">Target element.</param>
-    /// <param name="reference">Reference image.</param>
-    /// <param name="meanErrorPercentageThreshold">Maximum acceptable mean error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
@@ -377,15 +314,6 @@ to customize the name of dump item.";
             regionOfInterest,
             configurator);
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="elementSelector">Selector for the target element.</param>
-    /// <param name="reference">Reference image.</param>
-    /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     private static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
@@ -400,15 +328,6 @@ to customize the name of dump item.";
             regionOfInterest,
             configurator);
 
-    /// <summary>
-    /// Compares the reference image and screenshot of the element.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="element">Target element.</param>
-    /// <param name="reference">Reference image.</param>
-    /// <param name="comparator">To validate the comparison result.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     private static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
