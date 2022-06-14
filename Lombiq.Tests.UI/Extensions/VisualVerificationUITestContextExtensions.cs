@@ -1,5 +1,6 @@
 using Codeuctivity.ImageSharpCompare;
 using Lombiq.Tests.UI.Attributes;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
@@ -233,15 +234,7 @@ to customize the name of dump item.";
                 referenceImage,
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
-                cfg => cfg.WithCroppedElementImageFileName(configuration.CroppedElementImageFileName)
-                    .WithCroppedReferenceImageFileName(configuration.CroppedReferenceImageFileName)
-                    .WithDiffImageFileName(configuration.DiffImageFileName)
-                    .WithDiffLogFileName(configuration.DiffLogFileName)
-                    .WithDumpFolderName(configuration.DumpFolderName)
-                    .WithElementImageFileName(configuration.ElementImageFileName)
-                    .WithFullScreenImageFileName(configuration.FullScreenImageFileName)
-                    .WithReferenceImageFileName(configuration.ReferenceImageFileName)
-                    .WithFileNamePrefix(approvedContext.ReferenceFileName)
+                cfg => cfg.WithFileNamePrefix(approvedContext.ReferenceFileName)
                     .WithFileNameSuffix(string.Empty));
         }
         finally
@@ -346,11 +339,11 @@ to customize the name of dump item.";
             .ToBitmap();
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.FullScreenImageFileName,
+                    VisualVerificationMatchNames.FullScreenImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -364,11 +357,11 @@ to customize the name of dump item.";
 
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.ElementImageFileName,
+                    VisualVerificationMatchNames.ElementImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -386,11 +379,11 @@ to customize the name of dump item.";
 
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.ReferenceImageFileName,
+                    VisualVerificationMatchNames.ReferenceImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -403,11 +396,11 @@ to customize the name of dump item.";
 
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.CroppedReferenceImageFileName,
+                    VisualVerificationMatchNames.CroppedReferenceImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -415,11 +408,11 @@ to customize the name of dump item.";
             messageIfExists: HintFailureDumpItemAlreadyExists);
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.CroppedElementImageFileName,
+                    VisualVerificationMatchNames.CroppedElementImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -437,11 +430,11 @@ to customize the name of dump item.";
 
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.DiffImageFileName,
+                    VisualVerificationMatchNames.DiffImageFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
@@ -457,11 +450,11 @@ to customize the name of dump item.";
 
         context.AppendFailureDump(
             Path.Combine(
-                configuration.DumpFolderName,
+                VisualVerificationMatchNames.DumpFolderName,
                 new[]
                 {
                     configuration.FileNamePrefix,
-                    configuration.DiffLogFileName,
+                    VisualVerificationMatchNames.DiffLogFileName,
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
