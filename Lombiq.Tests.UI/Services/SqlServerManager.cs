@@ -3,7 +3,6 @@ using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Dmf;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FailedOperationException = Microsoft.SqlServer.Management.Smo.FailedOperationException;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -122,7 +120,7 @@ public sealed class SqlServerManager : IDisposable
         var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
         var directoryPathLocal =
             Path.GetDirectoryName(filePathLocal) ??
-            throw new InvalidOperandException($"Failed to get the directory path for local path \"{filePathLocal}\".");
+            throw new InvalidOperationException($"Failed to get the directory path for local path \"{filePathLocal}\".");
 
         FileSystemHelper.EnsureDirectoryExists(directoryPathLocal);
         if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
