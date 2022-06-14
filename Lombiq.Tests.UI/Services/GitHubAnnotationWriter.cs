@@ -1,15 +1,12 @@
 ﻿using Lombiq.Tests.UI.Models;
 using Microsoft.Extensions.Logging;
-using Octokit;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using FileMode = System.IO.FileMode;
 
 namespace Lombiq.Tests.UI.Services;
 
