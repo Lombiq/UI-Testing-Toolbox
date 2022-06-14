@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -60,5 +61,31 @@ public static class ResponsivenessUITestContextExtensions
             Width = size.Width + Convert.ToInt32(paddings[0], CultureInfo.InvariantCulture),
             Height = size.Height + Convert.ToInt32(paddings[1], CultureInfo.InvariantCulture),
         });
+    }
+
+    /// <summary>
+    /// Gets the inner size of the browser window.
+    /// </summary>
+    public static Size GetViewportSize(this UITestContext context)
+    {
+        var innerSize = (ReadOnlyCollection<object>)context.ExecuteScript(
+            "return [window.innerWidth, window.innerHeight];");
+
+        return new Size(
+            Convert.ToInt32(innerSize[0], CultureInfo.InvariantCulture),
+            Convert.ToInt32(innerSize[1], CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Gets the client size of the element.
+    /// </summary>
+    public static Size GetClientSize(this UITestContext context, IWebElement element)
+    {
+        var clientSize = (ReadOnlyCollection<object>)context.ExecuteScript(
+            "return [arguments[0].clientWidth, arguments[0].clientHeight];", element);
+
+        return new Size(
+            Convert.ToInt32(clientSize[0], CultureInfo.InvariantCulture),
+            Convert.ToInt32(clientSize[1], CultureInfo.InvariantCulture));
     }
 }

@@ -224,6 +224,32 @@ public static class ReliabilityUITestContextExtensions
         return lastHash;
     }
 
+    /// <summary>
+    /// Waits until the scrolling to be ready.
+    /// </summary>
+    /// <param name="timeout">Timeout of the operation.</param>
+    /// <param name="interval">Time between retries.</param>
+    public static void WaitScrollToNotChange(
+        this UITestContext context,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var lastScrollPosition = context.GetScrollPosition();
+        context.DoWithRetriesOrFail(
+            () =>
+            {
+                var currentScrollPosition = context.GetScrollPosition();
+
+                var ready = lastScrollPosition == currentScrollPosition;
+
+                lastScrollPosition = currentScrollPosition;
+
+                return ready;
+            },
+            timeout,
+            interval);
+    }
+
     private static TimeSpan GetExistsTimeout(UITestContext context, TimeSpan? timeout) =>
         // The timeout for this existence check needs to be significantly smaller than the timeout of the whole retry
         // logic so actually multiple tries can happen.

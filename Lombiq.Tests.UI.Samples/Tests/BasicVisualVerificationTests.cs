@@ -47,6 +47,19 @@ public class BasicVisualVerificationTests : UITestBase
                 context.AssertVisualVerificationApproved(navbarElementSelector, 8, cropRegion);
             },
             browser);
+
+    // Checking that everything is OK with the homepage, just for fun.
+    [Theory, Chrome]
+    public Task VerifyHomePage(Browser browser) =>
+        ExecuteTestAfterSetupAsync(
+            context =>
+            {
+                context.SetViewportSize(CommonDisplayResolutions.HdPlus);
+
+                // Here we need only the error percentage and the region of interest to validate the whole page.
+                context.AssertVisualVerificationApproved(8, new Rectangle(0, 0, 1583, 1770));
+            },
+            browser);
 }
 
 // END OF TRAINING SECTION: Basic visual verification tests.

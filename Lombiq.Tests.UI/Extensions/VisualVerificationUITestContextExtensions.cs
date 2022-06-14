@@ -197,7 +197,7 @@ public static class VisualVerificationUITestContextExtensions
         configurator?.Invoke(configuration);
 
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
-            .Where(frame => !IsCompilerGenerated(frame));
+            .Where(frame => frame.MethodInfo.MethodBase != null && !IsCompilerGenerated(frame));
         var testFrame = stackTrace
             .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
 
@@ -295,8 +295,8 @@ public static class VisualVerificationUITestContextExtensions
         Bitmap reference,
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null) => context
-        .AssertVisualVerification(
+        Action<VisualMatchConfiguration> configurator = null) =>
+        context.AssertVisualVerification(
             By.TagName("body"),
             reference,
             meanErrorPercentageThreshold,
@@ -319,8 +319,8 @@ public static class VisualVerificationUITestContextExtensions
         Bitmap reference,
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null) => context
-        .AssertVisualVerification(
+        Action<VisualMatchConfiguration> configurator = null) =>
+        context.AssertVisualVerification(
             elementSelector,
             reference,
             diff =>
@@ -360,8 +360,8 @@ public static class VisualVerificationUITestContextExtensions
         Bitmap reference,
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null) => context
-        .AssertVisualVerification(
+        Action<VisualMatchConfiguration> configurator = null) =>
+        context.AssertVisualVerification(
             element,
             reference,
             diff =>
@@ -389,8 +389,13 @@ public static class VisualVerificationUITestContextExtensions
         Bitmap reference,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null) => context
-        .AssertVisualVerification(context.Get(elementSelector), reference, comparator, regionOfInterest, configurator);
+        Action<VisualMatchConfiguration> configurator = null) =>
+        context.AssertVisualVerification(
+            context.Get(elementSelector),
+            reference,
+            comparator,
+            regionOfInterest,
+            configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element.

@@ -1,12 +1,18 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Drawing;
+using WDSE;
+using WDSE.Decorators;
+using WDSE.ScreenshotMaker;
 
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class ScreenshotUITestContextExtensions
 {
+    private const int ScrollDelay = 1000;
+
     /// <summary>
     /// Takes a screenshot of the current browser tab and saves it under the given path.
     /// </summary>
@@ -24,11 +30,25 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
-        using var screenImage = context
-            .TakeScreenshot()
-            .ToBitmap();
+        var originalScrollPosition = context.GetScrollPosition();
 
-        return screenImage.Clone(new Rectangle(element.Location, element.Size), screenImage.PixelFormat);
+        try
+        {
+            var decorator = new VerticalCombineDecorator(new ScreenshotMaker())
+                .SetWaitAfterScrolling(TimeSpan.FromMilliseconds(ScrollDelay));
+            using var magickImage = context.Driver.TakeScreenshot(decorator)
+                .ToMagickImage();
+
+            magickImage.Crop(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
+
+            return magickImage
+                .ToBitmap();
+        }
+        finally
+        {
+            context.ScrollTo(originalScrollPosition);
+            context.WaitScrollToNotChange();
+        }
     }
 
     /// <summary>
