@@ -91,8 +91,12 @@ public static class UITestExecutor
 
                 if (GitHubActionsGroupingTestOutputHelper.IsGitHubEnvironment.Value)
                 {
-                    new GitHubAnnotationWriter(configuration.TestOutputHelper)
-                        .ErrorInTest(ex, testManifest.XunitTest.TestCase);
+                    var writer = new GitHubAnnotationWriter(configuration.TestOutputHelper);
+                    writer.ErrorInTest(ex, testManifest.XunitTest.TestCase);
+                    await writer.WriteToJobSummaryAsync(
+                        TestConfigurationManager.GetConfiguration<GitHubConfiguration>(),
+                        $"❌ Test \"{testManifest.Name}\" Failed! ({ex.GetType().Name})",
+                        $"Message: {ex.Message}\n\nThe links will go here.\n\nAnd Here\n\nAnd Here");
                 }
 
                 throw;

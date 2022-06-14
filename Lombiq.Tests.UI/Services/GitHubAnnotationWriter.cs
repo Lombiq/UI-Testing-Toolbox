@@ -1,8 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Lombiq.Tests.UI.Models;
+using Microsoft.Extensions.Logging;
+using Octokit;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
+using FileMode = System.IO.FileMode;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -46,6 +53,25 @@ public class GitHubAnnotationWriter
 
         _testOutputHelper.WriteLine(FormattableString.Invariant(
             $"::{command} file={file},line={line},title={title}::{message}"));
+    }
+
+    public async Task WriteToJobSummaryAsync(GitHubConfiguration configuration, string title, string markdownBody)
+    {
+        var summaryPath = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
+
+        await using var writer =
+            new StreamWriter(summaryPath, Encoding.UTF8, new FileStreamOptions { Mode = FileMode.Append });
+
+        await writer.WriteLineAsync($"## {title}");
+
+        await writer.WriteLineAsync($"- ACTIONS_RUNTIME_URL: {Environment.GetEnvironmentVariable("ACTIONS_RUNTIME_URL")}");
+        await writer.WriteLineAsync($"- ACTIONS_RUNTIME_TOKEN: {Environment.GetEnvironmentVariable("ACTIONS_RUNTIME_TOKEN")}");
+        await writer.WriteLineAsync($"- ACTIONS_CACHE_URL: {Environment.GetEnvironmentVariable("ACTIONS_CACHE_URL")}");
+        await writer.WriteLineAsync(Environment.NewLine + Environment.NewLine);
+
+        // Normalize line endings in the body before printing it.
+        await writer.WriteLineAsync(markdownBody.RegexReplace(@"\r?\n", Environment.NewLine));
+        await writer.WriteLineAsync(Environment.NewLine + Environment.NewLine);
     }
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
