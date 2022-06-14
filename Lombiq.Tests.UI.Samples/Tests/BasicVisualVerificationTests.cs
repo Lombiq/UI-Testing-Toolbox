@@ -57,7 +57,7 @@ public class BasicVisualVerificationTests : UITestBase
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
 
                 // Here we need only the error percentage and the region of interest to validate the whole page.
-                context.AssertVisualVerificationApproved(8, new Rectangle(0, 0, 1583, 1770));
+                context.AssertVisualVerificationApproved(48, new Rectangle(0, 0, 1583, 1770));
             },
             browser);
 }
