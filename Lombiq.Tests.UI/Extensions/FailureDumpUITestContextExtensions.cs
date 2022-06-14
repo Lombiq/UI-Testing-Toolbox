@@ -1,9 +1,9 @@
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,10 +25,12 @@ public static class FailureDumpUITestContextExtensions
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
-        Func<UITestContext, Task<Stream>> action) =>
-            context.FailureDumpContainer.Add(
+        Func<UITestContext, Task<Stream>> action,
+        string messageIfExists = null) =>
+        context.AppendFailureDumpInternal(
                 fileName,
-                new FailureDumpItem(() => action(context)));
+                new FailureDumpItem(() => action(context)),
+                messageIfExists);
 
     /// <summary>
     /// Appends string as file content to be collected on failure dump.
@@ -36,20 +38,19 @@ public static class FailureDumpUITestContextExtensions
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
     /// <param name="content">
-    /// File content. Can be a composite format string <see cref="string.Format(string, object?[])"/>.
+    /// File content.
     /// </param>
-    /// <param name="args">An object array that contains zero or more objects to format.</param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
         string content,
-        params object[] args) =>
-        context.FailureDumpContainer.Add(
+        string messageIfExists = null) =>
+        context.AppendFailureDumpInternal(
             fileName,
             new FailureDumpItem(() => Task.FromResult(
                 new MemoryStream(
-                    Encoding.UTF8.GetBytes(
-                        string.Format(CultureInfo.InvariantCulture, content, args))) as Stream)));
+                    Encoding.UTF8.GetBytes(content)) as Stream)),
+            messageIfExists);
 
     /// <summary>
     /// Appends generic content as file content to be collected on failure dump.
@@ -66,8 +67,12 @@ public static class FailureDumpUITestContextExtensions
         string fileName,
         TContent content,
         Func<TContent, Task<Stream>> getStream = null,
-        Action<TContent> dispose = null) =>
-        context.FailureDumpContainer.Add(fileName, new GenericFailureDumpItem<TContent>(content, getStream, dispose));
+        Action<TContent> dispose = null,
+        string messageIfExists = null) =>
+        context.AppendFailureDumpInternal(
+            fileName,
+            new FailureDumpItemGeneric<TContent>(content, getStream, dispose),
+            messageIfExists);
 
     // [System.Drawing.Bitmap, System.Drawing] needed here, but System.Drawing.Bitmap is matching with
     // [System.Drawing.Bitmap, Microsoft.Data.Tools.Utilities].
@@ -84,15 +89,20 @@ public static class FailureDumpUITestContextExtensions
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
-        Bitmap bitmap) => context
-        .AppendFailureDump(fileName, bitmap, content =>
-        {
-            var memoryStream = new MemoryStream();
-            bitmap.Save(memoryStream, ImageFormat.Bmp);
-            memoryStream.Seek(0, SeekOrigin.Begin);
+        Bitmap bitmap,
+        string messageIfExists = null) => context
+        .AppendFailureDump(
+            fileName,
+            bitmap,
+            content =>
+            {
+                var memoryStream = new MemoryStream();
+                bitmap.Save(memoryStream, ImageFormat.Bmp);
+                memoryStream.Seek(0, SeekOrigin.Begin);
 
-            return Task.FromResult((Stream)memoryStream);
-        });
+                return Task.FromResult((Stream)memoryStream);
+            },
+            messageIfExists: messageIfExists);
 
     /// <summary>
     /// Appends <see cref="ImageSharpImage"/> as file content to be collected on failure dump.
@@ -105,6 +115,25 @@ public static class FailureDumpUITestContextExtensions
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
-        ImageSharpImage image) => context
-        .AppendFailureDump(fileName, image, content => Task.FromResult(image.ToStream()));
+        ImageSharpImage image,
+        string messageIfExists = null) => context
+        .AppendFailureDump(
+            fileName,
+            image,
+            content => Task.FromResult(image.ToStream()),
+            messageIfExists: messageIfExists);
+
+    private static void AppendFailureDumpInternal(
+        this UITestContext context,
+        string fileName,
+        IFailureDumpItem item,
+        string messageIfExists = null)
+    {
+        if (context.FailureDumpContainer.ContainsKey(fileName))
+        {
+            throw new FailureDumpItemAlreadyExistsException(fileName, messageIfExists);
+        }
+
+        context.FailureDumpContainer.Add(fileName, item);
+    }
 }

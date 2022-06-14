@@ -1,4 +1,5 @@
 using Atata;
+using ImageMagick;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -36,10 +37,10 @@ public static class ScreenshotUITestContextExtensions
         {
             var decorator = new VerticalCombineDecorator(new ScreenshotMaker())
                 .SetWaitAfterScrolling(TimeSpan.FromMilliseconds(ScrollDelay));
-            using var magickImage = context.Driver.TakeScreenshot(decorator)
-                .ToMagickImage();
+            using var magickImage = new MagickImage(context.Driver.TakeScreenshot(decorator));
 
-            magickImage.Crop(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
+            magickImage.Crop(
+                new MagickGeometry(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height));
 
             return magickImage
                 .ToBitmap();

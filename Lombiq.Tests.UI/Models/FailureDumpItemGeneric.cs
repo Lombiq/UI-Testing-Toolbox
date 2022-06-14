@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class GenericFailureDumpItem<TContent> : IFailureDumpItem
+public class FailureDumpItemGeneric<TContent> : IFailureDumpItem
 {
     private readonly TContent _content;
     private readonly Func<TContent, Task<Stream>> _getStream;
     private readonly Action<TContent> _dispose;
     private bool _disposed;
 
-    public GenericFailureDumpItem(
+    public FailureDumpItemGeneric(
         TContent content,
         Func<TContent, Task<Stream>> getStream = null,
         Action<TContent> dispose = null)
@@ -30,7 +30,7 @@ public class GenericFailureDumpItem<TContent> : IFailureDumpItem
     {
         if (_disposed)
         {
-            throw new ObjectDisposedException(nameof(GenericFailureDumpItem<TContent>));
+            throw new ObjectDisposedException(nameof(FailureDumpItemGeneric<TContent>));
         }
 
         if (_content is Stream stream && _getStream == null)

@@ -21,6 +21,9 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class VisualVerificationUITestContextExtensions
 {
     private const string ConditionLessThenOrEqualTo = "less than or equal to";
+    private const string HintFailureDumpItemAlreadyExists = $@"
+Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
+to customize the name of dump item.";
 
     /// <summary>
     /// Compares the reference image and screenshot of the whole page. The mean error percentage should be less than or
@@ -432,7 +435,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            fullScreenImage);
+            fullScreenImage,
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // We take a screenshot of the element area. This will be compared to a reference image.
         using var elementImage = context.TakeElementScreenshot(element)
@@ -449,7 +453,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            elementImage.Clone());
+            elementImage.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // Checking the size of captured image.
         elementImage.Width
@@ -470,7 +475,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            referenceImage.Clone());
+            referenceImage.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // Here we crop the regionOfInterest.
         referenceImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
@@ -486,7 +492,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            referenceImage.Clone());
+            referenceImage.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
         context.AppendFailureDump(
             Path.Combine(
                 configuration.DumpFolderName,
@@ -497,7 +504,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            elementImage.Clone());
+            elementImage.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // At this point, we have reference and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
@@ -518,7 +526,8 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            diffImage);
+            diffImage,
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
         // between the captured and the reference image. In the end, the lower values are better.
@@ -537,16 +546,19 @@ public static class VisualVerificationUITestContextExtensions
                     configuration.FileNameSuffix,
                 }
                 .JoinNotEmptySafe("-")),
-            @"
+            string.Format(
+                CultureInfo.InvariantCulture,
+                @"
 calculated differences:
     absoluteError={0},
     meanError={1},
     pixelErrorCount={2},
     pixelErrorPercentage={3}",
-            diff.AbsoluteError,
-            diff.MeanError,
-            diff.PixelErrorCount,
-            diff.PixelErrorPercentage);
+                diff.AbsoluteError,
+                diff.MeanError,
+                diff.PixelErrorCount,
+                diff.PixelErrorPercentage),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         comparator(diff);
     }
