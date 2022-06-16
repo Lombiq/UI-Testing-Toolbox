@@ -42,8 +42,7 @@ public static class ScreenshotUITestContextExtensions
             magickImage.Crop(
                 new MagickGeometry(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height));
 
-            return magickImage
-                .ToBitmap();
+            return magickImage.ToBitmap();
         }
         finally
         {
