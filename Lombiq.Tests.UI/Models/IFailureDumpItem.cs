@@ -12,6 +12,6 @@ public interface IFailureDumpItem : IDisposable
     /// <summary>
     /// Gets the <see cref="Stream"/> associated to failure dump item.
     /// </summary>
-    /// <returns>The <see cref="Stream"/> associated to failure dump item.</returns>
+    /// <returns>The <see cref="Stream"/> associated with the failure dump item.</returns>
     Task<Stream> GetStreamAsync();
 }
