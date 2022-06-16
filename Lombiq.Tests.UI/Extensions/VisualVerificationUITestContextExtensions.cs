@@ -551,8 +551,8 @@ calculated differences:
                     .AppendLine(
                         CultureInfo.InvariantCulture,
                         $"The reference image was loaded from {loadedFrom}.")
-                    .AppendLine("If you want a new reference image, simply delete the existing one ")
-                    .Append("and a new one will be generated on next run.");
+                    .Append("If you want a new reference image, simply delete the existing one ")
+                    .AppendLine("and a new one will be generated on next run.");
             }
         }
 
