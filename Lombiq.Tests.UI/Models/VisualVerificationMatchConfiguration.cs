@@ -26,12 +26,12 @@ public class VisualVerificationMatchConfiguration<TSelf>
     }
 
     /// <summary>
-    /// Gets the prefix applied for all file names.
+    /// Gets the prefix applied to all file names.
     /// </summary>
     public string FileNamePrefix { get; private set; }
 
     /// <summary>
-    /// Gets the suffix applied for all file names.
+    /// Gets the suffix applied to all file names.
     /// </summary>
     public string FileNameSuffix { get; private set; }
 }
