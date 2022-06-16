@@ -24,7 +24,7 @@ public static class VisualVerificationUITestContextExtensions
     private const string ConditionLessThenOrEqualTo = "less than or equal to";
     private const string HintFailureDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
-to customize the name of dump item.";
+to customize the name of the dump item.";
 
     /// <summary>
     /// Compares the reference image and screenshot of the whole page. The mean error percentage should be less than or
