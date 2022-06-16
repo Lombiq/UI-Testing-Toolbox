@@ -6,7 +6,7 @@ public class VisualVerificationMatchConfiguration<TSelf>
     /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.
     /// </summary>
-    /// <param name="value">The prefix applied for all file names.</param>
+    /// <param name="value">The prefix applied to all file names.</param>
     public TSelf WithFileNamePrefix(string value)
     {
         FileNamePrefix = value;
@@ -17,7 +17,7 @@ public class VisualVerificationMatchConfiguration<TSelf>
     /// <summary>
     /// Sets <see cref="FileNameSuffix"/>.
     /// </summary>
-    /// <param name="value">The suffix applied for all file names.</param>
+    /// <param name="value">The suffix applied to all file names.</param>
     public TSelf WithFileNameSuffix(string value)
     {
         FileNameSuffix = value;
