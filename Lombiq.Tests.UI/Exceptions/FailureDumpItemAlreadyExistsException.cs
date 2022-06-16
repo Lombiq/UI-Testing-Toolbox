@@ -2,7 +2,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-// Here we need fileName and custom message
+// Here we only need fileName and customMessage.
 #pragma warning disable CA1032 // Implement standard exception constructors
 public class FailureDumpItemAlreadyExistsException : Exception
 #pragma warning restore CA1032 // Implement standard exception constructors
