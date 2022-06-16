@@ -2,7 +2,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-// Here we need path instead of message
+// Here we only need path instead of message.
 #pragma warning disable CA1032 // Implement standard exception constructors
 public class VisualVerificationReferenceImageNotFoundException : Exception
 #pragma warning restore CA1032 // Implement standard exception constructors
