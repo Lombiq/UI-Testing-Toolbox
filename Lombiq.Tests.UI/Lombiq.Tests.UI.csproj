@@ -58,19 +58,12 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.12.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="2.0.46" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.17.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="160.5400.1" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47008.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
-    <PackageReference Include="Noksa.WebDriver.ScreenshotsExtensions" Version="0.1.5.4" />
     <PackageReference Include="Selenium.Axe" Version="3.1.5" />
-    <!--
-    This should be selected manually because Noksa.WebDriver.ScreenshotsExtensions depends on
-    Selenium.Support >= 3.8.0, but Atata depends on Selenium.WebDriver >= 4.1.1
-    -->
-    <PackageReference Include="Selenium.Support" Version="4.1.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="WebDriverManager" Version="2.13.0" />
     <PackageReference Include="xunit" Version="2.4.1" />

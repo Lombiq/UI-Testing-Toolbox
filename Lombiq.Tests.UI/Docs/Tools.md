@@ -15,4 +15,3 @@
 - Monkey testing is implemented using [Gremlins.js](https://github.com/marmelab/gremlins.js/) library.
 - Visual verification is implemented using [ImageSharpCompare](https://github.com/Codeuctivity/ImageSharp.Compare).
 - [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier) is used to simplify stack traces, mainly around async methods.
-- Creating element screenshot using [Noksa.WebDriver.ScreenshotsExtensions](https://github.com/Noksa/WebDriver.Screenshots.Extensions).

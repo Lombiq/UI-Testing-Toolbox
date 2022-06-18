@@ -335,8 +335,7 @@ to customize the name of the dump item.";
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
 
         // We take a screenshot and append it to the failure dump.
-        var fullScreenImage = context.TakeScreenshot()
-            .ToBitmap();
+        var fullScreenImage = context.TakePageScreenshot();
         context.AppendFailureDump(
             Path.Combine(
                 VisualVerificationMatchNames.DumpFolderName,
