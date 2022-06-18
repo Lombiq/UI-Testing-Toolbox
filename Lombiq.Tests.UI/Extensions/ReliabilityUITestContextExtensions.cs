@@ -278,7 +278,7 @@ public static class ReliabilityUITestContextExtensions
         using var elementImage = context.TakeElementScreenshot(element);
         using var elementImageStream = new MemoryStream();
 
-        elementImage.Save(elementImageStream, ImageFormat.Bmp);
+        elementImage.Save(elementImageStream, ImageFormat.Png);
         return ComputeSha256Hash(elementImageStream);
     }
 

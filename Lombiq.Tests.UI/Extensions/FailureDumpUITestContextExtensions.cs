@@ -26,11 +26,12 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         Func<UITestContext, Task<Stream>> action,
-        string messageIfExists = null) =>
+        string messageIfExists = null,
+        Type[] inCaseOf = null) =>
         context.AppendFailureDumpInternal(
-                fileName,
-                new FailureDumpItem(() => action(context)),
-                messageIfExists);
+            fileName,
+            new FailureDumpItem(() => action(context), inCaseOf: inCaseOf),
+            messageIfExists);
 
     /// <summary>
     /// Appends string as file content to be collected on failure dump.
@@ -44,12 +45,15 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         string content,
-        string messageIfExists = null) =>
+        string messageIfExists = null,
+        Type[] inCaseOf = null) =>
         context.AppendFailureDumpInternal(
             fileName,
-            new FailureDumpItem(() => Task.FromResult(
-                new MemoryStream(
-                    Encoding.UTF8.GetBytes(content)) as Stream)),
+            new FailureDumpItem(
+                () => Task.FromResult(
+                    new MemoryStream(
+                        Encoding.UTF8.GetBytes(content)) as Stream),
+                inCaseOf: inCaseOf),
             messageIfExists);
 
     /// <summary>
@@ -68,10 +72,11 @@ public static class FailureDumpUITestContextExtensions
         TContent content,
         Func<TContent, Task<Stream>> getStream = null,
         Action<TContent> dispose = null,
-        string messageIfExists = null) =>
+        string messageIfExists = null,
+        Type[] inCaseOf = null) =>
         context.AppendFailureDumpInternal(
             fileName,
-            new FailureDumpItemGeneric<TContent>(content, getStream, dispose),
+            new FailureDumpItemGeneric<TContent>(content, getStream, dispose, inCaseOf),
             messageIfExists);
 
     // [System.Drawing.Bitmap, System.Drawing] needed here, but System.Drawing.Bitmap is matching with
@@ -90,19 +95,21 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         Bitmap bitmap,
-        string messageIfExists = null) => context
+        string messageIfExists = null,
+        Type[] inCaseOf = null) => context
         .AppendFailureDump(
             fileName,
             bitmap,
             content =>
             {
                 var memoryStream = new MemoryStream();
-                bitmap.Save(memoryStream, ImageFormat.Bmp);
+                bitmap.Save(memoryStream, ImageFormat.Png);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
                 return Task.FromResult((Stream)memoryStream);
             },
-            messageIfExists: messageIfExists);
+            messageIfExists: messageIfExists,
+            inCaseOf: inCaseOf);
 
     /// <summary>
     /// Appends <see cref="ImageSharpImage"/> as file content to be collected on failure dump.
@@ -116,12 +123,14 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         ImageSharpImage image,
-        string messageIfExists = null) => context
+        string messageIfExists = null,
+        Type[] inCaseOf = null) => context
         .AppendFailureDump(
             fileName,
             image,
             content => Task.FromResult(image.ToStream()),
-            messageIfExists: messageIfExists);
+            messageIfExists: messageIfExists,
+            inCaseOf: inCaseOf);
 
     private static void AppendFailureDumpInternal(
         this UITestContext context,

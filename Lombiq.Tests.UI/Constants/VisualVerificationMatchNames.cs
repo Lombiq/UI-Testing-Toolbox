@@ -3,11 +3,11 @@ namespace Lombiq.Tests.UI.Constants;
 public static class VisualVerificationMatchNames
 {
     public const string DumpFolderName = "VisualVerification";
-    public const string FullScreenImageFileName = "FullScreen.bmp";
-    public const string ElementImageFileName = "Element.bmp";
-    public const string ReferenceImageFileName = "Reference.bmp";
-    public const string CroppedElementImageFileName = "Element-cropped.bmp";
-    public const string CroppedReferenceImageFileName = "Reference-cropped.bmp";
-    public const string DiffImageFileName = "Diff.bmp";
+    public const string FullScreenImageFileName = "FullScreen.png";
+    public const string ElementImageFileName = "Element.png";
+    public const string ReferenceImageFileName = "Reference.png";
+    public const string CroppedElementImageFileName = "Element-cropped.png";
+    public const string CroppedReferenceImageFileName = "Reference-cropped.png";
+    public const string DiffImageFileName = "Diff.png";
     public const string DiffLogFileName = "Diff.log";
 }

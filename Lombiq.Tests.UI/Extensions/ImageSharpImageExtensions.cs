@@ -1,6 +1,6 @@
 using Codeuctivity.ImageSharpCompare;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System.IO;
 
@@ -46,7 +46,7 @@ public static class ImageSharpImageExtensions
     {
         var imageStream = new MemoryStream();
 
-        image.Save(imageStream, new BmpEncoder());
+        image.Save(imageStream, new PngEncoder());
 
         imageStream.Seek(0, SeekOrigin.Begin);
 

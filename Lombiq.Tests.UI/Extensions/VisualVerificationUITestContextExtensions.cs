@@ -197,7 +197,7 @@ to customize the name of the dump item.";
             approvedContext.MethodName);
 
         // Try loading reference image from embedded resources first.
-        approvedContext.ReferenceResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.ReferenceFileName}.bmp";
+        approvedContext.ReferenceResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.ReferenceFileName}.png";
         var referenceImage = testFrame.MethodInfo.DeclaringType.Assembly
             .TryGetResourceBitmap(approvedContext.ReferenceResourceName);
 
@@ -214,12 +214,12 @@ to customize the name of the dump item.";
             approvedContext.ModuleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
             approvedContext.ReferenceImagePath = Path.Combine(
                 approvedContext.ModuleDirectory,
-                $"{approvedContext.ReferenceFileName}.bmp");
+                $"{approvedContext.ReferenceFileName}.png");
 
             if (!File.Exists(approvedContext.ReferenceImagePath))
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
-                suggestedImage.Save(approvedContext.ReferenceImagePath, ImageFormat.Bmp);
+                suggestedImage.Save(approvedContext.ReferenceImagePath, ImageFormat.Png);
 
                 throw new VisualVerificationReferenceImageNotFoundException(approvedContext.ReferenceImagePath);
             }
@@ -348,7 +348,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             fullScreenImage,
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // We take a screenshot of the element area. This will be compared to a reference image.
         using var elementImage = context.TakeElementScreenshot(element)
@@ -366,7 +367,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             elementImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // Checking the size of captured image.
         elementImage.Width
@@ -388,7 +390,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             referenceImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // Here we crop the regionOfInterest.
         referenceImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
@@ -405,7 +408,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             referenceImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
         context.AppendFailureDump(
             Path.Combine(
                 VisualVerificationMatchNames.DumpFolderName,
@@ -417,7 +421,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             elementImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // At this point, we have reference and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
@@ -439,7 +444,8 @@ to customize the name of the dump item.";
                 }
                 .JoinNotEmptySafe("-")),
             diffImage,
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
         // between the captured and the reference image. In the end, the lower values are better.
@@ -470,7 +476,8 @@ calculated differences:
                 diff.MeanError,
                 diff.PixelErrorCount,
                 diff.PixelErrorPercentage),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintFailureDumpItemAlreadyExists,
+            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         comparator(diff);
     }

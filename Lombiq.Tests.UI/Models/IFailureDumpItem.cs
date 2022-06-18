@@ -14,4 +14,10 @@ public interface IFailureDumpItem : IDisposable
     /// </summary>
     /// <returns>The <see cref="Stream"/> associated with the failure dump item.</returns>
     Task<Stream> GetStreamAsync();
+
+    /// <summary>
+    /// Checks that, the failure dump item can be saved in the dump context.
+    /// </summary>
+    /// <param name="exceptionThrown">The exception has been thrown.</param>
+    bool EnsureCanDump(Exception exceptionThrown);
 }

@@ -20,7 +20,7 @@ public static class MagickImageExtensions
         var imageStream = new MemoryStream();
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        image.Write(imageStream, MagickFormat.Bmp3);
+        image.Write(imageStream, MagickFormat.Png);
         imageStream.Seek(0, SeekOrigin.Begin);
 
         return (Bitmap)Image.FromStream(imageStream);
