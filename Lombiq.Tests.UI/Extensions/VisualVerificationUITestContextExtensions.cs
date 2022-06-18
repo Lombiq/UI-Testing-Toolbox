@@ -151,7 +151,7 @@ to customize the name of the dump item.";
                             elementSelector.ToString().MakeFileSystemFriendly(),
                             configuration.FileNameSuffix,
                         }
-                        .JoinNotEmptySafe("-")
+                        .JoinNotNullOrEmpty("-")
                     );
                 });
 
@@ -283,7 +283,7 @@ to customize the name of the dump item.";
                             elementSelector.ToString().MakeFileSystemFriendly(),
                             configuration.FileNameSuffix,
                     }
-                    .JoinNotEmptySafe("-")
+                    .JoinNotNullOrEmpty("-")
                 );
             });
 
@@ -346,7 +346,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.FullScreenImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             fullScreenImage,
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -365,7 +365,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.ElementImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             elementImage.Clone(),
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -388,7 +388,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.ReferenceImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             referenceImage.Clone(),
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -406,7 +406,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.CroppedReferenceImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             referenceImage.Clone(),
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -419,7 +419,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.CroppedElementImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             elementImage.Clone(),
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -442,7 +442,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.DiffImageFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             diffImage,
             messageIfExists: HintFailureDumpItemAlreadyExists,
             inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
@@ -463,7 +463,7 @@ to customize the name of the dump item.";
                     VisualVerificationMatchNames.DiffLogFileName,
                     configuration.FileNameSuffix,
                 }
-                .JoinNotEmptySafe("-")),
+                .JoinNotNullOrEmpty("-")),
             string.Format(
                 CultureInfo.InvariantCulture,
                 @"
