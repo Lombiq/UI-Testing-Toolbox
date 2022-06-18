@@ -31,6 +31,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // toolbars, tabs, and scroll bars usually have different sizes on different platforms/browsers, but we
                 // want the same geometries of rendered content on all platforms.
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
+                context.HideScrollBar();
 
                 var navbarElementSelector = By.ClassName("navbar-brand");
                 // We set the browser's window size, DPI, and scale settings explicitly to make the test environment
@@ -44,7 +45,14 @@ public class BasicVisualVerificationTests : UITestBase
 
                 // Here we check that the rendered content visually equals the reference image within a given error
                 // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
-                context.AssertVisualVerificationApproved(navbarElementSelector, 8, cropRegion);
+                try
+                {
+                    context.AssertVisualVerificationApproved(navbarElementSelector, 8, cropRegion);
+                }
+                finally
+                {
+                    context.RestoreHiddenScrollBar();
+                }
             },
             browser);
 
@@ -55,9 +63,17 @@ public class BasicVisualVerificationTests : UITestBase
             context =>
             {
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
+                context.HideScrollBar();
 
                 // Here we need only the error percentage and the region of interest to validate the whole page.
-                context.AssertVisualVerificationApproved(48, new Rectangle(0, 0, 1583, 1770));
+                try
+                {
+                    context.AssertVisualVerificationApproved(-48, new Rectangle(0, 0, 1583, 1770));
+                }
+                finally
+                {
+                    context.RestoreHiddenScrollBar();
+                }
             },
             browser);
 }

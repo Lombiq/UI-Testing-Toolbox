@@ -47,4 +47,48 @@ public static class ScrollingUITestContextExtensions
             Convert.ToInt32(position[0], CultureInfo.InvariantCulture),
             Convert.ToInt32(position[1], CultureInfo.InvariantCulture));
     }
+
+    public static bool GetIsScrollBarHidden(this UITestContext context)
+    {
+        var scrollBarState = @"
+    if (!window.$Lombiq_Tests_UI_Scrolling_Context) {
+        return false;
+    }
+
+    return !!window.$Lombiq_Tests_UI_Scrolling_Context.hidden;
+";
+
+        return (bool)context.Driver.ExecuteScript(scrollBarState);
+    }
+
+    public static void HideScrollBar(this UITestContext context)
+    {
+        var hideScrollBar = @"
+    if (!window.$Lombiq_Tests_UI_Scrolling_Context) {
+        window.$Lombiq_Tests_UI_Scrolling_Context = {
+            original: {
+                style: {
+                    overflow: document.body.style.overflow,
+                },
+            },
+        };
+    }
+    if (!window.$Lombiq_Tests_UI_Scrolling_Context.hidden) {
+        document.body.style.overflow = 'hidden';
+        window.$Lombiq_Tests_UI_Scrolling_Context.hidden = true;
+    }
+";
+        context.Driver.ExecuteScript(hideScrollBar);
+    }
+
+    public static void RestoreHiddenScrollBar(this UITestContext context)
+    {
+        var showScrollBar = @"
+    if (!window.$Lombiq_Tests_UI_Scrolling_Context || !window.$Lombiq_Tests_UI_Scrolling_Context.hidden) {
+        return;
+    }
+    document.body.style.overflow = window.$Lombiq_Tests_UI_Scrolling_Context.original.style.overflow;
+";
+        context.Driver.ExecuteScript(showScrollBar);
+    }
 }
