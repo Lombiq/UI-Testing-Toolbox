@@ -44,7 +44,7 @@ public class BasicVisualVerificationTests : UITestBase
 
                 // Here we check that the rendered content visually equals the reference image within a given error
                 // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
-                context.AssertVisualVerificationApproved(navbarElementSelector, 8, cropRegion);
+                context.AssertVisualVerificationApproved(navbarElementSelector, 6, cropRegion);
             },
             browser);
 
@@ -60,7 +60,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we need only the error percentage and the region of interest to validate the whole page.
                 try
                 {
-                    context.AssertVisualVerificationApproved(48, new Rectangle(0, 0, 1583, 1770));
+                    context.AssertVisualVerificationApproved(2, new Rectangle(0, 0, 1583, 1770));
                 }
                 finally
                 {
