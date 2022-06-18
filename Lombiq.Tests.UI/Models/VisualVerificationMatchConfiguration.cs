@@ -4,6 +4,16 @@ public class VisualVerificationMatchConfiguration<TSelf>
     where TSelf : VisualVerificationMatchConfiguration<TSelf>
 {
     /// <summary>
+    /// Gets the prefix applied to all file names.
+    /// </summary>
+    public string FileNamePrefix { get; private set; }
+
+    /// <summary>
+    /// Gets the suffix applied to all file names.
+    /// </summary>
+    public string FileNameSuffix { get; private set; }
+
+    /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.
     /// </summary>
     /// <param name="value">The prefix applied to all file names.</param>
@@ -24,16 +34,6 @@ public class VisualVerificationMatchConfiguration<TSelf>
 
         return (TSelf)this;
     }
-
-    /// <summary>
-    /// Gets the prefix applied to all file names.
-    /// </summary>
-    public string FileNamePrefix { get; private set; }
-
-    /// <summary>
-    /// Gets the suffix applied to all file names.
-    /// </summary>
-    public string FileNameSuffix { get; private set; }
 }
 
 public class VisualMatchConfiguration : VisualVerificationMatchConfiguration<VisualMatchConfiguration> { }
