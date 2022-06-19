@@ -336,6 +336,19 @@ to customize the name of the dump item.";
 
         // We take a screenshot and append it to the failure dump later.
         using var fullScreenImage = context.TakePageScreenshot();
+        // The full-page screenshot
+        context.AppendFailureDump(
+            Path.Combine(
+                VisualVerificationMatchNames.DumpFolderName,
+                new[]
+                {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.FullScreenImageFileName,
+                        configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-")),
+            fullScreenImage.Clone(new Rectangle(Point.Empty, fullScreenImage.Size), fullScreenImage.PixelFormat),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
         // We take a screenshot of the element area. This will be compared to a reference image.
         using var elementImageOriginal = context.TakeElementScreenshot(element)
@@ -380,19 +393,6 @@ to customize the name of the dump item.";
         }
         catch
         {
-            // The full-page screenshot
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.FullScreenImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                fullScreenImage.Clone(new Rectangle(Point.Empty, fullScreenImage.Size), fullScreenImage.PixelFormat),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The original element screenshot
             context.AppendFailureDump(
