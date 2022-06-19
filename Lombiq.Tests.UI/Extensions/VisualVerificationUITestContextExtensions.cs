@@ -353,7 +353,7 @@ to customize the name of the dump item.";
 
         // Here we crop the regionOfInterest.
         using var referenceImageCropped = referenceImageOriginal.Clone();
-        using var elementImageCropped = referenceImageOriginal.Clone();
+        using var elementImageCropped = elementImageOriginal.Clone();
 
         referenceImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
         elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
@@ -488,6 +488,8 @@ calculated differences:
                     diff.PixelErrorCount,
                     diff.PixelErrorPercentage),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            throw;
         }
     }
 
