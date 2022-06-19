@@ -393,7 +393,6 @@ to customize the name of the dump item.";
         }
         catch
         {
-
             // The original element screenshot
             context.AppendFailureDump(
                 Path.Combine(
