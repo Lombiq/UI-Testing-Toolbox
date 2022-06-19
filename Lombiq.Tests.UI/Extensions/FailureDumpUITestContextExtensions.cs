@@ -64,13 +64,13 @@ public static class FailureDumpUITestContextExtensions
     /// <param name="content">
     /// File content.
     /// </param>
-    /// <param name="getStream">Function to get a new <see cref="Stream"/> from content. Can be null.</param>
+    /// <param name="getStream">Function to get a new <see cref="Stream"/> from content.</param>
     /// <param name="dispose">Action to dispose the content, if required. Can be null.</param>
     public static void AppendFailureDump<TContent>(
         this UITestContext context,
         string fileName,
         TContent content,
-        Func<TContent, Task<Stream>> getStream = null,
+        Func<TContent, Task<Stream>> getStream,
         Action<TContent> dispose = null,
         string messageIfExists = null,
         Type[] inCaseOf = null) =>

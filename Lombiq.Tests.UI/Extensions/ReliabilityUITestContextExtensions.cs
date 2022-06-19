@@ -3,12 +3,12 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -235,11 +235,16 @@ public static class ReliabilityUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        var lastScrollPosition = context.GetScrollPosition();
-        Thread.Sleep(interval ?? TimeSpan.FromMilliseconds(500));
+        Point? lastScrollPosition = null;
         context.DoWithRetriesOrFail(
             () =>
             {
+                if (lastScrollPosition is null)
+                {
+                    lastScrollPosition = context.GetScrollPosition();
+                    return false;
+                }
+
                 var currentScrollPosition = context.GetScrollPosition();
 
                 var ready = lastScrollPosition == currentScrollPosition;

@@ -334,151 +334,161 @@ to customize the name of the dump item.";
 
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
 
-        // We take a screenshot and append it to the failure dump.
-        var fullScreenImage = context.TakePageScreenshot();
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.FullScreenImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            fullScreenImage,
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
+        // We take a screenshot and append it to the failure dump later.
+        using var fullScreenImage = context.TakePageScreenshot();
 
         // We take a screenshot of the element area. This will be compared to a reference image.
-        using var elementImage = context.TakeElementScreenshot(element)
+        using var elementImageOriginal = context.TakeElementScreenshot(element)
             .ToImageSharpImage()
             .ShouldNotBeNull();
 
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.ElementImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            elementImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
-
         // Checking the size of captured image.
-        elementImage.Width
+        elementImageOriginal.Width
             .ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width);
-        elementImage.Height
+        elementImageOriginal.Height
             .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
 
-        using var referenceImage = reference
+        using var referenceImageOriginal = reference
             .ToImageSharpImage();
 
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.ReferenceImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            referenceImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
-
         // Here we crop the regionOfInterest.
-        referenceImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
-        elementImage.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
+        using var referenceImageCropped = referenceImageOriginal.Clone();
+        using var elementImageCropped = referenceImageOriginal.Clone();
 
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedReferenceImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            referenceImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedElementImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            elementImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
+        referenceImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
+        elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
 
         // At this point, we have reference and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
-        // So lets create it and append it to failure dump.
-        var diffImage = referenceImage
-            .CalcDiffImage(elementImage)
+        // So lets create it now and append it to failure dump later.
+        using var diffImage = referenceImageCropped
+            .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
-
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.DiffImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            diffImage,
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
         // between the captured and the reference image. In the end, the lower values are better.
         // You can read more about how these statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = referenceImage
-            .CompareTo(elementImage);
+        var diff = referenceImageCropped
+            .CompareTo(elementImageCropped);
 
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.DiffLogFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-")),
-            string.Format(
-                CultureInfo.InvariantCulture,
-                @"
+        try
+        {
+            comparator(diff);
+        }
+        catch
+        {
+            // The full-page screenshot
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.FullScreenImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                fullScreenImage.Clone(new Rectangle(Point.Empty, fullScreenImage.Size), fullScreenImage.PixelFormat),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The original element screenshot
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.ElementImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                elementImageOriginal.Clone(),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The original reference image
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.ReferenceImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                referenceImageOriginal.Clone(),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The cropped reference image
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.CroppedReferenceImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                referenceImageCropped.Clone(),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The cropped element image
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.CroppedElementImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                elementImageCropped.Clone(),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The diff image
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.DiffImageFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                diffImage.Clone(),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+
+            // The diff stats
+            context.AppendFailureDump(
+                Path.Combine(
+                    VisualVerificationMatchNames.DumpFolderName,
+                    new[]
+                    {
+                        configuration.FileNamePrefix,
+                        VisualVerificationMatchNames.DiffLogFileName,
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")),
+                content: string.Format(
+                    CultureInfo.InvariantCulture,
+                    @"
 calculated differences:
     absoluteError={0},
     meanError={1},
     pixelErrorCount={2},
     pixelErrorPercentage={3}",
-                diff.AbsoluteError,
-                diff.MeanError,
-                diff.PixelErrorCount,
-                diff.PixelErrorPercentage),
-            messageIfExists: HintFailureDumpItemAlreadyExists,
-            inCaseOf: new[] { typeof(VisualVerificationAssertionException) });
-
-        comparator(diff);
+                    diff.AbsoluteError,
+                    diff.MeanError,
+                    diff.PixelErrorCount,
+                    diff.PixelErrorPercentage),
+                messageIfExists: HintFailureDumpItemAlreadyExists);
+        }
     }
 
     private static void AssertInternal<TValue>(
