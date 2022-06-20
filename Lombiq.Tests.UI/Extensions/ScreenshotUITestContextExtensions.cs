@@ -41,7 +41,7 @@ public static class ScreenshotUITestContextExtensions
             if (context.GetScrollPosition() != requestedScrollPosition)
             {
                 context.ScrollTo(requestedScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(300));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(100));
             }
 
             var currentScrollPosition = context.GetScrollPosition();
@@ -58,7 +58,7 @@ public static class ScreenshotUITestContextExtensions
                     currentScrollPosition.X,
                     currentScrollPosition.Y + viewportSize.Height);
                 context.ScrollTo(requestedScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(300));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(100));
                 currentScrollPosition = context.GetScrollPosition();
             }
             while (currentScrollPosition == requestedScrollPosition);
@@ -97,7 +97,7 @@ public static class ScreenshotUITestContextExtensions
             if (currentScrollPosition != originalScrollPosition)
             {
                 context.ScrollTo(originalScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(300));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(100));
             }
         }
     }
