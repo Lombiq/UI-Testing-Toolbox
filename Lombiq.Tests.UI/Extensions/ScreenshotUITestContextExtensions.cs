@@ -1,6 +1,8 @@
 using Atata;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -39,7 +41,7 @@ public static class ScreenshotUITestContextExtensions
             if (context.GetScrollPosition() != requestedScrollPosition)
             {
                 context.ScrollTo(requestedScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(500));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(600));
             }
 
             var currentScrollPosition = context.GetScrollPosition();
@@ -56,7 +58,7 @@ public static class ScreenshotUITestContextExtensions
                     currentScrollPosition.X,
                     currentScrollPosition.Y + viewportSize.Height);
                 context.ScrollTo(requestedScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(500));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(600));
                 currentScrollPosition = context.GetScrollPosition();
             }
             while (currentScrollPosition == requestedScrollPosition);
@@ -95,7 +97,7 @@ public static class ScreenshotUITestContextExtensions
             if (currentScrollPosition != originalScrollPosition)
             {
                 context.ScrollTo(originalScrollPosition);
-                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(500));
+                context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(600));
             }
         }
     }
@@ -106,6 +108,17 @@ public static class ScreenshotUITestContextExtensions
     public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
         using var screenshot = context.TakePageScreenshot();
+
+        screenshot.Size
+            .ShouldBeGreaterThanOrEqualTo(
+                new Size(element.Location.X + element.Size.Width, element.Location.Y + element.Size.Height),
+                new GenericComparer<Size>((left, right) =>
+                {
+                    if (left.Height < right.Height || left.Width < right.Width) return -1;
+                    if (left.Height > right.Height || left.Width > right.Width) return 1;
+
+                    return 0;
+                }));
 
         return screenshot.Clone(
             new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height),
