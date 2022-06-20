@@ -1,5 +1,4 @@
 using Atata;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -112,7 +111,7 @@ public static class ScreenshotUITestContextExtensions
         screenshot.Size
             .ShouldBeGreaterThanOrEqualTo(
                 new Size(element.Location.X + element.Size.Width, element.Location.Y + element.Size.Height),
-                new GenericComparer<Size>((left, right) =>
+                Comparer<Size>.Create((left, right) =>
                 {
                     if (left.Height < right.Height || left.Width < right.Width) return -1;
                     if (left.Height > right.Height || left.Width > right.Width) return 1;
