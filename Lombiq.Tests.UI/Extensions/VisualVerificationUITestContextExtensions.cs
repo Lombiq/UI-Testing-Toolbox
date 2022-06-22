@@ -334,9 +334,6 @@ to customize the name of the dump item.";
 
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
 
-        // We take a screenshot and append it to the failure dump later.
-        using var fullScreenImage = context.TakeFullPageScreenshot();
-
         // We take a screenshot of the element area. This will be compared to a reference image.
         using var elementImageOriginal = context.TakeElementScreenshot(element)
             .ToImageSharpImage()
@@ -380,7 +377,11 @@ to customize the name of the dump item.";
         }
         catch
         {
-            // The full-page screenshot
+            // The dispose ownership transferred to failure dump.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // We take a screenshot and append it to the failure dump.
+            var fullScreenImage = context.TakeFullPageScreenshot();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
@@ -391,7 +392,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                fullScreenImage.Clone(new Rectangle(Point.Empty, fullScreenImage.Size), fullScreenImage.PixelFormat),
+                fullScreenImage,
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The original element screenshot
