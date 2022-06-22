@@ -25,7 +25,7 @@ public static class ScreenshotUITestContextExtensions
         context.Driver.AsScreenshotTaker().GetScreenshot();
 
     /// <summary>
-    /// Takes a screeenshot of the whole page.
+    /// Takes a screeenshot of the whole page, including content that needs to be scrolled down to.
     /// </summary>
     public static Bitmap TakeFullPageScreenshot(this UITestContext context)
     {
