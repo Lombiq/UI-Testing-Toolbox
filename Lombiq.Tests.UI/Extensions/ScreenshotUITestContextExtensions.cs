@@ -27,7 +27,7 @@ public static class ScreenshotUITestContextExtensions
     /// <summary>
     /// Takes a screeenshot of the whole page.
     /// </summary>
-    public static Bitmap TakePageScreenshot(this UITestContext context)
+    public static Bitmap TakeFullPageScreenshot(this UITestContext context)
     {
         var originalScrollPosition = context.GetScrollPosition();
         var images = new Dictionary<Point, Bitmap>();
