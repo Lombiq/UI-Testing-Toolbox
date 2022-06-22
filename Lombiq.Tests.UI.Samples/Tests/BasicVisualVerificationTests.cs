@@ -57,7 +57,7 @@ public class BasicVisualVerificationTests : UITestBase
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
                 // Here we hide the scrollbars to reach a better comparison result. If there are more operations after
                 // visual verification and the scrollbars are required, then don't forget to restore with
-                // context.RestoreHiddenScrollBar()
+                // context.RestoreHiddenScrollBar().
                 context.HideScrollBar();
 
                 // Here we need only the error percentage to validate the whole page.
