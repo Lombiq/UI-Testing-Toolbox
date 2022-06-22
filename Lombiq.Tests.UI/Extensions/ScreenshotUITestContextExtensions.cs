@@ -49,8 +49,7 @@ public static class ScreenshotUITestContextExtensions
             do
             {
                 lastScrollPosition = context.GetScrollPosition();
-                var image = context.TakeScreenshot()
-                    .ToBitmap();
+                var image = context.TakeScreenshot().ToBitmap();
                 images.Add(currentScrollPosition, image);
 
                 requestedScrollPosition = new Point(
