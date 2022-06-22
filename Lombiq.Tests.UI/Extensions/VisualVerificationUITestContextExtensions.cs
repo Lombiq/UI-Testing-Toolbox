@@ -49,11 +49,11 @@ to customize the name of the dump item.";
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-            context.AssertVisualVerificationApproved(
-                By.TagName("body"),
-                meanErrorPercentageThreshold,
-                regionOfInterest,
-                configurator);
+        context.AssertVisualVerificationApproved(
+            By.TagName("body"),
+            meanErrorPercentageThreshold,
+            regionOfInterest,
+            configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The mean
@@ -80,18 +80,18 @@ to customize the name of the dump item.";
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-            context.AssertVisualVerificationApproved(
-                elementSelector,
-                (approvedContext, diff) =>
-                    AssertInternal(
-                        approvedContext,
-                        (actual, expected) => actual <= expected,
-                        diff.PixelErrorPercentage,
-                        meanErrorPercentageThreshold,
-                        nameof(diff.PixelErrorPercentage),
-                        ConditionLessThenOrEqualTo),
-                regionOfInterest,
-                configurator);
+        context.AssertVisualVerificationApproved(
+            elementSelector,
+            (approvedContext, diff) =>
+                AssertInternal(
+                    approvedContext,
+                    (actual, expected) => actual <= expected,
+                    diff.PixelErrorPercentage,
+                    meanErrorPercentageThreshold,
+                    nameof(diff.PixelErrorPercentage),
+                    ConditionLessThenOrEqualTo),
+            regionOfInterest,
+            configurator);
 
     /// <summary>
     /// Compares the reference image and screenshot of the element. The mean error percentage should be less than or
@@ -118,18 +118,18 @@ to customize the name of the dump item.";
         double meanErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-            context.AssertVisualVerificationApproved(
-                element,
-                (approvedContext, diff) =>
-                    AssertInternal(
-                        approvedContext,
-                        (actual, expected) => actual <= expected,
-                        diff.PixelErrorPercentage,
-                        meanErrorPercentageThreshold,
-                        nameof(diff.PixelErrorPercentage),
-                        ConditionLessThenOrEqualTo),
-                regionOfInterest,
-                configurator);
+        context.AssertVisualVerificationApproved(
+            element,
+            (approvedContext, diff) =>
+                AssertInternal(
+                    approvedContext,
+                    (actual, expected) => actual <= expected,
+                    diff.PixelErrorPercentage,
+                    meanErrorPercentageThreshold,
+                    nameof(diff.PixelErrorPercentage),
+                    ConditionLessThenOrEqualTo),
+            regionOfInterest,
+            configurator);
 
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
@@ -138,22 +138,22 @@ to customize the name of the dump item.";
         Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-            context.AssertVisualVerificationApproved(
-                context.Get(elementSelector),
-                comparator,
-                regionOfInterest,
-                configuration =>
-                {
-                    configurator?.Invoke(configuration);
-                    configuration.WithFileNameSuffix(
-                        new[]
-                        {
-                            elementSelector.ToString().MakeFileSystemFriendly(),
-                            configuration.FileNameSuffix,
-                        }
-                        .JoinNotNullOrEmpty("-")
-                    );
-                });
+        context.AssertVisualVerificationApproved(
+            context.Get(elementSelector),
+            comparator,
+            regionOfInterest,
+            configuration =>
+            {
+                configurator?.Invoke(configuration);
+                configuration.WithFileNameSuffix(
+                    new[]
+                    {
+                        elementSelector.ToString().MakeFileSystemFriendly(),
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")
+                );
+            });
 
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
@@ -335,7 +335,7 @@ to customize the name of the dump item.";
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
 
         // We take a screenshot and append it to the failure dump later.
-        using var fullScreenImage = context.TakePageScreenshot();
+        using var fullScreenImage = context.TakeFullPageScreenshot();
 
         // We take a screenshot of the element area. This will be compared to a reference image.
         using var elementImageOriginal = context.TakeElementScreenshot(element)

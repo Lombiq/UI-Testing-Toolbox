@@ -106,7 +106,7 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
-        using var screenshot = context.TakePageScreenshot();
+        using var screenshot = context.TakeFullPageScreenshot();
 
         screenshot.Size
             .ShouldBeGreaterThanOrEqualTo(
