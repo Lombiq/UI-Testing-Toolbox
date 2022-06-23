@@ -50,6 +50,9 @@ public static class WebDriverFactory
             chromeConfig.Options.AddArgument("force-device-scale-factor=1");
             chromeConfig.Options.AddArgument("high-dpi-support=1");
 
+            // Disabling smooth scrolling
+            chromeConfig.Options.AddArgument("disable-smooth-scrolling");
+
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
