@@ -55,6 +55,8 @@ public static class WebDriverFactory
 
             chromeConfig.Options.AddArgument("disable-font-subpixel-positioning");
             chromeConfig.Options.AddArgument("font-render-hinting=none");
+            chromeConfig.Options.AddArgument("ppapi-antialiased-text-enabled=0");
+            chromeConfig.Options.AddArgument("ppapi-subpixel-rendering-setting=0");
 
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
