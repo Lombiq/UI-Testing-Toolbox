@@ -86,9 +86,9 @@ to customize the name of the dump item.";
                 AssertInternal(
                     approvedContext,
                     (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
+                    diff.MeanError,
                     meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
+                    nameof(diff.MeanError),
                     ConditionLessThenOrEqualTo),
             regionOfInterest,
             configurator);
@@ -124,9 +124,9 @@ to customize the name of the dump item.";
                 AssertInternal(
                     approvedContext,
                     (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
+                    diff.MeanError,
                     meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
+                    nameof(diff.MeanError),
                     ConditionLessThenOrEqualTo),
             regionOfInterest,
             configurator);
@@ -246,8 +246,7 @@ to customize the name of the dump item.";
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
                 cfg => cfg.WithFileNamePrefix(approvedContext.ReferenceFileName)
-                    .WithFileNameSuffix(string.Empty)
-                    .WithScale(configuration.Scale));
+                    .WithFileNameSuffix(string.Empty));
         }
         finally
         {
@@ -281,9 +280,9 @@ to customize the name of the dump item.";
             diff =>
                 AssertInternal(
                     (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
+                    diff.MeanError,
                     meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
+                    nameof(diff.MeanError),
                     ConditionLessThenOrEqualTo),
             regionOfInterest,
             configuration =>
@@ -312,9 +311,9 @@ to customize the name of the dump item.";
             diff =>
                 AssertInternal(
                     (actual, expected) => actual <= expected,
-                    diff.PixelErrorPercentage,
+                    diff.MeanError,
                     meanErrorPercentageThreshold,
-                    nameof(diff.PixelErrorPercentage),
+                    nameof(diff.MeanError),
                     ConditionLessThenOrEqualTo),
             regionOfInterest,
             configurator);
@@ -371,36 +370,21 @@ to customize the name of the dump item.";
         referenceImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
         elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
 
-        using var referenceImageCroppedScaled = referenceImageCropped.Clone();
-        using var elementImageCroppedScaled = elementImageCropped.Clone();
-        referenceImageCroppedScaled.Mutate(
-            imageContext =>
-            imageContext.Resize(
-                (int)(referenceImageCropped.Width * configuration.Scale),
-                (int)(referenceImageCropped.Height * configuration.Scale),
-                KnownResamplers.Bicubic));
-        elementImageCroppedScaled.Mutate(
-            imageContext =>
-            imageContext.Resize(
-                (int)(elementImageCropped.Width * configuration.Scale),
-                (int)(elementImageCropped.Height * configuration.Scale),
-                KnownResamplers.Bicubic));
-
         // At this point, we have reference and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
         // So lets create it now and append it to failure dump later.
-        using var diffImage = referenceImageCroppedScaled
-            .CalcDiffImage(elementImageCroppedScaled)
+        using var diffImage = referenceImageCropped
+            .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
         // between the captured and the reference image. In the end, the lower values are better.
         // You can read more about how these statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = referenceImageCroppedScaled
-            .CompareTo(elementImageCroppedScaled);
+        var diff = referenceImageCropped
+            .CompareTo(elementImageCropped);
 
         try
         {
@@ -461,7 +445,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                referenceImageCroppedScaled.Clone(),
+                referenceImageCropped.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The cropped element image
@@ -475,7 +459,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                elementImageCroppedScaled.Clone(),
+                elementImageCropped.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The diff image
