@@ -220,7 +220,13 @@ to customize the name of the dump item.";
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
                 suggestedImage.Save(approvedContext.ReferenceImagePath, ImageFormat.Png);
-
+                // Appending suggested reference image to failure dump too.
+                context.AppendFailureDump(
+                    Path.Combine(
+                        VisualVerificationMatchNames.DumpFolderName,
+                        $"{approvedContext.ReferenceFileName}.png"),
+                    suggestedImage.Clone(new Rectangle(Point.Empty, suggestedImage.Size), suggestedImage.PixelFormat),
+                    messageIfExists: HintFailureDumpItemAlreadyExists);
                 throw new VisualVerificationReferenceImageNotFoundException(approvedContext.ReferenceImagePath);
             }
 
