@@ -49,11 +49,11 @@ public static class ScrollingUITestContextExtensions
     }
 
     /// <summary>
-    /// Hides browser scroll-bars if they were not hidden with <see cref="HideScrollBar(UITestContext)"/> previously.
+    /// Hides browser scrollbars if they were not hidden with <see cref="HideScrollbar(UITestContext)"/> previously.
     /// </summary>
-    public static void HideScrollBar(this UITestContext context)
+    public static void HideScrollbar(this UITestContext context)
     {
-        var hideScrollBar = @"
+        var hideScrollbar = @"
     if (!window.$Lombiq_Tests_UI_Scrolling_Context) {
         window.$Lombiq_Tests_UI_Scrolling_Context = {
             original: {
@@ -68,15 +68,15 @@ public static class ScrollingUITestContextExtensions
         window.$Lombiq_Tests_UI_Scrolling_Context.hidden = true;
     }
 ";
-        context.Driver.ExecuteScript(hideScrollBar);
+        context.Driver.ExecuteScript(hideScrollbar);
     }
 
     /// <summary>
-    /// Restores browser scroll-bars if they were hidden with <see cref="HideScrollBar(UITestContext)"/> previously.
+    /// Restores browser scrollbars if they were hidden with <see cref="HideScrollbar(UITestContext)"/> previously.
     /// </summary>
-    public static void RestoreHiddenScrollBar(this UITestContext context)
+    public static void RestoreHiddenScrollbar(this UITestContext context)
     {
-        var showScrollBar = @"
+        var showScrollbar = @"
     if (!window.$Lombiq_Tests_UI_Scrolling_Context || !window.$Lombiq_Tests_UI_Scrolling_Context.hidden) {
         return;
     }
@@ -84,15 +84,15 @@ public static class ScrollingUITestContextExtensions
     window.$Lombiq_Tests_UI_Scrolling_Context.hidden = false;
     document.body.style.overflow = window.$Lombiq_Tests_UI_Scrolling_Context.original.style.overflow;
 ";
-        context.Driver.ExecuteScript(showScrollBar);
+        context.Driver.ExecuteScript(showScrollbar);
     }
 
     /// <summary>
-    /// Gets that the browser scroll-bars were hidden with <see cref="HideScrollBar(UITestContext)"/> previously or not.
+    /// Gets that the browser scrollbars were hidden with <see cref="HideScrollbar(UITestContext)"/> previously or not.
     /// </summary>
-    public static bool GetIsScrollBarHidden(this UITestContext context)
+    public static bool GetIsScrollbarHidden(this UITestContext context)
     {
-        var scrollBarState = @"
+        var scrollbarState = @"
     if (!window.$Lombiq_Tests_UI_Scrolling_Context) {
         return false;
     }
@@ -100,6 +100,6 @@ public static class ScrollingUITestContextExtensions
     return !!window.$Lombiq_Tests_UI_Scrolling_Context.hidden;
 ";
 
-        return (bool)context.Driver.ExecuteScript(scrollBarState);
+        return (bool)context.Driver.ExecuteScript(scrollbarState);
     }
 }
