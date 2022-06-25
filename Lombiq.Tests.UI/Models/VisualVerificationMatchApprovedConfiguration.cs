@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Attributes;
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
 
@@ -16,6 +17,7 @@ public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMa
             moduleName,
             functionName,
             configuration.FileNameSuffix,
+            configuration.UsePlatformSuffix ? Environment.OSVersion.Platform.ToString() : null,
         }
         .JoinNotNullOrEmpty("_");
 
@@ -24,6 +26,16 @@ public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMa
     /// <see cref="VisualVerificationApprovedMethodAttribute"/>.
     /// </summary>
     public int StackOffset { get; private set; }
+
+    /// <summary>
+    /// Gets the list of <see cref="PlatformID"/> where the test can be run. If null, all platforms are selected.
+    /// </summary>
+    public IEnumerable<PlatformID> Platforms { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of reference file name.
+    /// </summary>
+    public bool UsePlatformSuffix { get; private set; }
 
     /// <summary>
     /// Sets <see cref="ReferenceFileNameFormatter"/>.
@@ -46,6 +58,26 @@ public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMa
     public VisualVerificationMatchApprovedConfiguration WithCallerLocation()
     {
         StackOffset = 1;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="Platforms"/>.
+    /// </summary>
+    public VisualVerificationMatchApprovedConfiguration WithPlatforms(params PlatformID[] platforms)
+    {
+        Platforms = platforms;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="UsePlatformSuffix"/>.
+    /// </summary>
+    public VisualVerificationMatchApprovedConfiguration WithUsePlatformSuffix()
+    {
+        UsePlatformSuffix = true;
 
         return this;
     }

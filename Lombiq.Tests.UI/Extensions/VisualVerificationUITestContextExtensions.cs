@@ -166,6 +166,11 @@ to customize the name of the dump item.";
         var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);
 
+        if (configuration.Platforms?.Any(platform => platform == Environment.OSVersion.Platform) is false)
+        {
+            return;
+        }
+
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.MethodInfo.MethodBase != null && !IsCompilerGenerated(frame));
         var testFrame = stackTrace

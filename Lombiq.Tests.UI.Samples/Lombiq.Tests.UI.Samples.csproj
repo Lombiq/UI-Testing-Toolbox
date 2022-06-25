@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <None Remove=".htmlvalidate.json" />
-    <None Remove="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand.png" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
   

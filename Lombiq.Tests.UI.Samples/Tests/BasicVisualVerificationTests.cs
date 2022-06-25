@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Xunit;
@@ -44,7 +45,11 @@ public class BasicVisualVerificationTests : UITestBase
 
                 // Here we check that the rendered content visually equals the reference image within a given error
                 // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
-                context.AssertVisualVerificationApproved(navbarElementSelector, 0, cropRegion);
+                context.AssertVisualVerificationApproved(
+                    navbarElementSelector,
+                    0,
+                    cropRegion,
+                    configurator: configuration => configuration.WithPlatforms(PlatformID.Win32NT));
             },
             browser);
 
@@ -61,7 +66,10 @@ public class BasicVisualVerificationTests : UITestBase
                 context.HideScrollbar();
 
                 // Here we need only the error percentage to validate the whole page.
-                context.AssertVisualVerificationApproved(0);
+                context.AssertVisualVerificationApproved(
+                    0,
+                    configurator: configuration => configuration.WithPlatforms(PlatformID.Win32NT)
+                    .WithUsePlatformSuffix());
             },
             browser);
 }
