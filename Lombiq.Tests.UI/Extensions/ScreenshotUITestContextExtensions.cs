@@ -1,7 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -106,16 +105,19 @@ public static class ScreenshotUITestContextExtensions
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
-        screenshot.Size
-            .ShouldBeGreaterThanOrEqualTo(
-                new Size(element.Location.X + element.Size.Width, element.Location.Y + element.Size.Height),
-                Comparer<Size>.Create((left, right) =>
-                {
-                    if (left.Height < right.Height || left.Width < right.Width) return -1;
-                    if (left.Height > right.Height || left.Width > right.Width) return 1;
+        var elementAbsoluteSize = new Size(
+            element.Location.X + element.Size.Width,
+            element.Location.Y + element.Size.Height);
 
-                    return 0;
-                }));
+        if (elementAbsoluteSize.Width > screenshot.Width || elementAbsoluteSize.Height > screenshot.Height)
+        {
+            throw new InvalidOperationException(
+                $@"\
+The captured screenshot size is smaller then required. Capured size: {screenshot.Width.ToTechnicalString()} x \
+{screenshot.Height.ToTechnicalString()}. Required size: {elementAbsoluteSize.Width.ToTechnicalString()} x \
+{elementAbsoluteSize.Height.ToTechnicalString()}.
+");
+        }
 
         return screenshot.Clone(
             new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height),

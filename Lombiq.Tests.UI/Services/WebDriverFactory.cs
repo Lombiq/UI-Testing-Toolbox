@@ -53,10 +53,9 @@ public static class WebDriverFactory
             // Disabling smooth scrolling
             chromeConfig.Options.AddArgument("disable-smooth-scrolling");
 
+            // Disabling font rendering related features. Visual verification tests are affected on linux.
             chromeConfig.Options.AddArgument("disable-font-subpixel-positioning");
             chromeConfig.Options.AddArgument("font-render-hinting=none");
-            chromeConfig.Options.AddArgument("ppapi-antialiased-text-enabled=0");
-            chromeConfig.Options.AddArgument("ppapi-subpixel-rendering-setting=0");
 
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
 
