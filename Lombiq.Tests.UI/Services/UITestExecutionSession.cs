@@ -273,7 +273,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             {
                 foreach (var toDump in failureDumpContainer)
                 {
-                    await SaveFailureDumpFromContextAsync(ex, debugInformationPath, toDump.Key, toDump.Value);
+                    await SaveFailureDumpFromContextAsync(debugInformationPath, toDump.Key, toDump.Value);
                 }
             }
         }
@@ -289,25 +289,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     }
 
     private async Task SaveFailureDumpFromContextAsync(
-        Exception ex,
         string debugInformationPath,
         string dumpRelativePath,
         IFailureDumpItem item)
     {
         try
         {
-            if (item.EnsureCanDump(ex))
-            {
-                using var dumpStream = await item.GetStreamAsync();
-                string filePath = Path.Combine(debugInformationPath, dumpRelativePath);
-                FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
+            using var dumpStream = await item.GetStreamAsync();
+            string filePath = Path.Combine(debugInformationPath, dumpRelativePath);
+            FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
 
-                using var dumpFile = File.Open(
-                    filePath,
-                    FileMode.Create,
-                    FileAccess.Write);
-                await dumpStream.CopyToAsync(dumpFile);
-            }
+            using var dumpFile = File.Open(
+                filePath,
+                FileMode.Create,
+                FileAccess.Write);
+            await dumpStream.CopyToAsync(dumpFile);
         }
         catch (Exception dumpException)
         {

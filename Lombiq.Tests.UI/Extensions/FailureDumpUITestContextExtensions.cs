@@ -26,11 +26,10 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         Func<UITestContext, Task<Stream>> action,
-        string messageIfExists = null,
-        Type[] inCaseOf = null) =>
+        string messageIfExists = null) =>
         context.AppendFailureDumpInternal(
             fileName,
-            new FailureDumpItem(() => action(context), inCaseOf: inCaseOf),
+            new FailureDumpItem(() => action(context)),
             messageIfExists);
 
     /// <summary>
@@ -38,22 +37,18 @@ public static class FailureDumpUITestContextExtensions
     /// </summary>
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
-    /// <param name="content">
-    /// File content.
-    /// </param>
+    /// <param name="content">File content.</param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
         string content,
-        string messageIfExists = null,
-        Type[] inCaseOf = null) =>
+        string messageIfExists = null) =>
         context.AppendFailureDumpInternal(
             fileName,
             new FailureDumpItem(
                 () => Task.FromResult(
                     new MemoryStream(
-                        Encoding.UTF8.GetBytes(content)) as Stream),
-                inCaseOf: inCaseOf),
+                        Encoding.UTF8.GetBytes(content)) as Stream)),
             messageIfExists);
 
     /// <summary>
@@ -61,9 +56,7 @@ public static class FailureDumpUITestContextExtensions
     /// </summary>
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
-    /// <param name="content">
-    /// File content.
-    /// </param>
+    /// <param name="content">File content.</param>
     /// <param name="getStream">Function to get a new <see cref="Stream"/> from content.</param>
     /// <param name="dispose">Action to dispose the content, if required. Can be null.</param>
     public static void AppendFailureDump<TContent>(
@@ -72,11 +65,10 @@ public static class FailureDumpUITestContextExtensions
         TContent content,
         Func<TContent, Task<Stream>> getStream,
         Action<TContent> dispose = null,
-        string messageIfExists = null,
-        Type[] inCaseOf = null) =>
+        string messageIfExists = null) =>
         context.AppendFailureDumpInternal(
             fileName,
-            new FailureDumpItemGeneric<TContent>(content, getStream, dispose, inCaseOf),
+            new FailureDumpItemGeneric<TContent>(content, getStream, dispose),
             messageIfExists);
 
     // [System.Drawing.Bitmap, System.Drawing] needed here, but System.Drawing.Bitmap is matching with
@@ -95,8 +87,7 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         Bitmap bitmap,
-        string messageIfExists = null,
-        Type[] inCaseOf = null) => context
+        string messageIfExists = null) => context
         .AppendFailureDump(
             fileName,
             bitmap,
@@ -108,8 +99,7 @@ public static class FailureDumpUITestContextExtensions
 
                 return Task.FromResult((Stream)memoryStream);
             },
-            messageIfExists: messageIfExists,
-            inCaseOf: inCaseOf);
+            messageIfExists: messageIfExists);
 
     /// <summary>
     /// Appends <see cref="ImageSharpImage"/> as file content to be collected on failure dump.
@@ -123,14 +113,12 @@ public static class FailureDumpUITestContextExtensions
         this UITestContext context,
         string fileName,
         ImageSharpImage image,
-        string messageIfExists = null,
-        Type[] inCaseOf = null) => context
+        string messageIfExists = null) => context
         .AppendFailureDump(
             fileName,
             image,
             content => Task.FromResult(image.ToStream()),
-            messageIfExists: messageIfExists,
-            inCaseOf: inCaseOf);
+            messageIfExists: messageIfExists);
 
     private static void AppendFailureDumpInternal(
         this UITestContext context,
