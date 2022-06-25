@@ -13,6 +13,8 @@ public class VisualVerificationMatchConfiguration<TSelf>
     /// </summary>
     public string FileNameSuffix { get; private set; }
 
+    public double Scale { get; private set; } = 1;
+
     /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.
     /// </summary>
@@ -31,6 +33,13 @@ public class VisualVerificationMatchConfiguration<TSelf>
     public TSelf WithFileNameSuffix(string value)
     {
         FileNameSuffix = value;
+
+        return (TSelf)this;
+    }
+
+    public TSelf WithScale(double value)
+    {
+        Scale = value;
 
         return (TSelf)this;
     }

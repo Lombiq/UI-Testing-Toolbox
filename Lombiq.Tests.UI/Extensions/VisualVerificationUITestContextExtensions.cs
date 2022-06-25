@@ -246,7 +246,8 @@ to customize the name of the dump item.";
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
                 cfg => cfg.WithFileNamePrefix(approvedContext.ReferenceFileName)
-                    .WithFileNameSuffix(string.Empty));
+                    .WithFileNameSuffix(string.Empty)
+                    .WithScale(configuration.Scale));
         }
         finally
         {
@@ -370,21 +371,36 @@ to customize the name of the dump item.";
         referenceImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
         elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
 
+        using var referenceImageCroppedScaled = referenceImageCropped.Clone();
+        using var elementImageCroppedScaled = elementImageCropped.Clone();
+        referenceImageCroppedScaled.Mutate(
+            imageContext =>
+            imageContext.Resize(
+                (int)(referenceImageCropped.Width * configuration.Scale),
+                (int)(referenceImageCropped.Height * configuration.Scale),
+                KnownResamplers.Bicubic));
+        elementImageCroppedScaled.Mutate(
+            imageContext =>
+            imageContext.Resize(
+                (int)(elementImageCropped.Width * configuration.Scale),
+                (int)(elementImageCropped.Height * configuration.Scale),
+                KnownResamplers.Bicubic));
+
         // At this point, we have reference and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
         // So lets create it now and append it to failure dump later.
-        using var diffImage = referenceImageCropped
-            .CalcDiffImage(elementImageCropped)
+        using var diffImage = referenceImageCroppedScaled
+            .CalcDiffImage(elementImageCroppedScaled)
             .ShouldNotBeNull();
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
         // between the captured and the reference image. In the end, the lower values are better.
         // You can read more about how these statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = referenceImageCropped
-            .CompareTo(elementImageCropped);
+        var diff = referenceImageCroppedScaled
+            .CompareTo(elementImageCroppedScaled);
 
         try
         {
@@ -445,7 +461,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                referenceImageCropped.Clone(),
+                referenceImageCroppedScaled.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The cropped element image
@@ -459,7 +475,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                elementImageCropped.Clone(),
+                elementImageCroppedScaled.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The diff image
@@ -576,8 +592,8 @@ calculated differences:
             if (!string.IsNullOrEmpty(loadedFrom))
             {
                 message
-            .AppendLine()
-            .AppendLine("Visual verification failed since the asserted element looks different from the reference image.")
+                    .AppendLine()
+                    .AppendLine("Visual verification failed since the asserted element looks different from the reference image.")
                     .AppendLine(
                         CultureInfo.InvariantCulture,
                         $"The reference image was loaded from {loadedFrom}.")

@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Xunit;
@@ -49,7 +48,7 @@ public class BasicVisualVerificationTests : UITestBase
                     navbarElementSelector,
                     0,
                     cropRegion,
-                    configurator: configuration => configuration.WithPlatforms(PlatformID.Win32NT));
+                    configurator: configuration => configuration.WithScale(0.8));
             },
             browser);
 
@@ -68,7 +67,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we need only the error percentage to validate the whole page.
                 context.AssertVisualVerificationApproved(
                     0,
-                    configurator: configuration => configuration.WithPlatforms(PlatformID.Win32NT));
+                    configurator: configuration => configuration.WithScale(0.8));
             },
             browser);
 }
