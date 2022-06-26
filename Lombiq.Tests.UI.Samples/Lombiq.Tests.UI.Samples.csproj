@@ -23,7 +23,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Unix_chrome.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Win32NT_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Unix_chrome.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_chrome.png" />
   </ItemGroup>
 
