@@ -8,13 +8,13 @@ public class VisualVerificationMatchApprovedConfiguration :
     VisualVerificationMatchConfiguration<VisualVerificationMatchApprovedConfiguration>
 {
     /// <summary>
-    /// Gets the callback to provide the reference file name. Parameters:
+    /// Gets the callback to provide the baseline file name. Parameters:
     /// <see cref="VisualVerificationMatchApprovedConfiguration"/>, <see cref="VisualVerificationMatchApprovedContext"/>.
     /// </summary>
     public Func<
         VisualVerificationMatchApprovedConfiguration,
         VisualVerificationMatchApprovedContext,
-        string> ReferenceFileNameFormatter
+        string> BaselineFileNameFormatter
     { get; private set; } = (configuration, context) => new[]
         {
             configuration.FileNamePrefix,
@@ -38,26 +38,26 @@ public class VisualVerificationMatchApprovedConfiguration :
     public IEnumerable<PlatformID> Platforms { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of reference file name.
+    /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of baseline file name.
     /// </summary>
     public bool UsePlatformAsSuffix { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the current browser name is used as a suffix of reference file name.
+    /// Gets a value indicating whether the current browser name is used as a suffix of baseline file name.
     /// </summary>
     public bool UseBrowserNameAsSuffix { get; private set; }
 
     /// <summary>
-    /// Sets <see cref="ReferenceFileNameFormatter"/>.
+    /// Sets <see cref="BaselineFileNameFormatter"/>.
     /// </summary>
     /// <param name="formatter">
-    /// Callback to provide the reference file name. Parameters:
+    /// Callback to provide the baseline file name. Parameters:
     /// <see cref="VisualVerificationMatchApprovedConfiguration"/>, <see cref="VisualVerificationMatchApprovedContext"/>.
     /// </param>
-    public VisualVerificationMatchApprovedConfiguration WithReferenceFileNameFormatter(
+    public VisualVerificationMatchApprovedConfiguration WithBaselineFileNameFormatter(
         Func<VisualVerificationMatchApprovedConfiguration, VisualVerificationMatchApprovedContext, string> formatter)
     {
-        ReferenceFileNameFormatter = formatter;
+        BaselineFileNameFormatter = formatter;
 
         return this;
     }

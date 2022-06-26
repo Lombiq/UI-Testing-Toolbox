@@ -28,21 +28,21 @@ Hint: You can use the configurator callback of {nameof(AssertVisualVerificationA
 to customize the name of the dump item.";
 
     /// <summary>
-    /// Compares the reference image and screenshot of the whole page. The pixel error percentage should be less than or
-    /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. The reference image is automatically
+    /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
+    /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. The baseline image is automatically
     /// loaded from assembly resource, if it doesn't exist exists then from the project path based on
     /// <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
-    /// reference image path is generated from the first method name - from the call stack which is not annotated with
+    /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
+    /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
+    /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
-    /// If no reference image found under project path.
+    /// <exception cref="VisualVerificationBaselineImageNotFoundException">
+    /// If no baseline image found under project path.
     /// </exception>
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationApproved(
@@ -57,13 +57,13 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
-    /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
+    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
     /// error percentage should be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
-    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// The baseline image is automatically loaded from assembly resource, if it doesn't exist exists then from the
     /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
-    /// reference image path is generated from the first method name - from the call stack which is not annotated with
+    /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
+    /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
+    /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
@@ -71,8 +71,8 @@ to customize the name of the dump item.";
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
-    /// If no reference image found under project path.
+    /// <exception cref="VisualVerificationBaselineImageNotFoundException">
+    /// If no baseline image found under project path.
     /// </exception>
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationApproved(
@@ -95,13 +95,13 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
-    /// Compares the reference image and screenshot of the element. The pixel error percentage should be less than or
+    /// Compares the baseline image and screenshot of the element. The pixel error percentage should be less than or
     /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
-    /// The reference image is automatically loaded from assembly resource, if it doesn't exist exists then from the
+    /// The baseline image is automatically loaded from assembly resource, if it doesn't exist exists then from the
     /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the reference image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationReferenceImageNotFoundException"/> will be thrown. The
-    /// reference image path is generated from the first method name - from the call stack which is not annotated with
+    /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
+    /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
+    /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
@@ -109,8 +109,8 @@ to customize the name of the dump item.";
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-    /// <exception cref="VisualVerificationReferenceImageNotFoundException">
-    /// If no reference image found under project path.
+    /// <exception cref="VisualVerificationBaselineImageNotFoundException">
+    /// If no baseline image found under project path.
     /// </exception>
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationApproved(
@@ -133,47 +133,47 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
-    /// Compares the reference image and screenshot of the whole page. The pixel error percentage should be less than or
+    /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
     /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="reference">The reference image.</param>
+    /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
-        Bitmap reference,
+        Bitmap baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
         context.AssertVisualVerification(
             By.TagName("body"),
-            reference,
+            baseline,
             pixelErrorPercentageThreshold,
             regionOfInterest,
             configurator);
 
     /// <summary>
-    /// Compares the reference image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
+    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
     /// error percentage should be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
-    /// <param name="reference">The reference image.</param>
+    /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
-        Bitmap reference,
+        Bitmap baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
         context.AssertVisualVerification(
             elementSelector,
-            reference,
+            baseline,
             diff =>
                 AssertInternal(
                     (actual, expected) => actual <= expected,
@@ -196,25 +196,25 @@ to customize the name of the dump item.";
             });
 
     /// <summary>
-    /// Compares the reference image and screenshot of the <paramref name="element"/>. The pixel error percentage should
+    /// Compares the baseline image and screenshot of the <paramref name="element"/>. The pixel error percentage should
     /// be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">The target element.</param>
-    /// <param name="reference">The reference image.</param>
+    /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
-        Bitmap reference,
+        Bitmap baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
         context.AssertVisualVerification(
             element,
-            reference,
+            baseline,
             diff =>
                 AssertInternal(
                     (actual, expected) => actual <= expected,
@@ -291,16 +291,16 @@ to customize the name of the dump item.";
             BrowserName = context.Driver.As<IHasCapabilities>().Capabilities.GetCapability("browserName") as string,
         };
 
-        approvedContext.ReferenceFileName = configuration.ReferenceFileNameFormatter(configuration, approvedContext);
+        approvedContext.BaselineFileName = configuration.BaselineFileNameFormatter(configuration, approvedContext);
 
-        // Try loading reference image from embedded resources first.
-        approvedContext.ReferenceResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.ReferenceFileName}.png";
-        var referenceImage = testFrame.MethodInfo.DeclaringType.Assembly
-            .TryGetResourceBitmap(approvedContext.ReferenceResourceName);
+        // Try loading baseline image from embedded resources first.
+        approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.BaselineFileName}.png";
+        var baselineImage = testFrame.MethodInfo.DeclaringType.Assembly
+            .TryGetResourceBitmap(approvedContext.BaselineResourceName);
 
-        if (referenceImage == null)
+        if (baselineImage == null)
         {
-            // Then if no resource exists, try load reference image from source.
+            // Then if no resource exists, try load baseline image from source.
             if (string.IsNullOrEmpty(testFrame.GetFileName()))
             {
                 throw new VisualVerificationSourceInformationNotAvailableException(
@@ -309,53 +309,53 @@ to customize the name of the dump item.";
             }
 
             approvedContext.ModuleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
-            approvedContext.ReferenceImagePath = Path.Combine(
+            approvedContext.BaselineImagePath = Path.Combine(
                 approvedContext.ModuleDirectory,
-                $"{approvedContext.ReferenceFileName}.png");
+                $"{approvedContext.BaselineFileName}.png");
 
-            if (!File.Exists(approvedContext.ReferenceImagePath))
+            if (!File.Exists(approvedContext.BaselineImagePath))
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
-                suggestedImage.Save(approvedContext.ReferenceImagePath, ImageFormat.Png);
-                // Appending suggested reference image to failure dump too.
+                suggestedImage.Save(approvedContext.BaselineImagePath, ImageFormat.Png);
+                // Appending suggested baseline image to failure dump too.
                 context.AppendFailureDump(
                     Path.Combine(
                         VisualVerificationMatchNames.DumpFolderName,
-                        $"{approvedContext.ReferenceFileName}.png"),
+                        $"{approvedContext.BaselineFileName}.png"),
                     suggestedImage.Clone(new Rectangle(Point.Empty, suggestedImage.Size), suggestedImage.PixelFormat),
                     messageIfExists: HintFailureDumpItemAlreadyExists);
-                throw new VisualVerificationReferenceImageNotFoundException(approvedContext.ReferenceImagePath);
+                throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
-            referenceImage = (Bitmap)Image.FromFile(approvedContext.ReferenceImagePath);
+            baselineImage = (Bitmap)Image.FromFile(approvedContext.BaselineImagePath);
         }
 
         try
         {
             context.AssertVisualVerification(
                 element,
-                referenceImage,
+                baselineImage,
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
-                cfg => cfg.WithFileNamePrefix(approvedContext.ReferenceFileName)
+                cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
                     .WithFileNameSuffix(string.Empty));
         }
         finally
         {
-            referenceImage?.Dispose();
+            baselineImage?.Dispose();
         }
     }
 
     private static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
-        Bitmap reference,
+        Bitmap baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
         context.AssertVisualVerification(
             context.Get(elementSelector),
-            reference,
+            baseline,
             comparator,
             regionOfInterest,
             configurator);
@@ -363,7 +363,7 @@ to customize the name of the dump item.";
     private static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
-        Bitmap reference,
+        Bitmap baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null)
@@ -371,13 +371,13 @@ to customize the name of the dump item.";
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
 
-        var cropRegion = regionOfInterest ?? new Rectangle(0, 0, reference.Width, reference.Height);
+        var cropRegion = regionOfInterest ?? new Rectangle(0, 0, baseline.Width, baseline.Height);
 
         // We take a full page screenshot before validating and append it to the failure dump later. This is useful to
         // investigate validation errors.
         using var fullScreenImage = context.TakeFullPageScreenshot();
 
-        // We take a screenshot of the element area. This will be compared to a reference image.
+        // We take a screenshot of the element area. This will be compared to a baseline image.
         using var elementImageOriginal = context.TakeElementScreenshot(element)
             .ToImageSharpImage()
             .ShouldNotBeNull();
@@ -388,30 +388,30 @@ to customize the name of the dump item.";
         elementImageOriginal.Height
             .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
 
-        using var referenceImageOriginal = reference
+        using var baselineImageOriginal = baseline
             .ToImageSharpImage();
 
         // Here we crop the regionOfInterest.
-        using var referenceImageCropped = referenceImageOriginal.Clone();
+        using var baselineImageCropped = baselineImageOriginal.Clone();
         using var elementImageCropped = elementImageOriginal.Clone();
 
-        referenceImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
+        baselineImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
         elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
 
-        // At this point, we have reference and captured images too.
+        // At this point, we have baseline and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
         // So lets create it now and append it to failure dump later.
-        using var diffImage = referenceImageCropped
+        using var diffImage = baselineImageCropped
             .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences
-        // between the captured and the reference image. In the end, the lower values are better.
+        // between the captured and the baseline image. In the end, the lower values are better.
         // You can read more about how these statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = referenceImageCropped
+        var diff = baselineImageCropped
             .CompareTo(elementImageCropped);
 
         try
@@ -448,32 +448,32 @@ to customize the name of the dump item.";
                 elementImageOriginal.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
-            // The original reference image
+            // The original baseline image
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
                     new[]
                     {
                         configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.ReferenceImageFileName,
+                        VisualVerificationMatchNames.BaselineImageFileName,
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                referenceImageOriginal.Clone(),
+                baselineImageOriginal.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
-            // The cropped reference image
+            // The cropped baseline image
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
                     new[]
                     {
                         configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.CroppedReferenceImageFileName,
+                        VisualVerificationMatchNames.CroppedBaselineImageFileName,
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                referenceImageCropped.Clone(),
+                baselineImageCropped.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The cropped element image
@@ -592,24 +592,24 @@ calculated differences:
         if (approvedContext != null)
         {
             string loadedFrom = null;
-            if (!string.IsNullOrEmpty(approvedContext.ReferenceImagePath))
+            if (!string.IsNullOrEmpty(approvedContext.BaselineImagePath))
             {
-                loadedFrom = $"file: {approvedContext.ReferenceImagePath}";
+                loadedFrom = $"file: {approvedContext.BaselineImagePath}";
             }
-            else if (!string.IsNullOrEmpty(approvedContext.ReferenceResourceName))
+            else if (!string.IsNullOrEmpty(approvedContext.BaselineResourceName))
             {
-                loadedFrom = $"embedded resource: {approvedContext.ReferenceResourceName}";
+                loadedFrom = $"embedded resource: {approvedContext.BaselineResourceName}";
             }
 
             if (!string.IsNullOrEmpty(loadedFrom))
             {
                 message
                     .AppendLine()
-                    .AppendLine("Visual verification failed since the asserted element looks different from the reference image.")
+                    .AppendLine("Visual verification failed since the asserted element looks different from the baseline image.")
                     .AppendLine(
                         CultureInfo.InvariantCulture,
-                        $"The reference image was loaded from {loadedFrom}.")
-                    .Append("If you want a new reference image, simply delete the existing one ")
+                        $"The baseline image was loaded from {loadedFrom}.")
+                    .Append("If you want a new baseline image, simply delete the existing one ")
                     .AppendLine("and a new one will be generated on next run.");
             }
         }

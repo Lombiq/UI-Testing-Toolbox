@@ -36,7 +36,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // We set the browser's window size, DPI, and scale settings explicitly to make the test environment
                 // similar on every platform.
 
-                // Here we check that the rendered content visually equals the reference image within a given error
+                // Here we check that the rendered content visually equals the baseline image within a given error
                 // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
                 context.AssertVisualVerificationApproved(navbarElementSelector, 0, configurator: configuration => configuration
                 .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
