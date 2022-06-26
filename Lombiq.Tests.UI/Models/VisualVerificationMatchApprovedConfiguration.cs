@@ -27,7 +27,7 @@ public class VisualVerificationMatchApprovedConfiguration :
         .JoinNotNullOrEmpty("_");
 
     /// <summary>
-    /// Gets the stack offset relative to the first method in the call stack which is not decorated with
+    /// Gets the stack offset relative to the first method in the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/>.
     /// </summary>
     public int StackOffset { get; private set; }

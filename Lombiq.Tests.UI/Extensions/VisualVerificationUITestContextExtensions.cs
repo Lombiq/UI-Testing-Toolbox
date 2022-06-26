@@ -373,8 +373,8 @@ to customize the name of the dump item.";
 
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, baseline.Width, baseline.Height);
 
-        // We take a full page screenshot before validating and append it to the failure dump later. This is useful to
-        // investigate validation errors.
+        // We take a full-page screenshot before validating. It will be appended to the failure dump later. This is
+        // useful to investigate validation errors.
         using var fullScreenImage = context.TakeFullPageScreenshot();
 
         // We take a screenshot of the element area. This will be compared to a baseline image.
@@ -420,6 +420,7 @@ to customize the name of the dump item.";
         }
         catch
         {
+            // Here we append all the relevant items to the failure dump to help the investigation.
             // The full-page screenshot
             context.AppendFailureDump(
                 Path.Combine(
