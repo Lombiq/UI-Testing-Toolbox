@@ -50,7 +50,7 @@ public class BasicVisualVerificationTests : UITestBase
                     0,
                     cropRegion,
                     configurator: configuration => configuration
-                    .WithPlatforms(PlatformID.Win32NT)
+                    .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                     .WithUsePlatformAsSuffix()
                     .WithUseBrowserNameAsSuffix());
             },
@@ -70,7 +70,7 @@ public class BasicVisualVerificationTests : UITestBase
 
                 // Here we need only the error percentage to validate the whole page.
                 context.AssertVisualVerificationApproved(0, configurator: configuration => configuration
-                .WithPlatforms(PlatformID.Win32NT)
+                .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                 .WithUsePlatformAsSuffix()
                 .WithUseBrowserNameAsSuffix());
             },
