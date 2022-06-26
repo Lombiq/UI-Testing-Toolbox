@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Lombiq.Tests.UI.Models;
 
 public class VisualVerificationMatchConfiguration<TSelf>
@@ -12,6 +15,11 @@ public class VisualVerificationMatchConfiguration<TSelf>
     /// Gets the suffix applied to all file names.
     /// </summary>
     public string FileNameSuffix { get; private set; }
+
+    /// <summary>
+    /// Gets the list of <see cref="PlatformID"/> where the test can be run. If null, all platforms are selected.
+    /// </summary>
+    public IEnumerable<PlatformID> Platforms { get; private set; }
 
     /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.
@@ -31,6 +39,16 @@ public class VisualVerificationMatchConfiguration<TSelf>
     public TSelf WithFileNameSuffix(string value)
     {
         FileNameSuffix = value;
+
+        return (TSelf)this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="Platforms"/>.
+    /// </summary>
+    public TSelf WithPlatforms(params PlatformID[] platforms)
+    {
+        Platforms = platforms;
 
         return (TSelf)this;
     }

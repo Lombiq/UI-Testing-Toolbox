@@ -33,11 +33,6 @@ public class VisualVerificationMatchApprovedConfiguration :
     public int StackOffset { get; private set; }
 
     /// <summary>
-    /// Gets the list of <see cref="PlatformID"/> where the test can be run. If null, all platforms are selected.
-    /// </summary>
-    public IEnumerable<PlatformID> Platforms { get; private set; }
-
-    /// <summary>
     /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of baseline file name.
     /// </summary>
     public bool UsePlatformAsSuffix { get; private set; }
@@ -68,16 +63,6 @@ public class VisualVerificationMatchApprovedConfiguration :
     public VisualVerificationMatchApprovedConfiguration WithCallerLocation()
     {
         StackOffset = 1;
-
-        return this;
-    }
-
-    /// <summary>
-    /// Sets <see cref="Platforms"/>.
-    /// </summary>
-    public VisualVerificationMatchApprovedConfiguration WithPlatforms(params PlatformID[] platforms)
-    {
-        Platforms = platforms;
 
         return this;
     }

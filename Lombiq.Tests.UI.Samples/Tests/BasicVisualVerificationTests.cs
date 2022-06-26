@@ -38,8 +38,13 @@ public class BasicVisualVerificationTests : UITestBase
                 // percentage only for the platforms given by WithPlatforms() configuration. You can read more about
                 // this in the AssertVisualVerificationApproved method documentation.
                 context.AssertVisualVerificationApproved(navbarElementSelector, 0, configurator: configuration => configuration
+                // With this configuration, we select the platforms to which the verification is applied.
                 .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
+                // With this configuration, the PlatformID will be used as a suffix at the end of the baseline image
+                // file name.
                 .WithUsePlatformAsSuffix()
+                // With this configuration, the browser name provided by selenium will be used as a suffix at the end of
+                // the baseline image file name.
                 .WithUseBrowserNameAsSuffix());
             },
             browser);
