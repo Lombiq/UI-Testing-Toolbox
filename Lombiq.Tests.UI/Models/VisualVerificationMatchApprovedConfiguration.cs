@@ -4,20 +4,25 @@ using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMatchConfiguration<VisualVerificationMatchApprovedConfiguration>
+public class VisualVerificationMatchApprovedConfiguration :
+    VisualVerificationMatchConfiguration<VisualVerificationMatchApprovedConfiguration>
 {
     /// <summary>
-    /// Gets the callback to provide the reference file name. Parameters: the configuration, the module name,
-    /// the method name.
+    /// Gets the callback to provide the reference file name. Parameters:
+    /// <see cref="VisualVerificationMatchApprovedConfiguration"/>, <see cref="VisualVerificationMatchApprovedContext"/>.
     /// </summary>
-    public Func<VisualVerificationMatchApprovedConfiguration, string, string, string> ReferenceFileNameFormatter { get; private set; }
-        = (configuration, moduleName, functionName) => new[]
+    public Func<
+        VisualVerificationMatchApprovedConfiguration,
+        VisualVerificationMatchApprovedContext,
+        string> ReferenceFileNameFormatter
+    { get; private set; } = (configuration, context) => new[]
         {
             configuration.FileNamePrefix,
-            moduleName,
-            functionName,
+            context.ModuleName,
+            context.MethodName,
             configuration.FileNameSuffix,
-            configuration.UsePlatformSuffix ? Environment.OSVersion.Platform.ToString() : null,
+            configuration.UsePlatformAsSuffix ? Environment.OSVersion.Platform.ToString() : null,
+            configuration.UseBrowserNameAsSuffix ? context.BrowserName : null,
         }
         .JoinNotNullOrEmpty("_");
 
@@ -35,17 +40,22 @@ public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMa
     /// <summary>
     /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of reference file name.
     /// </summary>
-    public bool UsePlatformSuffix { get; private set; }
+    public bool UsePlatformAsSuffix { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the current browser name is used as a suffix of reference file name.
+    /// </summary>
+    public bool UseBrowserNameAsSuffix { get; private set; }
 
     /// <summary>
     /// Sets <see cref="ReferenceFileNameFormatter"/>.
     /// </summary>
     /// <param name="formatter">
-    /// Callback to provide the reference file name. The first parameter is the module name, the second parameter is the
-    /// method name.
+    /// Callback to provide the reference file name. Parameters:
+    /// <see cref="VisualVerificationMatchApprovedConfiguration"/>, <see cref="VisualVerificationMatchApprovedContext"/>.
     /// </param>
     public VisualVerificationMatchApprovedConfiguration WithReferenceFileNameFormatter(
-        Func<VisualVerificationMatchApprovedConfiguration, string, string, string> formatter)
+        Func<VisualVerificationMatchApprovedConfiguration, VisualVerificationMatchApprovedContext, string> formatter)
     {
         ReferenceFileNameFormatter = formatter;
 
@@ -73,11 +83,21 @@ public class VisualVerificationMatchApprovedConfiguration : VisualVerificationMa
     }
 
     /// <summary>
-    /// Sets <see cref="UsePlatformSuffix"/>.
+    /// Sets <see cref="UsePlatformAsSuffix"/>.
     /// </summary>
-    public VisualVerificationMatchApprovedConfiguration WithUsePlatformSuffix()
+    public VisualVerificationMatchApprovedConfiguration WithUsePlatformAsSuffix()
     {
-        UsePlatformSuffix = true;
+        UsePlatformAsSuffix = true;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="UseBrowserNameAsSuffix"/>.
+    /// </summary>
+    public VisualVerificationMatchApprovedConfiguration WithUseBrowserNameAsSuffix()
+    {
+        UseBrowserNameAsSuffix = true;
 
         return this;
     }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -23,8 +23,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body.png" />
-    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Win32NT_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_chrome.png" />
   </ItemGroup>
 
   <ItemGroup>
