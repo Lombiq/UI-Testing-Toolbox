@@ -33,11 +33,10 @@ public class BasicVisualVerificationTests : UITestBase
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
 
                 var navbarElementSelector = By.ClassName("navbar-brand");
-                // We set the browser's window size, DPI, and scale settings explicitly to make the test environment
-                // similar on every platform.
 
                 // Here we check that the rendered content visually equals the baseline image within a given error
-                // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
+                // percentage only for the platforms given by WithPlatforms() configuration. You can read more about
+                // this in the AssertVisualVerificationApproved method documentation.
                 context.AssertVisualVerificationApproved(navbarElementSelector, 0, configurator: configuration => configuration
                 .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                 .WithUsePlatformAsSuffix()
@@ -57,7 +56,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // context.RestoreHiddenScrollbar().
                 context.HideScrollbar();
 
-                // Here we need only the error percentage to validate the whole page.
+                // Here we don't need any element selector to validate the whole page.
                 context.AssertVisualVerificationApproved(0, configurator: configuration => configuration
                 .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                 .WithUsePlatformAsSuffix()
