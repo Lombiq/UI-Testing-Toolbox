@@ -345,7 +345,9 @@ to customize the name of the dump item.";
             if (string.IsNullOrEmpty(testFrame.GetFileName()))
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
+
                 var suggestedImageFileName = $"{approvedContext.BaselineFileName}.png";
+
                 context.AppendFailureDump(
                     Path.Combine(
                         VisualVerificationMatchNames.DumpFolderName,
