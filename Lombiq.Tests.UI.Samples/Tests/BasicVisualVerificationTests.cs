@@ -50,15 +50,19 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we check that the rendered content visually equals the baseline image within a given error
                 // percentage only for the platforms given by WithPlatforms() configuration. You can read more about
                 // this in the AssertVisualVerificationApproved method documentation.
-                context.AssertVisualVerificationApproved(navbarElementSelector, 0, configurator: configuration => configuration
-                // With this configuration, we select the platforms to which the verification is applied.
-                .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
-                // With this configuration, the PlatformID will be used as a suffix at the end of the baseline image
-                // file name.
-                .WithUsePlatformAsSuffix()
-                // With this configuration, the browser name provided by selenium will be used as a suffix at the end of
-                // the baseline image file name.
-                .WithUseBrowserNameAsSuffix());
+                context.AssertVisualVerificationApproved(
+                    navbarElementSelector,
+                    0,
+                    configurator: configuration =>
+                        configuration
+                            // With this configuration, we select the platforms to which the verification is applied to.
+                            .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
+                            // With this configuration, the PlatformID will be used as a suffix at the end of the
+                            // baseline image file name.
+                            .WithUsePlatformAsSuffix()
+                            // With this configuration, the browser name provided by Selenium will be used as a suffix
+                            // at the end of the baseline image file name.
+                            .WithUseBrowserNameAsSuffix());
             },
             browser);
 
