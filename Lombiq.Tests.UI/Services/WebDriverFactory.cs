@@ -7,9 +7,13 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
+using WebDriverManager.Helpers;
+using Architecture = WebDriverManager.Helpers.Architecture;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -49,7 +53,7 @@ public static class WebDriverFactory
             chromeConfig.Options.AddArgument("force-device-scale-factor=1");
             chromeConfig.Options.AddArgument("high-dpi-support=1");
 
-            // Disabling smooth scrolling
+            // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
             chromeConfig.Options.AddArgument("disable-smooth-scrolling");
 
             if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
@@ -73,7 +77,7 @@ public static class WebDriverFactory
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new StaticVersionEdgeConfig(), () =>
+        CreateDriver(new CustomEdgeConfig(), () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -93,7 +97,7 @@ public static class WebDriverFactory
             options.AddArgument("force-device-scale-factor=1");
             options.AddArgument("high-dpi-support=1");
 
-            // Disabling smooth scrolling
+            // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
             options.AddArgument("disable-smooth-scrolling");
 
             if (configuration.Headless) options.AddArgument("headless");
@@ -111,7 +115,11 @@ public static class WebDriverFactory
         var options = new FirefoxOptions().SetCommonOptions();
 
         options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+
+        // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
         options.SetPreference("general.smoothScroll", preferenceValue: false);
+
+        // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
         options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
@@ -164,8 +172,8 @@ public static class WebDriverFactory
 
         try
         {
-            // Firefox: The driverConfig.GetMatchingBrowserVersion() resolves the browser version but not the geckodriver
-            // version. Geckodriver releases: https://github.com/mozilla/geckodriver/releases.
+            // Firefox: The FirefoxConfig.GetMatchingBrowserVersion() resolves the browser version but not the
+            // geckodriver version. Geckodriver releases: https://github.com/mozilla/geckodriver/releases.
             version = driverConfig is FirefoxConfig
                 ? driverConfig.GetLatestVersion()
                 : driverConfig.GetMatchingBrowserVersion();
@@ -197,14 +205,73 @@ public static class WebDriverFactory
         }
     }
 
-    private class StaticVersionEdgeConfig : EdgeConfig
-    {
-        public override string GetLatestVersion() => "83.0.478.37";
-    }
-
     private sealed class ChromeConfiguration
     {
         public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
+    }
+
+    private sealed class CustomEdgeConfig : IDriverConfig
+    {
+        public string GetName() => "Edge";
+
+        public string GetBinaryName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "msedgedriver";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "msedgedriver.exe";
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
+
+        public string GetUrl32() => GetUrl(Architecture.X32);
+
+        public string GetUrl64() => GetUrl(Architecture.X64);
+
+        public string GetLatestVersion() => GetLatestVersion("https://msedgedriver.azureedge.net/LATEST_STABLE");
+
+        private static string GetLatestVersion(string url)
+        {
+            var uri = new Uri(url);
+            using var client = new HttpClient();
+
+            return client.GetStringAsync(uri).Result.Trim();
+        }
+
+        public string GetMatchingBrowserVersion()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return RegistryHelper.GetInstalledBrowserVersionLinux("msedge", "--version");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return RegistryHelper.GetInstalledBrowserVersionWin("msedge.exe");
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
+
+        private static string GetUrl(Architecture architecture)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && architecture == Architecture.X64)
+            {
+                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_linux{((int)architecture).ToTechnicalString()}.zip";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_win{((int)architecture).ToTechnicalString()}.zip";
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
     }
 }

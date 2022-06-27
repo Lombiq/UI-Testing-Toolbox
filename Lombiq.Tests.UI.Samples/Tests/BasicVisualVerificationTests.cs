@@ -34,7 +34,7 @@ public class BasicVisualVerificationTests : UITestBase
     // Checking that everything is OK with the branding of the navbar on the homepage.
     // For this magic we are using the ImageSharp.Compare package. You can find more info about it here:
     // https://github.com/Codeuctivity/ImageSharp.Compare
-    [Theory, Chrome, Firefox]
+    [Theory, Chrome, Firefox, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -63,7 +63,7 @@ public class BasicVisualVerificationTests : UITestBase
             browser);
 
     // Checking that everything is OK with the homepage, just for fun.
-    [Theory, Chrome, Firefox]
+    [Theory, Chrome, Firefox, Edge]
     public Task VerifyHomePage(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
