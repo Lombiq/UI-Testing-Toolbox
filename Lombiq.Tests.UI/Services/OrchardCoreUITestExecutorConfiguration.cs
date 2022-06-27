@@ -54,7 +54,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public int MaxParallelTests { get; set; } =
             TestConfigurationManager.GetIntConfiguration(
                 $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is not { } intValue || intValue == 0
-                ? 4
+                ? 5
                 : intValue;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
