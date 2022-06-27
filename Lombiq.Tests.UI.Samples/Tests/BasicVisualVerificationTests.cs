@@ -79,10 +79,11 @@ public class BasicVisualVerificationTests : UITestBase
                 context.HideScrollbar();
 
                 // Here we don't need any element selector to validate the whole page.
-                context.AssertVisualVerificationApproved(0, configurator: configuration => configuration
-                .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
-                .WithUsePlatformAsSuffix()
-                .WithUseBrowserNameAsSuffix());
+                context.AssertVisualVerificationApproved(0, configurator: configuration =>
+                    configuration
+                        .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
+                        .WithUsePlatformAsSuffix()
+                        .WithUseBrowserNameAsSuffix());
             },
             browser);
 }
