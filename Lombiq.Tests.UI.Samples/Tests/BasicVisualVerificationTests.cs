@@ -18,10 +18,23 @@ public class BasicVisualVerificationTests : UITestBase
     {
     }
 
+    [Theory, Chrome]
+    public Task VerifyBlogImage(Browser browser) =>
+        ExecuteTestAfterSetupAsync(
+            context =>
+            {
+                context.SetViewportSize(CommonDisplayResolutions.HdPlus);
+                context.HideScrollbar();
+                var blogImageElementSelector = By.ClassName("field-name-blog-image");
+
+                context.AssertVisualVerificationApproved(blogImageElementSelector, 0);
+            },
+            browser);
+
     // Checking that everything is OK with the branding of the navbar on the homepage.
     // For this magic we are using the ImageSharp.Compare package. You can find more info about it here:
     // https://github.com/Codeuctivity/ImageSharp.Compare
-    [Theory, Chrome]
+    [Theory, Chrome, Firefox, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -50,7 +63,7 @@ public class BasicVisualVerificationTests : UITestBase
             browser);
 
     // Checking that everything is OK with the homepage, just for fun.
-    [Theory, Chrome]
+    [Theory, Chrome, Edge, Firefox]
     public Task VerifyHomePage(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>

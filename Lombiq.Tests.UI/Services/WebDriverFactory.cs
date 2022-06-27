@@ -10,7 +10,6 @@ using System.Net;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
-using WebDriverManager.Helpers;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -76,15 +75,6 @@ public static class WebDriverFactory
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
         CreateDriver(new StaticVersionEdgeConfig(), () =>
         {
-            // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
-            var config = new StaticVersionEdgeConfig();
-            var architecture = ArchitectureHelper.GetArchitecture();
-            // Using a hard-coded version for now to use the latest released one instead of canary that would be
-            // returned by EdgeConfig.GetLatestVersion(). See:
-            // https://github.com/rosolko/WebDriverManager.Net/issues/74
-            var version = config.GetLatestVersion();
-            var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
-
             var options = new EdgeOptions().SetCommonOptions();
 
             if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
@@ -92,11 +82,25 @@ public static class WebDriverFactory
                 options.AddArgument("--lang=" + configuration.AcceptLanguage);
             }
 
+            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+            options.AddArgument("disable-accelerated-2d-canvas");
+            options.AddArgument("disable-gpu");
+
+            // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
+            options.AddArgument("force-color-profile=sRGB");
+
+            // Disabling DPI scaling.
+            options.AddArgument("force-device-scale-factor=1");
+            options.AddArgument("high-dpi-support=1");
+
+            // Disabling smooth scrolling
+            options.AddArgument("disable-smooth-scrolling");
+
             if (configuration.Headless) options.AddArgument("headless");
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            var service = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path));
+            var service = EdgeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
 
             return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
@@ -107,6 +111,9 @@ public static class WebDriverFactory
         var options = new FirefoxOptions().SetCommonOptions();
 
         options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+        options.SetPreference("general.smoothScroll", preferenceValue: false);
+        options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
+        options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
         if (configuration.Headless) options.AddArgument("--headless");
 
@@ -157,7 +164,11 @@ public static class WebDriverFactory
 
         try
         {
-            version = driverConfig.GetMatchingBrowserVersion();
+            // Firefox: The driverConfig.GetMatchingBrowserVersion() resolves the browser version but not the geckodriver
+            // version. Geckodriver releases: https://github.com/mozilla/geckodriver/releases.
+            version = driverConfig is FirefoxConfig
+                ? driverConfig.GetLatestVersion()
+                : driverConfig.GetMatchingBrowserVersion();
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
             // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
