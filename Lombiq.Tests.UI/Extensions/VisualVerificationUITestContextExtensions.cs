@@ -369,7 +369,9 @@ to customize the name of the dump item.";
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
+
                 suggestedImage.Save(approvedContext.BaselineImagePath, ImageFormat.Png);
+
                 // Appending suggested baseline image to failure dump too.
                 context.AppendFailureDump(
                     Path.Combine(
@@ -377,6 +379,7 @@ to customize the name of the dump item.";
                         $"{approvedContext.BaselineFileName}.png"),
                     suggestedImage.Clone(new Rectangle(Point.Empty, suggestedImage.Size), suggestedImage.PixelFormat),
                     messageIfExists: HintFailureDumpItemAlreadyExists);
+
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
