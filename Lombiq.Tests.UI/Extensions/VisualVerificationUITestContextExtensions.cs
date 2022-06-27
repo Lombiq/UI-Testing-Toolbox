@@ -300,9 +300,8 @@ to customize the name of the dump item.";
         var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);
 
-        if (configuration.Platforms?.Any(platform => platform == Environment.OSVersion.Platform) is false)
+        if (!IsPlatformSelected(context, configuration))
         {
-            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Test skipped based on configuration.");
             return;
         }
 
@@ -428,9 +427,8 @@ to customize the name of the dump item.";
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
 
-        if (configuration.Platforms?.Any(platform => platform == Environment.OSVersion.Platform) is false)
+        if (!IsPlatformSelected(context, configuration))
         {
-            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Test skipped based on configuration.");
             return;
         }
 
@@ -679,6 +677,24 @@ calculated differences:
         }
 
         return message.ToString();
+    }
+
+    private static bool IsPlatformSelected<TConfiguration>(
+        UITestContext context,
+        VisualVerificationMatchConfiguration<TConfiguration> configuration)
+        where TConfiguration : VisualVerificationMatchConfiguration<TConfiguration>
+    {
+        if (configuration.Platforms?.Count() > 0
+            && configuration.Platforms?.Any(platform => platform == Environment.OSVersion.Platform) is false)
+        {
+            var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true));
+
+            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                $"Test skipped based on configuration. Stack trace: {stackTrace}");
+            return false;
+        }
+
+        return true;
     }
 
     private static bool IsVisualVerificationMethod(EnhancedStackFrame frame) =>
