@@ -31,7 +31,7 @@ to customize the name of the dump item.";
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
     /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. The baseline image is automatically
-    /// loaded from assembly resource, if it doesn't exist exists then from the project path based on
+    /// loaded from assembly resource, if it doesn't exist then from the project path based on
     /// <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
     /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
     /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
