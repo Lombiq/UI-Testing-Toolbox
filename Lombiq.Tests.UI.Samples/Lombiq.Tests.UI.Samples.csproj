@@ -23,10 +23,19 @@
   </ItemGroup>
   
   <ItemGroup>
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyBlogImage_By_ClassName[Contains]_-field-name-blog-image.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Unix_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Unix_firefox.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Unix_msedge.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Win32NT_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Win32NT_firefox.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyHomePage_By_TagName_-body_Win32NT_msedge.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Unix_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Unix_firefox.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Unix_msedge.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_chrome.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_firefox.png" />
+    <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_msedge.png" />
   </ItemGroup>
 
   <ItemGroup>
