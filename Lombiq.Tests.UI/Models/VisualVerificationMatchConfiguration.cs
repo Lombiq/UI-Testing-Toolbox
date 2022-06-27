@@ -17,9 +17,9 @@ public class VisualVerificationMatchConfiguration<TSelf>
     public string FileNameSuffix { get; private set; }
 
     /// <summary>
-    /// Gets the list of <see cref="PlatformID"/>s where the test can be run. If null, all platforms are selected.
+    /// Gets the list of <see cref="PlatformID"/>s where the test can be run. If null or empty, all platforms are selected.
     /// </summary>
-    public IEnumerable<PlatformID> Platforms { get; private set; }
+    public IEnumerable<PlatformID> Platforms { get; private set; } = Array.Empty<PlatformID>();
 
     /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.

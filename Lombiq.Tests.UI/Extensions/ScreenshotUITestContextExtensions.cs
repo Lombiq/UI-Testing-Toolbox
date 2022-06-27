@@ -112,11 +112,10 @@ public static class ScreenshotUITestContextExtensions
         if (elementAbsoluteSize.Width > screenshot.Width || elementAbsoluteSize.Height > screenshot.Height)
         {
             throw new InvalidOperationException(
-                $@"\
-The captured screenshot size is smaller then required. Capured size: {screenshot.Width.ToTechnicalString()} x \
-{screenshot.Height.ToTechnicalString()}. Required size: {elementAbsoluteSize.Width.ToTechnicalString()} x \
-{elementAbsoluteSize.Height.ToTechnicalString()}.
-");
+                $@"The captured screenshot size is smaller then required. Captured size: \
+{screenshot.Width.ToTechnicalString()} x {screenshot.Height.ToTechnicalString()}. Required size: \
+{elementAbsoluteSize.Width.ToTechnicalString()} x {elementAbsoluteSize.Height.ToTechnicalString()}. This can occur if \
+there was an unsuccessful scrolling operation while capturing page parts.");
         }
 
         return screenshot.Clone(

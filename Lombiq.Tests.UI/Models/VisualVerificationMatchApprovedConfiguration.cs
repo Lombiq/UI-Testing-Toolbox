@@ -33,12 +33,12 @@ public class VisualVerificationMatchApprovedConfiguration :
     public int StackOffset { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of baseline file name.
+    /// Gets a value indicating whether the current <see cref="PlatformID"/> is used as a suffix of the baseline file name.
     /// </summary>
     public bool UsePlatformAsSuffix { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the current browser name is used as a suffix of baseline file name.
+    /// Gets a value indicating whether the current browser name is used as a suffix of the baseline file name.
     /// </summary>
     public bool UseBrowserNameAsSuffix { get; private set; }
 
