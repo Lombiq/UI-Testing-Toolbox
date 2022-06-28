@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Lombiq.Tests.UI.Models;
 
 public class VisualVerificationMatchConfiguration<TSelf>
