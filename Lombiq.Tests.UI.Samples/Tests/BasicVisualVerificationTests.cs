@@ -54,7 +54,7 @@ public class BasicVisualVerificationTests : UITestBase
     // why is the different rendering of text on each platform, but it can occur between different Linux distributions
     // too. Here(https://pandasauce.org/post/linux-fonts/) you can find a good summary about this from 2019, but still
     // valid in 2022.
-    [Theory, Chrome, Edge, Firefox]
+    [Theory, Chrome, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -77,7 +77,7 @@ public class BasicVisualVerificationTests : UITestBase
             browser);
 
     // Checking that everything is OK with the homepage, just for fun.
-    [Theory, Chrome, Edge, Firefox]
+    [Theory, Chrome, Edge]
     public Task VerifyHomePage(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
