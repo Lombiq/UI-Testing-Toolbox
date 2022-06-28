@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -72,8 +71,6 @@ public class BasicVisualVerificationTests : UITestBase
                     0,
                     configurator: configuration =>
                         configuration
-                            // With this configuration, we select the platforms to which the verification is applied to.
-                            .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                             // With this configuration, the PlatformID will be used as a suffix at the end of the
                             // baseline image file name.
                             .WithUsePlatformAsSuffix()
@@ -95,7 +92,6 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we don't need any element selector to validate the whole page.
                 context.AssertVisualVerificationApproved(0, configurator: configuration =>
                     configuration
-                        .WithPlatforms(PlatformID.Win32NT, PlatformID.Unix)
                         .WithUsePlatformAsSuffix()
                         .WithUseBrowserNameAsSuffix());
             },

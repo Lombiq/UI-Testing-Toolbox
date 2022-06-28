@@ -17,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -41,10 +40,9 @@ to customize the name of the dump item.";
     /// mind that, the font rendering results different visuals. This means that you should use different baseline
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
-    /// and using the image dumped on failure. Don't forget to configure the platforms with
-    /// <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/> and suffixes as needed
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/> and
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
     /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
@@ -79,10 +77,9 @@ to customize the name of the dump item.";
     /// mind that, the font rendering results different visuals. This means that you should use different baseline
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a
-    /// CI and using the image dumped on failure. Don't forget to configure the platforms with
-    /// <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/> and suffixes as needed
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/> and
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// CI and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
     /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
@@ -126,10 +123,9 @@ to customize the name of the dump item.";
     /// mind that, the font rendering results different visuals. This means that you should use different baseline
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
-    /// and using the image dumped on failure. Don't forget to configure the platforms with
-    /// <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/> and suffixes as needed
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/> and
-    /// <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
     /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
@@ -164,9 +160,7 @@ to customize the name of the dump item.";
     /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
     /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In case when you want visually validate
     /// elements that contain text on multiple platforms/browsers then keep in mind that, the font rendering results
-    /// different visuals. This means that you should use different baseline images for each platform. Don't forget to
-    /// configure the platforms with <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/>
-    /// using <paramref name="configurator"/>.
+    /// different visuals. This means that you should use different baseline images for each platform.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="baseline">The baseline image.</param>
@@ -191,8 +185,7 @@ to customize the name of the dump item.";
     /// error percentage should be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In
     /// case when you want visually validate elements that contain text on multiple platforms/browsers then keep in mind
     /// that, the font rendering results different visuals. This means that you should use different baseline images for
-    /// each platform. Don't forget to configure the platforms with
-    /// <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/> using <paramref name="configurator"/>.
+    /// each platform.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -236,8 +229,6 @@ to customize the name of the dump item.";
     /// be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In case when you want
     /// visually validate elements that contain text on multiple platforms/browsers then keep in mind that, the font
     /// rendering results different visuals. This means that you should use different baseline images for each platform.
-    /// Don't forget to configure the platforms with
-    /// <see cref="VisualVerificationMatchConfiguration&lt;TSelf&gt;.WithPlatforms"/> using <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">The target element.</param>
@@ -299,11 +290,6 @@ to customize the name of the dump item.";
     {
         var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);
-
-        if (!IsPlatformSelected(context, configuration))
-        {
-            return;
-        }
 
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.MethodInfo.MethodBase != null && !IsCompilerGenerated(frame));
@@ -393,8 +379,7 @@ to customize the name of the dump item.";
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
                 cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
-                    .WithFileNameSuffix(string.Empty)
-                    .WithPlatforms(cfg.Platforms is not null ? cfg.Platforms.ToArray() : null));
+                    .WithFileNameSuffix(string.Empty));
         }
         finally
         {
@@ -426,11 +411,6 @@ to customize the name of the dump item.";
     {
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
-
-        if (!IsPlatformSelected(context, configuration))
-        {
-            return;
-        }
 
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, baseline.Width, baseline.Height);
 
@@ -677,24 +657,6 @@ calculated differences:
         }
 
         return message.ToString();
-    }
-
-    private static bool IsPlatformSelected<TConfiguration>(
-        UITestContext context,
-        VisualVerificationMatchConfiguration<TConfiguration> configuration)
-        where TConfiguration : VisualVerificationMatchConfiguration<TConfiguration>
-    {
-        if (configuration.Platforms?.Count() > 0
-            && configuration.Platforms?.Any(platform => platform == Environment.OSVersion.Platform) is false)
-        {
-            var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true));
-
-            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                $"Test skipped based on configuration. Stack trace: {stackTrace}");
-            return false;
-        }
-
-        return true;
     }
 
     private static bool IsVisualVerificationMethod(EnhancedStackFrame frame) =>

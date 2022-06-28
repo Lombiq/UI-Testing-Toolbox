@@ -17,11 +17,6 @@ public class VisualVerificationMatchConfiguration<TSelf>
     public string FileNameSuffix { get; private set; }
 
     /// <summary>
-    /// Gets the list of <see cref="PlatformID"/>s where the test can be run. If null or empty, all platforms are selected.
-    /// </summary>
-    public IEnumerable<PlatformID> Platforms { get; private set; } = Array.Empty<PlatformID>();
-
-    /// <summary>
     /// Sets <see cref="FileNamePrefix"/>.
     /// </summary>
     /// <param name="value">The prefix applied to all file names.</param>
@@ -39,16 +34,6 @@ public class VisualVerificationMatchConfiguration<TSelf>
     public TSelf WithFileNameSuffix(string value)
     {
         FileNameSuffix = value;
-
-        return (TSelf)this;
-    }
-
-    /// <summary>
-    /// Sets <see cref="Platforms"/>.
-    /// </summary>
-    public TSelf WithPlatforms(params PlatformID[] platforms)
-    {
-        Platforms = platforms;
 
         return (TSelf)this;
     }
