@@ -71,11 +71,7 @@ public class BasicVisualVerificationTests : UITestBase
                     0,
                     configurator: configuration =>
                         configuration
-                            // With this configuration, the PlatformID will be used as a suffix at the end of the
-                            // baseline image file name.
                             .WithUsePlatformAsSuffix()
-                            // With this configuration, the browser name provided by Selenium will be used as a suffix
-                            // at the end of the baseline image file name.
                             .WithUseBrowserNameAsSuffix());
             },
             browser);
