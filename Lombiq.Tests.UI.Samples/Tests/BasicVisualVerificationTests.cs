@@ -23,7 +23,7 @@ public class BasicVisualVerificationTests : UITestBase
     // block containers containing images like this. Take attention to reproducing the geometries, because the image
     // fits the container and the container size depends on the client area, so if the geometries are not exactly the
     // same, the test will fail. One more trap is the changes between browser versions, e.g. there was a change between
-    // the Chrome version 67 and 68 in the image rendering This caused that the rendered image looked similar, but
+    // the Chrome version 67 and 68 in the image rendering. This caused that the rendered image looked similar, but
     // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
     // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
     [Theory, Chrome]

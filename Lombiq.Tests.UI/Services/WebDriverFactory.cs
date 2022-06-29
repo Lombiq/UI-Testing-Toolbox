@@ -1,5 +1,6 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
@@ -27,8 +28,6 @@ public static class WebDriverFactory
         {
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-            chromeConfig.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
-
             chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
             // Disabling the Chrome sandbox can speed things up a bit, so it's recommended when you get a lot of
@@ -42,21 +41,7 @@ public static class WebDriverFactory
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
             chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
-            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-            chromeConfig.Options.AddArgument("disable-accelerated-2d-canvas");
-            chromeConfig.Options.AddArgument("disable-gpu");
-
-            // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
-            chromeConfig.Options.AddArgument("force-color-profile=sRGB");
-
-            // Disabling DPI scaling.
-            chromeConfig.Options.AddArgument("force-device-scale-factor=1");
-            chromeConfig.Options.AddArgument("high-dpi-support=1");
-
-            // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
-            chromeConfig.Options.AddArgument("disable-smooth-scrolling");
-
-            if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
+            chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -81,26 +66,7 @@ public static class WebDriverFactory
         {
             var options = new EdgeOptions().SetCommonOptions();
 
-            if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
-            {
-                options.AddArgument("--lang=" + configuration.AcceptLanguage);
-            }
-
-            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-            options.AddArgument("disable-accelerated-2d-canvas");
-            options.AddArgument("disable-gpu");
-
-            // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
-            options.AddArgument("force-color-profile=sRGB");
-
-            // Disabling DPI scaling.
-            options.AddArgument("force-device-scale-factor=1");
-            options.AddArgument("high-dpi-support=1");
-
-            // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
-            options.AddArgument("disable-smooth-scrolling");
-
-            if (configuration.Headless) options.AddArgument("headless");
+            options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
@@ -148,6 +114,32 @@ public static class WebDriverFactory
         driverOptions.AcceptInsecureCertificates = true;
         driverOptions.PageLoadStrategy = PageLoadStrategy.Normal;
         return driverOptions;
+    }
+
+    private static TDriverOptions SetCommonChromiumOptions<TDriverOptions>(
+        this TDriverOptions options,
+        BrowserConfiguration configuration)
+        where TDriverOptions : ChromiumOptions
+    {
+        options.AddArgument("--lang=" + configuration.AcceptLanguage);
+
+        // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+        options.AddArgument("disable-accelerated-2d-canvas");
+        options.AddArgument("disable-gpu");
+
+        // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
+        options.AddArgument("force-color-profile=sRGB");
+
+        // Disabling DPI scaling.
+        options.AddArgument("force-device-scale-factor=1");
+        options.AddArgument("high-dpi-support=1");
+
+        // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
+        options.AddArgument("disable-smooth-scrolling");
+
+        if (configuration.Headless) options.AddArgument("headless");
+
+        return options;
     }
 
     private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout)
@@ -212,7 +204,7 @@ public static class WebDriverFactory
     }
 
     // This is because of the WebDriverManager.DriverConfigs.Impl.EdgeConfig in WebDriverManager doesn't support Edge on
-    // Linux.
+    // Linux. WebDriverManager issue: https://github.com/rosolko/WebDriverManager.Net/issues/196
     private sealed class CustomEdgeConfig : IDriverConfig
     {
         public string GetName() => "Edge";
