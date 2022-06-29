@@ -49,11 +49,11 @@ public class BasicVisualVerificationTests : UITestBase
             },
             browser);
 
-    // Checking that everything is OK with the branding of the navbar on the homepage. If you want visually validate
+    // Checking that everything is OK with the branding of the navbar on the homepage. If you want to visually validate
     // text content on different platforms (like Windows or Linux) or browsers, it can cause surprises too. The reason
-    // why is the different rendering of text on each platform, but it can occur between different Linux distributions
-    // too. Here(https://pandasauce.org/post/linux-fonts/) you can find a good summary about this from 2019, but still
-    // valid in 2022.
+    // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
+    // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
+    // in 2022.
     [Theory, Chrome, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
