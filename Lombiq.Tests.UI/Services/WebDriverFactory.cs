@@ -173,7 +173,7 @@ public static class WebDriverFactory
         try
         {
             // Firefox: The FirefoxConfig.GetMatchingBrowserVersion() resolves the browser version but not the
-            // geckodriver version. Geckodriver releases: https://github.com/mozilla/geckodriver/releases.
+            // geckodriver version.
             version = driverConfig is FirefoxConfig
                 ? driverConfig.GetLatestVersion()
                 : driverConfig.GetMatchingBrowserVersion();
@@ -211,6 +211,8 @@ public static class WebDriverFactory
         public ChromeDriverService Service { get; set; }
     }
 
+    // This is because of the WebDriverManager.DriverConfigs.Impl.EdgeConfig in WebDriverManager doesn't support Edge on
+    // Linux.
     private sealed class CustomEdgeConfig : IDriverConfig
     {
         public string GetName() => "Edge";

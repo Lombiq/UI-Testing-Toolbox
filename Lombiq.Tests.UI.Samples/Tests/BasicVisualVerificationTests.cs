@@ -64,13 +64,15 @@ public class BasicVisualVerificationTests : UITestBase
                 var navbarElementSelector = By.ClassName("navbar-brand");
 
                 // Here we check that the rendered content visually equals the baseline image within a given error
-                // percentage only for the platforms given by WithPlatforms() configuration. You can read more about
+                // percentage using different baseline image on each platform and browser. You can read more about
                 // this in the AssertVisualVerificationApproved method documentation.
                 context.AssertVisualVerificationApproved(
                     navbarElementSelector,
                     0,
                     configurator: configuration =>
                         configuration
+                            // These configurations below are to generate/use different baseline images on each
+                            // platform/browser.
                             .WithUsePlatformAsSuffix()
                             .WithUseBrowserNameAsSuffix());
             },
@@ -88,6 +90,8 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we don't need any element selector to validate the whole page.
                 context.AssertVisualVerificationApproved(0, configurator: configuration =>
                     configuration
+                        // These configurations below are to generate/use different baseline images on each
+                        // platform/browser.
                         .WithUsePlatformAsSuffix()
                         .WithUseBrowserNameAsSuffix());
             },
