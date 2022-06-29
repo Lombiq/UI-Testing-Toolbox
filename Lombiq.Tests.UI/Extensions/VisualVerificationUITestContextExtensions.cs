@@ -28,20 +28,8 @@ Hint: You can use the configurator callback of {nameof(AssertVisualVerificationA
 to customize the name of the dump item.";
 
     /// <summary>
-    /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
-    /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. The baseline image is automatically
-    /// loaded from assembly resource, if it doesn't exist then from the project path based on
-    /// <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
-    /// baseline image path is generated from the first method name - from the call stack which is not annotated with
-    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
-    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
-    /// mind that, the font rendering results different visuals. This means that you should use different baseline
-    /// images for each platform. You can generate baseline images for each platform with locally build and run tests
-    /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
-    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
-    /// configure suffixes as needed using <paramref name="configurator"/>.
+    /// Compares the baseline image and screenshot of the whole page.
+    /// <see cref="AssertVisualVerificationApproved(UITestContext, By, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
@@ -62,21 +50,11 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
+    // This is because the long method signature.
+#pragma warning disable S103 // Lines should not be too long
     /// <summary>
-    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
-    /// error percentage should be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
-    /// The baseline image is automatically loaded from assembly resource, if it doesn't exist then from the
-    /// project path based on <see cref="VisualVerificationMatchApprovedConfiguration"/> - it can be configured over
-    /// <paramref name="configurator"/> -, if the baseline image doesn't exist, a new one will be created based on the
-    /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
-    /// baseline image path is generated from the first method name - from the call stack which is not annotated with
-    /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
-    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
-    /// mind that, the font rendering results different visuals. This means that you should use different baseline
-    /// images for each platform. You can generate baseline images for each platform with locally build and run tests
-    /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
-    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
-    /// configure suffixes as needed using <paramref name="configurator"/>.
+    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
+    /// <see cref="AssertVisualVerificationApproved(UITestContext, IWebElement, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -86,6 +64,7 @@ to customize the name of the dump item.";
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
     /// </exception>
+#pragma warning restore S103 // Lines should not be too long
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationApproved(
         this UITestContext context,
@@ -107,6 +86,7 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
+    /// <para>
     /// Compares the baseline image and screenshot of the element. The pixel error percentage should be less than or
     /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
     /// The baseline image is automatically loaded from assembly resource, if it doesn't exist then from the
@@ -115,12 +95,15 @@ to customize the name of the dump item.";
     /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
     /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
+    /// </para>
+    /// <para>
     /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
     /// mind that, the font rendering results different visuals. This means that you should use different baseline
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
     /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
     /// configure suffixes as needed using <paramref name="configurator"/>.
+    /// </para>
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
@@ -151,10 +134,8 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
-    /// Compares the baseline image and screenshot of the whole page. The pixel error percentage should be less than or
-    /// equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In case when you want visually validate
-    /// elements that contain text on multiple platforms/browsers then keep in mind that, the font rendering results
-    /// different visuals. This means that you should use different baseline images for each platform.
+    /// Compares the baseline image and screenshot of the whole page.
+    /// <see cref="AssertVisualVerification(UITestContext, By, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="baseline">The baseline image.</param>
@@ -175,11 +156,8 @@ to customize the name of the dump item.";
             configurator);
 
     /// <summary>
-    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>. The pixel
-    /// error percentage should be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In
-    /// case when you want visually validate elements that contain text on multiple platforms/browsers then keep in mind
-    /// that, the font rendering results different visuals. This means that you should use different baseline images for
-    /// each platform.
+    /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
+    /// <see cref="AssertVisualVerification(UITestContext, IWebElement, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -219,10 +197,15 @@ to customize the name of the dump item.";
             });
 
     /// <summary>
+    /// <para>
     /// Compares the baseline image and screenshot of the <paramref name="element"/>. The pixel error percentage should
-    /// be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>. In case when you want
-    /// visually validate elements that contain text on multiple platforms/browsers then keep in mind that, the font
-    /// rendering results different visuals. This means that you should use different baseline images for each platform.
+    /// be less than or equal to the given <paramref name="pixelErrorPercentageThreshold"/>.
+    /// </para>
+    /// <para>
+    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
+    /// mind that, the font rendering results different visuals. This means that you should use different baseline
+    /// images for each platform.
+    /// </para>
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">The target element.</param>
