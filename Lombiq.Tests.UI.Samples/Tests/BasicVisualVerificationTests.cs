@@ -17,14 +17,14 @@ public class BasicVisualVerificationTests : UITestBase
     {
     }
 
-    // This is a very basic sample to check that, the header image is what we expect and looks as we expect. For this
+    // This is a very basic sample to check that the header image is what we expect and looks as we expect. For this
     // magic we are using the ImageSharp.Compare package. You can find more info about it here:
     // https://github.com/Codeuctivity/ImageSharp.Compare. This looks really simple, but there is some trap to comparing
     // block containers containing images like this. Take attention to reproducing the geometries, because the image
     // fits the container and the container size depends on the client area, so if the geometries are not exactly the
-    // same, the test will fail. One more trap is the changes between browser versions, eg. there was a change between
-    // the Chrome version 67 and 68 in the image rendering, this caused that, the rendered image looked similar, but
-    // comparing pixel-by-pixel, was different. You can investigate this or similar failure using the captured and
+    // same, the test will fail. One more trap is the changes between browser versions, e.g. there was a change between
+    // the Chrome version 67 and 68 in the image rendering This caused that the rendered image looked similar, but
+    // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
     // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
     [Theory, Chrome]
     public Task VerifyBlogImage(Browser browser) =>
