@@ -41,9 +41,7 @@ to customize the name of the dump item.";
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
     /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
-    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
-    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
-    /// <paramref name="configurator"/>.
+    /// configure suffixes as needed using <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
@@ -78,9 +76,7 @@ to customize the name of the dump item.";
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
     /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
-    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
-    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
-    /// <paramref name="configurator"/>.
+    /// configure suffixes as needed using <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -124,9 +120,7 @@ to customize the name of the dump item.";
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
     /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
-    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
-    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
-    /// <paramref name="configurator"/>.
+    /// configure suffixes as needed using <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
