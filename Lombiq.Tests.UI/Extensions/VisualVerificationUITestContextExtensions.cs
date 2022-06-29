@@ -36,6 +36,14 @@ to customize the name of the dump item.";
     /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
     /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
+    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
+    /// mind that, the font rendering results different visuals. This means that you should use different baseline
+    /// images for each platform. You can generate baseline images for each platform with locally build and run tests
+    /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
+    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
@@ -65,6 +73,14 @@ to customize the name of the dump item.";
     /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
     /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
+    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
+    /// mind that, the font rendering results different visuals. This means that you should use different baseline
+    /// images for each platform. You can generate baseline images for each platform with locally build and run tests
+    /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
+    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -103,6 +119,14 @@ to customize the name of the dump item.";
     /// element's screenshot, and an <see cref="VisualVerificationBaselineImageNotFoundException"/> will be thrown. The
     /// baseline image path is generated from the first method name - from the call stack which is not annotated with
     /// <see cref="VisualVerificationApprovedMethodAttribute"/> - and the source file name and path, where the method is.
+    /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
+    /// mind that, the font rendering results different visuals. This means that you should use different baseline
+    /// images for each platform. You can generate baseline images for each platform with locally build and run tests
+    /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
+    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// configure suffixes as needed <see cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix"/>
+    /// and <see cref="VisualVerificationMatchApprovedConfiguration.WithUseBrowserNameAsSuffix"/> using
+    /// <paramref name="configurator"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
