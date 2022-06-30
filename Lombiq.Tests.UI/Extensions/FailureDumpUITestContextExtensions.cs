@@ -71,22 +71,18 @@ public static class FailureDumpUITestContextExtensions
             new FailureDumpItemGeneric<TContent>(content, getStream, dispose),
             messageIfExists);
 
-    // [System.Drawing.Bitmap, System.Drawing] needed here, but System.Drawing.Bitmap is matching with
-    // [System.Drawing.Bitmap, Microsoft.Data.Tools.Utilities].
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
     /// <summary>
-    /// Appends <see cref="System.Drawing.Bitmap"/> as file content to be collected on failure dump.
+    /// Appends <see cref="Image"/> as file content to be collected on failure dump.
     /// </summary>
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
     /// <param name="bitmap">
-    /// File content. The <see cref="System.Drawing.Bitmap"/> will be disposed at the end.
+    /// File content. The <see cref="Image"/> will be disposed at the end.
     /// </param>
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
-        Bitmap bitmap,
+        Image bitmap,
         string messageIfExists = null) => context
         .AppendFailureDump(
             fileName,

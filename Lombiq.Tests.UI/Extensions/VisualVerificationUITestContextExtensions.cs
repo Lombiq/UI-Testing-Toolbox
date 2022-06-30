@@ -133,24 +133,18 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
-    // Can't resolve the Bitmap and System.Drawing.Bitmap type.
-#pragma warning disable CS1580 // Invalid type for parameter in XML comment cref attribute
-    // Then can't resolve the method because of the Bitmap issue.
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
-    /// <see cref="AssertVisualVerification(UITestContext, By, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
+    /// <see cref="AssertVisualVerification(UITestContext, By, Image, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-#pragma warning restore CS1580 // Invalid type for parameter in XML comment cref attribute
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     public static void AssertVisualVerification(
         this UITestContext context,
-        Bitmap baseline,
+        Image baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
@@ -161,13 +155,9 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
-    // Can't resolve the Bitmap and System.Drawing.Bitmap type.
-#pragma warning disable CS1580 // Invalid type for parameter in XML comment cref attribute
-    // Then can't resolve the method because of the Bitmap issue.
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
-    /// <see cref="AssertVisualVerification(UITestContext, IWebElement, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
+    /// <see cref="AssertVisualVerification(UITestContext, IWebElement, Image, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
@@ -175,12 +165,10 @@ to customize the name of the dump item.";
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
-#pragma warning restore CS1580 // Invalid type for parameter in XML comment cref attribute
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
-        Bitmap baseline,
+        Image baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
@@ -228,7 +216,7 @@ to customize the name of the dump item.";
     public static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
-        Bitmap baseline,
+        Image baseline,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
@@ -310,7 +298,7 @@ to customize the name of the dump item.";
 
         // Try loading baseline image from embedded resources first.
         approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.BaselineFileName}.png";
-        var baselineImage = testFrame.MethodInfo.DeclaringType.Assembly
+        var baselineImage = (Image)testFrame.MethodInfo.DeclaringType.Assembly
             .TryGetResourceBitmap(approvedContext.BaselineResourceName);
 
         if (baselineImage == null)
@@ -357,7 +345,7 @@ to customize the name of the dump item.";
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
-            baselineImage = (Bitmap)Image.FromFile(approvedContext.BaselineImagePath);
+            baselineImage = Image.FromFile(approvedContext.BaselineImagePath);
         }
 
         try
@@ -379,7 +367,7 @@ to customize the name of the dump item.";
     private static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
-        Bitmap baseline,
+        Image baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null) =>
@@ -393,7 +381,7 @@ to customize the name of the dump item.";
     private static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
-        Bitmap baseline,
+        Image baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null)
