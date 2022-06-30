@@ -59,7 +59,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
         var startTime = DateTime.UtcNow;
-        IDictionary<string, Func<Task<Stream>>> failureDumpContainer = null;
+        IDictionary<string, IFailureDumpItem> failureDumpContainer = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
@@ -174,6 +174,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
 
+            _context.FailureDumpContainer.Values
+                .ForEach(value => value.Dispose());
             _context.FailureDumpContainer.Clear();
         }
 
@@ -220,7 +222,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Exception ex,
         string dumpRootPath,
         int retryCount,
-        IDictionary<string, Func<Task<Stream>>> failureDumpContainer)
+        IDictionary<string, IFailureDumpItem> failureDumpContainer)
     {
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
@@ -289,11 +291,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private async Task SaveFailureDumpFromContextAsync(
         string debugInformationPath,
         string dumpRelativePath,
-        Func<Task<Stream>> dumpAction)
+        IFailureDumpItem item)
     {
         try
         {
-            using var dumpStream = await dumpAction();
+            using var dumpStream = await item.GetStreamAsync();
             string filePath = Path.Combine(debugInformationPath, dumpRelativePath);
             FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
 

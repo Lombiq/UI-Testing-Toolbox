@@ -1,5 +1,6 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
@@ -7,10 +8,13 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
+using Architecture = WebDriverManager.Helpers.Architecture;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -23,8 +27,6 @@ public static class WebDriverFactory
         ChromeDriver CreateDriverInner(ChromeDriverService service)
         {
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
-
-            chromeConfig.Options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
             chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
@@ -39,11 +41,7 @@ public static class WebDriverFactory
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
             chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
-            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-            chromeConfig.Options.AddArgument("disable-accelerated-2d-canvas");
-            chromeConfig.Options.AddArgument("disable-gpu");
-
-            if (configuration.Headless) chromeConfig.Options.AddArgument("headless");
+            chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -64,29 +62,15 @@ public static class WebDriverFactory
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new StaticVersionEdgeConfig(), () =>
+        CreateDriver(new CustomEdgeConfig(), () =>
         {
-            // This workaround is necessary for Edge, see: https://github.com/rosolko/WebDriverManager.Net/issues/71
-            var config = new StaticVersionEdgeConfig();
-            var architecture = ArchitectureHelper.GetArchitecture();
-            // Using a hard-coded version for now to use the latest released one instead of canary that would be
-            // returned by EdgeConfig.GetLatestVersion(). See:
-            // https://github.com/rosolko/WebDriverManager.Net/issues/74
-            var version = config.GetLatestVersion();
-            var path = FileHelper.GetBinDestination(config.GetName(), version, architecture, config.GetBinaryName());
-
             var options = new EdgeOptions().SetCommonOptions();
 
-            if (configuration.AcceptLanguage.Name != BrowserConfiguration.DefaultAcceptLanguage.Name)
-            {
-                options.AddArgument("--lang=" + configuration.AcceptLanguage);
-            }
-
-            if (configuration.Headless) options.AddArgument("headless");
+            options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            var service = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(path), Path.GetFileName(path));
+            var service = EdgeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
 
             return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
@@ -97,6 +81,13 @@ public static class WebDriverFactory
         var options = new FirefoxOptions().SetCommonOptions();
 
         options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+
+        // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
+        options.SetPreference("general.smoothScroll", preferenceValue: false);
+
+        // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+        options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
+        options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
         if (configuration.Headless) options.AddArgument("--headless");
 
@@ -125,6 +116,32 @@ public static class WebDriverFactory
         return driverOptions;
     }
 
+    private static TDriverOptions SetCommonChromiumOptions<TDriverOptions>(
+        this TDriverOptions options,
+        BrowserConfiguration configuration)
+        where TDriverOptions : ChromiumOptions
+    {
+        options.AddArgument("--lang=" + configuration.AcceptLanguage);
+
+        // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+        options.AddArgument("disable-accelerated-2d-canvas");
+        options.AddArgument("disable-gpu");
+
+        // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
+        options.AddArgument("force-color-profile=sRGB");
+
+        // Disabling DPI scaling.
+        options.AddArgument("force-device-scale-factor=1");
+        options.AddArgument("high-dpi-support=1");
+
+        // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
+        options.AddArgument("disable-smooth-scrolling");
+
+        if (configuration.Headless) options.AddArgument("headless");
+
+        return options;
+    }
+
     private static TDriver SetCommonTimeouts<TDriver>(this TDriver driver, TimeSpan pageLoadTimeout)
         where TDriver : IWebDriver
     {
@@ -147,7 +164,11 @@ public static class WebDriverFactory
 
         try
         {
-            version = driverConfig.GetMatchingBrowserVersion();
+            // Firefox: The FirefoxConfig.GetMatchingBrowserVersion() resolves the browser version but not the
+            // geckodriver version.
+            version = driverConfig is FirefoxConfig
+                ? driverConfig.GetLatestVersion()
+                : driverConfig.GetMatchingBrowserVersion();
 
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
             // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
@@ -176,14 +197,75 @@ public static class WebDriverFactory
         }
     }
 
-    private class StaticVersionEdgeConfig : EdgeConfig
-    {
-        public override string GetLatestVersion() => "83.0.478.37";
-    }
-
     private sealed class ChromeConfiguration
     {
         public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
+    }
+
+    // This is because of the WebDriverManager.DriverConfigs.Impl.EdgeConfig in WebDriverManager doesn't support Edge on
+    // Linux. WebDriverManager issue: https://github.com/rosolko/WebDriverManager.Net/issues/196
+    private sealed class CustomEdgeConfig : IDriverConfig
+    {
+        public string GetName() => "Edge";
+
+        public string GetBinaryName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "msedgedriver";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "msedgedriver.exe";
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
+
+        public string GetUrl32() => GetUrl(Architecture.X32);
+
+        public string GetUrl64() => GetUrl(Architecture.X64);
+
+        public string GetLatestVersion() => GetLatestVersion("https://msedgedriver.azureedge.net/LATEST_STABLE");
+
+        private static string GetLatestVersion(string url)
+        {
+            var uri = new Uri(url);
+            using var client = new HttpClient();
+
+            return client.GetStringAsync(uri).Result.Trim();
+        }
+
+        public string GetMatchingBrowserVersion()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return RegistryHelper.GetInstalledBrowserVersionLinux("msedge", "--version");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return RegistryHelper.GetInstalledBrowserVersionWin("msedge.exe");
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
+
+        private static string GetUrl(Architecture architecture)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && architecture == Architecture.X64)
+            {
+                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_linux{((int)architecture).ToTechnicalString()}.zip";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_win{((int)architecture).ToTechnicalString()}.zip";
+            }
+
+            throw new PlatformNotSupportedException("Your operating system is not supported");
+        }
     }
 }

@@ -6,7 +6,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -80,8 +79,8 @@ public class UITestContext
     /// <summary>
     /// Gets a dictionary storing some custom data for collecting in failure dump.
     /// </summary>
-    public IDictionary<string, Func<Task<Stream>>> FailureDumpContainer { get; }
-        = new Dictionary<string, Func<Task<Stream>>>();
+    public IDictionary<string, IFailureDumpItem> FailureDumpContainer { get; }
+        = new Dictionary<string, IFailureDumpItem>();
 
     /// <summary>
     /// Gets or sets the current tenant name when testing multi-tenancy. When testing sites with multi-tenancy you

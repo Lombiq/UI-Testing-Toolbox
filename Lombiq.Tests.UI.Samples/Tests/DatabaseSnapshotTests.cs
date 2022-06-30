@@ -41,3 +41,4 @@ public class DatabaseSnapshotTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Database snapshot tests.
+// NEXT STATION: Head over to Tests/BasicVisualVerificationTests.cs.
