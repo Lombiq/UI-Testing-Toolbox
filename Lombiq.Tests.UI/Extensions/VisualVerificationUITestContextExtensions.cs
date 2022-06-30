@@ -98,10 +98,10 @@ to customize the name of the dump item.";
     /// </para>
     /// <para>
     /// In case when you want visually validate elements that contain text on multiple platforms/browsers then keep in
-    /// mind that, the font rendering results different visuals. This means that you should use different baseline
+    /// mind that, the font rendering results in different visuals. This means that you should use different baseline
     /// images for each platform. You can generate baseline images for each platform with locally build and run tests
     /// and follow the instructions in <see cref="VisualVerificationBaselineImageNotFoundException"/> or running on a CI
-    /// and using the image dumped on failure. If you need different baseline images on each platfrom/browser you can
+    /// and using the image dumped on failure. If you need different baseline images on each platform/browser you can
     /// configure suffixes as needed using <paramref name="configurator"/>.
     /// </para>
     /// </summary>
