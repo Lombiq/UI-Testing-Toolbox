@@ -50,7 +50,7 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
-    // This is because the long method signature.
+    // This is because of the long method signature.
 #pragma warning disable S103 // Lines should not be too long
     /// <summary>
     /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
@@ -133,6 +133,10 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
+    // Can't resolve the Bitmap and System.Drawing.Bitmap type.
+#pragma warning disable CS1580 // Invalid type for parameter in XML comment cref attribute
+    // Then can't resolve the method because of the Bitmap issue.
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
     /// <see cref="AssertVisualVerification(UITestContext, By, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
@@ -142,6 +146,8 @@ to customize the name of the dump item.";
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+#pragma warning restore CS1580 // Invalid type for parameter in XML comment cref attribute
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     public static void AssertVisualVerification(
         this UITestContext context,
         Bitmap baseline,
@@ -155,6 +161,10 @@ to customize the name of the dump item.";
             regionOfInterest,
             configurator);
 
+    // Can't resolve the Bitmap and System.Drawing.Bitmap type.
+#pragma warning disable CS1580 // Invalid type for parameter in XML comment cref attribute
+    // Then can't resolve the method because of the Bitmap issue.
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
     /// <see cref="AssertVisualVerification(UITestContext, IWebElement, Bitmap, double, Rectangle?, Action{VisualMatchConfiguration})"/>.
@@ -165,6 +175,8 @@ to customize the name of the dump item.";
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+#pragma warning restore CS1580 // Invalid type for parameter in XML comment cref attribute
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
