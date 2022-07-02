@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 
 namespace Lombiq.Tests.UI.Extensions;
+
 public static class ElementStyleUITestContextExtensions
 {
     /// <summary>
