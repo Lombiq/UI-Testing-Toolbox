@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ElementStyleUITestContextExtensions
 {
     /// <summary>
-    /// Sets the element inline style.
+    /// Sets the element's inline style.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
