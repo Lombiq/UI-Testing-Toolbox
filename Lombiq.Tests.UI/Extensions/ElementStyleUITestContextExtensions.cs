@@ -8,7 +8,6 @@ public static class ElementStyleUITestContextExtensions
     /// <summary>
     /// Sets the element's inline style.
     /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="property">CSS property name.</param>
     /// <param name="value">CSS property value.</param>
