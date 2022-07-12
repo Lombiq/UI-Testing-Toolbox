@@ -3,6 +3,12 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -187,6 +193,71 @@ public static class ReliabilityUITestContextExtensions
             timeout,
             interval);
 
+    /// <summary>
+    /// Waits until the element to be ready, to avoid animation related issues.
+    /// </summary>
+    /// <param name="elementToWait">Selector of the element that's required to be ready.</param>
+    /// <param name="timeout">Timeout of the operation.</param>
+    /// <param name="interval">Time between retries.</param>
+    /// <returns>Hash calculated from captured screen shot of element region.</returns>
+    public static string WaitElementToNotChange(
+        this UITestContext context,
+        By elementToWait,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        string lastHash = null;
+        context.DoWithRetriesOrFail(
+            () =>
+            {
+                var element = context.Get(elementToWait);
+                var hash = context.ComputeElementImageHash(element);
+
+                var ready = hash == lastHash;
+
+                lastHash = hash;
+
+                return ready;
+            },
+            timeout,
+            interval);
+
+        return lastHash;
+    }
+
+    /// <summary>
+    /// Waits until the scrolling to be ready.
+    /// </summary>
+    /// <param name="timeout">Timeout of the operation.</param>
+    /// <param name="interval">Time between retries.</param>
+    public static void WaitScrollToNotChange(
+        this UITestContext context,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        Point? lastScrollPosition = null;
+
+        context.DoWithRetriesOrFail(
+            () =>
+            {
+                if (lastScrollPosition is null)
+                {
+                    lastScrollPosition = context.GetScrollPosition();
+                    return false;
+                }
+
+                var currentScrollPosition = context.GetScrollPosition();
+
+                var ready = lastScrollPosition == currentScrollPosition;
+
+                lastScrollPosition = currentScrollPosition;
+
+                return ready;
+            },
+            timeout,
+            interval);
+    }
+
     private static TimeSpan GetExistsTimeout(UITestContext context, TimeSpan? timeout) =>
         // The timeout for this existence check needs to be significantly smaller than the timeout of the whole retry
         // logic so actually multiple tries can happen.
@@ -209,4 +280,22 @@ public static class ReliabilityUITestContextExtensions
         context.Missing(elementToWaitForGoMissing.Safely().Within(
             existsTimeout,
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval));
+
+    private static string ComputeElementImageHash(this UITestContext context, IWebElement element)
+    {
+        using var elementImage = context.TakeElementScreenshot(element);
+        using var elementImageStream = new MemoryStream();
+
+        elementImage.Save(elementImageStream, ImageFormat.Png);
+        return ComputeSha256Hash(elementImageStream);
+    }
+
+    private static string ComputeSha256Hash(Stream stream)
+    {
+        using var sha256Hash = SHA256.Create();
+
+        return string.Concat(
+            sha256Hash.ComputeHash(stream)
+                .Select(item => item.ToString("x2", CultureInfo.InvariantCulture)));
+    }
 }
