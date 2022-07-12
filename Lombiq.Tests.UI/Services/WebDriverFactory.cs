@@ -242,7 +242,7 @@ public static class WebDriverFactory
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return RegistryHelper.GetInstalledBrowserVersionLinux("msedge", "--version");
+                return RegistryHelper.GetInstalledBrowserVersionLinux("microsoft-edge", "--version");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
