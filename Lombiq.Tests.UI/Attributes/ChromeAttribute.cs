@@ -1,9 +1,8 @@
 using Lombiq.Tests.UI.Services;
 
-namespace Lombiq.Tests.UI.Attributes
+namespace Lombiq.Tests.UI.Attributes;
+
+public sealed class ChromeAttribute : BrowserAttributeBase
 {
-    public sealed class ChromeAttribute : BrowserAttributeBase
-    {
-        protected override Browser Browser => Browser.Chrome;
-    }
+    protected override Browser Browser => Browser.Chrome;
 }

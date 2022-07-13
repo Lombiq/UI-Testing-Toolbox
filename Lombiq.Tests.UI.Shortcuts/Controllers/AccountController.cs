@@ -1,41 +1,62 @@
-using Lombiq.HelpfulLibraries.Libraries.Mvc;
+using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OrchardCore.Entities;
+using OrchardCore.Settings;
 using OrchardCore.Users;
+using OrchardCore.Users.Models;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Shortcuts.Controllers
+namespace Lombiq.Tests.UI.Shortcuts.Controllers;
+
+[DevelopmentAndLocalhostOnly]
+public class AccountController : Controller
 {
-    [DevelopmentAndLocalhostOnly]
-    public class AccountController : Controller
+    private readonly UserManager<IUser> _userManager;
+    private readonly SignInManager<IUser> _userSignInManager;
+    private readonly ISiteService _siteService;
+
+    public AccountController(
+        UserManager<IUser> userManager,
+        SignInManager<IUser> userSignInManager,
+        ISiteService siteService)
     {
-        private readonly UserManager<IUser> _userManager;
-        private readonly SignInManager<IUser> _userSignInManager;
+        _userManager = userManager;
+        _userSignInManager = userSignInManager;
+        _siteService = siteService;
+    }
 
-        public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager)
-        {
-            _userManager = userManager;
-            _userSignInManager = userSignInManager;
-        }
+    [AllowAnonymous]
+    public async Task<IActionResult> SignInDirectly(string userName)
+    {
+        var user = await _userManager.FindByNameAsync(userName);
 
-        [AllowAnonymous]
-        public async Task<IActionResult> SignInDirectly(string userName)
-        {
-            var user = await _userManager.FindByNameAsync(userName);
+        if (user == null) return NotFound();
 
-            if (user == null) return NotFound();
+        await _userSignInManager.SignInAsync(user, isPersistent: false);
 
-            await _userSignInManager.SignInAsync(user, false);
+        return Ok();
+    }
 
-            return Ok();
-        }
+    public async Task<IActionResult> SignOutDirectly()
+    {
+        await _userSignInManager.SignOutAsync();
 
-        public async Task<IActionResult> SignOutDirectly()
-        {
-            await _userSignInManager.SignOutAsync();
+        return Ok();
+    }
 
-            return Ok();
-        }
+    [AllowAnonymous]
+    public async Task<ActionResult> SetUserRegistrationType(UserRegistrationType type)
+    {
+        var settings = await _siteService.LoadSiteSettingsAsync();
+
+        settings.Alter<RegistrationSettings>(
+            nameof(RegistrationSettings),
+            registrationSettings => registrationSettings.UsersCanRegister = type);
+
+        await _siteService.UpdateSiteSettingsAsync(settings);
+
+        return Ok();
     }
 }

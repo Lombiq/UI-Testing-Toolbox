@@ -4,10 +4,14 @@
 
 ## Creating a test project
 
-Reference `Lombiq.Tests.UI` from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
+Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
 
 For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.Samples/Readme.md).
 
+We also recommend always running some highly automated tests that need very little configuration:
+
+- The suite of tests for checking that all the basic Orchard Core features work, like login, registration, and content management. Use `context.TestBasicOrchardFeatures()` to run all such tests but see the other, more granular tests too. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=jmhq63sRZrI).
+- [Monkey tests](https://en.wikipedia.org/wiki/Monkey_testing) can also be useful. Use `context.TestCurrentPageAsMonkeyRecursively()` to run a monkey testing process, which walks through site pages and does random interactions with pages, like clicking, scrolling, form filling, etc. It's recommended to have at least 3 monkey tests that execute with different user states: As an admin, as a regular registered user and as an anonymous user. The admin test can start execution on admin dashboard page, while other tests can start on home page. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=pZbEsEz3tuE).
 
 ## Steps for creating a test class
 
@@ -29,13 +33,13 @@ Keep test classes relatively small, with just a couple of test cases in them, an
 7. Export the test case to C\# xUnit. You won't need Selenium to generate any comments.
 8. Copy the commands to the previously prepared test class.
       - Replace what we do differently:
-        - For the simple 1-1 replacements use this in the Notepad++ Replace dialog with "Regular expression" Search Mode: `(driver)|(FindElement\((.*)\)\.Click\()|(FindElement\((.*)\)\.SendKeys\()|(FindElements)|(FindElement)` for "Find what" and `(?1context)(?2ClickReliablyOn\($3)(?4ClickAndFillInWithRetries\($5, )(?6GetAll)(?7Get)` for "Replace with".
+        - For the simple 1-1 replacements use this in the Notepad++ Replace dialog with "Regular expression" Search Mode: `(driver)|(FindElement\((.*)\)\.Click\()|(FindElement\((.*)\)\.SendKeys\()|(FindElements)|(FindElement)` for "Find what" and `(?1context)(?2ClickReliablyOnAsync\($3)(?4ClickAndFillInWithRetriesAsync\($5, )(?6GetAll)(?7Get)` for "Replace with".
         - Note that the generated test does operations on an `IWebDriver` instance. While this is available in our tests you'll mostly use the ambient `UITestContext`. So change all `driver` references to `context` (extensions are available for this context to proxy usual driver calls to the driver contained in it and you can also access the driver directly).
         - Replace `FindElement()` calls with our `Get()`, `FindElements()` calls with `GetAll()` (unless it's an existence check on an item, then use `Exists()`; don't use `GetAll()` for existence check as it's much slower if no element exists. (These methods use Atata's similarly named ones behind the scenes. For more information on what can you do with them see [the Atata docs](https://github.com/atata-framework/atata-webdriverextras#usage).)
-        - Replace `SendKeys()` calls with our `ClickAndFillInWithRetries()` (like there was `driver.FindElement(By.Id("my-id")).SendKeys("my text")` then replace it with `context.ClickAndFillInWithRetries(By.Id("my-id"), "my text")`. If there is a `Clear()` or `Click()` call before a `SendText()` call then remove it because `ClickAndFillInWithRetries()` already does these, together with retries if it doesn't succeed.
-        - Replace `Click()` calls with `ClickReliablyOn()`, as in `driver.FindElement(By.Id("my-id")).Click()` should now be `context.ClickReliablyOn(By.Id("my-id")`. This won't fail randomly with certain clicks. however, be sure not to use them on `option` tags as that'll throw an exception.
+        - Replace `SendKeys()` calls with our `ClickAndFillInWithRetriesAsync()` (like there was `driver.FindElement(By.Id("my-id")).SendKeys("my text")` then replace it with `context.ClickAndFillInWithRetriesAsync(By.Id("my-id"), "my text")`. If there is a `Clear()` or `Click()` call before a `SendText()` call then remove it because `ClickAndFillInWithRetriesAsync()` already does these, together with retries if it doesn't succeed.
+        - Replace `Click()` calls with `ClickReliablyOnAsync()`, as in `driver.FindElement(By.Id("my-id")).Click()` should now be `context.ClickReliablyOnAsync(By.Id("my-id")`. This won't fail randomly with certain clicks. however, be sure not to use them on `option` tags as that'll throw an exception.
         - Replace `Assert` calls with Shouldly ones. If any selector would make the command fragile (by e.g. making it depend on the number of elements in a container) then try to work around in C\# instead (like instead of selecting a specific element among multiple ones in a container and checking its text with `ShouldBe()`, check the text of the whole container with `ShouldContain()`).
-      - Make use of our helpers that cover some common operations like `driver.LogIn()` (quickly run through the existing tests to see what's available).
+      - Make use of our helpers that cover some common operations (quickly run through the existing tests to see what's available).
       - If the code is interacting with checkboxes on the Orchard admin then be aware that the admin theme hides those to make them prettier. Thus selectors on them will fail. To overcome this you can make them visible again with `MakeAdminCheckboxesVisible()`.
       - Sanity check the commands, remove unneeded ones.
       - If there are a lot of commands then add line breaks between sections, like between groups of a form, different pages, and between the Arrange and Assert sections (though with UI tests every command is an assertion too).

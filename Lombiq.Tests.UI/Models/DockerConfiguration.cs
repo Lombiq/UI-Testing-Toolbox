@@ -1,8 +1,11 @@
-﻿namespace Lombiq.Tests.UI.Models
+using Newtonsoft.Json;
+
+namespace Lombiq.Tests.UI.Models;
+
+public class DockerConfiguration
 {
-    public class DockerConfiguration
-    {
-        public string ContainerSnapshotPath { get; set; }
-        public string HostSnapshotPath { get; set; }
-    }
+    public string ContainerName { get; set; }
+
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string ContainerSnapshotPath { get; set; } = "/data/Snapshots";
 }

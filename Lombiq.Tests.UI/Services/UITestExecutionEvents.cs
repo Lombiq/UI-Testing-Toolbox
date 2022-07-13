@@ -2,43 +2,42 @@ using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Services
+namespace Lombiq.Tests.UI.Services;
+
+public delegate Task NavigationEventHandler(UITestContext context, Uri targetUri);
+
+public delegate Task ClickEventHandler(UITestContext context, IWebElement targeElement);
+
+public delegate Task PageChangeEventHandler(UITestContext context);
+
+public class UITestExecutionEvents
 {
-    public delegate Task NavigationEventHandler(UITestContext context, Uri targetUri);
+    /// <summary>
+    /// Gets or sets the event raised before an explicit navigation to an URL happens.
+    /// </summary>
+    public NavigationEventHandler BeforeNavigation { get; set; }
 
-    public delegate Task ClickEventHandler(UITestContext context, IWebElement targeElement);
+    /// <summary>
+    /// Gets or sets the event raised after an explicit navigation to an URL happens.
+    /// </summary>
+    public NavigationEventHandler AfterNavigation { get; set; }
 
-    public delegate Task PageChangeEventHandler(UITestContext context);
+    /// <summary>
+    /// Gets or sets the event raised before clicking an element.
+    /// </summary>
+    public ClickEventHandler BeforeClick { get; set; }
 
-    public class UITestExecutionEvents
+    /// <summary>
+    /// Gets or sets the event raised after clicking an element.
+    /// </summary>
+    public ClickEventHandler AfterClick { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event raised after the current page changes.
+    /// </summary>
+    public PageChangeEventHandler AfterPageChange { get; set; }
+
+    internal UITestExecutionEvents()
     {
-        /// <summary>
-        /// Gets or sets the event raised before an explicit navigation to an URL happens.
-        /// </summary>
-        public NavigationEventHandler BeforeNavigation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the event raised after an explicit navigation to an URL happens.
-        /// </summary>
-        public NavigationEventHandler AfterNavigation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the event raised before clicking an element.
-        /// </summary>
-        public ClickEventHandler BeforeClick { get; set; }
-
-        /// <summary>
-        /// Gets or sets the event raised after clicking an element.
-        /// </summary>
-        public ClickEventHandler AfterClick { get; set; }
-
-        /// <summary>
-        /// Gets or sets the event raised after the current page changes.
-        /// </summary>
-        public PageChangeEventHandler AfterPageChange { get; set; }
-
-        internal UITestExecutionEvents()
-        {
-        }
     }
 }

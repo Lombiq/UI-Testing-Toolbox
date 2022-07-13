@@ -1,6 +1,10 @@
 .vs/
+.idea/
+.vscode/
 obj/
 bin/
+artifacts/
+wwwroot/
+node_modules/
 *.user
-Localization/
-wwwroot
+.pnpm-debug.log

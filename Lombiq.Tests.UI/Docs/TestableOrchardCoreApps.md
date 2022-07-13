@@ -8,7 +8,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
 - Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following:
-  1. Add a reference to `Lombiq.Tests.UI.AppExtensions`.
+  1. Add a reference to `Lombiq.Tests.UI.AppExtensions` (either from NuGet or as a Git submodule).
   2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Startup` class:
         ```csharp
         public void ConfigureServices(IServiceCollection services)
@@ -17,7 +17,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
             services.AddOrchardCms(builder => builder.ConfigureUITesting(_configuration));
         }
         ``` 
-- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project as a reference to the root app project and enable it during UI testing by modifying the startup code as below (note the second `true` parameter):
+- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project (either from NuGet or as a Git submodule) as a reference to the root app project and enable it during UI testing by modifying the startup code as below (note the second `true` parameter):
     ```csharp
     public void ConfigureServices(IServiceCollection services)
     {
@@ -47,13 +47,13 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ]
     ```
     - For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe. An alternative is to use a tool that provides fake APIs like [JSON Server](https://github.com/typicode/json-server) or [Fake JSON Server](https://github.com/ttu/dotnet-fake-json-server). You can run such tools from the command line in the test's code, e.g. with the excellent [CliWrap](https://github.com/Tyrrrz/CliWrap) that the UI Testing Toolbox uses too.
-- By default, the culture settings used when setting up an Orchard site depend on the host machine's culture. You want to make these settings consistent across all environments though so e.g. datetime and number formatting will be consistent. You can do this by configuring the culture in site settings from the setup recipe:
+- By default, the culture settings used when setting up an Orchard site depend on the host machine's culture. You want to make these settings consistent across all environments though so e.g. datetime and number formatting will be consistent. You can do this by enabling `OrchardCore.Localization` and configuring the culture in site settings from the setup recipe:
     ```json
     "steps": [
         {
             "name": "settings",
-            // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify
-            // the culture too.
+            // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify the
+            // culture too.
             "LocalizationSettings": {
                 "DefaultCulture": "en-US",
                 "SupportedCultures": [
