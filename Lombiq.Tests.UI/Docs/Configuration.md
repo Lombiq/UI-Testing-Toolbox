@@ -1,11 +1,8 @@
 # Configuration
 
-
-
 ## Configuration from code
 
 All the necessary aspects of the Toolbox can be configured from code. Look for such parameters on various methods. The root configuration class that can be set up for every test individually is `OrchardCoreUITestExecutorConfiguration`.
-
 
 ## External configuration
 
@@ -59,15 +56,13 @@ If you have several UI test projects it can be cumbersome to maintain a *TestCon
 
 `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
-
 ## <a name="multi-process"></a>Multi-process test execution
 
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
 
 Supply the agent index in the `AgentIndex` configuration. It doesn't need to but is highly recommended to be zero-indexed (see the [docs on limits](Limits.md)) and it must be unique to each process. You can also use this to find a port interval where on your machine there are no other processes listening.
 
-If you have multiple UI test projects in a single solution and you're executing them with a single `dotnet test` command then disable them being executed in parallel with the xUnit `"parallelizeAssembly": false` configuration (i.e. while tests within a project will be executed in parallel, the two test projects won't, not to have port and other clashes due to the same `AgentIndex`). This is provided by the *xunit.runner.json* file of the UI Testing Toolbox by default. 
-
+If you have multiple UI test projects in a single solution and you're executing them with a single `dotnet test` command then disable them being executed in parallel with the xUnit `"parallelizeAssembly": false` configuration (i.e. while tests within a project will be executed in parallel, the two test projects won't, not to have port and other clashes due to the same `AgentIndex`). This is provided by the *xunit.runner.json* file of the UI Testing Toolbox by default.
 
 ## Using SQL Server from a Docker container
 
@@ -85,7 +80,7 @@ docker exec -u 0 sql2019 bash -c "mkdir /data; chmod 777 /data -R; chown mssql:r
 
 #### On Linux
 
-You need to put the shared directory inside your _$HOME_, in this example _~/.local/docker/mssql/data_:
+You need to put the shared directory inside your *$HOME*, in this example *~/.local/docker/mssql/data*:
 
 ```shell
 docker pull mcr.microsoft.com/mssql/server
@@ -95,13 +90,13 @@ docker exec -u 0 sql2019 bash -c 'mkdir /data; chmod 777 /data -R; chown mssql:r
 
 If you haven't yet, add your user to the `docker` group.
 
-If you get a `PlatformNotSupportedException`, that's a known problem with _Microsoft.Data.SqlClient_ on .Net 5 and above. As a workaround, temporarily set the project's runtime identifier to `linux-x64` - either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430), or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.   
+If you get a `PlatformNotSupportedException`, that's a known problem with *Microsoft.Data.SqlClient* on .Net 5 and above. As a workaround, temporarily set the project's runtime identifier to `linux-x64` - either [on the terminal](https://github.com/dotnet/SqlClient/issues/1423#issuecomment-1093430430), or by adding `<RuntimeIdentifier>linux-x64</RuntimeIdentifier>` to the project file.
 
 #### On Both
 
 If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Password1!'` to access the SQL console.
 
-You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward. 
+You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward.
 
 ### Extending TestConfiguration.json
 

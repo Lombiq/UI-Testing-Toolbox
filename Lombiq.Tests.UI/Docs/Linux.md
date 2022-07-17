@@ -1,9 +1,6 @@
 # Linux-specific considerations
 
-
-
 ## Global NPM vs Userspace NPM via Node Version Manager
-
 
 As Linux has a stricter access policy you may want to install NPM in the userspace so you can still install global packages (e.g. html-validate) without sudoing. The easiest way to do this is via NVM. If you don't have NVM yet, [follow the guide here](https://github.com/Lombiq/NPM-Targets/tree/dev#global-npm-vs-userspace-npm-via-node-version-manager-on-linux).
 
@@ -16,7 +13,6 @@ ProgramCli.DefaultShellCliCommandFactory = OSDependentShellCliCommandFactory
 ```
 
 If your project has different requirements, you can change it in your `OrchardCoreUITestBase.ExecuteTestAfterSetupAsync` implementation. Set a new value in the configuration function you pass to `base.ExecuteTestAsync`.
-
 
 ## SQL Server Usage
 

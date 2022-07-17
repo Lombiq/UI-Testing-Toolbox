@@ -1,11 +1,8 @@
 # Lombiq UI Testing Toolbox for Orchard Core
 
-
-
 [![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/)
 [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/)
 [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/)
-
 
 ## About
 
@@ -36,9 +33,7 @@ Looking not just for dynamic testing but also static code analysis? Check out ou
 
 Do you want to quickly try out this project and see it in action? Check it out in our [Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions) full Orchard Core solution and also see our other useful Orchard Core-related open-source projects!
 
-
 ## Documentation
-
 
 - [Tutorial and samples](Lombiq.Tests.UI.Samples/Readme.md)
 - [Projects in the UI Testing Toolbox](Lombiq.Tests.UI/Docs/Projects.md)
@@ -50,7 +45,6 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
-
 
 ## Contributing and support
 

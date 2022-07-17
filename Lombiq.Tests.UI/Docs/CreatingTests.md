@@ -1,7 +1,5 @@
 # Creating tests
 
-
-
 ## Creating a test project
 
 Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
@@ -46,7 +44,6 @@ Keep test classes relatively small, with just a couple of test cases in them, an
       - Add documentation if something is hard to understand.
       - It's good practice to always explicitly set the size of the browser window so it doesn't depend on the machine executing the test. You can do this with the `UITestContext.SetBrowserSize()` shortcut.
 
-
 ## Notes on test execution
 
 - By default any non-warning entry in the Orchard log and any warning or error in the browser log will fail a test.
@@ -55,7 +52,6 @@ Keep test classes relatively small, with just a couple of test cases in them, an
 - Accessibility checking is available with [axe](https://github.com/dequelabs/axe-core). [Check out](https://github.com/TroyWalshProf/SeleniumAxeDotnet) what you can do with the library we use. You can also use the [axe Chrome extension](https://chrome.google.com/webstore/detail/axe-web-accessibility-tes/lhdoppojpmngadmnindnejefpokejbdd) to aid you fixing issues.
 - In case of testing Trumbowyg editors, make sure each editor is placed inside its own uniquely named container so that multiple editors on the same page can be identified separately.
 - When asserting on dates be mindful about time zones. It's the easiest if both the app and the tests work with UTC.
-
 
 ## Tips on optimizing tests
 
