@@ -74,8 +74,8 @@ public static class OrchardCoreDashboardUITestContextExtensions
         await context.ClickNewContentItemAsync(contentTypeText);
     }
 
-    public static Task CreateNewContentItemAsync(this UITestContext context, string contentType) =>
-        context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create");
+    public static Task CreateNewContentItemAsync(this UITestContext context, string contentType, bool onlyIfNotAlreadyThere = true) =>
+        context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
 
     public static async Task ClickNewContentItemAsync(this UITestContext context, string contentItemName, bool dropdown = true)
     {
