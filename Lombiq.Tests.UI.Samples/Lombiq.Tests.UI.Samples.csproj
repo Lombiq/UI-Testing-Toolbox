@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Lombiq.OSOCE.Web\Lombiq.OSOCE.Web.csproj" />
     <ProjectReference Include="..\Lombiq.Tests.UI\Lombiq.Tests.UI.csproj" />
   </ItemGroup>
 

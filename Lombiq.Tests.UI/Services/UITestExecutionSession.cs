@@ -1,5 +1,4 @@
 using Atata.HtmlValidation;
-using CliWrap.Builders;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -13,7 +12,6 @@ using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,12 +21,9 @@ using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services;
 
-internal sealed class UITestExecutionSession : IAsyncDisposable
+internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
+    where TEntryPoint : class
 {
-    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
-    private static readonly ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> _setupSnapshotManagers = new();
-    private static readonly ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> _setupOperationFailureCount = new();
-
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
@@ -91,7 +86,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
 
-                _currentSetupSnapshotManager = _setupSnapshotManagers.GetOrAdd(
+                _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
                     _snapshotDirectoryPath,
                     path => new SynchronizingWebApplicationSnapshotManager(path));
 
@@ -436,7 +431,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                 if (setupConfiguration.FastFailSetup &&
-                    _setupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
+                    UITestExecutionSessionsMeta.SetupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
                     failure.FailureCount > _configuration.MaxRetryCount)
                 {
                     throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
@@ -476,7 +471,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             if (setupConfiguration.FastFailSetup)
             {
-                _setupOperationFailureCount.AddOrUpdate(
+                UITestExecutionSessionsMeta.SetupOperationFailureCount.AddOrUpdate(
                     GetSetupHashCode(),
                     (1, ex),
                     (_, pair) => (pair.FailureCount, ex));
@@ -557,15 +552,15 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
-        Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+        Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
-            argumentsBuilder.Add("--Lombiq_Tests_UI:IsUITesting").Add("true");
+            arguments.AddArgValue("Lombiq_Tests_UI:IsUITesting", value: true);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
-                argumentsBuilder.Add("--Lombiq_Tests_UI:InjectApplicationInfo").Add("true");
+                arguments.AddArgValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
             }
 
             return Task.CompletedTask;
@@ -575,7 +570,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = new OrchardCoreInstance(_configuration.OrchardCoreConfiguration, contextId, _testOutputHelper);
+        _applicationInstance = new OrchardCoreInstance<TEntryPoint>(
+            _configuration.OrchardCoreConfiguration,
+            contextId,
+            _testOutputHelper);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
@@ -625,7 +623,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
         var sqlServerContext = _sqlServerManager.CreateDatabase();
 
-        async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+        async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
@@ -666,23 +664,22 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _azureBlobStorageManager = new AzureBlobStorageManager(_configuration.AzureBlobStorageConfiguration);
         var azureBlobStorageContext = await _azureBlobStorageManager.SetupBlobStorageAsync();
 
-        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
-            argumentsBuilder
-                .Add("--OrchardCore:OrchardCore_Media_Azure:BasePath")
-                .Add(azureBlobStorageContext.BasePath);
-            argumentsBuilder
-                .Add("--OrchardCore:OrchardCore_Media_Azure:ConnectionString")
-                .Add(_configuration.AzureBlobStorageConfiguration.ConnectionString);
-            argumentsBuilder
-                .Add("--OrchardCore:OrchardCore_Media_Azure:ContainerName")
-                .Add(_configuration.AzureBlobStorageConfiguration.ContainerName);
-            argumentsBuilder.Add("--OrchardCore:OrchardCore_Media_Azure:CreateContainer").Add("true");
-            argumentsBuilder.Add("--Lombiq_Tests_UI:UseAzureBlobStorage").Add("true");
+            arguments
+                .AddArgValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
+                .AddArgValue(
+                    "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
+                    value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
+                .AddArgValue(
+                    "OrchardCore:OrchardCore_Media_Azure:ContainerName",
+                    value: _configuration.AzureBlobStorageConfiguration.ContainerName)
+                .AddArgValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
+                .AddArgValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
@@ -701,11 +698,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
 
-        Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, ArgumentsBuilder argumentsBuilder)
+        Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
-            argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Port").Add(smtpContext.Port, CultureInfo.InvariantCulture);
-            argumentsBuilder.Add("--Lombiq_Tests_UI:SmtpSettings:Host").Add("localhost");
+            arguments
+                .AddArgValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
+                .AddArgValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
             return Task.CompletedTask;
         }
 
@@ -764,4 +762,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private static string GetScreenshotPath(string parentDirectoryPath, int index) =>
         Path.Combine(parentDirectoryPath, index.ToTechnicalString() + ".png");
+}
+
+internal static class UITestExecutionSessionsMeta
+{
+    // We need to have different snapshots based on whether the test uses the defaults, SQL Server and/or Azure Blob.
+    public static ConcurrentDictionary<string, SynchronizingWebApplicationSnapshotManager> SetupSnapshotManagers { get; } = new();
+    public static ConcurrentDictionary<string, (int FailureCount, Exception LatestException)> SetupOperationFailureCount { get; } = new();
 }
