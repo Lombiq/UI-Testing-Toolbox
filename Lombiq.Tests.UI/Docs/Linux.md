@@ -16,6 +16,6 @@ If your project has different requirements, you can change it in your `OrchardCo
 
 ## SQL Server Usage
 
-Since 2017, Microsoft SQL Server is available on [RHEL](https://redhat.com/rhel/), [SUSE](https://www.suse.com/products/server/) and [Ubuntu](https://ubuntu.com/) as well as a [Linux-based Docker image](https://hub.docker.com/_/microsoft-mssql-server) that you can run on any OS.
+Since 2017, Microsoft SQL Server is available on [RHEL](https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux), [SUSE](https://www.suse.com/products/server/) and [Ubuntu](https://ubuntu.com/) as well as a [Linux-based Docker image](https://hub.docker.com/_/microsoft-mssql-server) that you can run on any OS.
 
 We suggest using the Docker image even on those OSes. It reduces the number of unknowns and moving parts in your setup, it's easier to reset if something goes wrong, and that's what we support. We have a guide for setting up SQL Server for Linux on Docker [here](Configuration.md#using-sql-server-from-a-docker-container).

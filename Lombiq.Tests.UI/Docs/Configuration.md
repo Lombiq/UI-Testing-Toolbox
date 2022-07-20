@@ -96,7 +96,7 @@ If you get a `PlatformNotSupportedException`, that's a known problem with *Micro
 
 If you want to test it out, type `docker exec -u 0 -it sql2019 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Password1!'` to access the SQL console.
 
-You can use [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Portainer](https://www.portainer.io) to stop or start the container going forward.
+You can use [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Portainer](https://www.portainer.io) to stop or start the container going forward.
 
 ### Extending TestConfiguration.json
 
