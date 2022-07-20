@@ -56,7 +56,7 @@ If you have several UI test projects it can be cumbersome to maintain a *TestCon
 
 `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
-## <a name="multi-process"></a>Multi-process test execution
+## Multi-process test execution
 
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
 
