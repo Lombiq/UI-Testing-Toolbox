@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -98,7 +99,7 @@ public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartu
         _host = null;
 
         await base.DisposeAsync();
-        GC.Collect();
+        SqliteConnection.ClearAllPools();
     }
 
     public string RootUrl { get; private set; }
