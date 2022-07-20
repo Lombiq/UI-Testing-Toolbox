@@ -1,8 +1,6 @@
 # Lombiq UI Testing Toolbox for Orchard Core
 
-[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/)
-[![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/)
-[![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/)
+[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/) [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/) [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/)
 
 ## About
 
