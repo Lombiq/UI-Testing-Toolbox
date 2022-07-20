@@ -51,6 +51,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
         }
     ]
     ```
+
   - For external web APIs you can implement mock API services in features only enabled in tests. Those features you can again enable in a test recipe. An alternative is to use a tool that provides fake APIs like [JSON Server](https://github.com/typicode/json-server) or [Fake JSON Server](https://github.com/ttu/dotnet-fake-json-server). You can run such tools from the command line in the test's code, e.g. with the excellent [CliWrap](https://github.com/Tyrrrz/CliWrap) that the UI Testing Toolbox uses too.
 - By default, the culture settings used when setting up an Orchard site depend on the host machine's culture. You want to make these settings consistent across all environments though so e.g. datetime and number formatting will be consistent. You can do this by enabling `OrchardCore.Localization` and configuring the culture in site settings from the setup recipe:
 
