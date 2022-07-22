@@ -13,10 +13,10 @@ In a CI environment you'd execute tests with the `dotnet` command line tool. The
 3. Publish the UI test project(s) with `dotnet publish` in Release mode.
 4. Run the UI tests with `dotnet test`. Note that by default, the app will run in the Development environment, which is what we need for testing.
 5. Optionally, if you want to reuse the build agent, kill the following processes that might remain after UI testing:
-  - chromedriver.exe
-  - dotnet.exe
-  - geckodriver.exe
-  - IEDriverServer.exe
-  - msedgedriver.exe
+   - chromedriver.exe
+   - dotnet.exe
+   - geckodriver.exe
+   - IEDriverServer.exe
+   - msedgedriver.exe
 
 Also see [what to configure](Configuration.md), especially for multi-agent build machines and tuning parallelization.
