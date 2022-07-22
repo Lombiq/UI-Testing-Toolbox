@@ -2,7 +2,7 @@
 
 ## Executing tests from Visual Studio
 
-Executing tests from Visual Studio is as simple as running them from [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2022). Make sure that you follow the docs on [creating test projects](CreatingTests.md) so the tests can show up.
+Executing tests from Visual Studio is as simple as running them from [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer). Make sure that you follow the docs on [creating test projects](CreatingTests.md) so the tests can show up.
 
 ## Executing tests from the command line
 
