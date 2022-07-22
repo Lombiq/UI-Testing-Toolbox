@@ -30,7 +30,7 @@
   - When you experience a test being flaky but can't figure out what the issue might be then you can try to make the operation after which the test fails artificially slow (like putting a `Thread.Sleep()` into the app being tested). It'll show you if the test doesn't properly await the operation but continues, causing the flakyness.
 - If you can't get a link or button click working for some random reason but it's one that initiates a page leave then use `ClickReliablyOnUntilPageLeave()`.
 - When you're running a lot of tests in parallel then you may see random browser driver startup errors of the following sorts:
-  > OpenQA.Selenium.WebDriverException: Creating the web driver failed with the message "Cannot start the driver service on <http://localhost:50526/>". Note that this can mean that there is a leftover web driver process that you have to kill manually.
+  > OpenQA.Selenium.WebDriverException: Creating the web driver failed with the message "Cannot start the driver service on http://localhost:50526/". Note that this can mean that there is a leftover web driver process that you have to kill manually. <!-- markdownlint-disable-line MD034 -->
   
     This, unfortunately, is not something we can do much about. However, the automatic test retries will prevent tests failing due to random errors like this.
 
