@@ -1,9 +1,9 @@
+using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services.OrchardCoreHosting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
@@ -75,8 +75,9 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly ITestOutputHelper _testOutputHelper;
     private string _contentRootPath;
     private bool _isDisposed;
-    private WebApplicationFactory<TEntryPoint> _orchardApplication;
+    private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
     private string _url;
+    private TestReverseProxy _reverseProxy;
 
     public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
@@ -104,6 +105,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             OrchardCoreDirectoryHelper
                 .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
         }
+
+        _reverseProxy = new TestReverseProxy(_url);
+
+        await _reverseProxy.StartAsync();
 
         await StartOrchardAppAsync();
 
@@ -154,6 +159,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _isDisposed = true;
 
         await StopOrchardAppAsync();
+        if (_reverseProxy != null)
+        {
+            await _reverseProxy.DisposeAsync();
+        }
 
         DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
     }
@@ -174,7 +183,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
 
-        _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(_url, builder =>
+        _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(builder =>
         {
             builder.UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
@@ -182,14 +191,15 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
             builder.ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Args.ToArray()));
         });
-
-        _orchardApplication.CreateClient();
+        _orchardApplication.ClientOptions.AllowAutoRedirect = false;
+        _reverseProxy.AttachConnectionProvider(_orchardApplication);
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
     }
 
     private async Task StopOrchardAppAsync()
     {
+        _reverseProxy.DetachConnectionProvider();
         if (_orchardApplication == null) return;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");

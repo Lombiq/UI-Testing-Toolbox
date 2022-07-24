@@ -1,10 +1,11 @@
+using Lombiq.Tests.Integration.Services;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,19 +14,16 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-// Taken from: https://github.com/benday-inc/SeleniumDemo.
-public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
+public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly List<IStore> _createdStores = new();
-    private IHost _host;
 
-    public OrchardApplicationFactory(string rootUrl, Action<IWebHostBuilder> configuration = null)
-    {
-        RootUrl = rootUrl;
+    public OrchardApplicationFactory(Action<IWebHostBuilder> configuration = null) =>
         _configuration = configuration;
-    }
+
+    public string BaseAddress => ClientOptions.BaseAddress.ToString();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -33,33 +31,22 @@ public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartu
         _configuration?.Invoke(builder);
     }
 
-    protected override IHost CreateHost(IHostBuilder builder)
-    {
-        var host = builder.Build();
-
-        // configure and start the actual host.
-        builder.ConfigureWebHost(webHostBuilder =>
-            webHostBuilder.UseKestrel()
-                .UseUrls(RootUrl)
-                .ConfigureTestServices(ConfigureTestServices));
-
-        _host = builder.Build();
-        _host.Start();
-
-        return host;
-    }
-
     private void ConfigureTestServices(IServiceCollection services)
     {
         var builder = services
-                .LastOrDefault(d => d.ServiceType == typeof(OrchardCoreBuilder))?
+                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
                 .ImplementationInstance as OrchardCoreBuilder;
-        builder.ConfigureServices(builderServices => AddFakeStore(builderServices));
+
+        builder.ConfigureServices(builderServices =>
+        {
+            AddFakeStore(builderServices);
+            AddFakeViewCompilerProvider(builderServices);
+        });
     }
 
     private void AddFakeStore(IServiceCollection services)
     {
-        var storeDescriptor = services.LastOrDefault(d => d.ServiceType == typeof(IStore));
+        var storeDescriptor = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(IStore));
 
         services.RemoveAll<IStore>();
 
@@ -81,13 +68,18 @@ public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartu
         });
     }
 
+    // This is required because OrchardCore adds OrchardCore.Mvc.SharedViewCompilerProvider as IViewCompilerProvider but it
+    // holds a IViewCompiler(Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler) instance reference in
+    // a static member(_compiler) and it not get released on IHost.StopAsync() call, and this cause an ObjectDisposedException
+    // on next run.
+    private static void AddFakeViewCompilerProvider(IServiceCollection services) =>
+        services.AddSingleton<IViewCompilerProvider, FakeViewCompilerProvider>();
+
     // WebApplicationFactory<>.DisposeAsync() calls "GC.SuppressFinalize".
 #pragma warning disable CA1816 // Call GC.SuppressFinalize correctly
     public override async ValueTask DisposeAsync()
 #pragma warning restore CA1816 // Call GC.SuppressFinalize correctly
     {
-        await _host?.StopAsync();
-
         foreach (var store in _createdStores)
         {
             store.Dispose();
@@ -95,12 +87,7 @@ public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartu
 
         _createdStores.Clear();
 
-        _host?.Dispose();
-        _host = null;
-
         await base.DisposeAsync();
         SqliteConnection.ClearAllPools();
     }
-
-    public string RootUrl { get; private set; }
 }
