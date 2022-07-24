@@ -14,7 +14,7 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
+public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
     private readonly Action<IWebHostBuilder> _configuration;
@@ -75,10 +75,7 @@ public class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartu
     private static void AddFakeViewCompilerProvider(IServiceCollection services) =>
         services.AddSingleton<IViewCompilerProvider, FakeViewCompilerProvider>();
 
-    // WebApplicationFactory<>.DisposeAsync() calls "GC.SuppressFinalize".
-#pragma warning disable CA1816 // Call GC.SuppressFinalize correctly
     public override async ValueTask DisposeAsync()
-#pragma warning restore CA1816 // Call GC.SuppressFinalize correctly
     {
         foreach (var store in _createdStores)
         {

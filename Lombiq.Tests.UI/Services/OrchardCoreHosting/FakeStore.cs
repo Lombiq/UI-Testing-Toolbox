@@ -6,7 +6,7 @@ using YesSql.Indexes;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public class FakeStore : IStore
+public sealed class FakeStore : IStore
 {
     private readonly List<ISession> _createdSessions = new();
     private readonly IStore _store;
@@ -49,8 +49,6 @@ public class FakeStore : IStore
         _createdSessions.Clear();
 
         _store?.Dispose();
-
-        GC.Collect();
     }
 
     public Task InitializeAsync() => _store.InitializeAsync();
