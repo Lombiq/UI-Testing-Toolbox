@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using Shouldly;
 using System;
 using System.Linq;
@@ -108,7 +107,7 @@ public class ErrorHandlingTests : UITestBase
     public Task ErrorDuringSetupShouldHaltTest(Browser browser) =>
         Should.ThrowAsync<PageChangeAssertionException>(() =>
             ExecuteTestAfterSetupAsync(
-                _ => throw new InvalidOperandException("This point shouldn't be reachable because setup fails."),
+                _ => throw new InvalidOperationException("This point shouldn't be reachable because setup fails."),
                 browser,
                 configuration =>
                 {
@@ -127,7 +126,7 @@ public class ErrorHandlingTests : UITestBase
                                 ConnectionString = "An invalid connection string which causes an error during setup.",
                             });
 
-                        throw new InvalidOperandException(
+                        throw new InvalidOperationException(
                             "This point shouldn't be reachable if the logs are properly kept.");
                     };
                 }));
