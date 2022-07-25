@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
@@ -18,10 +19,16 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
    where TStartup : class
 {
     private readonly Action<IWebHostBuilder> _configuration;
+    private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly List<IStore> _createdStores = new();
 
-    public OrchardApplicationFactory(Action<IWebHostBuilder> configuration = null) =>
+    public OrchardApplicationFactory(
+        Action<IWebHostBuilder> configuration = null,
+        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
+    {
         _configuration = configuration;
+        _configureOrchard = configureOrchard;
+    }
 
     public string BaseAddress => ClientOptions.BaseAddress.ToString();
 
@@ -35,7 +42,16 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     {
         var builder = services
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
-                .ImplementationInstance as OrchardCoreBuilder;
+                .ImplementationInstance as OrchardCoreBuilder
+                ?? throw new InvalidOperationException(
+                    "Pease call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+        var configuration = services
+                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
+                .ImplementationInstance as ConfigurationManager
+                ?? throw new InvalidOperationException(
+                    "Pease add ConfigurationManager instance to WebApplicationBuilder.Services in your Program.cs!");
+
+        _configureOrchard?.Invoke(configuration, builder);
 
         builder.ConfigureServices(builderServices =>
         {

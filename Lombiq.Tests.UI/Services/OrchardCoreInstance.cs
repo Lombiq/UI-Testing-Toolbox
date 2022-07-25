@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services.OrchardCoreHosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using OrchardCore.Modules;
@@ -39,7 +40,7 @@ public class OrchardCoreConfiguration
             (_, argumentsBuilder) =>
             {
                 argumentsBuilder
-                    .AddArgValue("OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation", value: true);
+                    .AddValue("OrchardCore:Lombiq_Hosting_Azure_ApplicationInsights:EnableOfflineOperation", value: true);
 
                 return Task.CompletedTask;
             };
@@ -183,15 +184,17 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
 
-        _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(builder =>
-        {
-            builder.UseContentRoot(_contentRootPath)
+        _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
+            builder => builder
+                .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment("Development");
+                .UseEnvironment("Development")
+                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Args.ToArray())),
+            (configuration, orchardBuilder) => orchardBuilder
+                .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 
-            builder.ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Args.ToArray()));
-        });
         _orchardApplication.ClientOptions.AllowAutoRedirect = false;
+        _orchardApplication.ClientOptions.BaseAddress = new Uri(_reverseProxy.RootUrl);
         _reverseProxy.AttachConnectionProvider(_orchardApplication);
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");

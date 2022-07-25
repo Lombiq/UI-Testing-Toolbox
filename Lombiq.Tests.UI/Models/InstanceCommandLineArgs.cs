@@ -6,14 +6,19 @@ public class InstanceCommandLineArgs
 {
     private readonly List<string> _args = new();
 
-    public InstanceCommandLineArgs AddArg(string arg)
+    public InstanceCommandLineArgs AddSwitch(string arg)
     {
-        _args.Add(arg);
+        _args.Add($"--{arg}");
+
         return this;
     }
 
-    public InstanceCommandLineArgs AddArgValue<T>(string arg, T value) =>
-        AddArg($"{arg}={value}");
+    public InstanceCommandLineArgs AddValue<T>(string arg, T value)
+    {
+        _args.Add($"--{arg}={value}");
+
+        return this;
+    }
 
     public IEnumerable<string> Args => _args;
 }

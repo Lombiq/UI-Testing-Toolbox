@@ -71,6 +71,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Lombiq.Tests\Lombiq.Tests.csproj" />
+    <ProjectReference Include="..\Lombiq.Tests.UI.AppExtensions\Lombiq.Tests.UI.AppExtensions.csproj" />
     <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
   </ItemGroup>
 

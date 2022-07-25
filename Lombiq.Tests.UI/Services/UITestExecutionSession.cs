@@ -556,11 +556,11 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
-            arguments.AddArgValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddValue("Lombiq_Tests_UI:IsUITesting", value: true);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
-                arguments.AddArgValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
+                arguments.AddValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
             }
 
             return Task.CompletedTask;
@@ -671,15 +671,15 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
             arguments
-                .AddArgValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
-                .AddArgValue(
+                .AddValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
+                .AddValue(
                     "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
                     value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
-                .AddArgValue(
+                .AddValue(
                     "OrchardCore:OrchardCore_Media_Azure:ContainerName",
                     value: _configuration.AzureBlobStorageConfiguration.ContainerName)
-                .AddArgValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
-                .AddArgValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
+                .AddValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
+                .AddValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
@@ -702,8 +702,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
-                .AddArgValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
-                .AddArgValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
+                .AddValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
+                .AddValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
             return Task.CompletedTask;
         }
 
