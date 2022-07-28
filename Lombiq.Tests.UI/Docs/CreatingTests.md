@@ -1,7 +1,5 @@
 # Creating tests
 
-
-
 ## Creating a test project
 
 Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
@@ -11,7 +9,7 @@ For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.
 We also recommend always running some highly automated tests that need very little configuration:
 
 - The suite of tests for checking that all the basic Orchard Core features work, like login, registration, and content management. Use `context.TestBasicOrchardFeatures()` to run all such tests but see the other, more granular tests too. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=jmhq63sRZrI).
-- [Monkey tests](https://en.wikipedia.org/wiki/Monkey_testing) can also be useful. Use `context.TestCurrentPageAsMonkeyRecursively()` to run a monkey testing process, which walks through site pages and does random interactions with pages, like clicking, scrolling, form filling, etc. It's recommended to have at least 3 monkey tests that execute with different user states: As an admin, as a regular registered user and as an anonymous user. The admin test can start execution on admin dashboard page, while other tests can start on home page. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=pZbEsEz3tuE).
+- [Monkey tests](https://en.wikipedia.org/wiki/Monkey_testing) can also be useful. Use `context.TestCurrentPageAsMonkeyRecursively()` to run a monkey testing process. This walks through site pages and does random interactions with pages, like clicking, scrolling, form filling, etc. It's recommended to have at least 3 monkey tests that execute with different user states: As an admin, as a regular registered user and as an anonymous user. The admin test can start execution on admin dashboard page, while other tests can start on home page. This is also demonstrated in `Lombiq.Tests.UI.Samples` and in [this video](https://www.youtube.com/watch?v=pZbEsEz3tuE).
 
 ## Steps for creating a test class
 
@@ -46,16 +44,14 @@ Keep test classes relatively small, with just a couple of test cases in them, an
       - Add documentation if something is hard to understand.
       - It's good practice to always explicitly set the size of the browser window so it doesn't depend on the machine executing the test. You can do this with the `UITestContext.SetBrowserSize()` shortcut.
 
-
 ## Notes on test execution
 
 - By default any non-warning entry in the Orchard log and any warning or error in the browser log will fail a test.
 - Individual driver operations are retried with a timeout, and failing tests are also retried. While you're developing a test this might not be what you want but rather for the tests to fail as quickly as possible. For this, lower the timeout values in and the try count, see [Configuration](Configuration.md).
-- UI tests can be quite computationally demanding since your machine is hammering multiple concurrently running Orchard apps via separate browser processes while also serving them, and on top of this potentially also fetching resources from CDNs and other external services. To prevent tests failing locally simply because the machine is overwhelmed and they time out (or just taking more time than if the resources weren't completely saturated) the number of parallel tests is usually capped at a generally safe level in an xUnit config file in the root of the test project (*xunit.runner.json*). If your PC can handle it then feel free to increase the limit for the duration of local testing (but don't commit these changes).
-- Accessibility checking is available with [axe](https://github.com/dequelabs/axe-core). [Check out](https://github.com/TroyWalshProf/SeleniumAxeDotnet) what you can do with the library we use. You can also use the [axe Chrome extension](https://chrome.google.com/webstore/detail/axe-web-accessibility-tes/lhdoppojpmngadmnindnejefpokejbdd) to aid you fixing issues.
+- UI tests can be quite computationally demanding since your machine is hammering multiple concurrently running Orchard apps via separate browser processes while also serving them, and on top of this potentially also fetching resources from CDNs and other external services. To prevent tests failing locally simply because the machine is overwhelmed and they time out (or just taking more time than if the resources weren't completely saturated) the number of parallel tests is usually capped at a generally safe level in an xUnit config file in the root of the test project (_xunit.runner.json_). If your PC can handle it then feel free to increase the limit for the duration of local testing (but don't commit these changes).
+- Accessibility checking is available with [axe](https://github.com/dequelabs/axe-core). [Check out](https://github.com/TroyWalshProf/SeleniumAxeDotnet) what you can do with the library we use. You can also use the [axe Chrome extension](https://chrome.google.com/webstore/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd) to aid you fixing issues.
 - In case of testing Trumbowyg editors, make sure each editor is placed inside its own uniquely named container so that multiple editors on the same page can be identified separately.
 - When asserting on dates be mindful about time zones. It's the easiest if both the app and the tests work with UTC.
-
 
 ## Tips on optimizing tests
 

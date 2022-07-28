@@ -1,7 +1,5 @@
 # Tools we use
 
-
-
 - The tests themselves are written in [xUnit](https://xunit.net/).
 - The UI testing framework we use is [Selenium](https://www.selenium.dev/), extended with [Atata](https://atata.io/).
 - Chrome needs to be installed on your machine, the latest version. If you also want to test other browsers then install the latest version of each of them:
