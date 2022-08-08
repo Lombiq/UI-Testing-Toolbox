@@ -66,7 +66,7 @@
     <PackageReference Include="Selenium.Axe" Version="3.1.5" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="WebDriverManager" Version="2.13.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.2" />
   </ItemGroup>
 
   <ItemGroup>
