@@ -1,5 +1,6 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
@@ -195,4 +196,30 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     public static Task SelectThemeAsync(this UITestContext context, string id) =>
         context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));
+
+    /// <summary>
+    /// Creates and sets up a new URL prefixed tenant.
+    /// </summary>
+    public static async Task CreateTenantAsync(
+        this UITestContext context,
+        string name,
+        string urlPrefix,
+        string recipe,
+        CreateTenant model = null)
+    {
+        model ??= new CreateTenant();
+
+        await context.GoToAsync<TenantsController>(controller =>
+            controller.Create(name, urlPrefix, recipe, model.ConnectionString, model.DatabaseProvider));
+
+        await context.ClickAndFillInWithRetriesAsync(By.Id("SiteName"), name);
+        if (!string.IsNullOrEmpty(model.TimeZone)) await context.SetDropdownByValueAsync(By.Id("SiteTimeZone"), model.TimeZone);
+        await context.SetDropdownByValueAsync(By.Id("culturesList"), model.Language);
+
+        await context.ClickAndFillInWithRetriesAsync(By.Id("UserName"), model.UserName);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("Email"), model.Email);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("Password"), model.Password);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("PasswordConfirmation"), model.Password);
+        context.ClickReliablyOnAsync(By.Id("SubmitButton"));
+    }
 }
