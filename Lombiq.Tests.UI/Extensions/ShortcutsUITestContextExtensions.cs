@@ -220,6 +220,6 @@ public static class ShortcutsUITestContextExtensions
         await context.ClickAndFillInWithRetriesAsync(By.Id("Email"), model.Email);
         await context.ClickAndFillInWithRetriesAsync(By.Id("Password"), model.Password);
         await context.ClickAndFillInWithRetriesAsync(By.Id("PasswordConfirmation"), model.Password);
-        context.ClickReliablyOnAsync(By.Id("SubmitButton"));
+        await context.ClickReliablyOnAsync(By.Id("SubmitButton"));
     }
 }
