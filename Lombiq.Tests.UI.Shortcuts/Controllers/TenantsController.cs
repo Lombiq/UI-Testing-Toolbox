@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
 using OrchardCore.Modules;
@@ -27,9 +28,15 @@ public class TenantsController : Controller
         _shellSettingsManager = shellSettingsManager;
     }
 
-    public async Task<IActionResult> Create(string name, string urlPrefix, string recipe, string connectionString = "", string databaseProvider = "Sqlite")
+    public async Task<IActionResult> Create(
+        string name,
+        string urlPrefix,
+        string recipe,
+        string connectionString = "",
+        string databaseProvider = "Sqlite")
     {
         if (_shellHost.TryGetSettings(name, out _)) throw new InvalidOperationException("The tenant already exists.");
+        if (!Url.IsLocalUrl(urlPrefix)) throw new InvalidOperationException($"Invalid URL prefix \"{urlPrefix}\".");
 
         // Creates a default shell settings based on the configuration.
         var shellSettings = _shellSettingsManager.CreateDefaultSettings();
