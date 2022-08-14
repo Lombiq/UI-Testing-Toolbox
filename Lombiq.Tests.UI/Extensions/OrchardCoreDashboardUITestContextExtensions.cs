@@ -68,14 +68,35 @@ public static class OrchardCoreDashboardUITestContextExtensions
         return context.GoToRelativeUrlAsync("/Admin/Contents/ContentItems" + query);
     }
 
+    public static Task GoToContentItemListAsync(this UITestContext context, string relativeAdminUrl, string filterContentType = null)
+    {
+        var query = string.IsNullOrEmpty(filterContentType)
+            ? string.Empty
+            : ("?q=type%3A" + filterContentType);
+        return context.GoToRelativeUrlAsync($"/{relativeAdminUrl}/Contents/ContentItems" + query);
+    }
+
     public static async Task GoToContentItemListAndCreateNewAsync(this UITestContext context, string contentTypeText)
     {
         await context.GoToContentItemListAsync();
         await context.ClickNewContentItemAsync(contentTypeText);
     }
 
+    public static async Task GoToContentItemListAndCreateNewAsync(this UITestContext context, string contentTypeText, string relativeAdminUrl)
+    {
+        await context.GoToContentItemListAsync(relativeAdminUrl);
+        await context.ClickNewContentItemAsync(contentTypeText);
+    }
+
     public static Task CreateNewContentItemAsync(this UITestContext context, string contentType, bool onlyIfNotAlreadyThere = true) =>
         context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
+
+    public static Task CreateNewContentItemAsync(
+        this UITestContext context,
+        string contentType,
+        string relativeAdminUrl,
+        bool onlyIfNotAlreadyThere = true) =>
+        context.GoToRelativeUrlAsync($"/{relativeAdminUrl}/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
 
     public static async Task ClickNewContentItemAsync(this UITestContext context, string contentItemName, bool dropdown = true)
     {

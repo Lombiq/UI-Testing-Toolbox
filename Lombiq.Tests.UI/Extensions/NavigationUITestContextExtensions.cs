@@ -73,6 +73,15 @@ public static class NavigationUITestContextExtensions
         await context.GoToDashboardAsync();
     }
 
+    public static async Task SignInDirectlyAndGoToDashboardAsync(
+        this UITestContext context,
+        string relativeAdminUrl,
+        string email = DefaultUser.UserName)
+    {
+        await context.SignInDirectlyAsync(email);
+        await context.GoToDashboardAsync(relativeAdminUrl);
+    }
+
     public static async Task SignOutDirectlyThenSignInDirectlyAsync(
         this UITestContext context,
         string email = DefaultUser.UserName)
@@ -144,20 +153,20 @@ public static class NavigationUITestContextExtensions
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreDashboardPage>();
 
-    public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context, string relativeUrl) =>
-        context.GoToPageAsync<OrchardCoreDashboardPage>(relativeUrl);
+    public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context, string relativeAdminUrl) =>
+        context.GoToPageAsync<OrchardCoreDashboardPage>(relativeAdminUrl);
 
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreContentItemsPage>();
 
-    public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context, string relativeUrl) =>
-        context.GoToPageAsync<OrchardCoreContentItemsPage>(relativeUrl);
+    public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context, string relativeAdminUrl) =>
+        context.GoToPageAsync<OrchardCoreContentItemsPage>(relativeAdminUrl);
 
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreFeaturesPage>();
 
-    public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context, string relativeUrl) =>
-        context.GoToPageAsync<OrchardCoreFeaturesPage>(relativeUrl);
+    public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context, string relativeAdminUrl) =>
+        context.GoToPageAsync<OrchardCoreFeaturesPage>(relativeAdminUrl);
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
@@ -281,4 +290,7 @@ public static class NavigationUITestContextExtensions
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToRelativeUrlAsync($"/Admin/Contents/ContentItems/{contentItemId}/Edit");
+
+    public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId, string relativeAdminUrl) =>
+        context.GoToRelativeUrlAsync($"/{relativeAdminUrl}/Contents/ContentItems/{contentItemId}/Edit");
 }
