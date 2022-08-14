@@ -90,7 +90,7 @@ public class UITestContext
     /// </summary>
     public string TenantName { get; set; } = "Default";
 
-    public string CustomAdminUrl { get; }
+    public string CustomAdminUrl { get; set; }
 
     public UITestContext(
         string id,
@@ -98,8 +98,7 @@ public class UITestContext
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
-        RunningContextContainer runningContextContainer,
-        IConfiguration testConfiguration)
+        RunningContextContainer runningContextContainer)
     {
         Id = id;
         TestManifest = testManifest;
@@ -109,13 +108,6 @@ public class UITestContext
         Scope = scope;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
-
-        var customAdminPrefix = testConfiguration.GetValue<string>("OrchardCore:OrchardCore_Admin:AdminUrlPrefix");
-
-        if (!string.IsNullOrEmpty(customAdminPrefix))
-        {
-            CustomAdminUrl = customAdminPrefix;
-        }
     }
 
     /// <summary>
