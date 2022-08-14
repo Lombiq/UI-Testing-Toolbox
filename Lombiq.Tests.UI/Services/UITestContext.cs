@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -89,13 +90,16 @@ public class UITestContext
     /// </summary>
     public string TenantName { get; set; } = "Default";
 
+    public string CustomAdminUrl { get; }
+
     public UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
-        RunningContextContainer runningContextContainer)
+        RunningContextContainer runningContextContainer,
+        IConfiguration testConfiguration)
     {
         Id = id;
         TestManifest = testManifest;
@@ -105,6 +109,13 @@ public class UITestContext
         Scope = scope;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
+
+        var customAdminPrefix = testConfiguration.GetValue<string>("OrchardCore:OrchardCore_Admin:AdminUrlPrefix");
+
+        if (!string.IsNullOrEmpty(customAdminPrefix))
+        {
+            CustomAdminUrl = customAdminPrefix;
+        }
     }
 
     /// <summary>
