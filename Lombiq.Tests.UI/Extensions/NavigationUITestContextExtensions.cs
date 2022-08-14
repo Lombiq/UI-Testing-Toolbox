@@ -144,11 +144,20 @@ public static class NavigationUITestContextExtensions
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreDashboardPage>();
 
+    public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context, string relativeUrl) =>
+        context.GoToPageAsync<OrchardCoreDashboardPage>(relativeUrl);
+
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreContentItemsPage>();
 
+    public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context, string relativeUrl) =>
+        context.GoToPageAsync<OrchardCoreContentItemsPage>(relativeUrl);
+
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreFeaturesPage>();
+
+    public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context, string relativeUrl) =>
+        context.GoToPageAsync<OrchardCoreFeaturesPage>(relativeUrl);
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
