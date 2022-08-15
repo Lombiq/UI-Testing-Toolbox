@@ -212,9 +212,9 @@ public static class ShortcutsUITestContextExtensions
         await context.GoToAsync<TenantsController>(controller =>
             controller.Create(name, urlPrefix, recipe, model.ConnectionString, model.DatabaseProvider));
 
+        await context.SetDropdownByValueAsync(By.Id("culturesList"), model.Language);
         await context.ClickAndFillInWithRetriesAsync(By.Id("SiteName"), name);
         if (!string.IsNullOrEmpty(model.TimeZone)) await context.SetDropdownByValueAsync(By.Id("SiteTimeZone"), model.TimeZone);
-        await context.SetDropdownByValueAsync(By.Id("culturesList"), model.Language);
 
         await context.ClickAndFillInWithRetriesAsync(By.Id("UserName"), model.UserName);
         await context.ClickAndFillInWithRetriesAsync(By.Id("Email"), model.Email);
