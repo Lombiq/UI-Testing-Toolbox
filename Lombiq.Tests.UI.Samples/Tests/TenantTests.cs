@@ -36,10 +36,10 @@ public class TenantTests : UITestBase
 
                 // Create the tenant with custom admin name
                 await context.CreateAndEnterTenantAsync(
-                TestTenantDisplayName,
-                TestTenantUrlPrefix,
-                "Lombiq.OSOCE.Tests",
-                new CreateTenant { UserName = tenantAdminName });
+                    TestTenantDisplayName,
+                    TestTenantUrlPrefix,
+                    "Lombiq.OSOCE.Tests",
+                    new CreateTenant { UserName = tenantAdminName });
 
                 // Verify successful setup with custom site name.
                 context
