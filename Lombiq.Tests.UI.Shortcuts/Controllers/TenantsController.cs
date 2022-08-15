@@ -35,7 +35,6 @@ public class TenantsController : Controller
         string databaseProvider = "Sqlite")
     {
         if (_shellHost.TryGetSettings(name, out _)) throw new InvalidOperationException("The tenant already exists.");
-        if (!Url.IsLocalUrl(urlPrefix)) throw new InvalidOperationException($"Invalid URL prefix \"{urlPrefix}\".");
 
         // Creates a default shell settings based on the configuration.
         var shellSettings = _shellSettingsManager.CreateDefaultSettings();

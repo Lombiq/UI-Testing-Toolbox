@@ -198,9 +198,9 @@ public static class ShortcutsUITestContextExtensions
         context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));
 
     /// <summary>
-    /// Creates and sets up a new URL prefixed tenant.
+    /// Creates, sets up and navigates to a new URL prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>
     /// </summary>
-    public static async Task CreateTenantAsync(
+    public static async Task CreateAndEnterTenantAsync(
         this UITestContext context,
         string name,
         string urlPrefix,
@@ -221,5 +221,7 @@ public static class ShortcutsUITestContextExtensions
         await context.ClickAndFillInWithRetriesAsync(By.Id("Password"), model.Password);
         await context.ClickAndFillInWithRetriesAsync(By.Id("PasswordConfirmation"), model.Password);
         await context.ClickReliablyOnAsync(By.Id("SubmitButton"));
+
+        context.TenantName = urlPrefix;
     }
 }
