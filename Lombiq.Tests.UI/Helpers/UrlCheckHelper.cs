@@ -14,6 +14,12 @@ public static class UrlCheckHelper
     {
         var path = context.GetCurrentUri().PathAndQuery;
 
+        // Strip off tenant URL prefix if present.
+        if (!string.IsNullOrEmpty(context.TenantName) && path[1..].StartsWith(context.TenantName))
+        {
+            path = path[(1 + context.TenantName.Length)..];
+        }
+
         return path.StartsWithOrdinalIgnoreCase("/admin") ||
             path.StartsWithOrdinalIgnoreCase("/Register") ||
             path.StartsWithOrdinalIgnoreCase("/Login") ||
@@ -46,7 +52,8 @@ public static class UrlCheckHelper
             url.ContainsOrdinalIgnoreCase("://localhost:") &&
             !url.StartsWithOrdinalIgnoreCase(context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://") &&
             !url.ContainsOrdinalIgnoreCase("Lombiq.Tests.UI.Shortcuts") &&
-            !IsOrchardPage(context);
+            !IsOrchardPage(context) &&
+            context.Driver.Title != "Setup";
     }
 
     /// <summary>
