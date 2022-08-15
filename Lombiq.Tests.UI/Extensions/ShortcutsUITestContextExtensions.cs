@@ -198,7 +198,7 @@ public static class ShortcutsUITestContextExtensions
         context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));
 
     /// <summary>
-    /// Creates, sets up and navigates to a new URL prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>
+    /// Creates, sets up and navigates to a new URL prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
     /// </summary>
     public static async Task CreateAndEnterTenantAsync(
         this UITestContext context,

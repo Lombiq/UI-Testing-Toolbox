@@ -15,7 +15,7 @@ public static class UrlCheckHelper
         var path = context.GetCurrentUri().PathAndQuery;
 
         // Strip off tenant URL prefix if present.
-        if (!string.IsNullOrEmpty(context.TenantName) && path[1..].StartsWith(context.TenantName))
+        if (!string.IsNullOrEmpty(context.TenantName) && path[1..].StartsWithOrdinal(context.TenantName))
         {
             path = path[(1 + context.TenantName.Length)..];
         }
