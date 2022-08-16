@@ -14,7 +14,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // Testing in multi-tenancy context is not yet fully supported (https://github.com/Lombiq/UI-Testing-Toolbox/issues/80)
 // but you can create sites, and features that don't navigate to an absolute path work. If you have to navigate, either
 // use context.GoToRelativeUrlAsync() but remember to use include the tenant url prefix, or change context.TenantName
-// (context.CreateAndEnterTenantAsync() already does this) and and then use context.GoToAsync<TController>() to
+// (context.CreateAndEnterTenantAsync() already does this) and then use context.GoToAsync<TController>() to
 // navigate by MVC actions.
 public class TenantTests : UITestBase
 {
