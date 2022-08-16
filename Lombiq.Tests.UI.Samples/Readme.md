@@ -25,6 +25,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Monkey tests](Tests/MonkeyTests.cs)
 - [Database snapshot tests](Tests/DatabaseSnapshotTests.cs)
 - [Basic visual verification tests](Tests/BasicVisualVerificationTests.cs)
+- [Testing in tenants](Tests/TenantTests.cs)
 
 ## Adding new tutorials
 
