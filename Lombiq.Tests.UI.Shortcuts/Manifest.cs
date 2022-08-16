@@ -20,6 +20,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.ContentTypes",
         "OrchardCore.DisplayManagement",
         "OrchardCore.Users",
+        "OrchardCore.Tenants",
     }
 )]
 

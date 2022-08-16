@@ -99,3 +99,4 @@ public class BasicVisualVerificationTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Basic visual verification tests.
+// NEXT STATION: Head over to Tests/TenantTests.cs.
