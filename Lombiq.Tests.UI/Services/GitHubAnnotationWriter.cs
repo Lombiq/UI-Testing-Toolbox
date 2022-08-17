@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Xunit.Abstractions;
 
@@ -45,8 +44,7 @@ public class GitHubAnnotationWriter
         // Sanitize message:
         message = message.Replace("\r", string.Empty).Replace("\n", " ");
 
-        _testOutputHelper.WriteLine(string.Create(
-            CultureInfo.InvariantCulture,
+        _testOutputHelper.WriteLine(FormattableString.Invariant(
             $"::{command} file={file},line={line},title={title}::{message}"));
     }
 
