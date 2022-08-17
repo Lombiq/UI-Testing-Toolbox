@@ -21,8 +21,8 @@ Highlights:
 - Check for the validity of the HTML markup either explicitly or automatically on all page changes.
 - Reliability is built in, so you won't get false negatives.
 - Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
+- Ready to use GitHub Actions workflows for CI builds and support for test grouping and error annotations in [Lombiq GitHub Actions](https://github.com/features/actions). This feature is automatically enabled if a GitHub environment is detected.
 - Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in a TeamCity CI/CD server.
-- Support for test grouping and error annotations in [GitHub Actions](https://github.com/features/actions). This feature is automatically enabled if a GitHub environment is detected.
 - Visual verification testing: You can make the test fail if the look of the app changes. Demo video [here](https://www.youtube.com/watch?v=a-1zKjxTKkk).
 
 See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
