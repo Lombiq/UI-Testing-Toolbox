@@ -1,10 +1,7 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
-using Lombiq.Hosting.Tenants.IdleTenantManagement.Models;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -92,6 +89,11 @@ public class UITestContext
     /// </summary>
     public string TenantName { get; set; } = "Default";
 
+    /// <summary>
+    /// Gets or sets the current admin prefix if a custom one is needed. When creating UI tests on a site that
+    /// has custom admin prefix this value should be set in the UI test. After that navigation methods will be able
+    /// to catch up to the custom url.
+    /// </summary>
     public string CustomAdminUrl { get; set; }
 
 
