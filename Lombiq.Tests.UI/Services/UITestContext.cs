@@ -96,7 +96,6 @@ public class UITestContext
     /// </summary>
     public string CustomAdminUrl { get; set; }
 
-
     public UITestContext(
         string id,
         UITestManifest testManifest,
