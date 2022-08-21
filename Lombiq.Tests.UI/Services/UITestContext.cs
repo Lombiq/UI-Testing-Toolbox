@@ -1,8 +1,10 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.Hosting.Tenants.IdleTenantManagement.Models;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -91,6 +93,7 @@ public class UITestContext
     public string TenantName { get; set; } = "Default";
 
     public string CustomAdminUrl { get; set; }
+
 
     public UITestContext(
         string id,
@@ -209,4 +212,11 @@ public class UITestContext
             return true;
         }
     }
+
+    /// <summary>
+    /// Sets the custom admin url to the parameter value.
+    /// </summary>
+    /// <param name="customUrl">The desired custom admin url value.</param>
+    public void SetCustomAdminUrl(string customUrl) =>
+        CustomAdminUrl = customUrl;
 }
