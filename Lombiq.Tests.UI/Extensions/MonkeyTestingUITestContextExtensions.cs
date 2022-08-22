@@ -57,11 +57,10 @@ public static class MonkeyTestingUITestContextExtensions
     public static async Task TestAdminAsMonkeyRecursivelyAsync(
         this UITestContext context,
         MonkeyTestingOptions options = null,
-        string signInDirectlyWithUserName = DefaultUser.UserName,
-        string startingRelativeUrl = "/admin")
+        string signInDirectlyWithUserName = DefaultUser.UserName)
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
-        if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
+        await context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}");
 
         options ??= new MonkeyTestingOptions();
         options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter());

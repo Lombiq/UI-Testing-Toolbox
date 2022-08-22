@@ -92,9 +92,9 @@ public class UITestContext
     /// <summary>
     /// Gets or sets the current admin prefix if a custom one is needed. When creating UI tests on a site that
     /// has custom admin prefix this value should be set in the UI test. After that navigation methods will be able
-    /// to catch up to the custom url.
+    /// to catch up to the custom url. On default /Admin value is set for this property.
     /// </summary>
-    public string CustomAdminUrl { get; set; }
+    public string AdminUrlPrefix { get; set; } = "Admin";
 
     public UITestContext(
         string id,
@@ -213,11 +213,4 @@ public class UITestContext
             return true;
         }
     }
-
-    /// <summary>
-    /// Sets the custom admin url to the parameter value.
-    /// </summary>
-    /// <param name="customUrl">The desired custom admin url value.</param>
-    public void SetCustomAdminUrl(string customUrl) =>
-        CustomAdminUrl = customUrl;
 }

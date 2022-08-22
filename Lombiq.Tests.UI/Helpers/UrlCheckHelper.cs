@@ -21,11 +21,12 @@ public static class UrlCheckHelper
         }
 
         return path.StartsWithOrdinalIgnoreCase("/admin") ||
-            path.StartsWithOrdinalIgnoreCase("/Register") ||
-            path.StartsWithOrdinalIgnoreCase("/Login") ||
-            path.StartsWithOrdinalIgnoreCase("/ChangePassword") ||
-            path.StartsWithOrdinalIgnoreCase("/ExternalLogins") ||
-            context.IsSetupPage();
+               path.StartsWithOrdinalIgnoreCase($"/{context.AdminUrlPrefix}") ||
+               path.StartsWithOrdinalIgnoreCase("/Register") ||
+               path.StartsWithOrdinalIgnoreCase("/Login") ||
+               path.StartsWithOrdinalIgnoreCase("/ChangePassword") ||
+               path.StartsWithOrdinalIgnoreCase("/ExternalLogins") ||
+               context.IsSetupPage();
     }
 
     /// <summary>

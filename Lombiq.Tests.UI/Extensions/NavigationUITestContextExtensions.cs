@@ -142,19 +142,13 @@ public static class NavigationUITestContextExtensions
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
-        string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToPageAsync<OrchardCoreDashboardPage>()
-            : context.GoToPageAsync<OrchardCoreDashboardPage>(context.CustomAdminUrl);
+        context.GoToPageAsync<OrchardCoreDashboardPage>(context.AdminUrlPrefix);
 
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
-        string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToPageAsync<OrchardCoreContentItemsPage>()
-            : context.GoToPageAsync<OrchardCoreContentItemsPage>(context.CustomAdminUrl);
+        context.GoToPageAsync<OrchardCoreContentItemsPage>(context.AdminUrlPrefix);
 
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
-        string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToPageAsync<OrchardCoreFeaturesPage>()
-            : context.GoToPageAsync<OrchardCoreFeaturesPage>(context.CustomAdminUrl);
+        context.GoToPageAsync<OrchardCoreFeaturesPage>(context.AdminUrlPrefix);
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
@@ -277,7 +271,5 @@ public static class NavigationUITestContextExtensions
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
-        string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToRelativeUrlAsync($"/Admin/Contents/ContentItems/{contentItemId}/Edit")
-            : context.GoToRelativeUrlAsync($"/{context.CustomAdminUrl}/Contents/ContentItems/{contentItemId}/Edit");
+        context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
 }

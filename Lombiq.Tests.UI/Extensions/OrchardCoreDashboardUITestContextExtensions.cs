@@ -65,9 +65,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
         var query = string.IsNullOrEmpty(filterContentType)
             ? string.Empty
             : ("?q=type%3A" + filterContentType);
-        return string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToRelativeUrlAsync($"/Admin/Contents/ContentItems{query}")
-            : context.GoToRelativeUrlAsync($"/{context.CustomAdminUrl}/Contents/ContentItems{query}");
+        return context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}/Contents/ContentItems{query}");
     }
 
     public static async Task GoToContentItemListAndCreateNewAsync(this UITestContext context, string contentTypeText)
@@ -80,9 +78,9 @@ public static class OrchardCoreDashboardUITestContextExtensions
         this UITestContext context,
         string contentType,
         bool onlyIfNotAlreadyThere = true) =>
-        string.IsNullOrEmpty(context.CustomAdminUrl)
-            ? context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere)
-            : context.GoToRelativeUrlAsync($"/{context.CustomAdminUrl}/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
+            context.GoToRelativeUrlAsync(
+                $"/{context.AdminUrlPrefix}/Contents/ContentTypes/{contentType}/Create",
+                onlyIfNotAlreadyThere);
 
     public static async Task ClickNewContentItemAsync(this UITestContext context, string contentItemName, bool dropdown = true)
     {
