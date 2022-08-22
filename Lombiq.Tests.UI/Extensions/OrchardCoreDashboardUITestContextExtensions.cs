@@ -100,4 +100,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
         await context.ClickReliablyOnAsync(By.CssSelector("#security .title"));
         await context.ClickReliablyOnAsync(By.CssSelector(".item-label.users .title"));
     }
+
+    public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
+        context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
 }
