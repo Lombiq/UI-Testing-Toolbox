@@ -60,7 +60,7 @@ public static class MonkeyTestingUITestContextExtensions
         string signInDirectlyWithUserName = DefaultUser.UserName)
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
-        await context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}");
+        await context.GoToRelativeUrlAsync($"{context.AdminUrlPrefix}");
 
         options ??= new MonkeyTestingOptions();
         options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter());

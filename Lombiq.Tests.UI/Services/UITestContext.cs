@@ -94,7 +94,7 @@ public class UITestContext
     /// uses a custom admin prefix, this value should be set in the test. After that, navigation methods will be able
     /// to use the custom URL.
     /// </summary>
-    public string AdminUrlPrefix { get; set; } = "Admin";
+    public string AdminUrlPrefix { get; set; } = "/Admin";
 
     public UITestContext(
         string id,

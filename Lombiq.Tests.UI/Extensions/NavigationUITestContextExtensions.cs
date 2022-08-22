@@ -271,5 +271,5 @@ public static class NavigationUITestContextExtensions
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
-        context.GoToRelativeUrlAsync($"/{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
+        context.GoToRelativeUrlAsync($"{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
 }
