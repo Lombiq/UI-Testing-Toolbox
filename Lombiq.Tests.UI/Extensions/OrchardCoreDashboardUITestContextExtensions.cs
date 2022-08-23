@@ -78,7 +78,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
         this UITestContext context,
         string contentType,
         bool onlyIfNotAlreadyThere = true) =>
-            context.GoToRelativeUrlAsync(
+            context.GoToAdminRelativeUrlAsync(
                 $"/Contents/ContentTypes/{contentType}/Create",
                 onlyIfNotAlreadyThere);
 
