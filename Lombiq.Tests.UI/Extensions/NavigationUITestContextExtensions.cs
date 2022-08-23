@@ -29,7 +29,6 @@ public static class NavigationUITestContextExtensions
             onlyIfNotAlreadyThere);
     }
 
-
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
         context.ExecuteLoggedAsync(
             nameof(GoToAbsoluteUrlAsync),
