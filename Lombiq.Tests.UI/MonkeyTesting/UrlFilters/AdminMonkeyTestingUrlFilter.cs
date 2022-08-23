@@ -8,7 +8,10 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 /// </summary>
 public class AdminMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
 {
-    private readonly StartsWithMonkeyTestingUrlFilter _startsWithMonkeyTestingUrlFilter = new("/admin");
+    private readonly StartsWithMonkeyTestingUrlFilter _startsWithMonkeyTestingUrlFilter;
+
+    public AdminMonkeyTestingUrlFilter(UITestContext context) =>
+        _startsWithMonkeyTestingUrlFilter = new("/admin", context.AdminUrlPrefix);
 
     public bool AllowUrl(UITestContext context, Uri url) => _startsWithMonkeyTestingUrlFilter.AllowUrl(context, url);
 }
