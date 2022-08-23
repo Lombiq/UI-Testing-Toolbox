@@ -140,7 +140,7 @@ public class BasicTests : UITestBase
                 var appInsightsExist = context
                     .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
 
-                // Our custom message helps debugging, otherwise from the test output you could only tell that a a value
+                // Our custom message helps debugging, otherwise from the test output you could only tell that a value
                 // should be true but is false which is less than helpful.
                 appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
             },
