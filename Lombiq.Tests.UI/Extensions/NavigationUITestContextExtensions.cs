@@ -17,6 +17,19 @@ public static class NavigationUITestContextExtensions
     public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
         context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
 
+    public static Task GoToAdminRelativeUrlAsync(
+        this UITestContext context,
+        string urlWithoutAdminPrefix = null,
+        bool onlyIfNotAlreadyThere = true)
+    {
+        if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
+
+        return context.GoToAbsoluteUrlAsync(
+            context.GetAbsoluteUri($"{context.AdminUrlPrefix + urlWithoutAdminPrefix}"),
+            onlyIfNotAlreadyThere);
+    }
+
+
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
         context.ExecuteLoggedAsync(
             nameof(GoToAbsoluteUrlAsync),
@@ -115,6 +128,21 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
+        where T : PageObject<T>
+    {
+        var page = context.ExecuteLogged(
+            $"{typeof(T).FullName} - {context.AdminUrlPrefix + relativeUrl}",
+            typeof(T).FullName,
+            () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(context.AdminUrlPrefix + relativeUrl).ToString()));
+
+        await context.TriggerAfterPageChangeEventAsync();
+
+        context.RefreshCurrentAtataContext();
+
+        return page;
+    }
+
     public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreSetupPage>();
 
@@ -142,13 +170,13 @@ public static class NavigationUITestContextExtensions
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreDashboardPage>(context.AdminUrlPrefix);
+        context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
 
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreContentItemsPage>(context.AdminUrlPrefix);
+        context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
 
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreFeaturesPage>(context.AdminUrlPrefix);
+        context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
@@ -271,5 +299,5 @@ public static class NavigationUITestContextExtensions
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
-        context.GoToRelativeUrlAsync($"{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
+        context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
 }

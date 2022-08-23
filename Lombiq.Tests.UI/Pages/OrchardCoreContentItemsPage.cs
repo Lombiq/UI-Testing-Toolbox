@@ -8,7 +8,6 @@ namespace Lombiq.Tests.UI.Pages;
 using _ = OrchardCoreContentItemsPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-[Url("Admin/Contents/ContentItems")]
 public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
 {
     [FindById("new-dropdown")]
