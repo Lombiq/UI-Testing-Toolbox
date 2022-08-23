@@ -115,5 +115,5 @@ public static class OrchardCoreDashboardUITestContextExtensions
     }
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
-        context.GoToRelativeUrlAsync($"{context.AdminUrlPrefix}/Contents/ContentItems/{contentItemId}/Edit");
+        context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
 }
