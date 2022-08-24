@@ -301,7 +301,7 @@ public static class NavigationUITestContextExtensions
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
 
-    private static UriBuilder ReturnRelativeUri(this UITestContext context, string relativeUrl)
+    private static UriBuilder GetAdminRelativeUrl(this UITestContext context, string relativeUrl)
     {
         var uriString = Url.Combine(context.AdminUrlPrefix, relativeUrl);
 
