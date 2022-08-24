@@ -24,12 +24,7 @@ public static class NavigationUITestContextExtensions
     {
         if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
 
-        var uriBuilder = new UriBuilder(context.Scope.BaseUri)
-        {
-            Path = context.AdminUrlPrefix + urlWithoutAdminPrefix,
-        };
-
-        return context.GoToAbsoluteUrlAsync(uriBuilder.Uri, onlyIfNotAlreadyThere);
+        return context.GoToAbsoluteUrlAsync(context.ReturnRelativeUri(urlWithoutAdminPrefix).Uri, onlyIfNotAlreadyThere);
     }
 
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
@@ -133,15 +128,12 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
-        var uriBuilder = new UriBuilder(context.Scope.BaseUri)
-        {
-            Path = context.AdminUrlPrefix + relativeUrl,
-        };
+        var builder = context.ReturnRelativeUri(relativeUrl);
 
         var page = context.ExecuteLogged(
-            $"{typeof(T).FullName} - {uriBuilder.Path}",
+            $"{typeof(T).FullName} - {builder.Path}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: uriBuilder.Uri.ToString()));
+            () => context.Scope.AtataContext.Go.To<T>(url: builder.Uri.ToString()));
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -307,4 +299,7 @@ public static class NavigationUITestContextExtensions
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
+
+    private static UriBuilder ReturnRelativeUri(this UITestContext context, string relativeUrl) =>
+        new(context.Scope.BaseUri) { Path = context.AdminUrlPrefix + relativeUrl, };
 }
