@@ -1,5 +1,4 @@
 using Atata;
-using Flurl;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
@@ -25,7 +24,7 @@ public static class NavigationUITestContextExtensions
     {
         if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
 
-        return context.GoToAbsoluteUrlAsync(context.GetAdminRelativeUrl(urlWithoutAdminPrefix).Uri, onlyIfNotAlreadyThere);
+        return context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
     }
 
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
@@ -129,12 +128,12 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
-        var builder = context.GetAdminRelativeUrl(relativeUrl);
+        var uri = context.GetAbsoluteUri(relativeUrl);
 
         var page = context.ExecuteLogged(
-            $"{typeof(T).FullName} - {builder.Path}",
+            $"{typeof(T).FullName} - {uri.LocalPath}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: builder.Uri.ToString()));
+            () => context.Scope.AtataContext.Go.To<T>(url: uri.ToString()));
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -300,14 +299,4 @@ public static class NavigationUITestContextExtensions
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
-
-    private static UriBuilder GetAdminRelativeUrl(this UITestContext context, string relativeUrl)
-    {
-        var uriString = Url.Combine(context.AdminUrlPrefix, relativeUrl);
-
-        return new(context.Scope.BaseUri)
-        {
-            Path = uriString,
-        };
-    }
 }
