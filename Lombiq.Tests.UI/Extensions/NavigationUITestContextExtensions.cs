@@ -25,7 +25,7 @@ public static class NavigationUITestContextExtensions
     {
         if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
 
-        return context.GoToAbsoluteUrlAsync(context.ReturnRelativeUri(urlWithoutAdminPrefix).Uri, onlyIfNotAlreadyThere);
+        return context.GoToAbsoluteUrlAsync(context.GetAdminRelativeUrl(urlWithoutAdminPrefix).Uri, onlyIfNotAlreadyThere);
     }
 
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
@@ -129,7 +129,7 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
-        var builder = context.ReturnRelativeUri(relativeUrl);
+        var builder = context.GetAdminRelativeUrl(relativeUrl);
 
         var page = context.ExecuteLogged(
             $"{typeof(T).FullName} - {builder.Path}",
