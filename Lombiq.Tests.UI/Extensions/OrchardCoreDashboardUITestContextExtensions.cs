@@ -78,9 +78,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
         this UITestContext context,
         string contentType,
         bool onlyIfNotAlreadyThere = true) =>
-            context.GoToAdminRelativeUrlAsync(
-                $"/Contents/ContentTypes/{contentType}/Create",
-                onlyIfNotAlreadyThere);
+            context.GoToAdminRelativeUrlAsync($"/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
 
     /// <summary>
     /// Navigates to the Content Types page of the Orchard dashboard.
@@ -113,7 +111,4 @@ public static class OrchardCoreDashboardUITestContextExtensions
         await context.ClickReliablyOnAsync(By.CssSelector("#security .title"));
         await context.ClickReliablyOnAsync(By.CssSelector(".item-label.users .title"));
     }
-
-    public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
-        context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
 }

@@ -24,9 +24,12 @@ public static class NavigationUITestContextExtensions
     {
         if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
 
-        return context.GoToAbsoluteUrlAsync(
-            context.GetAbsoluteUri($"{context.AdminUrlPrefix + urlWithoutAdminPrefix}"),
-            onlyIfNotAlreadyThere);
+        var uriBuilder = new UriBuilder(context.Scope.BaseUri)
+        {
+            Path = context.AdminUrlPrefix + urlWithoutAdminPrefix,
+        };
+
+        return context.GoToAbsoluteUrlAsync(uriBuilder.Uri, onlyIfNotAlreadyThere);
     }
 
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
