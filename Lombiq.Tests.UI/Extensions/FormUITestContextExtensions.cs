@@ -204,11 +204,17 @@ public static class FormUITestContextExtensions
         return title;
     }
 
-    public static async Task SetDropdownAsync<T>(this UITestContext context, string selectId, T value)
+    public static async Task SetDropdownByValueAsync(this UITestContext context, By selectBy, string value)
+    {
+        await context.ClickReliablyOnAsync(selectBy);
+        context.Get(selectBy).Get(By.CssSelector($"option[value = '{value}']")).Click();
+    }
+
+    public static Task SetDropdownAsync<T>(this UITestContext context, string selectId, T value)
         where T : Enum
     {
-        await context.ClickReliablyOnAsync(By.Id(selectId));
-        context.Get(By.CssSelector(FormattableString.Invariant($"#{selectId} option[value='{(int)(object)value}']"))).Click();
+        var number = (int)(object)value;
+        return context.SetDropdownByValueAsync(By.Id(selectId), number.ToTechnicalString());
     }
 
     public static Task SetDropdownByTextAsync(this UITestContext context, string selectId, string value) =>

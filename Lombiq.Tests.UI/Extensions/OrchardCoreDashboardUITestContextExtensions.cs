@@ -77,6 +77,19 @@ public static class OrchardCoreDashboardUITestContextExtensions
     public static Task CreateNewContentItemAsync(this UITestContext context, string contentType, bool onlyIfNotAlreadyThere = true) =>
         context.GoToRelativeUrlAsync($"/Admin/Contents/ContentTypes/{contentType}/Create", onlyIfNotAlreadyThere);
 
+    /// <summary>
+    /// Navigates to the Content Types page of the Orchard dashboard.
+    /// </summary>
+    public static Task GoToContentTypesListAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync("/Admin/ContentTypes/List");
+
+    /// <summary>
+    /// Navigates to the editor page of a content type on the Orchard dashboard.
+    /// </summary>
+    /// <param name="contentType">The technical name of the content type to open the editor of.</param>
+    public static Task GoToContentTypeEditorAsync(this UITestContext context, string contentType) =>
+        context.GoToRelativeUrlAsync($"/Admin/ContentTypes/Edit/{contentType}");
+
     public static async Task ClickNewContentItemAsync(this UITestContext context, string contentItemName, bool dropdown = true)
     {
         if (dropdown)

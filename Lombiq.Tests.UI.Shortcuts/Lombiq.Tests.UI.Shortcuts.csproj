@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="OrchardCore.Module.Targets" Version="1.4.0" />
+    <PackageReference Include="OrchardCore.Tenants" Version="1.4.0" />
     <PackageReference Include="OrchardCore.Themes" Version="1.4.0" />
     <PackageReference Include="OrchardCore.Users" Version="1.4.0" />
     <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.4.0" />
@@ -48,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.5.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.6.0" />
   </ItemGroup>
 
 </Project>
