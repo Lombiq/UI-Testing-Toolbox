@@ -133,10 +133,15 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
+        var uriBuilder = new UriBuilder(context.Scope.BaseUri)
+        {
+            Path = context.AdminUrlPrefix + relativeUrl,
+        };
+
         var page = context.ExecuteLogged(
-            $"{typeof(T).FullName} - {context.AdminUrlPrefix + relativeUrl}",
+            $"{typeof(T).FullName} - {uriBuilder.Path}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(context.AdminUrlPrefix + relativeUrl).ToString()));
+            () => context.Scope.AtataContext.Go.To<T>(url: uriBuilder.Uri.ToString()));
 
         await context.TriggerAfterPageChangeEventAsync();
 
