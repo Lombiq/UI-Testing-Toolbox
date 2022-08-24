@@ -1,4 +1,5 @@
 using Atata;
+using Flurl;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
@@ -300,6 +301,13 @@ public static class NavigationUITestContextExtensions
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");
 
-    private static UriBuilder ReturnRelativeUri(this UITestContext context, string relativeUrl) =>
-        new(context.Scope.BaseUri) { Path = context.AdminUrlPrefix + relativeUrl, };
+    private static UriBuilder ReturnRelativeUri(this UITestContext context, string relativeUrl)
+    {
+        var uriString = Url.Combine(context.AdminUrlPrefix, relativeUrl);
+
+        return new(context.Scope.BaseUri)
+        {
+            Path = uriString,
+        };
+    }
 }
