@@ -24,7 +24,7 @@ public static class NavigationUITestContextExtensions
     {
         if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
 
-        return context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
+        return context.GoToAbsoluteUrlAsync(context.GetAbsoluteAdminUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
     }
 
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
