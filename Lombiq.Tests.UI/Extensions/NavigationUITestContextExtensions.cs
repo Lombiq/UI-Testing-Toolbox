@@ -51,6 +51,13 @@ public static class NavigationUITestContextExtensions
     public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
         new(context.Scope.BaseUri, relativeUrl);
 
+    public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
+    {
+        var combinedUriString = string.Concat(context.AdminUrlPrefix, adminRelativeUrl);
+
+        return context.GetAbsoluteUri(combinedUriString);
+    }
+
     public static async Task SignOutDirectlyThenSignInDirectlyAndGoToHomepageAsync(
         this UITestContext context,
         string email = DefaultUser.UserName)
@@ -128,7 +135,7 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
-        var uri = context.GetAbsoluteUri(relativeUrl);
+        var uri = context.GetAbsoluteAdminUri(relativeUrl);
 
         var page = context.ExecuteLogged(
             $"{typeof(T).FullName} - {uri.LocalPath}",
