@@ -115,36 +115,6 @@ public class BasicTests : UITestBase
                 await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
             },
             browser);
-
-    // Let's play a bit with Lombiq's Azure Application Insights module: It allows you to easily collect telemetry in
-    // Application Insights. Since it sends data to Azure, i.e. an external system, we should never use it during UI
-    // testing since tests should be self-contained and only test the app. However, it would be still nice to at least
-    // have some idea that the module works: Thus we've built an offline mode into it, what we turned on back in
-    // UITestBase. Thus we can check at least that.
-    [Theory, Chrome]
-    public Task ApplicationInsightsTrackingShouldBePresent(Browser browser) =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                await context.EnableFeatureDirectlyAsync("Lombiq.Privacy.ConsentBanner");
-                await context.GoToHomePageAsync();
-
-                // Now there's a bit of a pickle though: The Lombiq Privacy module is also enabled from the test recipe
-                // and shows its privacy consent banner. For tracking to be enabled, even in offline mode, the user
-                // needs to give consent. This is what we do now:
-                await context.ClickReliablyOnAsync(By.Id("privacy-consent-accept-button"));
-                context.Refresh();
-
-                // In offline mode, the module adds an appInsights variable that we can check. So let's execute some
-                // JavaScript in the browser.
-                var appInsightsExist = context
-                    .ExecuteScript("return window.appInsights === 'enabled'") as bool?;
-
-                // Our custom message helps debugging, otherwise from the test output you could only tell that a a value
-                // should be true but is false which is less than helpful.
-                appInsightsExist.ShouldBe(expected: true, "The Application Insights module is not working or is not in offline mode.");
-            },
-            browser);
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.
