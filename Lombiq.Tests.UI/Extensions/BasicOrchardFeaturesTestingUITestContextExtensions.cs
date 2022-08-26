@@ -81,6 +81,55 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
+    /// <para>
+    /// Tests all the basic Orchard features except for registration and content operations. At first sets up Orchard
+    /// with the recipe with the specified <paramref name="setupRecipeId"/>.
+    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// </summary>
+    /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static Task TestBasicOrchardFeaturesExceptRegistrationInHeadlessAppAsync(
+        this UITestContext context,
+        string setupRecipeId) =>
+        context.TestBasicOrchardFeaturesExceptRegistrationInHeadlessAppAsync(new OrchardCoreSetupParameters(context)
+        {
+            RecipeId = setupRecipeId,
+        });
+
+    /// <summary>
+    /// <para>
+    /// Tests all the basic Orchard features except for registration and content operations. At first sets up Orchard
+    /// with the recipe with the specified <paramref name="setupParameters"/>. By default uses new
+    /// <see cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
+    /// </para>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// </summary>
+    /// <param name="setupParameters">The ID of the recipe to be used to set up the site.</param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestBasicOrchardFeaturesExceptRegistrationInHeadlessAppAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters setupParameters = null)
+    {
+        await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationInHeadlessAppAsync();
+    }
+
+    /// <summary>
+    /// <para>Tests all the basic Orchard features except for setup, registration and content operations.</para>
+    /// <para>The test method assumes that the site is set up.</para>
+    /// </summary>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationInHeadlessAppAsync(
+        this UITestContext context)
+    {
+        await context.TestLoginWithInvalidDataAsync();
+        await context.TestLoginAsync();
+        await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestLogoutAsync();
+    }
+
+    /// <summary>
     /// <para>Tests all the basic Orchard features except for setup.</para>
     /// <para>The test method assumes that the site is set up.</para>
     /// </summary>
