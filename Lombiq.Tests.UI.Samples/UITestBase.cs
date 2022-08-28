@@ -76,8 +76,7 @@ public class UITestBase : OrchardCoreUITestBase<Program>
                     (_, argumentsBuilder) =>
                     {
                         argumentsBuilder
-                            .Add("--OrchardCore:OrchardCore_Admin:AdminUrlPrefix")
-                            .Add("Admin");
+                            .AddValue("--OrchardCore:OrchardCore_Admin:AdminUrlPrefix", "Admin");
 
                         return Task.CompletedTask;
                     };
