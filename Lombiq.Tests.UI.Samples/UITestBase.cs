@@ -62,14 +62,25 @@ public class UITestBase : OrchardCoreUITestBase<Program>
                 configuration.BrowserConfiguration.Headless =
                     TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
-                // There are event handlers that you can hook into. This method sets BeforeAppStart which is just one of
-                // many. Check out the others in OrchardCoreConfiguration if you're interested. This is quite handy!
-                // We're adding a configuration parameter when launching the app. This can be used to set configuration
-                // for configuration providers, see the docs:
-                // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/. What's happening here is
-                // that we set the Lombiq Application Insights module's parameter to allow us to test it. We'll get back
-                // to this later when writing the actual test.
-                configuration.OrchardCoreConfiguration.EnableApplicationInsightsOfflineOperation();
+                // There are event handlers that you can hook into, like
+                // configuration.OrchardCoreConfiguration.BeforeAppStart. But it is just one of many. Check out the
+                // others in OrchardCoreConfiguration if you're interested.
+
+                // This is quite handy! We can, for example, add a configuration parameter when launching the app. This
+                // can be used to set configuration for configuration providers, see the docs:
+                // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/. We can set e.g. Orchard's
+                // AdminUrlPrefix like below, but this is just setting the default, so it's only an example. A more
+                // useful example is enabling offline operation of the Lombiq Hosting - Azure Application Insights for
+                // Orchard Core module (see https://github.com/Lombiq/Orchard-Azure-Application-Insights).
+                configuration.OrchardCoreConfiguration.BeforeAppStart +=
+                    (_, argumentsBuilder) =>
+                    {
+                        argumentsBuilder
+                            .Add("--OrchardCore:OrchardCore_Admin:AdminUrlPrefix")
+                            .Add("Admin");
+
+                        return Task.CompletedTask;
+                    };
 
                 // Note that automatic HTML markup validation is enabled on every page change by default (you can
                 // disable it with the below config). With this, you can make sure that the HTML markup the app
