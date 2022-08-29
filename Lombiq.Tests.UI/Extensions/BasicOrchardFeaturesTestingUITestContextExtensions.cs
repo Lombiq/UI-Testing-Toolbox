@@ -114,7 +114,9 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether ContentOperations shall be executed.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(this UITestContext context, bool dontCheckFrontend)
+    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
+        this UITestContext context,
+        bool dontCheckFrontend)
     {
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
@@ -136,7 +138,9 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null)
+    public static async Task TestSetupWithInvalidAndValidDataAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters setupParameters = null)
     {
         await context.TestSetupWithInvalidDataAsync();
         await context.TestSetupAsync(setupParameters);
