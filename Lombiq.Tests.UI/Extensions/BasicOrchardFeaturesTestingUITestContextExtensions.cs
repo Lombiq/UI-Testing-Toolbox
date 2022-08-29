@@ -53,14 +53,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// specified <paramref name="setupRecipeId"/>.
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(this UITestContext context, string setupRecipeId) =>
-        context.TestBasicOrchardFeaturesExceptRegistrationAsync(new OrchardCoreSetupParameters(context)
-        {
-            RecipeId = setupRecipeId,
-        });
+    public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(
+        this UITestContext context,
+        string setupRecipeId,
+        bool dontCheckFrontend = false) =>
+        context.TestBasicOrchardFeaturesExceptRegistrationAsync(
+            dontCheckFrontend,
+            new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, });
 
     /// <summary>
     /// <para>
@@ -69,15 +76,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
+        bool dontCheckFrontend = false,
         OrchardCoreSetupParameters setupParameters = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync();
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend);
     }
 
     /// <summary>
@@ -100,13 +113,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup and registration.</para>
     /// <para>The test method assumes that the site is set up.</para>
+    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(this UITestContext context)
+    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
+        this UITestContext context,
+        bool dontCheckFrontend)
     {
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync();
+        await context.TestContentOperationsAsync(dontCheckFrontend);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestLogoutAsync();
     }
@@ -122,7 +143,9 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null)
+    public static async Task TestSetupWithInvalidAndValidDataAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters setupParameters = null)
     {
         await context.TestSetupWithInvalidDataAsync();
         await context.TestSetupAsync(setupParameters);
@@ -396,14 +419,23 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
     /// <item><description>Publish the page.</description></item>
     /// <item><description>Verify that the page is created.</description></item>
+    ///  <item><description>Check whether frontend operations shall be executed.</description></item>
     /// <item><description>Navigate to view the published page.</description></item>
     /// <item><description>Verify the page title and header.</description></item>
     /// </list>
     /// <para>The test method assumes that there is currently a logged in admin user session.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="pageTitle">The page title to enter.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static Task TestContentOperationsAsync(this UITestContext context, string pageTitle = "Test page") =>
+    public static Task TestContentOperationsAsync(
+        this UITestContext context,
+        bool dontCheckFrontend = false,
+        string pageTitle = "Test page") =>
         context.ExecuteTestAsync(
             "Test content operations",
             async () =>
@@ -414,8 +446,13 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .CreateNewPage()
                         .Title.Set(pageTitle)
                         .Publish.ClickAndGo()
-                    .AlertMessages.Should.Contain(message => message.IsSuccess)
-                    .Items[item => item.Title == pageTitle].View.Click();
+                    .AlertMessages.Should.Contain(message => message.IsSuccess);
+
+                await context.TriggerAfterPageChangeEventAsync();
+
+                if (dontCheckFrontend) return;
+
+                contentItemsPage.Items[item => item.Title == pageTitle].View.Click();
 
                 await context.TriggerAfterPageChangeEventAsync();
 

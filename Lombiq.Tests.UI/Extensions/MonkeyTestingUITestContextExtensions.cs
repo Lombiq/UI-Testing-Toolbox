@@ -40,7 +40,7 @@ public static class MonkeyTestingUITestContextExtensions
         if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
 
         options ??= new MonkeyTestingOptions();
-        options.UrlFilters.Add(new NotAdminMonkeyTestingUrlFilter());
+        options.UrlFilters.Add(new NotAdminMonkeyTestingUrlFilter(context));
         await context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
     }
 
@@ -58,13 +58,13 @@ public static class MonkeyTestingUITestContextExtensions
         this UITestContext context,
         MonkeyTestingOptions options = null,
         string signInDirectlyWithUserName = DefaultUser.UserName,
-        string startingRelativeUrl = "/admin")
+        string startingRelativeUrl = null)
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
-        if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToRelativeUrlAsync(startingRelativeUrl);
+        if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
 
         options ??= new MonkeyTestingOptions();
-        options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter());
+        options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter(context));
         await context.TestCurrentPageAsMonkeyRecursivelyAsync(options);
     }
 

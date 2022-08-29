@@ -9,7 +9,6 @@ namespace Lombiq.Tests.UI.Pages;
 using _ = OrchardCoreFeaturesPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-[Url("Admin/Features")]
 public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
 {
     [FindById]

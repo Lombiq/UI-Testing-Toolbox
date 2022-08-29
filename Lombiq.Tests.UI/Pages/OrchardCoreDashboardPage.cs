@@ -1,5 +1,3 @@
-using Atata;
-
 namespace Lombiq.Tests.UI.Pages;
 
 // Atata convention.
@@ -7,7 +5,6 @@ namespace Lombiq.Tests.UI.Pages;
 using _ = OrchardCoreDashboardPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-[Url("Admin")]
 public sealed class OrchardCoreDashboardPage : OrchardCoreAdminPage<_>
 {
 }
