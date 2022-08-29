@@ -412,6 +412,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
     /// <item><description>Publish the page.</description></item>
     /// <item><description>Verify that the page is created.</description></item>
+    ///  <item><description>Check whether frontend operations shall be executed.</description></item>
     /// <item><description>Navigate to view the published page.</description></item>
     /// <item><description>Verify the page title and header.</description></item>
     /// </list>
