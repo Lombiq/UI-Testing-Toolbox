@@ -54,7 +54,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
     /// <para>
-    /// When running the headless version of Orchard Core, ContentOperations shall be excluded. Utilize <paramref
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
     /// name="dontCheckFrontend"></paramref>> for this purpose.
     /// </para>
     /// </summary>
@@ -76,7 +76,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
-    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.
+    /// <para>When running headless version of Orchard Core, frontend operations shall be excluded.
     /// Utilize <paramref name="dontCheckFrontend"></paramref>> for this purpose.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
@@ -111,8 +111,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup and registration.</para>
     /// <para>The test method assumes that the site is set up.</para>
-    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.
-    /// Utilize <paramref name="dontCheckFrontend"></paramref>> for this purpose.</para>
+    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
@@ -419,6 +422,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <item><description>Verify the page title and header.</description></item>
     /// </list>
     /// <para>The test method assumes that there is currently a logged in admin user session.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="pageTitle">The page title to enter.</param>
@@ -438,6 +445,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                         .Title.Set(pageTitle)
                         .Publish.ClickAndGo()
                     .AlertMessages.Should.Contain(message => message.IsSuccess);
+
+                await context.TriggerAfterPageChangeEventAsync();
 
                 if (dontCheckFrontend) return;
 
