@@ -54,7 +54,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
     /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
     /// name="dontCheckFrontend"></paramref>> for this purpose.
     /// </para>
     /// </summary>
@@ -76,8 +76,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
-    /// <para>When running headless version of Orchard Core, frontend operations shall be excluded.
-    /// Utilize <paramref name="dontCheckFrontend"></paramref>> for this purpose.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
@@ -113,7 +115,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is set up.</para>
     /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
     /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
     /// name="dontCheckFrontend"></paramref>> for this purpose.
     /// </para>
     /// </summary>
@@ -423,7 +425,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </list>
     /// <para>The test method assumes that there is currently a logged in admin user session.</para>
     /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize the <paramref
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
     /// name="dontCheckFrontend"></paramref>> for this purpose.
     /// </para>
     /// </summary>
