@@ -53,8 +53,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// specified <paramref name="setupRecipeId"/>.
     /// </para>
     /// <para>The test method assumes that the site is not set up.</para>
-    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.
-    /// Utilize <paramref name="dontCheckFrontend"></paramref>> for this purpose.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, ContentOperations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
