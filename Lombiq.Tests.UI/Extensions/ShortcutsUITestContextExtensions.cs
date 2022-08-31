@@ -86,6 +86,31 @@ public static class ShortcutsUITestContextExtensions
         context.GoToAsync<AccountController>(controller => controller.SetUserRegistrationType(type));
 
     /// <summary>
+    /// Creates a user with the given parameters.
+    /// </summary>
+    public static Task CreateUserAsync(this UITestContext context, string userName, string password, string email) =>
+        context.GoToAsync<AccountController>(
+            controller => controller.CreateUser(
+                new()
+                {
+                    UserName = userName,
+                    Email = email,
+                    Password = password,
+                }));
+
+    /// <summary>
+    /// Adds a user to a role.
+    /// </summary>
+    public static Task AddUserToRoleAsync(this UITestContext context, string userName, string roleName) =>
+        context.GoToAsync<SecurityController>(controller => controller.AddUserToRole(userName, roleName));
+
+    /// <summary>
+    /// Allows a permission to a role.
+    /// </summary>
+    public static Task AllowPermissionToRoleAsync(this UITestContext context, string permissionName, string roleName) =>
+        context.GoToAsync<SecurityController>(controller => controller.AllowPermissionToRole(permissionName, roleName));
+
+    /// <summary>
     /// Enables the feature with the given ID directly, without anything else happening on the admin Features page. The
     /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
