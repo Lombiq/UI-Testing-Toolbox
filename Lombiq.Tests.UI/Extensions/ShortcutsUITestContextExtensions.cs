@@ -249,4 +249,20 @@ public static class ShortcutsUITestContextExtensions
 
         context.TenantName = urlPrefix;
     }
+
+    /// <summary>
+    /// Retrieves URI for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow. The
+    /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts.Workflows</c> enabled.
+    /// </summary>
+    public static async Task<string> WorkflowsHttpEventGenerateUrlAsync(
+        this UITestContext context,
+        string workflowTypeId,
+        string activityId,
+        int tokenLifeSpan = 0)
+    {
+        await context.GoToAsync<WorkflowsController>(controller =>
+            controller.HttpEventGenerateUrl(workflowTypeId, activityId, tokenLifeSpan));
+
+        return context.Get(By.CssSelector("pre")).Text;
+    }
 }

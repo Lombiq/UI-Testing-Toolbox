@@ -42,6 +42,7 @@
     <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.4.0" />
     <PackageReference Include="OrchardCore.Abstractions" Version="1.4.0" />
     <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.4.0" />
+    <PackageReference Include="OrchardCore.Workflows" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
