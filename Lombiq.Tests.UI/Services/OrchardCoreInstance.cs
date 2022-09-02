@@ -20,7 +20,7 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
-public delegate Task BeforeAppStartHandler(string contentRootPath, InstanceCommandLineArgs arguments);
+public delegate Task BeforeAppStartHandler(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments);
 
 public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
@@ -165,7 +165,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     {
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
 
-        var arguments = new InstanceCommandLineArgs();
+        var arguments = new InstanceCommandLineArgumentsBuilder();
 
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
@@ -175,7 +175,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
                 .UseEnvironment("Development")
-                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Args.ToArray())),
+                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Arguments.ToArray())),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 

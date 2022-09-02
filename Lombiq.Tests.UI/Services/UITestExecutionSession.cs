@@ -552,15 +552,15 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
-        Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
+        Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
-            arguments.AddValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
-                arguments.AddValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
+                arguments.AddWithValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
             }
 
             return Task.CompletedTask;
@@ -623,7 +623,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
         var sqlServerContext = _sqlServerManager.CreateDatabase();
 
-        async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
+        async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
@@ -664,22 +664,22 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         _azureBlobStorageManager = new AzureBlobStorageManager(_configuration.AzureBlobStorageConfiguration);
         var azureBlobStorageContext = await _azureBlobStorageManager.SetupBlobStorageAsync();
 
-        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
+        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
             arguments
-                .AddValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
-                .AddValue(
+                .AddWithValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
+                .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
                     value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
-                .AddValue(
+                .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ContainerName",
                     value: _configuration.AzureBlobStorageConfiguration.ContainerName)
-                .AddValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
-                .AddValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
+                .AddWithValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
+                .AddWithValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
@@ -698,12 +698,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
 
-        Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgs arguments)
+        Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
-                .AddValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
-                .AddValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
+                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
+                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
             return Task.CompletedTask;
         }
 

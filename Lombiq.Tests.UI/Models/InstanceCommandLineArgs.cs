@@ -2,23 +2,33 @@ using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class InstanceCommandLineArgs
+public class InstanceCommandLineArgumentsBuilder
 {
-    private readonly List<string> _args = new();
+    private readonly List<string> _arguments = new();
 
-    public InstanceCommandLineArgs AddSwitch(string arg)
+    public InstanceCommandLineArgumentsBuilder AddSwitch(string argument)
     {
-        _args.Add($"--{arg}");
+        _arguments.Add($"{PrepareArg(argument)}");
 
         return this;
     }
 
-    public InstanceCommandLineArgs AddValue<T>(string arg, T value)
+    public InstanceCommandLineArgumentsBuilder AddWithValue<T>(string key, T value)
     {
-        _args.Add($"--{arg}={value}");
+        _arguments.Add($"{PrepareArg(key)}={value}");
 
         return this;
     }
 
-    public IEnumerable<string> Args => _args;
+    private static string PrepareArg(string argument)
+    {
+        if (!argument.StartsWith("--", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            return $"--{argument}";
+        }
+
+        return argument;
+    }
+
+    public IEnumerable<string> Arguments => _arguments;
 }
