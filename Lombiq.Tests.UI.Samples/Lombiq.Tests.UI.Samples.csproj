@@ -9,6 +9,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Tests\AccessibilityTest.cs" />
+    <Compile Remove="Tests\AzureBlobStorageTests.cs" />
+    <Compile Remove="Tests\BasicOrchardFeaturesTests.cs" />
+    <Compile Remove="Tests\BasicTests.cs" />
+    <Compile Remove="Tests\BasicVisualVerificationTests.cs" />
+    <Compile Remove="Tests\DatabaseSnapshotTests.cs" />
+    <Compile Remove="Tests\EmailTests.cs" />
+    <Compile Remove="Tests\ErrorHandlingTests.cs" />
+    <Compile Remove="Tests\MonkeyTests.cs" />
+    <Compile Remove="Tests\SqlServerTests.cs" />
+    <Compile Remove="Tests\TenantTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove=".htmlvalidate.json" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
@@ -32,6 +46,20 @@
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Unix_msedge.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_chrome.png" />
     <EmbeddedResource Include="Tests\BasicVisualVerificationTests_VerifyNavbar_By_ClassName[Contains]_-navbar-brand_Win32NT_msedge.png" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Tests\AccessibilityTest.cs" />
+    <None Include="Tests\AzureBlobStorageTests.cs" />
+    <None Include="Tests\BasicOrchardFeaturesTests.cs" />
+    <None Include="Tests\BasicTests.cs" />
+    <None Include="Tests\BasicVisualVerificationTests.cs" />
+    <None Include="Tests\DatabaseSnapshotTests.cs" />
+    <None Include="Tests\EmailTests.cs" />
+    <None Include="Tests\ErrorHandlingTests.cs" />
+    <None Include="Tests\MonkeyTests.cs" />
+    <None Include="Tests\SqlServerTests.cs" />
+    <None Include="Tests\TenantTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
