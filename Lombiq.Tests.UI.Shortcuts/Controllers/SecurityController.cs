@@ -47,7 +47,7 @@ public class SecurityController : Controller
         return Ok("Success");
     }
 
-    public async Task<IActionResult> AllowPermissionToRole(string permissionName, string roleName)
+    public async Task<IActionResult> AddPermissionToRole(string permissionName, string roleName)
     {
         if ((await _roleManager.FindByNameAsync(_roleManager.NormalizeKey(roleName))) is not Role role)
         {
@@ -59,7 +59,7 @@ public class SecurityController : Controller
             && roleClaim.ClaimValue == permissionName);
         if (permissionClaim == null)
         {
-            if (!await IsPermissionExistsAsync(permissionName))
+            if (!await PermissionExistsAsync(permissionName))
             {
                 return NotFound();
             }
@@ -72,7 +72,7 @@ public class SecurityController : Controller
         return Ok("Success");
     }
 
-    private async Task<bool> IsPermissionExistsAsync(string permissionName) =>
+    private async Task<bool> PermissionExistsAsync(string permissionName) =>
         (await Task.WhenAll(_permissionProviders.Select(provider => provider.GetPermissionsAsync())))
             .SelectMany(permissions => permissions)
             .Any(permission => permission.Name == permissionName);

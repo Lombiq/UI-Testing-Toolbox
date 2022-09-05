@@ -24,7 +24,7 @@ public class WorkflowsController : Controller
         _workflowTypeStore = workflowTypeStore;
     }
 
-    public async Task<IActionResult> HttpEventGenerateUrl(string workflowTypeId, string activityId, int tokenLifeSpan)
+    public async Task<IActionResult> GenerateHttpEventUrl(string workflowTypeId, string activityId, int tokenLifeSpan)
     {
         var workflowType = await _workflowTypeStore.GetAsync(workflowTypeId);
         if (workflowType == null)

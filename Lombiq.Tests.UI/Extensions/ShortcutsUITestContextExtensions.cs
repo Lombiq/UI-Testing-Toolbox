@@ -108,7 +108,7 @@ public static class ShortcutsUITestContextExtensions
     /// Allows a permission to a role.
     /// </summary>
     public static Task AllowPermissionToRoleAsync(this UITestContext context, string permissionName, string roleName) =>
-        context.GoToAsync<SecurityController>(controller => controller.AllowPermissionToRole(permissionName, roleName));
+        context.GoToAsync<SecurityController>(controller => controller.AddPermissionToRole(permissionName, roleName));
 
     /// <summary>
     /// Enables the feature with the given ID directly, without anything else happening on the admin Features page. The
@@ -261,7 +261,7 @@ public static class ShortcutsUITestContextExtensions
         int tokenLifeSpan = 0)
     {
         await context.GoToAsync<WorkflowsController>(controller =>
-            controller.HttpEventGenerateUrl(workflowTypeId, activityId, tokenLifeSpan));
+            controller.GenerateHttpEventUrl(workflowTypeId, activityId, tokenLifeSpan));
 
         return context.Get(By.CssSelector("pre")).Text;
     }
