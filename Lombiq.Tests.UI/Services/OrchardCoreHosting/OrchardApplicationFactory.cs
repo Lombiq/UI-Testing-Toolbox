@@ -7,8 +7,12 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using NLog;
+using NLog.Web;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using YesSql;
@@ -34,7 +38,18 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(ConfigureTestServices);
+        builder.ConfigureTestServices(ConfigureTestServices)
+            .ConfigureLogging((context, loggingBuilder) =>
+            {
+                var environment = context.HostingEnvironment;
+                var nLogConfig = Path.Combine(environment.ContentRootPath, "NLog.config");
+                var factory = new LogFactory()
+                    .LoadConfiguration(nLogConfig);
+
+                factory.Configuration.Variables["configDir"] = environment.ContentRootPath;
+
+                loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
+            });
         _configuration?.Invoke(builder);
     }
 
