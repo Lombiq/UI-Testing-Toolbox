@@ -50,6 +50,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
                 loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
             });
+
         _configuration?.Invoke(builder);
     }
 
