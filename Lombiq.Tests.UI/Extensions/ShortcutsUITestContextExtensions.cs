@@ -105,9 +105,9 @@ public static class ShortcutsUITestContextExtensions
         context.GoToAsync<SecurityController>(controller => controller.AddUserToRole(userName, roleName));
 
     /// <summary>
-    /// Allows a permission to a role.
+    /// Adds a permission to a role.
     /// </summary>
-    public static Task AllowPermissionToRoleAsync(this UITestContext context, string permissionName, string roleName) =>
+    public static Task AddPermissionToRoleAsync(this UITestContext context, string permissionName, string roleName) =>
         context.GoToAsync<SecurityController>(controller => controller.AddPermissionToRole(permissionName, roleName));
 
     /// <summary>
@@ -254,7 +254,7 @@ public static class ShortcutsUITestContextExtensions
     /// Retrieves URI for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow. The
     /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts.Workflows</c> enabled.
     /// </summary>
-    public static async Task<string> WorkflowsHttpEventGenerateUrlAsync(
+    public static async Task<string> GenerateHttpEventUrlAsync(
         this UITestContext context,
         string workflowTypeId,
         string activityId,
