@@ -86,6 +86,31 @@ public static class ShortcutsUITestContextExtensions
         context.GoToAsync<AccountController>(controller => controller.SetUserRegistrationType(type));
 
     /// <summary>
+    /// Creates a user with the given parameters.
+    /// </summary>
+    public static Task CreateUserAsync(this UITestContext context, string userName, string password, string email) =>
+        context.GoToAsync<AccountController>(
+            controller => controller.CreateUser(
+                new()
+                {
+                    UserName = userName,
+                    Email = email,
+                    Password = password,
+                }));
+
+    /// <summary>
+    /// Adds a user to a role.
+    /// </summary>
+    public static Task AddUserToRoleAsync(this UITestContext context, string userName, string roleName) =>
+        context.GoToAsync<SecurityController>(controller => controller.AddUserToRole(userName, roleName));
+
+    /// <summary>
+    /// Adds a permission to a role.
+    /// </summary>
+    public static Task AddPermissionToRoleAsync(this UITestContext context, string permissionName, string roleName) =>
+        context.GoToAsync<SecurityController>(controller => controller.AddPermissionToRole(permissionName, roleName));
+
+    /// <summary>
     /// Enables the feature with the given ID directly, without anything else happening on the admin Features page. The
     /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
@@ -223,5 +248,21 @@ public static class ShortcutsUITestContextExtensions
         await context.ClickReliablyOnAsync(By.Id("SubmitButton"));
 
         context.TenantName = urlPrefix;
+    }
+
+    /// <summary>
+    /// Retrieves URI for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow. The
+    /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts.Workflows</c> enabled.
+    /// </summary>
+    public static async Task<string> GenerateHttpEventUrlAsync(
+        this UITestContext context,
+        string workflowTypeId,
+        string activityId,
+        int tokenLifeSpan = 0)
+    {
+        await context.GoToAsync<WorkflowsController>(controller =>
+            controller.GenerateHttpEventUrl(workflowTypeId, activityId, tokenLifeSpan));
+
+        return context.Get(By.CssSelector("pre")).Text;
     }
 }
