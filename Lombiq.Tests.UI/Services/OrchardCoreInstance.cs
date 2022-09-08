@@ -26,7 +26,6 @@ public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string sn
 
 public class OrchardCoreConfiguration
 {
-    public string AppAssemblyPath { get; set; }
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
@@ -90,7 +89,9 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             // Copying the config files from the assembly path, i.e. the build output path so only those are included
             // that actually matter.
             OrchardCoreDirectoryHelper
-                .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
+                .CopyAppConfigFiles(
+                    Path.GetDirectoryName(typeof(TEntryPoint).Assembly.Location),
+                    _contentRootPath);
         }
 
         _reverseProxy = new TestReverseProxy(_url);

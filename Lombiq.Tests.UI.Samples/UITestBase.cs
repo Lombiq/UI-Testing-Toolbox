@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
@@ -14,11 +13,6 @@ namespace Lombiq.Tests.UI.Samples;
 // classes is not mandatory but the approach is simple and effective.
 public class UITestBase : OrchardCoreUITestBase<Program>
 {
-    // We somehow need to tell the UI Testing Toolbox where the assemblies of the app under test is (since it'll run the
-    // app from the command line). We use a helper for that.
-    protected override string AppAssemblyPath => WebAppConfigHelper
-        .GetAbsoluteApplicationAssemblyPath("Lombiq.OSOCE.Web", "net6.0");
-
     protected UITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {

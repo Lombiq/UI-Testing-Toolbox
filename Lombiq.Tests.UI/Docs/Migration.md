@@ -68,6 +68,7 @@ namespace Lombiq.OSOCE.Tests.UI;
 3. There is a breaking change in adding command line arguments to the WebApplication.
 
     To add command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
+
     To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
 ```diff

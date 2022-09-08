@@ -24,8 +24,6 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
     protected ITestOutputHelper _testOutputHelper;
 
-    protected abstract string AppAssemblyPath { get; }
-
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
@@ -153,7 +151,8 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(AppFolder);
 
                 OrchardCoreDirectoryHelper.CopyAppFolder(
-                    customSnapshotFolderPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
+                    customSnapshotFolderPath
+                        ?? OrchardCoreDirectoryHelper.GetAppRootPath(typeof(TEntryPoint).Assembly.Location),
                     AppFolder);
 
                 OrchardCoreUITestBaseCounter.AppFolderCreated = true;
@@ -227,7 +226,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
-            OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
+            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
             TestOutputHelper = _testOutputHelper,
             BrowserConfiguration = { Browser = browser },
             SetupConfiguration = { SetupOperation = setupOperation },
