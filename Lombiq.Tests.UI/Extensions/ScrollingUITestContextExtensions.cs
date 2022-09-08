@@ -10,6 +10,12 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ScrollingUITestContextExtensions
 {
     /// <summary>
+    /// Scrolls to a selected element in the document.
+    /// </summary>
+    public static void ScrollTo(this UITestContext context, By by) =>
+        context.ScrollTo(context.Get(by).Location);
+
+    /// <summary>
     /// Scrolls to a particular set of coordinates in the document.
     /// </summary>
     public static void ScrollTo(this UITestContext context, Point position) =>
