@@ -90,19 +90,16 @@ public class MonkeyTests : UITestBase
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
             browser,
-            configuration => configuration.AssertBrowserLog = (logs) =>
-            {
-                var filteredLogs = logs.Where(message =>
+            configuration => configuration.AssertBrowserLog = (logs) => logs
+                .Where(message =>
                     !message
                         .Message
                         .Contains("An invalid form control with name='LockTimeout' is not focusable.")
                     && !message
                         .Message
                         .Contains("An invalid form control with name='LockExpiration' is not focusable.")
-                    && message.Level != LogLevel.Info);
-
-                filteredLogs.ShouldBeEmpty();
-            });
+                    && message.Level != LogLevel.Info)
+                .ShouldBeEmpty());
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
