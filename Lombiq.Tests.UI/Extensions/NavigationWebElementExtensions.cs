@@ -12,7 +12,7 @@ public static class NavigationWebElementExtensions
     /// <summary>
     /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click() but
     /// still not perfect. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -67,7 +67,7 @@ public static class NavigationWebElementExtensions
 
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
     public static void ClickReliablyUntilPageLeave(
         this IWebElement element,
