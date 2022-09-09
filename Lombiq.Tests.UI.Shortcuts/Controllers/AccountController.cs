@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Users;
-using OrchardCore.Users.Services;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -13,13 +12,11 @@ public class AccountController : Controller
 {
     private readonly UserManager<IUser> _userManager;
     private readonly SignInManager<IUser> _userSignInManager;
-    private readonly IUserService _userService;
 
-    public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager, IUserService userService)
+    public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager)
     {
         _userManager = userManager;
         _userSignInManager = userSignInManager;
-        _userService = userService;
     }
 
     [AllowAnonymous]
