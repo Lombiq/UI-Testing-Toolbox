@@ -254,10 +254,12 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement,UITestContext)"/> so the <paramref
+    /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/> so the <paramref
     /// name="context"/> doesn't have to be passed twice.
     /// </summary>
-    public static Task ClickReliablyOnAsync(this UITestContext context, By by) => context.Get(by).ClickReliablyAsync(context);
+    /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
+    public static Task ClickReliablyOnAsync(this UITestContext context, By by, int maxTries = 3) =>
+        context.Get(by).ClickReliablyAsync(context, maxTries);
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
