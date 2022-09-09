@@ -42,6 +42,7 @@
     <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.4.0" />
     <PackageReference Include="OrchardCore.Abstractions" Version="1.4.0" />
     <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.4.0" />
+    <PackageReference Include="OrchardCore.Workflows" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
@@ -49,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.6.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.6.1-alpha.walma-15.1" />
   </ItemGroup>
 
 </Project>

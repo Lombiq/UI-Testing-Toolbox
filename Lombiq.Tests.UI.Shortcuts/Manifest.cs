@@ -41,3 +41,14 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.Media.Cache",
     }
 )]
+
+[assembly: Feature(
+    Id = Workflows,
+    Name = "Workflows - Shortcuts - Lombiq UI Testing Toolbox",
+    Category = "Development",
+    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Workflows.",
+    Dependencies = new[]
+    {
+        "OrchardCore.Workflows.Http",
+    }
+)]
