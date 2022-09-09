@@ -2,10 +2,7 @@ using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using OrchardCore.Entities;
-using OrchardCore.Settings;
 using OrchardCore.Users;
-using OrchardCore.Users.Models;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -15,16 +12,11 @@ public class AccountController : Controller
 {
     private readonly UserManager<IUser> _userManager;
     private readonly SignInManager<IUser> _userSignInManager;
-    private readonly ISiteService _siteService;
 
-    public AccountController(
-        UserManager<IUser> userManager,
-        SignInManager<IUser> userSignInManager,
-        ISiteService siteService)
+    public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager)
     {
         _userManager = userManager;
         _userSignInManager = userSignInManager;
-        _siteService = siteService;
     }
 
     [AllowAnonymous]
@@ -42,20 +34,6 @@ public class AccountController : Controller
     public async Task<IActionResult> SignOutDirectly()
     {
         await _userSignInManager.SignOutAsync();
-
-        return Ok();
-    }
-
-    [AllowAnonymous]
-    public async Task<ActionResult> SetUserRegistrationType(UserRegistrationType type)
-    {
-        var settings = await _siteService.LoadSiteSettingsAsync();
-
-        settings.Alter<RegistrationSettings>(
-            nameof(RegistrationSettings),
-            registrationSettings => registrationSettings.UsersCanRegister = type);
-
-        await _siteService.UpdateSiteSettingsAsync(settings);
 
         return Ok();
     }

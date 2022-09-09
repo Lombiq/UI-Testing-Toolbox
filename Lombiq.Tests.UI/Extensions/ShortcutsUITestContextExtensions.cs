@@ -4,13 +4,23 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
+using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
+using OrchardCore.Admin;
+using OrchardCore.DisplayManagement.Extensions;
+using OrchardCore.Entities;
+using OrchardCore.Environment.Extensions;
+using OrchardCore.Environment.Shell;
+using OrchardCore.Modules.Manifest;
+using OrchardCore.Settings;
+using OrchardCore.Themes.Services;
 using OrchardCore.Users.Models;
 using RestEase;
 using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -82,22 +92,67 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Sets the registration type in site settings.
     /// </summary>
-    public static Task SetUserRegistrationTypeAsync(this UITestContext context, UserRegistrationType type) =>
-        context.GoToAsync<AccountController>(controller => controller.SetUserRegistrationType(type));
+    public static Task SetUserRegistrationTypeAsync(
+        this UITestContext context,
+        UserRegistrationType type,
+        string tenant = "Default",
+        bool activateShell = true) => context.Application
+        .UsingScopeAsync(
+            async shellScope =>
+            {
+                var siteService = shellScope.ServiceProvider.GetService<ISiteService>();
+                var settings = await siteService.LoadSiteSettingsAsync();
+
+                settings.Alter<RegistrationSettings>(
+                    nameof(RegistrationSettings),
+                    registrationSettings => registrationSettings.UsersCanRegister = type);
+
+                await siteService.UpdateSiteSettingsAsync(settings);
+            },
+            tenant,
+            activateShell);
 
     /// <summary>
-    /// Enables the feature with the given ID directly, without anything else happening on the admin Features page. The
-    /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+    /// Enables the feature with the given <paramref name="featureId"/> directly.
     /// </summary>
-    public static Task EnableFeatureDirectlyAsync(this UITestContext context, string featureId) =>
-        context.GoToAsync<ShellFeaturesController>(controller => controller.EnableFeatureDirectly(featureId));
+    public static Task EnableFeatureDirectlyAsync(
+        this UITestContext context,
+        string featureId,
+        string tenant = "Default",
+        bool activateShell = true) => context.Application
+            .UsingScopeAsync(
+                shellScope =>
+                {
+                    var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
+                    var extensionManager = shellScope.ServiceProvider.GetService<IExtensionManager>();
+
+                    var feature = extensionManager.GetFeature(featureId);
+
+                    return shellFeatureManager.EnableFeaturesAsync(new[] { feature }, force: true);
+                },
+                tenant,
+                activateShell);
 
     /// <summary>
-    /// Disables the feature with the given ID directly, without anything else happening on the admin Features page. The
-    /// target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+    /// Disables the feature with the given <paramref name="featureId"/> directly.
     /// </summary>
-    public static Task DisableFeatureDirectlyAsync(this UITestContext context, string featureId) =>
-        context.GoToAsync<ShellFeaturesController>(controller => controller.DisableFeatureDirectly(featureId));
+    public static Task DisableFeatureDirectlyAsync(
+        this UITestContext context,
+        string featureId,
+        string tenant = "Default",
+        bool activateShell = true) => context.Application
+            .UsingScopeAsync(
+                shellScope =>
+                {
+                    var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
+                    var extensionManager = shellScope.ServiceProvider.GetService<IExtensionManager>();
+
+                    var feature = extensionManager.GetFeature(featureId);
+
+                    return shellFeatureManager.DisableFeaturesAsync(new[] { feature }, force: true);
+                },
+                tenant,
+                activateShell);
 
     /// <summary>
     /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
@@ -192,10 +247,47 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
-    /// Selects theme by id.
+    /// Selects theme by <paramref name="id"/>.
     /// </summary>
-    public static Task SelectThemeAsync(this UITestContext context, string id) =>
-        context.GoToAsync<ThemeController>(controller => controller.SelectTheme(id));
+    /// <exception cref="InvalidOperationException">If no theme found with the given <paramref name="id"/>.</exception>
+    public static Task SelectThemeAsync(
+        this UITestContext context,
+        string id,
+        string tenant = "Default",
+        bool activateShell = true) => context.Application
+        .UsingScopeAsync(
+            async shellScope =>
+            {
+                var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
+                var themeFeature = (await shellFeatureManager.GetAvailableFeaturesAsync())
+                    .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id);
+
+                if (themeFeature == null)
+                {
+                    throw new InvalidOperationException($"{id} theme not found.");
+                }
+
+                if (IsAdminTheme(themeFeature.Extension.Manifest))
+                {
+                    var adminThemeService = shellScope.ServiceProvider.GetService<IAdminThemeService>();
+                    await adminThemeService.SetAdminThemeAsync(id);
+                }
+                else
+                {
+                    var siteThemeService = shellScope.ServiceProvider.GetService<ISiteThemeService>();
+                    await siteThemeService.SetSiteThemeAsync(id);
+                }
+
+                var enabledFeatures = await shellFeatureManager.GetEnabledFeaturesAsync();
+                var isEnabled = enabledFeatures.Any(feature => feature.Extension.Id == themeFeature.Id);
+
+                if (!isEnabled)
+                {
+                    await shellFeatureManager.EnableFeaturesAsync(new[] { themeFeature }, force: true);
+                }
+            },
+            tenant,
+            activateShell);
 
     /// <summary>
     /// Creates, sets up and navigates to a new URL prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
@@ -224,4 +316,7 @@ public static class ShortcutsUITestContextExtensions
 
         context.TenantName = urlPrefix;
     }
+
+    private static bool IsAdminTheme(IManifestInfo manifest) =>
+        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(ManifestConstants.AdminTag));
 }
