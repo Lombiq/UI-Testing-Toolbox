@@ -1,6 +1,9 @@
 using Lombiq.Tests.UI.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Scope;
+using OrchardCore.Recipes.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -19,7 +22,23 @@ public static class IWebApplicationInstanceExtensions
         bool activateShell = true)
     {
         var shellHost = instance.GetService<IShellHost>();
-        await (await shellHost.GetScopeAsync(tenant))
-            .UsingAsync(execute, activateShell);
+        // Injecting a fake HttpContext is required to avoid NullReferenceException in
+        // OrchardCore.Recipes.Services.RecipeEnvironmentFeatureProvider.PopulateEnvironmentAsync.
+        var httpContextAccessor = instance.GetService<IHttpContextAccessor>();
+        var features = new FeatureCollection();
+        features.Set(new RecipeEnvironmentFeature());
+
+        var httpContext = new DefaultHttpContext(features);
+        httpContextAccessor.HttpContext = httpContext;
+
+        try
+        {
+            await (await shellHost.GetScopeAsync(tenant))
+                .UsingAsync(execute, activateShell);
+        }
+        finally
+        {
+            httpContextAccessor.HttpContext = null;
+        }
     }
 }

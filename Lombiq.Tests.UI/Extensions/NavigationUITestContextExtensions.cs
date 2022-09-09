@@ -12,7 +12,8 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class NavigationUITestContextExtensions
 {
-    public static Task GoToHomePageAsync(this UITestContext context) => context.GoToRelativeUrlAsync("/");
+    public static Task GoToHomePageAsync(this UITestContext context, bool onlyIfNotAlreadyThere = true) =>
+        context.GoToRelativeUrlAsync("/", onlyIfNotAlreadyThere);
 
     public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
         context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);

@@ -289,7 +289,7 @@ public static class ShortcutsUITestContextExtensions
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
         context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
         await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
-        await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
+        await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl, onlyIfNotAlreadyThere: false);
         context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
     }
 
