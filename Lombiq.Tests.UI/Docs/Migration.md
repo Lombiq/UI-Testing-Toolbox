@@ -81,3 +81,37 @@ namespace Lombiq.OSOCE.Tests.UI;
                     return Task.CompletedTask;
                 };
 ```
+
+## Non breaking changes
+
+### `Lombiq.Tests.UI.Extensions.ShortcutsUITestContextExtensions`
+
+The following extension methods result in the same and no breaking change in the signatures, but they behave a bit differently. Using `WebApplicationFactory` opened the possibility to use OC services directly instead of using `Controller Actions` invoked from browser navigation.
+
+This means that the extension methods below no longer result in browser navigation.
+
+- `SetUserRegistrationTypeAsync`
+- `CreateUserAsync`
+- `AddUserToRoleAsync`
+- `AddPermissionToRoleAsync`
+- `EnableFeatureDirectlyAsync`
+- `DisableFeatureDirectlyAsync`
+- `ExecuteRecipeDirectlyAsync`
+- `SelectThemeAsync`
+- `GenerateHttpEventUrlAsync`
+
+Here is a sample for better understanding:
+```diff
+    public static async Task EnablePrivacyConsentBannerFeatureAndAcceptPrivacyConsentAsync(this UITestContext context)
+    {
+        await context.EnablePrivacyConsentBannerFeatureAsync();
+-         await context.GoToHomePageAsync();
++         await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+        await context.AcceptPrivacyConsentAsync();
+        context.Refresh();
+    }
+```
+
+The original code with the new behavior resulted in a failing test, because the browser pointed to the `Home page` before `await context.EnablePrivacyConsentBannerFeatureAsync()(= context.EnableFeatureDirectlyAsync({featureId})`, the `context.EnableFeatureDirectlyAsync` not navigates away, so finaly the `await context.GoToHomePageAsync()` call do nothing and the consent banner din't come up.
+
+The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, this result a reload, and the consent banner come up.

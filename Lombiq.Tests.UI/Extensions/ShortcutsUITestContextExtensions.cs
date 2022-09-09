@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -7,13 +8,16 @@ using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OrchardCore.Admin;
 using OrchardCore.DisplayManagement.Extensions;
 using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Shell;
+using OrchardCore.Modules;
 using OrchardCore.Modules.Manifest;
+using OrchardCore.Recipes.Services;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
 using OrchardCore.Settings;
@@ -34,6 +38,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -112,7 +117,7 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var siteService = shellScope.ServiceProvider.GetService<ISiteService>();
+                var siteService = shellScope.ServiceProvider.GetRequiredService<ISiteService>();
                 var settings = await siteService.LoadSiteSettingsAsync();
 
                 settings.Alter<RegistrationSettings>(
@@ -140,7 +145,7 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var userService = shellScope.ServiceProvider.GetService<IUserService>();
+                var userService = shellScope.ServiceProvider.GetRequiredService<IUserService>();
                 var errors = new Dictionary<string, string>();
                 var user = await userService.CreateUserAsync(
                     new User
@@ -179,13 +184,13 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var userManager = shellScope.ServiceProvider.GetService<UserManager<IUser>>();
+                var userManager = shellScope.ServiceProvider.GetRequiredService<UserManager<IUser>>();
                 if ((await userManager.FindByNameAsync(userName)) is not User user)
                 {
                     throw new UserNotFoundException($"{userName} not found!");
                 }
 
-                var roleManager = shellScope.ServiceProvider.GetService<RoleManager<IRole>>();
+                var roleManager = shellScope.ServiceProvider.GetRequiredService<RoleManager<IRole>>();
                 if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                 {
                     throw new RoleNotFoundException($"{roleName} not found!");
@@ -212,7 +217,7 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var roleManager = shellScope.ServiceProvider.GetService<RoleManager<IRole>>();
+                var roleManager = shellScope.ServiceProvider.GetRequiredService<RoleManager<IRole>>();
                 if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                 {
                     throw new RoleNotFoundException($"{roleName} not found!");
@@ -223,7 +228,7 @@ public static class ShortcutsUITestContextExtensions
                     && roleClaim.ClaimValue == permissionName);
                 if (permissionClaim == null)
                 {
-                    var permissionProviders = shellScope.ServiceProvider.GetService<IEnumerable<IPermissionProvider>>();
+                    var permissionProviders = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
                     if (!await PermissionExistsAsync(permissionProviders, permissionName))
                     {
                         throw new PermissionNotFoundException($"{permissionName} not found!");
@@ -248,8 +253,8 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             shellScope =>
             {
-                var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
-                var extensionManager = shellScope.ServiceProvider.GetService<IExtensionManager>();
+                var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
+                var extensionManager = shellScope.ServiceProvider.GetRequiredService<IExtensionManager>();
 
                 var feature = extensionManager.GetFeature(featureId);
 
@@ -269,8 +274,8 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             shellScope =>
             {
-                var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
-                var extensionManager = shellScope.ServiceProvider.GetService<IExtensionManager>();
+                var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
+                var extensionManager = shellScope.ServiceProvider.GetRequiredService<IExtensionManager>();
 
                 var feature = extensionManager.GetFeature(featureId);
 
@@ -325,12 +330,49 @@ public static class ShortcutsUITestContextExtensions
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
         context.GetApi().GetApplicationInfoAsync();
 
+    // This is required to instantiate ILogger<>.
+    private sealed class ExecuteRecipeShortcut { }
+
     /// <summary>
-    /// Executes a recipe identified by its name directly. The user must be logged in. The target app needs to have
-    /// <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
+    /// Executes a recipe identified by its name directly.
     /// </summary>
-    public static Task ExecuteRecipeDirectlyAsync(this UITestContext context, string recipeName) =>
-        context.GoToAsync<RecipeController>(controller => controller.Execute(recipeName));
+    /// <exception cref="RecipeNotFoundException">If no recipe found with the given <paramref name="recipeName"/>.</exception>
+    public static Task ExecuteRecipeDirectlyAsync(
+        this UITestContext context,
+        string recipeName,
+        string tenant = "Default",
+        bool activateShell = true) => context.Application
+        .UsingScopeAsync(
+            async shellScope =>
+            {
+                var recipeHarvesters = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
+                var recipeCollections = await recipeHarvesters
+                    .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
+                var recipe = recipeCollections
+                    .SelectMany(recipeCollection => recipeCollection)
+                    .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
+
+                if (recipe == null)
+                {
+                    throw new RecipeNotFoundException($"{recipeName} not found!");
+                }
+
+                // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
+                var executionId = Guid.NewGuid().ToString("n");
+
+                var environment = new Dictionary<string, object>();
+                var logger = shellScope.ServiceProvider.GetRequiredService<ILogger<ExecuteRecipeShortcut>>();
+                var recipeEnvironmentProviders = shellScope.ServiceProvider
+                    .GetRequiredService<IEnumerable<IRecipeEnvironmentProvider>>();
+                await recipeEnvironmentProviders
+                    .OrderBy(environmentProvider => environmentProvider.Order)
+                    .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
+
+                var recipeExecutor = shellScope.ServiceProvider.GetRequiredService<IRecipeExecutor>();
+                await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
+            },
+            tenant,
+            activateShell);
 
     /// <summary>
     /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET Core
@@ -383,7 +425,7 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var shellFeatureManager = shellScope.ServiceProvider.GetService<IShellFeaturesManager>();
+                var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
                 var themeFeature = (await shellFeatureManager.GetAvailableFeaturesAsync())
                     .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id);
 
@@ -394,12 +436,12 @@ public static class ShortcutsUITestContextExtensions
 
                 if (IsAdminTheme(themeFeature.Extension.Manifest))
                 {
-                    var adminThemeService = shellScope.ServiceProvider.GetService<IAdminThemeService>();
+                    var adminThemeService = shellScope.ServiceProvider.GetRequiredService<IAdminThemeService>();
                     await adminThemeService.SetAdminThemeAsync(id);
                 }
                 else
                 {
-                    var siteThemeService = shellScope.ServiceProvider.GetService<ISiteThemeService>();
+                    var siteThemeService = shellScope.ServiceProvider.GetRequiredService<ISiteThemeService>();
                     await siteThemeService.SetSiteThemeAsync(id);
                 }
 
@@ -461,7 +503,7 @@ public static class ShortcutsUITestContextExtensions
             .UsingScopeAsync(
                 async shellScope =>
                 {
-                    var workflowTypeStore = shellScope.ServiceProvider.GetService<IWorkflowTypeStore>();
+                    var workflowTypeStore = shellScope.ServiceProvider.GetRequiredService<IWorkflowTypeStore>();
 
                     var workflowType = await workflowTypeStore.GetAsync(workflowTypeId);
                     if (workflowType == null)
@@ -469,7 +511,7 @@ public static class ShortcutsUITestContextExtensions
                         throw new WorkflowTypeNotFoundException($"{workflowTypeId} not found!");
                     }
 
-                    var securityTokenService = shellScope.ServiceProvider.GetService<ISecurityTokenService>();
+                    var securityTokenService = shellScope.ServiceProvider.GetRequiredService<ISecurityTokenService>();
                     var token = securityTokenService.CreateToken(
                         new WorkflowPayload(workflowType.WorkflowTypeId, activityId),
                         TimeSpan.FromDays(

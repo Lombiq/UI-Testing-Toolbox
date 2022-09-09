@@ -140,8 +140,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             : Enumerable.Empty<IApplicationLog>();
     }
 
-    public TService GetService<TService>() =>
-        _orchardApplication.Services.GetService<TService>();
+    public TService GetRequiredService<TService>() =>
+        _orchardApplication.Services.GetRequiredService<TService>();
 
     public async ValueTask DisposeAsync()
     {

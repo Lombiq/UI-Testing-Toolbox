@@ -21,10 +21,10 @@ public static class IWebApplicationInstanceExtensions
         string tenant = "Default",
         bool activateShell = true)
     {
-        var shellHost = instance.GetService<IShellHost>();
+        var shellHost = instance.GetRequiredService<IShellHost>();
         // Injecting a fake HttpContext is required to avoid NullReferenceException in
         // OrchardCore.Recipes.Services.RecipeEnvironmentFeatureProvider.PopulateEnvironmentAsync.
-        var httpContextAccessor = instance.GetService<IHttpContextAccessor>();
+        var httpContextAccessor = instance.GetRequiredService<IHttpContextAccessor>();
         var features = new FeatureCollection();
         features.Set(new RecipeEnvironmentFeature());
 
