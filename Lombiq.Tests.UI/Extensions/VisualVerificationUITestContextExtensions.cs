@@ -15,8 +15,10 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -269,7 +271,7 @@ to customize the name of the dump item.";
         configurator?.Invoke(configuration);
 
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
-            .Where(frame => frame.MethodInfo.MethodBase != null && !IsCompilerGenerated(frame));
+            .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame));
         var testFrame = stackTrace
             .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
 
@@ -277,7 +279,7 @@ to customize the name of the dump item.";
         {
             testFrame = stackTrace
                 .Reverse()
-                .TakeWhile(frame => frame.MethodInfo.MethodBase != testFrame.MethodInfo.MethodBase)
+                .TakeWhile(frame => frame.GetMethodBase() != testFrame.GetMethodBase())
                 .TakeLast(configuration.StackOffset)
                 .FirstOrDefault();
         }
@@ -289,8 +291,8 @@ to customize the name of the dump item.";
 
         var approvedContext = new VisualVerificationMatchApprovedContext
         {
-            ModuleName = testFrame.MethodInfo.DeclaringType.Name,
-            MethodName = testFrame.MethodInfo.Name,
+            ModuleName = testFrame.GetModuleName(),
+            MethodName = testFrame.GetMethodeName(),
             BrowserName = context.Driver.As<IHasCapabilities>().Capabilities.GetCapability("browserName") as string,
         };
 
@@ -637,8 +639,46 @@ calculated differences:
     }
 
     private static bool IsVisualVerificationMethod(EnhancedStackFrame frame) =>
-        frame.MethodInfo.MethodBase.IsDefined(typeof(VisualVerificationApprovedMethodAttribute), inherit: true);
+        frame.GetMethodBase().IsDefined(typeof(VisualVerificationApprovedMethodAttribute), inherit: true);
 
     private static bool IsCompilerGenerated(EnhancedStackFrame frame) =>
-        frame.MethodInfo.MethodBase.IsDefined(typeof(CompilerGeneratedAttribute), inherit: true);
+        frame.GetMethodBase().IsDefined(typeof(CompilerGeneratedAttribute), inherit: true);
+
+    private static MethodBase GetMethodBase(this EnhancedStackFrame frame) =>
+        frame.MethodInfo.MethodBase ?? frame.MethodInfo.SubMethodBase;
+
+    private static string GetModuleName(this EnhancedStackFrame frame)
+    {
+        var currentMethod = frame.MethodInfo.DeclaringType;
+        string moduleName;
+
+        // This is required to retrieve the class from the inheritance chain where the method was declared but not
+        // overridden.
+        do
+        {
+            moduleName = currentMethod.Name;
+            currentMethod = currentMethod.DeclaringType;
+        }
+        while (currentMethod is not null);
+
+        var depthMark = new Regex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture);
+        if (depthMark.IsMatch(moduleName))
+        {
+            moduleName = depthMark.Match(moduleName).Groups["module"].Value;
+        }
+
+        return moduleName;
+    }
+
+    private static string GetMethodeName(this EnhancedStackFrame frame)
+    {
+        var methodName = frame.MethodInfo.Name;
+        var inheriteedMethod = new Regex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture);
+        if (inheriteedMethod.IsMatch(methodName))
+        {
+            methodName = inheriteedMethod.Match(methodName).Groups["method"].Value;
+        }
+
+        return methodName;
+    }
 }

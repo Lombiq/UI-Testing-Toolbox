@@ -65,7 +65,7 @@ namespace Lombiq.OSOCE.Tests.UI;
 -         .GetAbsoluteApplicationAssemblyPath("Lombiq.OSOCE.Web", "net6.0");
 ```
 
-## Breaking changes
+### Breaking changes
 
 There is a breaking change in adding command line arguments to the WebApplication.
 
@@ -84,9 +84,9 @@ There is a breaking change in adding command line arguments to the WebApplicatio
                 };
 ```
 
-## Non breaking changes
+### Non breaking changes
 
-### `Lombiq.Tests.UI.Extensions.ShortcutsUITestContextExtensions`
+#### `Lombiq.Tests.UI.Extensions.ShortcutsUITestContextExtensions`
 
 The following extension methods result in the same and no breaking change in the signatures, but they behave a bit differently. Using `WebApplicationFactory` opened the possibility to use OC services directly instead of using `Controller Actions` invoked by browser navigation.
 

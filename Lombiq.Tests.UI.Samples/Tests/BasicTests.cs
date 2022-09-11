@@ -12,9 +12,10 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // We'll see some simpler tests as a start. Each of them will teach us important concepts.
-public class BasicTests : UITestBase
+public abstract class BasicTests<TEntryPoint> : UITestBase<TEntryPoint>
+    where TEntryPoint : class
 {
-    public BasicTests(ITestOutputHelper testOutputHelper)
+    protected BasicTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

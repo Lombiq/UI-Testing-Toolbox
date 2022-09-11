@@ -12,9 +12,10 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // and use that, because we don't have a pre-beaked database. Normally this feature is used to run tests when there is
 // an already existing database, so you don't need to take a snapshot before using the
 // "ExecuteTestFromExistingDBAsync()" method.
-public class DatabaseSnapshotTests : UITestBase
+public abstract class DatabaseSnapshotTests<TEntryPoint> : UITestBase<TEntryPoint>
+    where TEntryPoint : class
 {
-    public DatabaseSnapshotTests(ITestOutputHelper testOutputHelper)
+    protected DatabaseSnapshotTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

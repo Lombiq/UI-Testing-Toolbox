@@ -10,9 +10,10 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // In this basic test we will check visually the rendered content.
-public class BasicVisualVerificationTests : UITestBase
+public abstract class BasicVisualVerificationTests<TEntryPoint> : UITestBase<TEntryPoint>
+    where TEntryPoint : class
 {
-    public BasicVisualVerificationTests(ITestOutputHelper testOutputHelper)
+    protected BasicVisualVerificationTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

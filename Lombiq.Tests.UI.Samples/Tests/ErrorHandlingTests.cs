@@ -14,9 +14,10 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Sometimes errors are expected. Let's check out what can be done with them!
-public class ErrorHandlingTests : UITestBase
+public abstract class ErrorHandlingTests<TEntryPoint> : UITestBase<TEntryPoint>
+    where TEntryPoint : class
 {
-    public ErrorHandlingTests(ITestOutputHelper testOutputHelper)
+    protected ErrorHandlingTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

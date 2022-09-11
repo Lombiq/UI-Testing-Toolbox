@@ -12,9 +12,10 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // In this test class we'll work with (wait for it!) e-mails. The UI Testing Toolbox provides services to run an SMTP
 // server locally that the app can use to send out e-mails, which we can then immediately check.
-public class EmailTests : UITestBase
+public abstract class EmailTests<TEntryPoint> : UITestBase<TEntryPoint>
+    where TEntryPoint : class
 {
-    public EmailTests(ITestOutputHelper testOutputHelper)
+    protected EmailTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }
