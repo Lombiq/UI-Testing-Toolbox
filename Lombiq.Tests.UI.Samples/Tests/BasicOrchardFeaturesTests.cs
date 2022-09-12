@@ -12,10 +12,9 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // writing tests for your app is not really about testing Orchard itself but nevertheless it's useful to check if all
 // the important features like login work - keep in mind that you can break these from your own code. So, here we run
 // the whole test suite.
-public abstract class BasicOrchardFeaturesTests<TEntryPoint> : UITestBase<TEntryPoint>
-    where TEntryPoint : class
+public class BasicOrchardFeaturesTests : UITestBase
 {
-    protected BasicOrchardFeaturesTests(ITestOutputHelper testOutputHelper)
+    public BasicOrchardFeaturesTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

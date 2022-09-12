@@ -14,10 +14,9 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // with it, should there be any incompatibilities). Note that for this, you need an SQL Server instance running; by
 // default, this will be attempted under the default localhost server name. If you're using anything else, check out the
 // settings in SqlServerConfiguration and Docs/Configuration.md, especially if you use Docker.
-public abstract class SqlServerTests<TEntryPoint> : UITestBase<TEntryPoint>
-    where TEntryPoint : class
+public class SqlServerTests : UITestBase
 {
-    protected SqlServerTests(ITestOutputHelper testOutputHelper)
+    public SqlServerTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }

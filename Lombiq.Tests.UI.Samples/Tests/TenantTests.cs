@@ -16,13 +16,12 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // use context.GoToRelativeUrlAsync() but remember to use include the tenant url prefix, or change context.TenantName
 // (context.CreateAndEnterTenantAsync() already does this) and then use context.GoToAsync<TController>() to
 // navigate by MVC actions.
-public abstract class TenantTests<TEntryPoint> : UITestBase<TEntryPoint>
-    where TEntryPoint : class
+public class TenantTests : UITestBase
 {
     private const string TestTenantUrlPrefix = "test";
     private const string TestTenantDisplayName = "Lombiq's OSOCE - Test Tenant";
 
-    protected TenantTests(ITestOutputHelper testOutputHelper)
+    public TenantTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
     }
