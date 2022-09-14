@@ -6,26 +6,19 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
 - Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following:
-  1. Add a reference to `Lombiq.Tests.UI.AppExtensions` (either from NuGet or as a Git submodule).
-  2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Startup` class:
+  1. Prepare the web app uneder test as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
+  2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
 
         ```csharp
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // _configuration is a constructor-injected IConfiguration instance.
-            services.AddOrchardCms(builder => builder.ConfigureUITesting(_configuration));
-        }
+        ...
+
+        var configuration = builder.Configuration;
+
+        builder.Services.Add(new ServiceDescriptor(configuration.GetType(), configuration));
+        builder.Services.AddOrchardCms();
         ```
 
-- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project (either from NuGet or as a Git submodule) as a reference to the root app project and enable it during UI testing by modifying the startup code as below (note the second `true` parameter):
-
-    ```csharp
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // _configuration is a constructor-injected IConfiguration instance.
-        services.AddOrchardCms(builder => builder.ConfigureUITesting(_configuration, true));
-    }
-    ```
+- If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project (either from NuGet or as a Git submodule) as a reference to the root app project. The module will be enabled in case of UI testing.
 
   Note that since authentication-related shortcuts need an implementation available for `Microsoft.AspNetCore.Identity.IRoleStore<OrchardCore.Security.IRole>` the `OrchardCore.Roles` feature will also be enabled. If you want to use a different implementation then enable the Shortcuts module from the test recipe, as well as the alternative Roles implementation, as below:
 

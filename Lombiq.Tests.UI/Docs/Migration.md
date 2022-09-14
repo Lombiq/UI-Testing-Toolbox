@@ -1,10 +1,11 @@
 # Migration guide
 
-## Migrating from v3.*.*
+## Migrating from v3.*
 
 ### Preparing WebApplication
 
-1. Prepare WebApplication as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
+1. Prepare the web app uneder test as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
+1. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app under test.
 2. Add `Microsoft.Extensions.Configuration.ConfigurationManager` instance directly to `WebApplicationBuilder.Services`.
 
 ```diff
@@ -41,7 +42,7 @@ app.Run();
 
 ### Preparing UI test project
 
-1. Add WebApplication project as a `Project reference` to UI test project.
+1. Add the web app project under test as a `Project reference` to UI test project.
 
 ```diff
   </ItemGroup>
@@ -102,7 +103,7 @@ This means that calling the extension methods below no longer results in browser
 - `SelectThemeAsync`
 - `GenerateHttpEventUrlAsync`
 
-Here is a sample for better understanding:
+_Here is a sample for better understanding_:
 ```diff
     public static async Task EnablePrivacyConsentBannerFeatureAndAcceptPrivacyConsentAsync(this UITestContext context)
     {
@@ -114,6 +115,6 @@ Here is a sample for better understanding:
     }
 ```
 
-The original code with the new behavior resulted in a failing test, because the browser pointed to the `Home page` before `await context.EnablePrivacyConsentBannerFeatureAsync()(= context.EnableFeatureDirectlyAsync({featureId})`, the `context.EnableFeatureDirectlyAsync` not navigates away, so finaly the `await context.GoToHomePageAsync()` call do nothing and the consent banner din't come up.
+The original code with the new behavior resulted in a failing test, because the browser pointed to the `Home page` before `await context.EnablePrivacyConsentBannerFeatureAsync()(=> context.EnableFeatureDirectlyAsync({featureId})`, the `context.EnableFeatureDirectlyAsync` not navigates away, so finaly the `await context.GoToHomePageAsync()` call do nothing and the consent banner din't come up.
 
 The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, this result a reload, and the consent banner come up.
