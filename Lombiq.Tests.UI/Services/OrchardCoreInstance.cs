@@ -80,6 +80,9 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         CreateContentRootFolder();
 
+        // This is to avoid Orchard add Razor runtime compilation.
+        DirectoryHelper.SafelyDeleteDirectoryIfExists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "refs"));
+
         if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
         {
             FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
@@ -178,7 +181,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             builder => builder
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment("Development")
+                .UseEnvironment(Environments.Development)
                 .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Arguments.ToArray())),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
