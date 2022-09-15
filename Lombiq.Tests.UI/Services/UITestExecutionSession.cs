@@ -174,7 +174,10 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _context.FailureDumpContainer.Clear();
         }
 
-        _sqlServerManager?.Dispose();
+        if (_sqlServerManager is not null)
+        {
+            await _sqlServerManager.DisposeAsync();
+        }
 
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
@@ -548,7 +551,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
         SmtpServiceRunningContext smtpContext = null;
 
-        if (_configuration.UseSqlServer) sqlServerContext = SetUpSqlServer();
+        if (_configuration.UseSqlServer) sqlServerContext = await SetUpSqlServerAsync();
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
@@ -618,10 +621,10 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
     private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 
-    private SqlServerRunningContext SetUpSqlServer()
+    private async Task<SqlServerRunningContext> SetUpSqlServerAsync()
     {
         _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
-        var sqlServerContext = _sqlServerManager.CreateDatabase();
+        var sqlServerContext = await _sqlServerManager.CreateDatabaseAsync();
 
         async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {

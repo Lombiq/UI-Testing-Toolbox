@@ -80,8 +80,8 @@ public sealed class SmtpService : IAsyncDisposable
             throw new InvalidOperationException("There was no smtp4dev configuration in the .NET CLI local tool manifest file.");
         }
 
-        _smtpPort = _smtpPortLeaseManager.LeaseAvailableRandomPort();
-        _webUIPort = _webUIPortLeaseManager.LeaseAvailableRandomPort();
+        _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync();
+        _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync();
 
         var webUIPortString = _webUIPort.ToTechnicalString();
         var smtpPortString = _smtpPort.ToTechnicalString();
@@ -121,17 +121,15 @@ public sealed class SmtpService : IAsyncDisposable
         return new SmtpServiceRunningContext(_smtpPort, webUIUri);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        _smtpPortLeaseManager.StopLease(_smtpPort);
-        _webUIPortLeaseManager.StopLease(_webUIPort);
+        await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort);
+        await _webUIPortLeaseManager.StopLeaseAsync(_webUIPort);
 
         if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
         {
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
         }
-
-        return new ValueTask(Task.CompletedTask);
     }
 }

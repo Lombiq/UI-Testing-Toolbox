@@ -74,7 +74,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public async Task<Uri> StartUpAsync()
     {
-        var port = OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPort();
+        var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
         _url = OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString();
         _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
 

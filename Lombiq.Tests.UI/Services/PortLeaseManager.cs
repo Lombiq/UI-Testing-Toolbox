@@ -1,6 +1,8 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -14,27 +16,38 @@ public class PortLeaseManager
 {
     private readonly IEnumerable<int> _availablePortsRange;
     private readonly HashSet<int> _usedPorts = new();
-    private readonly object _portAcquisitionLock = new();
+    private readonly SemaphoreSlim _portAcquisitionLock = new(1, 1);
 
     public PortLeaseManager(int lowerBound, int upperBound) =>
         _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);
 
-    public int LeaseAvailableRandomPort()
+    public async Task<int> LeaseAvailableRandomPortAsync()
     {
-        lock (_portAcquisitionLock)
+        await _portAcquisitionLock.WaitAsync();
+
+        int port;
+
+        try
         {
             var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
-            var port = availablePorts[new NonSecurityRandomizer().GetFromRange(availablePorts.Count)];
+
+            port = availablePorts[new NonSecurityRandomizer().GetFromRange(availablePorts.Count)];
             _usedPorts.Add(port);
-            return port;
         }
+        finally
+        {
+            _portAcquisitionLock.Release();
+        }
+
+        return port;
     }
 
-    public void StopLease(int port)
+    public async Task StopLeaseAsync(int port)
     {
-        lock (_portAcquisitionLock)
-        {
-            _usedPorts.Remove(port);
-        }
+        await _portAcquisitionLock.WaitAsync();
+
+        _usedPorts.Remove(port);
+
+        _portAcquisitionLock.Release();
     }
 }
