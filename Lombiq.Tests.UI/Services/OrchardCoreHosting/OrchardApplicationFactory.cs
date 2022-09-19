@@ -39,8 +39,6 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(ConfigureTestServices)
-            .ConfigureServices((context, _) =>
-                context.HostingEnvironment.ApplicationName = typeof(OrchardApplicationFactory<TStartup>).Assembly.GetName().Name)
             .ConfigureLogging((context, loggingBuilder) =>
             {
                 var environment = context.HostingEnvironment;
