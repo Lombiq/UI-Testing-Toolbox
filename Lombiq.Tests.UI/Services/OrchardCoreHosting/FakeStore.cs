@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using YesSql;
@@ -8,7 +9,7 @@ namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
 public sealed class FakeStore : IStore
 {
-    private readonly List<ISession> _createdSessions = new();
+    private readonly ConcurrentBag<ISession> _createdSessions = new();
     private readonly IStore _store;
 
     public FakeStore(IStore store) =>
@@ -20,13 +21,10 @@ public sealed class FakeStore : IStore
 
     public ISession CreateSession()
     {
-        lock (_createdSessions)
-        {
-            var session = _store.CreateSession();
-            _createdSessions.Add(session);
+        var session = _store.CreateSession();
+        _createdSessions.Add(session);
 
-            return session;
-        }
+        return session;
     }
 
     public IEnumerable<IndexDescriptor> Describe(Type target, string collection = null) => _store.Describe(target, collection);
