@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -11,7 +12,7 @@ public static class NavigationWebElementExtensions
     /// <summary>
     /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click() but
     /// still not perfect. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -21,7 +22,8 @@ public static class NavigationWebElementExtensions
     /// https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error.
     /// </para>
     /// </remarks>
-    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context) =>
+    /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
+    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, int maxTries = 3) =>
         context.ExecuteLoggedAsync(
             nameof(ClickReliablyAsync),
             element,
@@ -34,7 +36,6 @@ public static class NavigationWebElementExtensions
 
                     // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
                     // "move target out of bounds" exception message. In this case it should be retried.
-                    const int maxTries = 3;
                     var notFound = true;
                     for (var i = 1; notFound && i <= maxTries; i++)
                     {
@@ -45,6 +46,9 @@ public static class NavigationWebElementExtensions
                         }
                         catch (WebDriverException ex) when (i < maxTries && ex.Message.Contains("move target out of bounds"))
                         {
+                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                "\"move target out of bounds\" exception, retrying the click.");
+
                             await Task.Delay(RetrySettings.Interval);
                         }
                     }
@@ -63,7 +67,7 @@ public static class NavigationWebElementExtensions
 
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By)"/> instead.
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
     public static void ClickReliablyUntilPageLeave(
         this IWebElement element,
