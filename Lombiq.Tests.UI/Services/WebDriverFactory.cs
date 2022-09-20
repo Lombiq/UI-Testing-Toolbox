@@ -204,7 +204,8 @@ public static class WebDriverFactory
     }
 
     // This is because of the WebDriverManager.DriverConfigs.Impl.EdgeConfig in WebDriverManager doesn't support Edge on
-    // Linux. WebDriverManager issue: https://github.com/rosolko/WebDriverManager.Net/issues/196
+    // Linux. This is now done in WebDriverManage.NET: https://github.com/rosolko/WebDriverManager.Net/issues/196. We
+    // need to add it after an Orchard upgrade, see: https://github.com/Lombiq/UI-Testing-Toolbox/issues/181.
     private sealed class CustomEdgeConfig : IDriverConfig
     {
         public string GetName() => "Edge";
