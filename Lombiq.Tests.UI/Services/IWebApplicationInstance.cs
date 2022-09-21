@@ -11,6 +11,12 @@ namespace Lombiq.Tests.UI.Services;
 public interface IWebApplicationInstance : IAsyncDisposable
 {
     /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> created by the server associated with this
+    /// <see cref="IWebApplicationInstance"/>.
+    /// </summary>
+    IServiceProvider Services { get; }
+
+    /// <summary>
     /// Launches the web application.
     /// </summary>
     /// <returns>The starting URL of the web app, such as the home page.</returns>

@@ -72,6 +72,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _testOutputHelper = testOutputHelper;
     }
 
+    public IServiceProvider Services => _orchardApplication?.Services;
+
     public async Task<Uri> StartUpAsync()
     {
         var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();

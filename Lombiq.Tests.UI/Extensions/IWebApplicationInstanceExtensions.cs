@@ -28,7 +28,11 @@ public static class IWebApplicationInstanceExtensions
         var features = new FeatureCollection();
         features.Set(new RecipeEnvironmentFeature());
 
-        var httpContext = new DefaultHttpContext(features);
+        var httpContext = new DefaultHttpContext(features)
+        {
+            RequestServices = instance.Services,
+        };
+
         httpContextAccessor.HttpContext = httpContext;
 
         try
