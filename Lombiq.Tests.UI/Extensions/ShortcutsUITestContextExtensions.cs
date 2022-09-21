@@ -52,6 +52,7 @@ public static class ShortcutsUITestContextExtensions
     public const string FeatureToggleTestBenchUrl = "/Lombiq.Tests.UI.Shortcuts/FeatureToggleTestBench/Index";
 
     private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
+    private static readonly SemaphoreSlim _recipeHarvesterSemaphore = new(1, 1);
 
     /// <summary>
     /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
@@ -345,31 +346,40 @@ public static class ShortcutsUITestContextExtensions
         .UsingScopeAsync(
             async shellScope =>
             {
-                var recipeHarvesters = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
-                var recipeCollections = await recipeHarvesters
-                    .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
-                var recipe = recipeCollections
-                    .SelectMany(recipeCollection => recipeCollection)
-                    .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
-
-                if (recipe == null)
+                try
                 {
-                    throw new RecipeNotFoundException($"{recipeName} not found!");
+                    await _recipeHarvesterSemaphore.WaitAsync();
+
+                    var recipeHarvesters = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
+                    var recipeCollections = await recipeHarvesters
+                        .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
+                    var recipe = recipeCollections
+                        .SelectMany(recipeCollection => recipeCollection)
+                        .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
+
+                    if (recipe == null)
+                    {
+                        throw new RecipeNotFoundException($"{recipeName} not found!");
+                    }
+
+                    // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
+                    var executionId = Guid.NewGuid().ToString("n");
+
+                    var environment = new Dictionary<string, object>();
+                    var logger = shellScope.ServiceProvider.GetRequiredService<ILogger<ExecuteRecipeShortcut>>();
+                    var recipeEnvironmentProviders = shellScope.ServiceProvider
+                        .GetRequiredService<IEnumerable<IRecipeEnvironmentProvider>>();
+                    await recipeEnvironmentProviders
+                        .OrderBy(environmentProvider => environmentProvider.Order)
+                        .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
+
+                    var recipeExecutor = shellScope.ServiceProvider.GetRequiredService<IRecipeExecutor>();
+                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
                 }
-
-                // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
-                var executionId = Guid.NewGuid().ToString("n");
-
-                var environment = new Dictionary<string, object>();
-                var logger = shellScope.ServiceProvider.GetRequiredService<ILogger<ExecuteRecipeShortcut>>();
-                var recipeEnvironmentProviders = shellScope.ServiceProvider
-                    .GetRequiredService<IEnumerable<IRecipeEnvironmentProvider>>();
-                await recipeEnvironmentProviders
-                    .OrderBy(environmentProvider => environmentProvider.Order)
-                    .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
-
-                var recipeExecutor = shellScope.ServiceProvider.GetRequiredService<IRecipeExecutor>();
-                await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
+                finally
+                {
+                    _recipeHarvesterSemaphore.Release();
+                }
             },
             tenant,
             activateShell);
