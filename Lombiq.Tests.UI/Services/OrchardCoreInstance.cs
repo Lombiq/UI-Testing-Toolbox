@@ -176,6 +176,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
 
+        // This is to avoid adding Razor runtime view compilation.
+        DirectoryHelper.SafelyDeleteDirectoryIfExists(
+            Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
+
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
             builder => builder
                 .UseContentRoot(_contentRootPath)
