@@ -235,7 +235,7 @@ public static class ShortcutsUITestContextExtensions
         model ??= new CreateTenant();
 
         await context.GoToAsync<TenantsController>(controller =>
-            controller.Create(name, urlPrefix, recipe, model.ConnectionString, model.DatabaseProvider, model.FeatureProfile));
+            controller.Create(name, urlPrefix, recipe, model.ConnectionString, model.DatabaseProvider));
 
         await context.SetDropdownByValueAsync(By.Id("culturesList"), model.Language);
         await context.ClickAndFillInWithRetriesAsync(By.Id("SiteName"), name);

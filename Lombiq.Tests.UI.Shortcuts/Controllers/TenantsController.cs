@@ -32,8 +32,7 @@ public class TenantsController : Controller
         string urlPrefix,
         string recipe,
         string connectionString = "",
-        string databaseProvider = "Sqlite",
-        string featureProfile = "")
+        string databaseProvider = "Sqlite")
     {
         if (_shellHost.TryGetSettings(name, out _)) throw new InvalidOperationException("The tenant already exists.");
 
@@ -50,7 +49,6 @@ public class TenantsController : Controller
         shellSettings["DatabaseProvider"] = databaseProvider;
         shellSettings["Secret"] = Guid.NewGuid().ToString();
         shellSettings["RecipeName"] = recipe;
-        shellSettings["FeatureProfile"] = featureProfile;
 
         await _shellHost.UpdateShellSettingsAsync(shellSettings);
 
