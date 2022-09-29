@@ -91,7 +91,7 @@ There is a breaking change in adding command line arguments to the WebApplicatio
 
 The following extension methods behave largely the same and their signatures didn't change. Using `WebApplicationFactory` made it possible to use OC services directly instead of using _controller actions_ invoked via browser navigation.
 
-This means that calling the extension methods below no longer results in browser navigation.
+This means that calling the extension methods below don't cause browser navigation any more.
 
 - `SetUserRegistrationTypeAsync`
 - `CreateUserAsync`
