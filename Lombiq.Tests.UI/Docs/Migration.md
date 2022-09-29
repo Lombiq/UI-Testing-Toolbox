@@ -115,6 +115,6 @@ _Here is a sample for better understanding_:
     }
 ```
 
-The original code with the new behavior resulted in a failing test, because the browser pointed to the `Home page` before `await context.EnablePrivacyConsentBannerFeatureAsync()(=> context.EnableFeatureDirectlyAsync({featureId})`, the `context.EnableFeatureDirectlyAsync` not navigates away, so finaly the `await context.GoToHomePageAsync()` call do nothing and the consent banner din't come up.
+The original code with the new behavior failed a test, because the browser pointed to the _Home page_ before `await context.EnablePrivacyConsentBannerFeatureAsync()(=> context.EnableFeatureDirectlyAsync({featureId})`. So the `context.EnableFeatureDirectlyAsync` doesn't navigate away, the `await context.GoToHomePageAsync()` call does nothing, and the consent banner doesn't come up.
 
 The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, this result a reload, and the consent banner come up.
