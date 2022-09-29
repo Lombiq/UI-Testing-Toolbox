@@ -34,7 +34,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         _configureOrchard = configureOrchard;
     }
 
-    public string BaseAddress => ClientOptions.BaseAddress.ToString();
+    public Uri BaseAddress => ClientOptions.BaseAddress;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -65,7 +65,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
                 .ImplementationInstance as ConfigurationManager
                 ?? throw new InvalidOperationException(
-                    "Pease add ConfigurationManager instance to WebApplicationBuilder.Services in your Program.cs!");
+                    $"Pease add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
 
         _configureOrchard?.Invoke(configuration, builder);
 

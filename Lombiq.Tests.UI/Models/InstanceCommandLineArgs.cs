@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
@@ -15,20 +16,16 @@ public class InstanceCommandLineArgumentsBuilder
 
     public InstanceCommandLineArgumentsBuilder AddWithValue<T>(string key, T value)
     {
-        _arguments.Add($"{PrepareArg(key)}={value}");
+        _arguments.Add(FormattableString.Invariant($"{PrepareArg(key)}={value}"));
 
         return this;
     }
 
-    private static string PrepareArg(string argument)
-    {
-        if (!argument.StartsWith("--", System.StringComparison.InvariantCultureIgnoreCase))
-        {
-            return $"--{argument}";
-        }
+    [Obsolete("Use AddSwitch or AddWithValue instead.")]
+    public InstanceCommandLineArgumentsBuilder Add(string value) => throw new NotSupportedException();
 
-        return argument;
-    }
+    private static string PrepareArg(string argument)
+        => $"--{argument.TrimStart('-')}";
 
     public IEnumerable<string> Arguments => _arguments;
 }

@@ -19,7 +19,7 @@ builder.Host.UseNLogHost();
 var configuration = builder.Configuration;
 
 - builder.Services.AddOrchardCms(orchard => orchard.ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
-+ builder.Services.Add(new ServiceDescriptor(configuration.GetType(), configuration));
++ builder.Services.AddSingleton(configuration);
 + builder.Services.AddOrchardCms();
 
 var app = builder.Build();
@@ -28,10 +28,11 @@ app.UseStaticFiles();
 app.UseOrchardCore();
 app.Run();
 
-+ // As described here (https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0).
-+ #pragma warning disable CA1050
++ [SuppressMessage(
++     "Design",
++     "CA1050: Declare types in namespaces",
++     Justification = "As described here(https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0).")]
 + public partial class Program
-+ #pragma warning restore CA1050
 + {
 +     protected Program()
 +     {
@@ -103,7 +104,8 @@ This means that calling the extension methods below don't cause browser navigati
 - `SelectThemeAsync`
 - `GenerateHttpEventUrlAsync`
 
-_Here is a sample for better understanding_:
+##### Here is a sample for better understanding:
+
 ```diff
     public static async Task EnablePrivacyConsentBannerFeatureAndAcceptPrivacyConsentAsync(this UITestContext context)
     {

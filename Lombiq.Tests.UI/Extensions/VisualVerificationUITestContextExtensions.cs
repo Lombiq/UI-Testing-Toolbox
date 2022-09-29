@@ -292,7 +292,7 @@ to customize the name of the dump item.";
         var approvedContext = new VisualVerificationMatchApprovedContext
         {
             ModuleName = testFrame.GetModuleName(),
-            MethodName = testFrame.GetMethodeName(),
+            MethodName = testFrame.GetMethodName(),
             BrowserName = context.Driver.As<IHasCapabilities>().Capabilities.GetCapability("browserName") as string,
         };
 
@@ -670,13 +670,15 @@ calculated differences:
         return moduleName;
     }
 
-    private static string GetMethodeName(this EnhancedStackFrame frame)
+    // Retrieves the method name. Removes the decoration in case of if it inherited from a base class but not overridden.
+    // Because of the inheritance, the method name gets some decoration in stack trace.
+    private static string GetMethodName(this EnhancedStackFrame frame)
     {
         var methodName = frame.MethodInfo.Name;
-        var inheriteedMethod = new Regex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture);
-        if (inheriteedMethod.IsMatch(methodName))
+        var inheritedMethod = new Regex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture);
+        if (inheritedMethod.IsMatch(methodName))
         {
-            methodName = inheriteedMethod.Match(methodName).Groups["method"].Value;
+            methodName = inheritedMethod.Match(methodName).Groups["method"].Value;
         }
 
         return methodName;
