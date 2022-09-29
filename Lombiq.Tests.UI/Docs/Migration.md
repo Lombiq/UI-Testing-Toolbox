@@ -4,8 +4,8 @@
 
 ### Preparing WebApplication
 
-1. Prepare the web app uneder test as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
-2. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app under test.
+1. Prepare the web app to be tested as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
+2. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app.
 3. Add `Microsoft.Extensions.Configuration.ConfigurationManager` instance directly to `WebApplicationBuilder.Services`.
 
 ```diff
