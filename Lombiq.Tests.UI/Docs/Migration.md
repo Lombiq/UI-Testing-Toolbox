@@ -42,7 +42,7 @@ app.Run();
 
 ### Preparing UI test project
 
-1. Add the web app project under test as a `Project reference` to UI test project.
+1. Add a _project reference_ of the web app to be tested to the UI test project.
 
 ```diff
   </ItemGroup>
