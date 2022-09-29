@@ -89,7 +89,7 @@ There is a breaking change in adding command line arguments to the WebApplicatio
 
 #### `Lombiq.Tests.UI.Extensions.ShortcutsUITestContextExtensions`
 
-The following extension methods result in the same and no breaking change in the signatures, but they behave a bit differently. Using `WebApplicationFactory` opened the possibility to use OC services directly instead of using `Controller Actions` invoked by browser navigation.
+The following extension methods behave largely the same and their signatures didn't change. Using `WebApplicationFactory` made it possible to use OC services directly instead of using _controller actions_ invoked via browser navigation.
 
 This means that calling the extension methods below no longer results in browser navigation.
 
