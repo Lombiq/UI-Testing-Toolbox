@@ -88,7 +88,7 @@
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="4.6.1-alpha.walma-15.1" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.6.1-alpha.walma-15.1" />
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="4.6.1-alpha.walma-15.1" />
-    <PackageReference Include="Lombiq.Npm.Targets" Version="1.0.1" />
+    <PackageReference Include="Lombiq.Npm.Targets" Version="1.0.2-alpha.osoe-125.1" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
