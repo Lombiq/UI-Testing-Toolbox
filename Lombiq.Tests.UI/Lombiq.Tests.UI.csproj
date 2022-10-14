@@ -88,11 +88,11 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="2.0.1-alpha.osoe-46.1" />
+    <PackageReference Include="Lombiq.Tests" Version="2.1.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="4.7.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.7.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="4.7.0" />
-    <PackageReference Include="Lombiq.Npm.Targets" Version="1.0.1" />
+    <PackageReference Include="Lombiq.Npm.Targets" Version="1.2.0" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
