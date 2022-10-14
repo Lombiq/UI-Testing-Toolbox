@@ -60,12 +60,12 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
                 .ImplementationInstance as OrchardCoreBuilder
                 ?? throw new InvalidOperationException(
-                    "Pease call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+                    "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
         var configuration = services
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
                 .ImplementationInstance as ConfigurationManager
                 ?? throw new InvalidOperationException(
-                    $"Pease add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
+                    $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
 
         _configureOrchard?.Invoke(configuration, builder);
 
