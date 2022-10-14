@@ -11,17 +11,18 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI;
 
-public abstract class OrchardCoreUITestBase
+internal static class OrchardCoreUITestBaseCounter
+{
+    public static object SnapshotCopyLock { get; } = new();
+    public static bool AppFolderCreated { get; set; }
+}
+
+public abstract class OrchardCoreUITestBase<TEntryPoint>
+     where TEntryPoint : class
 {
     private const string AppFolder = nameof(AppFolder);
 
-    private static readonly object _snapshotCopyLock = new();
-
     protected ITestOutputHelper _testOutputHelper;
-
-    private static bool _appFolderCreated;
-
-    protected abstract string AppAssemblyPath { get; }
 
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
@@ -143,17 +144,18 @@ public abstract class OrchardCoreUITestBase
         string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
-        lock (_snapshotCopyLock)
+        lock (OrchardCoreUITestBaseCounter.SnapshotCopyLock)
         {
-            if (!_appFolderCreated)
+            if (!OrchardCoreUITestBaseCounter.AppFolderCreated)
             {
                 DirectoryHelper.SafelyDeleteDirectoryIfExists(AppFolder);
 
                 OrchardCoreDirectoryHelper.CopyAppFolder(
-                    customSnapshotFolderPath ?? OrchardCoreDirectoryHelper.GetAppRootPath(AppAssemblyPath),
+                    customSnapshotFolderPath
+                        ?? OrchardCoreDirectoryHelper.GetAppRootPath(typeof(TEntryPoint).Assembly.Location),
                     AppFolder);
 
-                _appFolderCreated = true;
+                OrchardCoreUITestBaseCounter.AppFolderCreated = true;
             }
         }
 
@@ -224,7 +226,7 @@ public abstract class OrchardCoreUITestBase
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
-            OrchardCoreConfiguration = new OrchardCoreConfiguration { AppAssemblyPath = AppAssemblyPath },
+            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
             TestOutputHelper = _testOutputHelper,
             BrowserConfiguration = { Browser = browser },
             SetupConfiguration = { SetupOperation = setupOperation },
@@ -234,7 +236,7 @@ public abstract class OrchardCoreUITestBase
 
         try
         {
-            await UITestExecutor.ExecuteOrchardCoreTestAsync(testManifest, configuration);
+            await UITestExecutor.ExecuteOrchardCoreTestAsync<TEntryPoint>(testManifest, configuration);
         }
         finally
         {

@@ -18,9 +18,10 @@ public static class UITestExecutor
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static Task ExecuteOrchardCoreTestAsync(
+    public static Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
+        where TEntryPoint : class
     {
         if (string.IsNullOrEmpty(testManifest.Name))
         {
@@ -58,13 +59,14 @@ public static class UITestExecutor
             }
         }
 
-        return ExecuteOrchardCoreTestInnerAsync(testManifest, configuration, dumpRootPath);
+        return ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
     }
 
-    private static async Task ExecuteOrchardCoreTestInnerAsync(
+    private static async Task ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         string dumpRootPath)
+        where TEntryPoint : class
     {
         var retryCount = 0;
         var passed = false;
@@ -77,7 +79,7 @@ public static class UITestExecutor
                     await _numberOfTestsLimit.WaitAsync();
                 }
 
-                await using var instance = new UITestExecutionSession(testManifest, configuration);
+                await using var instance = new UITestExecutionSession<TEntryPoint>(testManifest, configuration);
                 passed = await instance.ExecuteAsync(retryCount, dumpRootPath);
             }
             catch (Exception ex) when (retryCount < configuration.MaxRetryCount)

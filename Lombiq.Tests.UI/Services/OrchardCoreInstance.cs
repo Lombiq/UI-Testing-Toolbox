@@ -1,11 +1,15 @@
-using CliWrap;
-using CliWrap.Builders;
-using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.OrchardCoreHosting;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
+using OrchardCore.Modules;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -16,52 +20,50 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
-public delegate Task BeforeAppStartHandler(string contentRootPath, ArgumentsBuilder argumentsBuilder);
+public delegate Task BeforeAppStartHandler(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments);
 
 public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
 
 public class OrchardCoreConfiguration
 {
-    public string AppAssemblyPath { get; set; }
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 }
 
-/// <summary>
-/// A locally executing Orchard Core application.
-/// </summary>
-public sealed class OrchardCoreInstance : IWebApplicationInstance
+internal static class OrchardCoreInstanceCounter
 {
-    // Using an HTTPS URL so it's the same as in the actual app.
-    private const string UrlPrefix = "https://localhost:";
+    public const string UrlPrefix = "https://localhost:";
 
-    private static readonly PortLeaseManager _portLeaseManager;
-    private static readonly ConcurrentDictionary<string, string> _exeCopyMarkers = new();
-    private static readonly object _exeCopyLock = new();
-    private static readonly string _executableExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
-
-    private readonly OrchardCoreConfiguration _configuration;
-    private readonly string _contextId;
-    private readonly ITestOutputHelper _testOutputHelper;
-    private Command _command;
-    private CancellationTokenSource _cancellationTokenSource;
-    private int _port;
-    private string _contentRootPath;
-    private bool _isDisposed;
-
-    // Not actually unnecessary.
 #pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage(
         "Performance",
         "CA1810:Initialize reference type static fields inline",
         Justification = "No GetAgentIndexOrDefault() duplication this way.")]
 #pragma warning restore IDE0079 // Remove unnecessary suppression
-    static OrchardCoreInstance()
+    static OrchardCoreInstanceCounter()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-        _portLeaseManager = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
+        PortLeases = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
+
+    public static PortLeaseManager PortLeases { get; private set; }
+}
+
+/// <summary>
+/// A locally executing Orchard Core application.
+/// </summary>
+public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
+    where TEntryPoint : class
+{
+    private readonly OrchardCoreConfiguration _configuration;
+    private readonly string _contextId;
+    private readonly ITestOutputHelper _testOutputHelper;
+    private string _contentRootPath;
+    private bool _isDisposed;
+    private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
+    private string _url;
+    private TestReverseProxy _reverseProxy;
 
     public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
@@ -70,12 +72,13 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         _testOutputHelper = testOutputHelper;
     }
 
+    public IServiceProvider Services => _orchardApplication?.Services;
+
     public async Task<Uri> StartUpAsync()
     {
-        _port = _portLeaseManager.LeaseAvailableRandomPort();
-        var url = UrlPrefix + _port.ToTechnicalString();
-
-        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", url);
+        var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
+        _url = OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString();
+        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
 
         CreateContentRootFolder();
 
@@ -88,71 +91,18 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
             // Copying the config files from the assembly path, i.e. the build output path so only those are included
             // that actually matter.
             OrchardCoreDirectoryHelper
-                .CopyAppConfigFiles(Path.GetDirectoryName(_configuration.AppAssemblyPath), _contentRootPath);
+                .CopyAppConfigFiles(
+                    Path.GetDirectoryName(typeof(TEntryPoint).Assembly.Location),
+                    _contentRootPath);
         }
 
-        // If you try to use the dotnet command to run a dll published for a different platform (seen this with running
-        // win10-x86 dll files on an x64 Windows machine) then you'll get a "Failed to load the dll from hostpolicy.dll
-        // HRESULT: 0x800700C1" error even if the exe will run without issues. So, if an exe exists, we'll run that.
-        var exePath = _configuration.AppAssemblyPath.ReplaceOrdinalIgnoreCase(".dll", _executableExtension);
-        var useExeToExecuteApp = File.Exists(exePath);
+        _reverseProxy = new TestReverseProxy(_url);
 
-        // Running randomly named executables will make it harder to kill leftover processes in the event of an
-        // interrupted test execution. So using a unified name pattern for such executables.
-        if (useExeToExecuteApp)
-        {
-            exePath = _exeCopyMarkers.GetOrAdd(
-                exePath,
-                exePathKey =>
-                {
-                    // Using a lock because ConcurrentDictionary doesn't guarantee that two value factories won't run
-                    // for the same key.
-                    lock (_exeCopyLock)
-                    {
-                        var copyExePath = Path.Combine(
-                            Path.GetDirectoryName(exePathKey) ?? throw new InvalidOperationException(
-                                $"Unable to find the directory of \"{exePathKey}\"."),
-                            "Lombiq.UITestingToolbox.AppUnderTest." + Path.GetFileName(exePathKey));
-
-                        if (File.Exists(copyExePath) &&
-                            File.GetLastWriteTimeUtc(copyExePath) < File.GetLastWriteTimeUtc(exePathKey))
-                        {
-                            File.Delete(copyExePath);
-                        }
-
-                        if (!File.Exists(copyExePath)) File.Copy(exePathKey, copyExePath);
-
-                        return copyExePath;
-                    }
-                });
-        }
-
-        var argumentsBuilder = new ArgumentsBuilder()
-            .Add("--urls").Add(url)
-            .Add("--contentRoot").Add(_contentRootPath)
-            .Add("--webroot").Add(Path.Combine(_contentRootPath, "wwwroot"))
-            .Add("--environment").Add("Development")
-            // This logging provider is a hard requirement, because we identify when the web server has started by the
-            // information log with the message "Application started. Press Ctrl+C to shut down.". The MS Docs says
-            // (https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio#new-hosting-model)
-            // that you don't need the Microsoft.Hosting.Lifetime provider so some consumers may remove it during the
-            // .NET 6 migration, which would cause Lombiq.Tests.UI to wait indefinitely.
-            .Add("--Logging:LogLevel:Microsoft.Hosting.Lifetime").Add("Information");
-
-        if (!useExeToExecuteApp) argumentsBuilder = argumentsBuilder.Add(_configuration.AppAssemblyPath);
-
-        await _configuration.BeforeAppStart
-            .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, argumentsBuilder));
-
-        _command = Cli.Wrap(useExeToExecuteApp ? exePath : ("dotnet" + _executableExtension))
-            .WithArguments(argumentsBuilder.Build());
-
-        _testOutputHelper.WriteLineTimestampedAndDebug(
-            "The Orchard Core instance will be launched with the following command: \"{0}\".", _command);
+        await _reverseProxy.StartAsync();
 
         await StartOrchardAppAsync();
 
-        return new Uri(url);
+        return new Uri(_url);
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
@@ -192,6 +142,9 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
             : Enumerable.Empty<IApplicationLog>();
     }
 
+    public TService GetRequiredService<TService>() =>
+        _orchardApplication.Services.GetRequiredService<TService>();
+
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
@@ -199,8 +152,10 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
         _isDisposed = true;
 
         await StopOrchardAppAsync();
-
-        _portLeaseManager.StopLease(_port);
+        if (_reverseProxy != null)
+        {
+            await _reverseProxy.DisposeAsync();
+        }
 
         DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
     }
@@ -216,49 +171,44 @@ public sealed class OrchardCoreInstance : IWebApplicationInstance
     {
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
 
-        if (_command == null)
-        {
-            throw new InvalidOperationException("The app needs to be started up first.");
-        }
+        var arguments = new InstanceCommandLineArgumentsBuilder();
 
-        if (_cancellationTokenSource != null) return;
+        await _configuration.BeforeAppStart
+            .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
 
-        _cancellationTokenSource = new CancellationTokenSource();
+        // This is to avoid adding Razor runtime view compilation.
+        DirectoryHelper.SafelyDeleteDirectoryIfExists(
+            Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
 
-        await _command.ExecuteDotNetApplicationAsync(
-            stdErr =>
-            {
-                var dotnet = "dotnet" + _executableExtension;
-                var note = stdErr.Text.ContainsOrdinalIgnoreCase("Failed to bind to address")
-                    ? " This can happen when there are leftover " + dotnet +
-                      " processes after an aborted test run or some other app is listening on the same port too."
-                    : string.Empty;
+        _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
+            builder => builder
+                .UseContentRoot(_contentRootPath)
+                .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
+                .UseEnvironment(Environments.Development)
+                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Arguments.ToArray())),
+            (configuration, orchardBuilder) => orchardBuilder
+                .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 
-                throw new IOException(
-                    StringHelper.Concatenate(
-                        $"Starting the Orchard Core application via {dotnet} failed with the following output:",
-                        $"{Environment.NewLine}{stdErr.Text}{note}"));
-            },
-            _cancellationTokenSource.Token);
+        _orchardApplication.ClientOptions.AllowAutoRedirect = false;
+        _orchardApplication.ClientOptions.BaseAddress = new Uri(_reverseProxy.RootUrl);
+        _reverseProxy.AttachConnectionProvider(_orchardApplication);
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
     }
 
-    private Task StopOrchardAppAsync()
+    private async Task StopOrchardAppAsync()
     {
-        if (_cancellationTokenSource == null) return Task.CompletedTask;
+        _reverseProxy.DetachConnectionProvider();
+        if (_orchardApplication == null) return;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");
 
-        // Cancellation is the only way to stop the process, won't be able to send a Ctrl+C, see:
-        // https://github.com/Tyrrrz/CliWrap/issues/47
-        if (!_cancellationTokenSource.IsCancellationRequested) _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        _cancellationTokenSource = null;
+        await _orchardApplication.DisposeAsync();
+        _orchardApplication = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
-        return Task.CompletedTask;
+        return;
     }
 
     private class ApplicationLog : IApplicationLog

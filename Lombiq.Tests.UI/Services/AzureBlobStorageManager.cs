@@ -62,7 +62,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         _blobContainer = new BlobContainerClient(_configuration.ConnectionString, _configuration.ContainerName);
         await CreateContainerIfNotExistsAsync();
 
-        _folderId = _portLeaseManager.LeaseAvailableRandomPort();
+        _folderId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
         _basePath = _folderId.ToTechnicalString();
 
         await DropFolderIfExistsAsync();
@@ -107,7 +107,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
 
         await DropFolderIfExistsAsync();
 
-        _portLeaseManager.StopLease(_folderId);
+        await _portLeaseManager.StopLeaseAsync(_folderId);
     }
 
     private Task CreateContainerIfNotExistsAsync() => _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);

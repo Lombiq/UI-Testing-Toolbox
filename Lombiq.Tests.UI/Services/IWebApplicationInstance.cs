@@ -11,6 +11,12 @@ namespace Lombiq.Tests.UI.Services;
 public interface IWebApplicationInstance : IAsyncDisposable
 {
     /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> created by the server associated with this
+    /// <see cref="IWebApplicationInstance"/>.
+    /// </summary>
+    IServiceProvider Services { get; }
+
+    /// <summary>
     /// Launches the web application.
     /// </summary>
     /// <returns>The starting URL of the web app, such as the home page.</returns>
@@ -38,6 +44,14 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// </summary>
     /// <returns>The collection of log names and their contents.</returns>
     IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get service of type <typeparamref name="TService"/>.
+    /// </summary>
+    /// <typeparam name="TService">The type of service object to get.</typeparam>
+    /// <returns>A service object of type <typeparamref name="TService"/>.</returns>
+    /// <exception cref="InvalidOperationException">There is no service of type <typeparamref name="TService"/>.</exception>
+    TService GetRequiredService<TService>();
 }
 
 /// <summary>

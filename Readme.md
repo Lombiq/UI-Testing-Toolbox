@@ -43,6 +43,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
+- [Migration guide](Lombiq.Tests.UI/Docs/Migration.md)
 
 ## Contributing and support
 
