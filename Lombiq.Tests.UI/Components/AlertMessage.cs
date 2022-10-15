@@ -15,5 +15,5 @@ public class AlertMessage<TOwner> : Control<TOwner>
         CreateValueProvider("success state", GetIsSuccess);
 
     private bool GetIsSuccess() =>
-        Attributes.Class.Value.Contains("message-success");
+        DomClasses.Value.Contains("message-success");
 }
