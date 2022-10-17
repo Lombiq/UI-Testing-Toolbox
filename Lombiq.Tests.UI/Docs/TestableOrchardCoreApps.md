@@ -5,18 +5,33 @@ Tips on making specific features testable are under the ["Creating tests" page](
 **Note** that certain features of the Lombiq UI Testing Toolbox need to be enabled from test code in addition to making the app testable. Check out `OrchardCoreUITestExecutorConfiguration` for that part of the configuration; this page is only about changes necessary in the app.
 
 - Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
-- In your web project do the following:
-  1. Prepare the web app to be testes as described in [Basic tests with the default WebApplicationFactory](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory-1).
-  2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
+- In your web project do the following, allow configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
 
         ```csharp
         ...
 
         var configuration = builder.Configuration;
 
-        builder.Services.Add(new ServiceDescriptor(configuration.GetType(), configuration));
-        builder.Services.AddOrchardCms();
+        builder.Services
+            .AddSingleton(configuration)
+            .AddOrchardCms();
         ```
+
+  If your app uses ASP.NET Core minimal APIs, then you'll also need to add a `Program` class:
+
+      ```cssharp
+      [SuppressMessage(
+          "Design",
+          "CA1050: Declare types in namespaces",
+          Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0.")]
+      public partial class Program
+      {
+          protected Program()
+          {
+              // Nothing to do here.
+          }
+      }
+    ```
 
 - If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project (either from NuGet or as a Git submodule) as a reference to the root app project. The module will be enabled in case of UI testing.
 

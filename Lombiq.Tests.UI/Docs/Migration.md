@@ -19,8 +19,9 @@ builder.Host.UseNLogHost();
 var configuration = builder.Configuration;
 
 - builder.Services.AddOrchardCms(orchard => orchard.ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
-+ builder.Services.AddSingleton(configuration);
-+ builder.Services.AddOrchardCms();
++ builder.Services
+      .AddSingleton(configuration);
++     .AddOrchardCms();
 
 var app = builder.Build();
 
@@ -31,7 +32,7 @@ app.Run();
 + [SuppressMessage(
 +     "Design",
 +     "CA1050: Declare types in namespaces",
-+     Justification = "As described here(https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0).")]
++     Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0.")]
 + public partial class Program
 + {
 +     protected Program()
@@ -41,7 +42,7 @@ app.Run();
 + }
 ```
 
-### Preparing UI test project
+### Preparing the UI test project
 
 1. Add a _project reference_ of the web app to be tested to the UI test project.
 
