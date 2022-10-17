@@ -20,7 +20,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
   If your app uses ASP.NET Core minimal APIs, then you'll also need to add a `Program` class:
 
-    ```cssharp
+    ```csharp
     [SuppressMessage(
         "Design",
         "CA1050: Declare types in namespaces",
