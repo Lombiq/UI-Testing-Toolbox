@@ -35,7 +35,7 @@ public class SqlServerRunningContext
     public SqlServerRunningContext(string connectionString) => ConnectionString = connectionString;
 }
 
-public sealed class SqlServerManager : IDisposable
+public sealed class SqlServerManager : IAsyncDisposable
 {
     private const string DbSnapshotName = "Database.bak";
 
@@ -65,9 +65,9 @@ public sealed class SqlServerManager : IDisposable
 
     public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
 
-    public SqlServerRunningContext CreateDatabase()
+    public async Task<SqlServerRunningContext> CreateDatabaseAsync()
     {
-        _databaseId = _portLeaseManager.LeaseAvailableRandomPort();
+        _databaseId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
 
         var connectionString = _configuration.ConnectionStringTemplate
             .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
@@ -243,7 +243,7 @@ public sealed class SqlServerManager : IDisposable
         return _docker.ExecuteAsync(arguments, additionalExceptionText: null, CancellationToken.None);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
 
@@ -251,7 +251,7 @@ public sealed class SqlServerManager : IDisposable
 
         DropDatabaseIfExists(CreateServer());
 
-        _portLeaseManager.StopLease(_databaseId);
+        await _portLeaseManager.StopLeaseAsync(_databaseId);
     }
 
     // It's easier to use the server name directly instead of the connection string as that also requires the referenced

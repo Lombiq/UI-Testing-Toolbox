@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using LogLevel = OpenQA.Selenium.LogLevel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -87,7 +89,17 @@ public class MonkeyTests : UITestBase
                 await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            browser);
+            browser,
+            configuration => configuration.AssertBrowserLog = (logs) => logs
+                .Where(message =>
+                    !message
+                        .Message
+                        .Contains("An invalid form control with name='LockTimeout' is not focusable.")
+                    && !message
+                        .Message
+                        .Contains("An invalid form control with name='LockExpiration' is not focusable.")
+                    && message.Level != LogLevel.Info)
+                .ShouldBeEmpty());
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
