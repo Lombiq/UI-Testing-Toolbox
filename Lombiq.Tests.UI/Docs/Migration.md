@@ -70,11 +70,11 @@ namespace Lombiq.OSOCE.Tests.UI;
 
 ### Breaking changes
 
-There is a breaking change in adding command line arguments to the WebApplication.
+There is a breaking change in adding command line arguments to the WebApplication:
 
-    To add command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
+- To add a command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
+- To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
-    To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
 ```diff
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
@@ -120,4 +120,4 @@ This means that calling the extension methods below don't cause browser navigati
 
 The original code with the new behavior failed a test, because the browser pointed to the _Home page_ before `await context.EnablePrivacyConsentBannerFeatureAsync()(=> context.EnableFeatureDirectlyAsync({featureId})`. So the `context.EnableFeatureDirectlyAsync` doesn't navigate away, the `await context.GoToHomePageAsync()` call does nothing, and the consent banner doesn't come up.
 
-The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, this result a reload, and the consent banner come up.
+The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, resulting in a reload, and the consent banner come up.
