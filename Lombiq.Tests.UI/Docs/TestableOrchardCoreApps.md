@@ -4,7 +4,10 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
 **Note** that certain features of the Lombiq UI Testing Toolbox need to be enabled from test code in addition to making the app testable. Check out `OrchardCoreUITestExecutorConfiguration` for that part of the configuration; this page is only about changes necessary in the app.
 
-- Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
+- Create recipes with test content, and import them by starting with a UI testing-specific setup recipe.
+    - While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time.
+    - Such recipes needn't be added to the web app like normal recipes; you can just add setup recipes to the test project's _Recipes_ folder with Build Action = `Content` and Copy to Output Directory = `Copy if newer`. They'll be picked up by the app under test.
+    - Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following, allowing configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
 
         ```csharp
