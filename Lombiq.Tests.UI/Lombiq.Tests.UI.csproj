@@ -63,7 +63,7 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="160.6296.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47027.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
     <PackageReference Include="Selenium.Axe" Version="4.0.2" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
     <!-- Can't update to WebDriverManager v2.14.1 or later until an Orchard upgrade: Its AngleSharp dependency is
