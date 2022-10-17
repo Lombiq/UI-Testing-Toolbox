@@ -6,7 +6,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
 - Create recipes with test content, and import them by starting with a UI testing-specific setup recipe. While you can run tests from an existing database, using recipes to create a test environment (that almost entirely doubles as a development environment) is more reliable. Keep in mind, that the data you test shouldn't change randomly, you can't assert on data coming from the export of a production app which is updated all the time. Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following:
-  1. Prepare the web app to be testes as described in [Basic tests with the default WebApplicationFactory](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory).
+  1. Prepare the web app to be testes as described in [Basic tests with the default WebApplicationFactory](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?source=recommendations&view=aspnetcore-6.0#basic-tests-with-the-default-webapplicationfactory-1).
   2. Allow configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
 
         ```csharp
