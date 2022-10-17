@@ -45,7 +45,7 @@ public class AzureBlobStorageTests : UITestBase
                     messages =>
                     {
                         var messagesWithoutToggle = messages.Where(message =>
-                            !message.IsNotFoundMessage(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                            !message.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                         OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                     };
             });
