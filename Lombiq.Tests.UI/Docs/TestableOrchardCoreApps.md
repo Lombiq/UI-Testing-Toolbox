@@ -10,30 +10,28 @@ Tips on making specific features testable are under the ["Creating tests" page](
     - Using [Auto Setup](https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) works too, just check out the [samples project](../../Lombiq.Tests.UI.Samples/Readme.md).
 - In your web project do the following, allowing configuration of the app when launched for testing with the following piece of code in the app's `Program` class:
 
-        ```csharp
-        ...
+    ```csharp
+    var configuration = builder.Configuration;
 
-        var configuration = builder.Configuration;
-
-        builder.Services
-            .AddSingleton(configuration)
-            .AddOrchardCms();
-        ```
+    builder.Services
+        .AddSingleton(configuration)
+        .AddOrchardCms();
+    ```
 
   If your app uses ASP.NET Core minimal APIs, then you'll also need to add a `Program` class:
 
-      ```cssharp
-      [SuppressMessage(
-          "Design",
-          "CA1050: Declare types in namespaces",
-          Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0.")]
-      public partial class Program
-      {
-          protected Program()
-          {
-              // Nothing to do here.
-          }
-      }
+    ```csharp
+    [SuppressMessage(
+        "Design",
+        "CA1050: Declare types in namespaces",
+        Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0.")]
+    public partial class Program
+    {
+        protected Program()
+        {
+            // Nothing to do here.
+        }
+    }
     ```
 
 - If you make use of shortcuts then add the `Lombiq.Tests.UI.Shortcuts` project (either from NuGet or as a Git submodule) as a reference to the root app project. The module will be enabled in case of UI testing.

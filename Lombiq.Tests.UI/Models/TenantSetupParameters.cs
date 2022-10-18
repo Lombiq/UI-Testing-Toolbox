@@ -2,8 +2,9 @@ using Lombiq.Tests.UI.Constants;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class CreateTenant
+public class TenantSetupParameters
 {
+    public string SiteName { get; set; }
     public string ConnectionString { get; set; } = string.Empty;
     public string DatabaseProvider { get; set; } = "Sqlite";
     public string TimeZone { get; set; }

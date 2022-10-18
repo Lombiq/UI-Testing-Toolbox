@@ -1,4 +1,3 @@
-using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
@@ -83,15 +82,20 @@ public class UITestContext
         = new Dictionary<string, IFailureDumpItem>();
 
     /// <summary>
-    /// Gets or sets the current tenant name when testing multi-tenancy. When testing sites with multi-tenancy you
-    /// should set the value to the tenant in question so methods (e.g. <see cref="TypedRouteUITestContextExtensions"/>)
-    /// that use this property can refer to it.
+    /// Gets the current tenant name. When testing sites with multi-tenancy use
+    /// <see cref="ChangeCurrentTenant(string, string)"/>.
     /// </summary>
-    public string TenantName { get; set; } = "Default";
+    public string TenantName { get; private set; } = "Default";
+
+    /// <summary>
+    /// Gets or sets the prefix used for all relative URLs. It should neither start nor end with a slash.
+    /// </summary>
+    public string UrlPrefix { get; set; }
 
     /// <summary>
     /// Gets or sets the current Orchard Core admin prefix. When running UI tests on a site that uses a custom admin
-    /// prefix, this value should be set in the test. After that, navigation methods will be able to use the custom URL.
+    /// prefix, this value should be set in the test. After that, navigation methods will be able to use the custom
+    /// prefix.
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
@@ -195,6 +199,25 @@ public class UITestContext
     {
         await TriggerAfterPageChangeEventAsync();
         this.RefreshCurrentAtataContext();
+    }
+
+    /// <summary>
+    /// Changes the current tenant context to the Default one. Note that this doesn't navigate the browser.
+    /// </summary>
+    public void ChangeCurrentTenantToDefault() => ChangeCurrentTenant("Default", string.Empty);
+
+    /// <summary>
+    /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
+    /// </summary>
+    /// <param name="tenantName">The technical name of the tenant to change to.</param>
+    /// <param name="urlPrefix">
+    /// The URL prefix configured for the tenant. It should neither start nor end with a slash.
+    /// </param>
+    public void ChangeCurrentTenant(string tenantName, string urlPrefix)
+    {
+        TenantName = tenantName;
+        UrlPrefix = urlPrefix;
+        Scope.BaseUri = new Uri(Scope.BaseUri, "/" + UrlPrefix + (string.IsNullOrEmpty(UrlPrefix) ? string.Empty : "/"));
     }
 
     private bool IsNoAlert()

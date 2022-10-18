@@ -11,11 +11,8 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Testing in multi-tenancy context is not yet fully supported (https://github.com/Lombiq/UI-Testing-Toolbox/issues/80)
-// but you can create sites, and features that don't navigate to an absolute path work. If you have to navigate, either
-// use context.GoToRelativeUrlAsync() but remember to use include the tenant url prefix, or change context.TenantName
-// (context.CreateAndEnterTenantAsync() already does this) and then use context.GoToAsync<TController>() to
-// navigate by MVC actions.
+// You can also test multi-tenant web apps. Creating tenants on the fly is supported as well with a shortcut. If you'd
+// like to test the tenant creation-setup process itself, then look into using CreateNewTenantManuallyAsync() instead.
 public class TenantTests : UITestBase
 {
     private const string TestTenantUrlPrefix = "test";
@@ -34,12 +31,16 @@ public class TenantTests : UITestBase
                 const string tenantAdminName = "tenantAdmin";
                 await context.SignInDirectlyAsync();
 
-                // Create the tenant with custom admin name.
+                // Create the tenant with a custom admin user.
                 await context.CreateAndEnterTenantAsync(
-                    TestTenantDisplayName,
+                    TestTenantUrlPrefix,
                     TestTenantUrlPrefix,
                     "Lombiq.OSOCE.Tests",
-                    new CreateTenant { UserName = tenantAdminName });
+                    new TenantSetupParameters
+                    {
+                        UserName = tenantAdminName,
+                        SiteName = TestTenantDisplayName,
+                    });
 
                 // Verify successful setup with custom site name.
                 context
@@ -51,7 +52,7 @@ public class TenantTests : UITestBase
                 (await context.GetCurrentUserNameAsync()).ShouldBe(tenantAdminName);
                 context.GetCurrentUri().AbsolutePath.ShouldStartWith($"/{TestTenantUrlPrefix}");
 
-                context.TenantName = string.Empty;
+                context.ChangeCurrentTenantToDefault();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
                 context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{TestTenantUrlPrefix}");
             },

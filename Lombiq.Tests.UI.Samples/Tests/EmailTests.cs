@@ -29,7 +29,7 @@ public class EmailTests : UITestBase
 
                 // Let's go to the "Test settings" option of the e-mail admin page. The default sender is configured in
                 // the test recipe so we can use the test feature.
-                await context.GoToRelativeUrlAsync("/Admin/Email/Index");
+                await context.GoToAdminRelativeUrlAsync("/Email/Index");
 
                 // Let's send a basic e-mail.
                 await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");

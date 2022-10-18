@@ -68,7 +68,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             if (_hasSetupOperation)
             {
-                var snapshotSubdirectory = "Default";
+                var snapshotSubdirectory = "SQLite";
                 if (_configuration.UseSqlServer)
                 {
                     snapshotSubdirectory = _configuration.UseAzureBlobStorage
@@ -77,7 +77,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 }
                 else if (_configuration.UseAzureBlobStorage)
                 {
-                    snapshotSubdirectory = "AzureBlob";
+                    snapshotSubdirectory = "SQLite-AzureBlob";
                 }
 
                 snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
