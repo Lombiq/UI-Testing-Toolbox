@@ -134,7 +134,7 @@ public static class ShortcutsUITestContextExtensions
     /// Creates a user with the given parameters.
     /// </summary>
     /// <exception cref="CreateUserFailedException">
-    /// If creating the user with the given parameters was not successfull.
+    /// If creating the user with the given parameters was not successful.
     /// </exception>
     public static Task CreateUserAsync(
         this UITestContext context,

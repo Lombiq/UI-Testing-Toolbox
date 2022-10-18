@@ -120,10 +120,10 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
         ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
     protected virtual Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> tesAsynct,
+        Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(tesAsynct, browser, changeConfiguration.AsCompletedTask());
+        ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.
