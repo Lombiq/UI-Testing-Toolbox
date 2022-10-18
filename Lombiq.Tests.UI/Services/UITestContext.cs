@@ -91,7 +91,8 @@ public class UITestContext
 
     /// <summary>
     /// Gets or sets the current Orchard Core admin prefix. When running UI tests on a site that uses a custom admin
-    /// prefix, this value should be set in the test. After that, navigation methods will be able to use the custom URL.
+    /// prefix, this value should be set in the test. After that, navigation methods will be able to use the custom
+    /// prefix.
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
