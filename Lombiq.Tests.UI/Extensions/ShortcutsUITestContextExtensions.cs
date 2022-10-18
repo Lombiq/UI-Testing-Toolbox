@@ -469,7 +469,7 @@ public static class ShortcutsUITestContextExtensions
                 activateShell);
 
     /// <summary>
-    /// Creates, sets up and navigates to a new URL prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
+    /// Creates, sets up and navigates to a new URL-prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
     /// </summary>
     public static async Task CreateAndEnterTenantAsync(
         this UITestContext context,
@@ -528,7 +528,7 @@ public static class ShortcutsUITestContextExtensions
                     TimeSpan.FromDays(
                         tokenLifeSpan == 0 ? HttpWorkflowController.NoExpiryTokenLifespan : tokenLifeSpan));
 
-                // LinkGenerator.GetPathByAction(...) and UrlHelper.Action(...) not resolves url for
+                // LinkGenerator.GetPathByAction(...) and UrlHelper.Action(...) doesn't resolve the URL for the
                 // HttpWorkflowController.Invoke action.
                 // https://github.com/OrchardCMS/OrchardCore/issues/11764.
                 eventUrl = $"/workflows/Invoke?token={Uri.EscapeDataString(token)}";
