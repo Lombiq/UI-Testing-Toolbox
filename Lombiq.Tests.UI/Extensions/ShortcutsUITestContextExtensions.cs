@@ -538,8 +538,8 @@ public static class ShortcutsUITestContextExtensions
                 await setupService.SetupAsync(setupContext);
             });
 
-        context.TenantName = name;
-        await context.GoToRelativeUrlAsync("/" + urlPrefix);
+        context.ChangeCurrentTenant(name, urlPrefix);
+        await context.GoToRelativeUrlAsync("/");
     }
 
     /// <summary>

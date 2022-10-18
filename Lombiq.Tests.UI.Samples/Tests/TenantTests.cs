@@ -52,7 +52,7 @@ public class TenantTests : UITestBase
                 (await context.GetCurrentUserNameAsync()).ShouldBe(tenantAdminName);
                 context.GetCurrentUri().AbsolutePath.ShouldStartWith($"/{TestTenantUrlPrefix}");
 
-                context.TenantName = string.Empty;
+                context.ChangeCurrentTenantToDefault();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
                 context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{TestTenantUrlPrefix}");
             },
