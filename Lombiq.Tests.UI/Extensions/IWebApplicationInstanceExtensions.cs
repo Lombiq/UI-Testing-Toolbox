@@ -1,10 +1,10 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Builders;
 using OrchardCore.Environment.Shell.Scope;
 using OrchardCore.Modules;
+using OrchardCore.Recipes.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,19 +36,31 @@ public static class IWebApplicationInstanceExtensions
     {
         var shellHost = instance.GetRequiredService<IShellHost>();
 
-        await (await shellHost.GetScopeAsync(tenant))
-            .UsingAsync(
-                shellScope =>
-                {
-                    // Creating a fake httpContext like in ModularBackgroundService.
-                    var httpContextAccessor = shellScope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-                    httpContextAccessor.HttpContext = shellScope.ShellContext.CreateHttpContext();
-                    httpContextAccessor.HttpContext.Request.PathBase =
-                        "/" + shellHost.GetSettings(tenant).RequestUrlPrefix ?? string.Empty;
+        var httpContextAccessor = instance.GetRequiredService<IHttpContextAccessor>();
+        var originalHttpContext = httpContextAccessor.HttpContext;
 
-                    return execute(shellScope);
-                },
-                activateShell);
+        try
+        {
+            // Injecting a fake HttpContext is required for many things, but it needs to happen before UsingAsync()
+            // below to avoid NullReferenceExceptions in
+            // OrchardCore.Recipes.Services.RecipeEnvironmentFeatureProvider.PopulateEnvironmentAsync. Migrations
+            // (possibly with recipe migrations) run right at the shell start.
+
+            var shellScope = await shellHost.GetScopeAsync(tenant);
+
+            // Creating a fake HttpContext like in ModularBackgroundService.
+            httpContextAccessor.HttpContext = shellScope.ShellContext.CreateHttpContext();
+            var httpContext = httpContextAccessor.HttpContext;
+
+            httpContext.Request.PathBase = "/" + shellHost.GetSettings(tenant).RequestUrlPrefix ?? string.Empty;
+            httpContext.Features.Set(new RecipeEnvironmentFeature());
+
+            await shellScope.UsingAsync(execute, activateShell);
+        }
+        finally
+        {
+            httpContextAccessor.HttpContext = originalHttpContext;
+        }
     }
 }
 
