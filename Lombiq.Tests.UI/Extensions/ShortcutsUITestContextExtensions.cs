@@ -10,23 +10,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
+using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
 using OrchardCore.DisplayManagement.Extensions;
 using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Shell;
+using OrchardCore.Environment.Shell.Models;
 using OrchardCore.Modules;
 using OrchardCore.Modules.Manifest;
 using OrchardCore.Recipes.Services;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
 using OrchardCore.Settings;
+using OrchardCore.Setup.Services;
 using OrchardCore.Themes.Services;
 using OrchardCore.Users;
 using OrchardCore.Users.Models;
 using OrchardCore.Users.Services;
 using OrchardCore.Workflows.Http.Controllers;
 using OrchardCore.Workflows.Http.Models;
+using OrchardCore.Workflows.Models;
 using OrchardCore.Workflows.Services;
 using RestEase;
 using Shouldly;
@@ -116,9 +120,9 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                async shellScope =>
+                async serviceProvider =>
                 {
-                    var siteService = shellScope.ServiceProvider.GetRequiredService<ISiteService>();
+                    var siteService = serviceProvider.GetRequiredService<ISiteService>();
                     var settings = await siteService.LoadSiteSettingsAsync();
 
                     settings.Alter<RegistrationSettings>(
@@ -144,9 +148,9 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                async shellScope =>
+                async serviceProvider =>
                 {
-                    var userService = shellScope.ServiceProvider.GetRequiredService<IUserService>();
+                    var userService = serviceProvider.GetRequiredService<IUserService>();
                     var errors = new Dictionary<string, string>();
                     var user = await userService.CreateUserAsync(
                         new User
@@ -183,15 +187,15 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                async shellScope =>
+                async serviceProvider =>
                 {
-                    var userManager = shellScope.ServiceProvider.GetRequiredService<UserManager<IUser>>();
+                    var userManager = serviceProvider.GetRequiredService<UserManager<IUser>>();
                     if ((await userManager.FindByNameAsync(userName)) is not User user)
                     {
                         throw new UserNotFoundException($"{userName} not found!");
                     }
 
-                    var roleManager = shellScope.ServiceProvider.GetRequiredService<RoleManager<IRole>>();
+                    var roleManager = serviceProvider.GetRequiredService<RoleManager<IRole>>();
                     if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                     {
                         throw new RoleNotFoundException($"{roleName} not found!");
@@ -216,9 +220,9 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                async shellScope =>
+                async serviceProvider =>
                 {
-                    var roleManager = shellScope.ServiceProvider.GetRequiredService<RoleManager<IRole>>();
+                    var roleManager = serviceProvider.GetRequiredService<RoleManager<IRole>>();
                     if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                     {
                         throw new RoleNotFoundException($"{roleName} not found!");
@@ -229,7 +233,7 @@ public static class ShortcutsUITestContextExtensions
                         && roleClaim.ClaimValue == permissionName);
                     if (permissionClaim == null)
                     {
-                        var permissionProviders = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
+                        var permissionProviders = serviceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
                         if (!await PermissionExistsAsync(permissionProviders, permissionName))
                         {
                             throw new PermissionNotFoundException($"{permissionName} not found!");
@@ -252,10 +256,10 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                shellScope =>
+                serviceProvider =>
                 {
-                    var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
-                    var extensionManager = shellScope.ServiceProvider.GetRequiredService<IExtensionManager>();
+                    var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
+                    var extensionManager = serviceProvider.GetRequiredService<IExtensionManager>();
 
                     var feature = extensionManager.GetFeature(featureId);
 
@@ -273,10 +277,10 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                shellScope =>
+                serviceProvider =>
                 {
-                    var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
-                    var extensionManager = shellScope.ServiceProvider.GetRequiredService<IExtensionManager>();
+                    var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
+                    var extensionManager = serviceProvider.GetRequiredService<IExtensionManager>();
 
                     var feature = extensionManager.GetFeature(featureId);
 
@@ -346,13 +350,13 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-            async shellScope =>
+            async serviceProvider =>
             {
                 try
                 {
                     await _recipeHarvesterSemaphore.WaitAsync();
 
-                    var recipeHarvesters = shellScope.ServiceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
+                    var recipeHarvesters = serviceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
                     var recipeCollections = await recipeHarvesters
                         .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
                     var recipe = recipeCollections
@@ -368,14 +372,14 @@ public static class ShortcutsUITestContextExtensions
                     var executionId = Guid.NewGuid().ToString("n");
 
                     var environment = new Dictionary<string, object>();
-                    var logger = shellScope.ServiceProvider.GetRequiredService<ILogger<ExecuteRecipeShortcut>>();
-                    var recipeEnvironmentProviders = shellScope.ServiceProvider
+                    var logger = serviceProvider.GetRequiredService<ILogger<ExecuteRecipeShortcut>>();
+                    var recipeEnvironmentProviders = serviceProvider
                         .GetRequiredService<IEnumerable<IRecipeEnvironmentProvider>>();
                     await recipeEnvironmentProviders
                         .OrderBy(environmentProvider => environmentProvider.Order)
                         .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
 
-                    var recipeExecutor = shellScope.ServiceProvider.GetRequiredService<IRecipeExecutor>();
+                    var recipeExecutor = serviceProvider.GetRequiredService<IRecipeExecutor>();
                     await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
                 }
                 finally
@@ -435,9 +439,9 @@ public static class ShortcutsUITestContextExtensions
         string tenant = "Default",
         bool activateShell = true) =>
             context.Application.UsingScopeAsync(
-                async shellScope =>
+                async serviceProvider =>
                 {
-                    var shellFeatureManager = shellScope.ServiceProvider.GetRequiredService<IShellFeaturesManager>();
+                    var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
                     var themeFeature = (await shellFeatureManager.GetAvailableFeaturesAsync())
                         .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id);
 
@@ -448,12 +452,12 @@ public static class ShortcutsUITestContextExtensions
 
                     if (IsAdminTheme(themeFeature.Extension.Manifest))
                     {
-                        var adminThemeService = shellScope.ServiceProvider.GetRequiredService<IAdminThemeService>();
+                        var adminThemeService = serviceProvider.GetRequiredService<IAdminThemeService>();
                         await adminThemeService.SetAdminThemeAsync(id);
                     }
                     else
                     {
-                        var siteThemeService = shellScope.ServiceProvider.GetRequiredService<ISiteThemeService>();
+                        var siteThemeService = serviceProvider.GetRequiredService<ISiteThemeService>();
                         await siteThemeService.SetSiteThemeAsync(id);
                     }
 
@@ -475,32 +479,74 @@ public static class ShortcutsUITestContextExtensions
         this UITestContext context,
         string name,
         string urlPrefix,
-        string recipe,
-        CreateTenant model = null)
+        string recipeName,
+        TenantSetupParameters setupParameters = null)
     {
-        model ??= new CreateTenant();
+        setupParameters ??= new TenantSetupParameters();
 
-        await context.GoToAsync<TenantsController>(controller =>
-            controller.Create(name, urlPrefix, recipe, model.ConnectionString, model.DatabaseProvider));
+        await context.Application.UsingScopeAsync(
+            async serviceProvider =>
+            {
+                var shellHost = serviceProvider.GetRequiredService<IShellHost>();
+                if (shellHost.TryGetSettings(name, out _)) throw new InvalidOperationException("The tenant already exists.");
 
-        await context.SetDropdownByValueAsync(By.Id("culturesList"), model.Language);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("SiteName"), name);
-        if (!string.IsNullOrEmpty(model.TimeZone)) await context.SetDropdownByValueAsync(By.Id("SiteTimeZone"), model.TimeZone);
+                // Creates a default shell settings based on the configuration.
+                var shellSettings = serviceProvider.GetRequiredService<IShellSettingsManager>().CreateDefaultSettings();
 
-        await context.ClickAndFillInWithRetriesAsync(By.Id("UserName"), model.UserName);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("Email"), model.Email);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("Password"), model.Password);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("PasswordConfirmation"), model.Password);
-        await context.ClickReliablyOnAsync(By.Id("SubmitButton"));
+                shellSettings.Name = name;
+                shellSettings.RequestUrlHost = string.Empty;
+                shellSettings.RequestUrlPrefix = urlPrefix;
+                shellSettings.State = TenantState.Uninitialized;
+
+                shellSettings["ConnectionString"] = setupParameters.ConnectionString;
+                shellSettings["TablePrefix"] = name + "_";
+                shellSettings["DatabaseProvider"] = setupParameters.DatabaseProvider;
+                shellSettings["Secret"] = Guid.NewGuid().ToString();
+                shellSettings["RecipeName"] = recipeName;
+
+                await shellHost.UpdateShellSettingsAsync(shellSettings);
+            });
+
+        await context.Application.UsingScopeAsync(
+            async serviceProvider =>
+            {
+                var setupService = serviceProvider.GetRequiredService<ISetupService>();
+
+                var setupRecipes = await setupService.GetSetupRecipesAsync();
+                var recipeDescriptor = setupRecipes.First(recipe => recipe.Name == recipeName);
+                var shellSettings = serviceProvider.GetRequiredService<IShellHost>().GetSettings(name);
+
+                var setupContext = new SetupContext
+                {
+                    ShellSettings = shellSettings,
+                    EnabledFeatures = null,
+                    Errors = new Dictionary<string, string>(),
+                    Recipe = recipeDescriptor,
+                    Properties = new Dictionary<string, object>
+                    {
+                        { SetupConstants.SiteName, setupParameters.SiteName },
+                        { SetupConstants.AdminUsername, setupParameters.UserName },
+                        { SetupConstants.AdminEmail, setupParameters.Email },
+                        { SetupConstants.AdminPassword, setupParameters.Password },
+                        { SetupConstants.SiteTimeZone, setupParameters.TimeZone },
+                        { SetupConstants.DatabaseProvider, setupParameters.DatabaseProvider },
+                        { SetupConstants.DatabaseConnectionString, setupParameters.ConnectionString },
+                        { SetupConstants.DatabaseTablePrefix, shellSettings["TablePrefix"] },
+                    },
+                };
+
+                await setupService.SetupAsync(setupContext);
+            });
 
         context.TenantName = name;
+        await context.GoToRelativeUrlAsync("/" + urlPrefix);
     }
 
     /// <summary>
     /// Retrieves URI for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow.
     /// </summary>
     /// <exception cref="WorkflowTypeNotFoundException">
-    /// If no <see cref="OrchardCore.Workflows.Models.WorkflowType"/> found with the given <paramref name="workflowTypeId"/>.
+    /// If no <see cref="WorkflowType"/> found with the given <paramref name="workflowTypeId"/>.
     /// </exception>
     public static async Task<string> GenerateHttpEventUrlAsync(
         this UITestContext context,
@@ -512,9 +558,9 @@ public static class ShortcutsUITestContextExtensions
     {
         string eventUrl = null;
         await context.Application.UsingScopeAsync(
-            async shellScope =>
+            async serviceProvider =>
             {
-                var workflowTypeStore = shellScope.ServiceProvider.GetRequiredService<IWorkflowTypeStore>();
+                var workflowTypeStore = serviceProvider.GetRequiredService<IWorkflowTypeStore>();
 
                 var workflowType = await workflowTypeStore.GetAsync(workflowTypeId);
                 if (workflowType == null)
@@ -522,7 +568,7 @@ public static class ShortcutsUITestContextExtensions
                     throw new WorkflowTypeNotFoundException($"{workflowTypeId} not found!");
                 }
 
-                var securityTokenService = shellScope.ServiceProvider.GetRequiredService<ISecurityTokenService>();
+                var securityTokenService = serviceProvider.GetRequiredService<ISecurityTokenService>();
                 var token = securityTokenService.CreateToken(
                     new WorkflowPayload(workflowType.WorkflowTypeId, activityId),
                     TimeSpan.FromDays(
