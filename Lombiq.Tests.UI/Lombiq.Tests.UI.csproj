@@ -73,12 +73,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Open-Source-Orchard-Core-Extensions\test\Lombiq.Tests\Lombiq.Tests.csproj" />
     <ProjectReference Include="..\Lombiq.Tests.UI.AppExtensions\Lombiq.Tests.UI.AppExtensions.csproj" />
     <ProjectReference Include="..\Lombiq.Tests.UI.Shortcuts\Lombiq.Tests.UI.Shortcuts.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference Include="..\..\Lombiq.Tests\Lombiq.Tests.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Cli\Lombiq.HelpfulLibraries.Cli.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.RestEase\Lombiq.HelpfulLibraries.RestEase.csproj" />
