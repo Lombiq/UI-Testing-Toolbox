@@ -84,7 +84,7 @@ There is a breaking change in adding command line arguments to the WebApplicatio
                     };
     ```
 
-1. To add a command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
+2. To add a command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
 ### Non breaking changes
 
