@@ -55,7 +55,7 @@ app.Run();
         <ProjectReference Include="..\..\src\Modules\Lombiq.HelpfulExtensions\Lombiq.HelpfulExtensions.Tests.UI\Lombiq.HelpfulExtensions.Tests.UI.csproj" />
     ```
 
-1. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
+2. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
 
     ```diff
     namespace Lombiq.OSOCE.Tests.UI;
