@@ -16,7 +16,7 @@ public static class TenantsUITestContextExtensions
     {
         if (navigate)
         {
-            await context.GoToRelativeUrlAsync("/admin/tenants");
+            await context.GoToAdminRelativeUrlAsync("/Tenants");
         }
 
         await context.ClickReliablyOnAsync(By.LinkText("Add Tenant"));
