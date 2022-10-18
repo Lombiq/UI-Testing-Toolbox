@@ -67,8 +67,8 @@ public class MonkeyTests : UITestBase
             configuration =>
                 // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
                 configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(
-                    logEntry => IsValidAdminBrowserLogMessage(logEntry),
-                    logEntries.Where(IsValidAdminBrowserLogMessage).ToFormattedString()));
+                    logEntry => IsValidAdminBrowserLogEntry(logEntry),
+                    logEntries.Where(IsValidAdminBrowserLogEntry).ToFormattedString()));
 
     // Let's just test the background tasks management admin area.
     [Theory, Chrome]
@@ -108,7 +108,7 @@ public class MonkeyTests : UITestBase
             PageTestTime = TimeSpan.FromSeconds(10),
         };
 
-    private static bool IsValidAdminBrowserLogMessage(LogEntry logEntry) =>
+    private static bool IsValidAdminBrowserLogEntry(LogEntry logEntry) =>
         OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry(logEntry) &&
         !logEntry.Message.ContainsOrdinalIgnoreCase(
             "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load.");
