@@ -50,7 +50,7 @@ public static class NavigationUITestContextExtensions
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
     public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
-        new(context.Scope.BaseUri, (relativeUrl.StartsWithOrdinal("/") ? relativeUrl[1..] : relativeUrl));
+        new(context.Scope.BaseUri, relativeUrl.StartsWithOrdinal("/") ? relativeUrl[1..] : relativeUrl);
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
