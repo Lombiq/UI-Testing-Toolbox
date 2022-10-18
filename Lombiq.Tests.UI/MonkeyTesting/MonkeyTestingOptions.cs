@@ -53,6 +53,9 @@ public sealed class MonkeyTestingOptions
             log: true,
             canClick: (element) => {
                     for (; element && element !== document; element = element.parentNode) {
+                        if (element.getAttribute('action') === '/Users/LogOff') {
+                            return false;
+                        }
                         if (!(!element.hasAttribute('href') || /https:\/\/localhost:\d\d\d\d.*/.test(element.href))) {
                             return false;
                         }
@@ -138,6 +141,12 @@ public sealed class MonkeyTestingOptions
     public MonkeyTestingOptions ExcludeRegisterPageFromMonkeyTesting()
     {
         UrlFilters.Add(new NotStartsWithMonkeyTestingUrlFilter("/Register"));
+        return this;
+    }
+
+    public MonkeyTestingOptions ExcludeLogOffPageFromMonkeyTesting()
+    {
+        UrlFilters.Add(new NotStartsWithMonkeyTestingUrlFilter("/Users/LogOff"));
         return this;
     }
 
