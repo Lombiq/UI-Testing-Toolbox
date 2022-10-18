@@ -26,7 +26,7 @@ public class OrchardCoreLoginPage : Page<_>
     [FindByAttribute("type", "submit")]
     public Button<_> LogIn { get; private set; }
 
-    [FindByAttribute("href", TermMatch.StartsWith, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
+    [FindByAttribute("href", TermMatch.Contains, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
     public Link<OrchardCoreRegistrationPage, _> RegisterAsNewUser { get; private set; }
 
     public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
