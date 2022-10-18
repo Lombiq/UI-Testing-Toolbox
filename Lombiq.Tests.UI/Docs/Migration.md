@@ -55,7 +55,7 @@ app.Run();
     <ProjectReference Include="..\..\src\Modules\Lombiq.HelpfulExtensions\Lombiq.HelpfulExtensions.Tests.UI\Lombiq.HelpfulExtensions.Tests.UI.csproj" />
 ```
 
-2. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
+1. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
 
 ```diff
 namespace Lombiq.OSOCE.Tests.UI;
@@ -71,9 +71,9 @@ namespace Lombiq.OSOCE.Tests.UI;
 
 There is a breaking change in adding command line arguments to the WebApplication.
 
-    To add command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
+To add command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
 
-    To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
+To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
 ```diff
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
@@ -104,7 +104,7 @@ This means that calling the extension methods below don't cause browser navigati
 - `SelectThemeAsync`
 - `GenerateHttpEventUrlAsync`
 
-##### Here is a sample for better understanding:
+##### Here is a sample for better understanding
 
 ```diff
     public static async Task EnablePrivacyConsentBannerFeatureAndAcceptPrivacyConsentAsync(this UITestContext context)
