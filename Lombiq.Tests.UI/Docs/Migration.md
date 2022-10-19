@@ -43,7 +43,7 @@ app.Run();
 
 ### Preparing UI test project
 
-1. Add a _project reference_ of the web app to be tested to the UI test project.
+1. Add a _project reference_ of the web app to be tested to the UI test project:
 
     ```diff
     </ItemGroup>
@@ -55,7 +55,7 @@ app.Run();
         <ProjectReference Include="..\..\src\Modules\Lombiq.HelpfulExtensions\Lombiq.HelpfulExtensions.Tests.UI\Lombiq.HelpfulExtensions.Tests.UI.csproj" />
     ```
 
-1. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
+2. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore:
 
     ```diff
     namespace Lombiq.OSOCE.Tests.UI;
@@ -71,20 +71,20 @@ app.Run();
 
 There is a breaking change in adding command line arguments to the WebApplication.
 
-1. To add a command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of the two calls to `ArgumentsBuilder.Add`:
+To add command line argument with value, use `InstanceCommandLineArgumentsBuilder.AddWithValue` instead of double call `ArgumentsBuilder.Add`.
 
-    ```diff
-                    configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
-                    configuration.OrchardCoreConfiguration.BeforeAppStart += (_, argsBuilder) =>
-                    {
-    -                     argsBuilder.Add("--OrchardCore:OrchardCore_Admin:AdminUrlPrefix").Add("custom-admin");
-    +                     argsBuilder.AddWithValue("OrchardCore:OrchardCore_Admin:AdminUrlPrefix", "custom-admin");
+To add command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
-                        return Task.CompletedTask;
-                    };
-    ```
+```diff
+                configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+                configuration.OrchardCoreConfiguration.BeforeAppStart += (_, argsBuilder) =>
+                {
+-                     argsBuilder.Add("--OrchardCore:OrchardCore_Admin:AdminUrlPrefix").Add("custom-admin");
++                     argsBuilder.AddWithValue("OrchardCore:OrchardCore_Admin:AdminUrlPrefix", "custom-admin");
 
-1. To add a command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
+                    return Task.CompletedTask;
+                };
+```
 
 ### Non breaking changes
 
@@ -92,7 +92,7 @@ There is a breaking change in adding command line arguments to the WebApplicatio
 
 The following extension methods behave largely the same and their signatures didn't change. Using `WebApplicationFactory` made it possible to use OC services directly instead of using _controller actions_ invoked via browser navigation.
 
-As a consequence, calling the below extension methods does not cause browser navigation anymore:
+This means that calling the extension methods below don't cause browser navigation any more.
 
 - `SetUserRegistrationTypeAsync`
 - `CreateUserAsync`
@@ -117,6 +117,6 @@ As a consequence, calling the below extension methods does not cause browser nav
     }
 ```
 
-The original code with the new behavior failed a test, because the browser pointed to the _Home page_ before `await context.EnablePrivacyConsentBannerFeatureAsync()` was called. Consequently, the `context.EnableFeatureDirectlyAsync()` didn't navigate away, the `await context.GoToHomePageAsync()` call did nothing, and the consent banner didn't appear.
+The original code with the new behavior failed a test, because the browser pointed to the _Home page_ before `await context.EnablePrivacyConsentBannerFeatureAsync()(=> context.EnableFeatureDirectlyAsync({featureId})`. So the `context.EnableFeatureDirectlyAsync` doesn't navigate away, the `await context.GoToHomePageAsync()` call does nothing, and the consent banner doesn't come up.
 
-The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`. This results in a page reload, and the consent banner appears.
+The solution, in this case, is to call `await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false)`, this result a reload, and the consent banner come up.
