@@ -43,7 +43,7 @@ app.Run();
 
 ### Preparing the UI test project
 
-1. Add a _project reference_ of the web app to be tested to the UI test project.
+1. Add a _project reference_ of the web app to be tested to the UI test project:
 
     ```diff
     </ItemGroup>
@@ -55,7 +55,7 @@ app.Run();
         <ProjectReference Include="..\..\src\Modules\Lombiq.HelpfulExtensions\Lombiq.HelpfulExtensions.Tests.UI\Lombiq.HelpfulExtensions.Tests.UI.csproj" />
     ```
 
-1. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore.
+2. Change `OrchardCoreUITestBase` implementation like below. `AppAssemblyPath` is not required anymore:
 
     ```diff
     namespace Lombiq.OSOCE.Tests.UI;
@@ -84,7 +84,7 @@ There is a breaking change in adding command line arguments to the WebApplicatio
                     };
     ```
 
-1. To add a command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
+2. To add a command line switch, use `InstanceCommandLineArgumentsBuilder.AddSwitch`.
 
 ### Non breaking changes
 

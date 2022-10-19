@@ -41,10 +41,10 @@ public class SqlServerTests : UITestBase
                 configuration.UseSqlServer = true;
 
                 configuration.AssertBrowserLog =
-                    messages =>
+                    logEntries =>
                     {
-                        var messagesWithoutToggle = messages.Where(message =>
-                            !message.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                        var messagesWithoutToggle = logEntries.Where(logEntry =>
+                            !logEntry.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                         OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                     };
             });
