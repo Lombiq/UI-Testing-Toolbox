@@ -66,9 +66,9 @@ public class MonkeyTests : UITestBase
             browser,
             configuration =>
                 // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
-                configuration.AssertBrowserLog = messages => messages.ShouldNotContain(
-                    message => IsValidAdminBrowserLogMessage(message),
-                    messages.Where(IsValidAdminBrowserLogMessage).ToFormattedString()));
+                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(
+                    logEntry => IsValidAdminBrowserLogEntry(logEntry),
+                    logEntries.Where(IsValidAdminBrowserLogEntry).ToFormattedString()));
 
     // Let's just test the background tasks management admin area.
     [Theory, Chrome]
@@ -90,15 +90,15 @@ public class MonkeyTests : UITestBase
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
             browser,
-            configuration => configuration.AssertBrowserLog = (logs) => logs
-                .Where(message =>
-                    !message
+            configuration => configuration.AssertBrowserLog = (logEntries) => logEntries
+                .Where(logEntry =>
+                    !logEntry
                         .Message
                         .Contains("An invalid form control with name='LockTimeout' is not focusable.")
-                    && !message
+                    && !logEntry
                         .Message
                         .Contains("An invalid form control with name='LockExpiration' is not focusable.")
-                    && message.Level != LogLevel.Info)
+                    && logEntry.Level != LogLevel.Info)
                 .ShouldBeEmpty());
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
@@ -108,9 +108,9 @@ public class MonkeyTests : UITestBase
             PageTestTime = TimeSpan.FromSeconds(10),
         };
 
-    private static bool IsValidAdminBrowserLogMessage(LogEntry message) =>
-        OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogMessage(message) &&
-        !message.Message.ContainsOrdinalIgnoreCase(
+    private static bool IsValidAdminBrowserLogEntry(LogEntry logEntry) =>
+        OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry(logEntry) &&
+        !logEntry.Message.ContainsOrdinalIgnoreCase(
             "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load.");
 }
 

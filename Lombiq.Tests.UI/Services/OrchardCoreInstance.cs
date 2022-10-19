@@ -65,14 +65,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private string _url;
     private TestReverseProxy _reverseProxy;
 
+    public IServiceProvider Services => _orchardApplication?.Services;
+
     public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
         _configuration = configuration;
         _contextId = contextId;
         _testOutputHelper = testOutputHelper;
     }
-
-    public IServiceProvider Services => _orchardApplication?.Services;
 
     public async Task<Uri> StartUpAsync()
     {

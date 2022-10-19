@@ -65,7 +65,7 @@
     Its Microsoft.Data.SqlClient dependency is higher than that required by OrchardCore.Data.YesSql -->
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47027.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
-    <!-- Can't update to NLog.Web.AspNetCore v4.15 or later until an Orchard upgrade. -->
+    <!-- During Orchard upgrades, this needs to be kept up to date with the version Orchard uses. -->
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
     <PackageReference Include="Selenium.Axe" Version="4.0.2" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
