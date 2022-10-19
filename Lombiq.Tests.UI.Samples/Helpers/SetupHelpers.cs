@@ -60,7 +60,7 @@ public static class SetupHelpers
     // Do note that this way you can't really use a different recipe for testing (that can, in addition to the dev
     // recipe, contain testing-specific content and configuration). So it's still better to not use Auto Setup for test
     // execution even if you use it for development: To achieve this, in your web app's Startup class you can only
-    // conditionally run AddSetupFeatures("OrchardCore.AutoSetup"), based on  IConfiguration.IsUITesting().
+    // conditionally run AddSetupFeatures("OrchardCore.AutoSetup"), based on IConfiguration.IsUITesting().
     public static async Task<Uri> RunAutoSetupAsync(UITestContext context)
     {
         await context.GoToHomePageAsync();

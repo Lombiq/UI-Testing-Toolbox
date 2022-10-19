@@ -2,7 +2,11 @@
 
 ## Creating a test project
 
-Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package. Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
+Prepare the test project:
+
+- Reference the web app project under test.
+- Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package.
+- Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
 
 For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.Samples/Readme.md).
 

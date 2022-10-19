@@ -50,7 +50,9 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// </summary>
     /// <typeparam name="TService">The type of service object to get.</typeparam>
     /// <returns>A service object of type <typeparamref name="TService"/>.</returns>
-    /// <exception cref="InvalidOperationException">There is no service of type <typeparamref name="TService"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// There is no service of type <typeparamref name="TService"/>.
+    /// </exception>
     TService GetRequiredService<TService>();
 }
 

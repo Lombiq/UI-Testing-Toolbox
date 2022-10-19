@@ -34,7 +34,7 @@ public class TenantTests : UITestBase
                 const string tenantAdminName = "tenantAdmin";
                 await context.SignInDirectlyAsync();
 
-                // Create the tenant with custom admin name
+                // Create the tenant with custom admin name.
                 await context.CreateAndEnterTenantAsync(
                     TestTenantDisplayName,
                     TestTenantUrlPrefix,
