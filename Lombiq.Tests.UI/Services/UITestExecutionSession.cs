@@ -169,8 +169,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
 
-            _context.FailureDumpContainer.Values
-                .ForEach(value => value.Dispose());
+            _context.FailureDumpContainer.Values.ForEach(value => value.Dispose());
             _context.FailureDumpContainer.Clear();
         }
 
@@ -222,6 +221,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         int retryCount,
         IDictionary<string, IFailureDumpItem> failureDumpContainer)
     {
+        if (!_dumpConfiguration.CreateFailureDump) return;
+
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
@@ -306,7 +307,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         catch (Exception dumpException)
         {
             _testOutputHelper.WriteLineTimestampedAndDebug(
-                $"Saving dump({dumpRelativePath}) of the test from context failed with the following exception: {dumpException}");
+                $"Saving dump ({dumpRelativePath}) of the test from context failed with the following exception: {dumpException}");
         }
     }
 
