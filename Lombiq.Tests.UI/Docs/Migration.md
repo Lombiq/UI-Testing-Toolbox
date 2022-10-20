@@ -2,7 +2,7 @@
 
 ## Migrating from v3.*
 
-### Preparing the web application project.
+### Preparing the web application project
 
 1. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app.
 2. Add `Microsoft.Extensions.Configuration.ConfigurationManager` instance directly to `WebApplicationBuilder.Services` in your `Program` file/class.
