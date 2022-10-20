@@ -6,10 +6,13 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class SeleniumLogEntryExtensions
 {
-    public static string ToFormattedString(this IEnumerable<LogEntry> messages) =>
-        string.Join(Environment.NewLine, messages);
+    public static string ToFormattedString(this IEnumerable<LogEntry> logEntries) =>
+        string.Join(Environment.NewLine, logEntries);
 
-    public static bool IsNotFoundMessage(this LogEntry logEntry, string url) =>
+    public static bool IsNotFoundLogEntry(this LogEntry logEntry, string url) =>
         logEntry.Message.ContainsOrdinalIgnoreCase(
             @$"{url} - Failed to load resource: the server responded with a status of 404");
+
+    [Obsolete("Use IsNotFoundLogEntry() instead.")]
+    public static bool IsNotFoundMessage(this LogEntry logEntry, string url) => logEntry.IsNotFoundLogEntry(url);
 }
