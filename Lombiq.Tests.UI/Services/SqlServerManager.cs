@@ -25,7 +25,7 @@ public class SqlServerConfiguration
     public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
         $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
-            "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5");
+            "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=true");
 }
 
 public class SqlServerRunningContext
