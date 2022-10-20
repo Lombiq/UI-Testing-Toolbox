@@ -499,7 +499,7 @@ public static class ShortcutsUITestContextExtensions
                 shellSettings.State = TenantState.Uninitialized;
 
                 shellSettings["ConnectionString"] = setupParameters.ConnectionString;
-                shellSettings["TablePrefix"] = name + "_";
+                shellSettings["TablePrefix"] = name;
                 shellSettings["DatabaseProvider"] = setupParameters.DatabaseProvider;
                 shellSettings["Secret"] = Guid.NewGuid().ToString();
                 shellSettings["RecipeName"] = recipeName;
