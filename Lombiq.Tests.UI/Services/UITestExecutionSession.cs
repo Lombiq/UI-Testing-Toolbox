@@ -675,7 +675,9 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
             arguments
-                .AddWithValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
+                .AddWithValue(
+                    "OrchardCore:OrchardCore_Media_Azure:BasePath",
+                    value: azureBlobStorageContext.BasePath + "/{{ ShellSettings.Name }}")
                 .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
                     value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
