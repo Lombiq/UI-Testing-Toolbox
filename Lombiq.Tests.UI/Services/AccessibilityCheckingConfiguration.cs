@@ -41,6 +41,10 @@ public class AccessibilityCheckingConfiguration
     /// </summary>
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
+    [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
+    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
+        EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule;
+
     /// <summary>
     /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run for
     /// the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is set to
