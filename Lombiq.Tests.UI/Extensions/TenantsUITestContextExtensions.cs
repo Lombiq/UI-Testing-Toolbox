@@ -42,6 +42,8 @@ public static class TenantsUITestContextExtensions
             await context.ClickAndFillInWithRetriesAsync(By.Id("RequestUrlPrefix"), urlPrefix);
         }
 
+        await context.ClickAndFillInWithRetriesAsync(By.Id("TablePrefix"), name);
+
         if (!string.IsNullOrEmpty(urlHost))
         {
             await context.ClickAndFillInWithRetriesAsync(By.Id("RequestUrlHost"), urlHost);
