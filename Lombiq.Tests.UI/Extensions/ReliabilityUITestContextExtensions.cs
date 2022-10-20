@@ -2,6 +2,8 @@ using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using System;
 using System.Globalization;
 using System.IO;
@@ -284,7 +286,7 @@ public static class ReliabilityUITestContextExtensions
         using var elementImage = context.TakeElementScreenshot(element);
         using var elementImageStream = new MemoryStream();
 
-        elementImage.Save(elementImageStream, ImageFormat.Png);
+        elementImage.Save(elementImageStream, PngFormat.Instance);
         return ComputeSha256Hash(elementImageStream);
     }
 

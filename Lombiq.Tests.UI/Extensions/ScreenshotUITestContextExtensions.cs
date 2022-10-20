@@ -2,6 +2,8 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,12 +73,11 @@ public static class ScreenshotUITestContextExtensions
                     ? viewportSize.Height
                     : viewportSize.Height - (viewportSize.Height % position.Y));
 
-            var screenshot = new Bitmap(viewportSize.Width, height, PixelFormat.Format32bppArgb);
-            using var graphics = Graphics.FromImage(screenshot);
+            var screenshot = new SixLabors.ImageSharp.Image<Argb32>(viewportSize.Width, height);
 
-            foreach (var item in images)
+            foreach (var (point, image) in images)
             {
-                graphics.DrawImage(item.Value, item.Key);
+                screenshot.Mutate(ctx => ctx.DrawImage(image, point, 1));
             }
 
             return screenshot;
@@ -118,9 +119,8 @@ public static class ScreenshotUITestContextExtensions
                 + $"{elementAbsoluteSize.Height.ToTechnicalString()}.");
         }
 
-        return screenshot.Clone(
-            new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height),
-            screenshot.PixelFormat);
+        var bounds = new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
+        return screenshot.Clone(ctx => ctx.Crop(bounds));
     }
 
     /// <summary>
