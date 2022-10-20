@@ -95,12 +95,12 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     public async Task RestoreSnapshotAsync(string snapshotDirectoryPath)
     {
         var sitesDirectoryPath = SitesDirectoryPath(snapshotDirectoryPath);
-        var tenantDirectories = Directory.GetDirectories(sitesDirectoryPath);
+        var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
 
-        foreach (var tenantDirectory in tenantDirectories)
+        foreach (var tenantDirectoryPath in tenantDirectoryPaths)
         {
-            var tenantDirectoryName = Path.GetFileName(tenantDirectory);
-            var tenantMediaDirectoryPath = Path.Combine(tenantDirectory, "Media");
+            var tenantDirectoryName = Path.GetFileName(tenantDirectoryPath);
+            var tenantMediaDirectoryPath = Path.Combine(tenantDirectoryPath, "Media");
 
             foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
             {
