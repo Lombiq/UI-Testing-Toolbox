@@ -105,7 +105,7 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
 ```json
 {
   "SqlServerDatabaseConfiguration": {
-    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=true"
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=true;Encrypt=false"
   },
   "DockerConfiguration": {
     "ContainerSnapshotPath": "/data/Snapshots",
