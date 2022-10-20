@@ -1,9 +1,9 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Globalization;
 using Xunit.Abstractions;
 

@@ -1,10 +1,9 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -24,12 +23,12 @@ public static class ScreenshotUITestContextExtensions
         context.Driver.AsScreenshotTaker().GetScreenshot();
 
     /// <summary>
-    /// Takes a screeenshot of the whole page, including content that needs to be scrolled down to.
+    /// Takes a screenshot of the whole page, including content that needs to be scrolled down to.
     /// </summary>
-    public static Bitmap TakeFullPageScreenshot(this UITestContext context)
+    public static Image TakeFullPageScreenshot(this UITestContext context)
     {
         var originalScrollPosition = context.GetScrollPosition();
-        var images = new Dictionary<Point, Bitmap>();
+        var images = new Dictionary<Point, Image>();
 
         try
         {
@@ -101,7 +100,7 @@ public static class ScreenshotUITestContextExtensions
     /// <summary>
     /// Takes a screenshot of an element region only.
     /// </summary>
-    public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
+    public static Image TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
@@ -127,6 +126,6 @@ public static class ScreenshotUITestContextExtensions
     /// <summary>
     /// Takes a screenshot of an element region only.
     /// </summary>
-    public static Bitmap TakeElementScreenshot(this UITestContext context, By elementSelector) =>
+    public static Image TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
 }

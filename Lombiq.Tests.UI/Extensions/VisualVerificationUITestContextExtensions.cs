@@ -6,12 +6,9 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
-using Shouldly;
-using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp;
 using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -300,8 +297,8 @@ to customize the name of the dump item.";
 
         // Try loading baseline image from embedded resources first.
         approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.BaselineFileName}.png";
-        var baselineImage = (Image)testFrame.MethodInfo.DeclaringType.Assembly
-            .TryGetResourceBitmap(approvedContext.BaselineResourceName);
+        var baselineImage = testFrame.MethodInfo.DeclaringType.Assembly
+            .GetResourceImageSharpImage(approvedContext.BaselineResourceName);
 
         if (baselineImage == null)
         {

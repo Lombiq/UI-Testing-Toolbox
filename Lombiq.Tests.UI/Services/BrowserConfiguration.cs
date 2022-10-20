@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.Constants;
+using SixLabors.ImageSharp;
 using System;
-using System.Drawing;
 using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services;
