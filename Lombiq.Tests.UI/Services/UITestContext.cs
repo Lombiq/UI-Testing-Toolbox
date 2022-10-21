@@ -83,7 +83,7 @@ public class UITestContext
 
     /// <summary>
     /// Gets the current tenant name. When testing sites with multi-tenancy use
-    /// <see cref="ChangeCurrentTenant(string, string)"/>.
+    /// <see cref="SwitchCurrentTenant(string, string)"/>.
     /// </summary>
     public string TenantName { get; private set; } = "Default";
 
@@ -204,7 +204,7 @@ public class UITestContext
     /// <summary>
     /// Changes the current tenant context to the Default one. Note that this doesn't navigate the browser.
     /// </summary>
-    public void ChangeCurrentTenantToDefault() => ChangeCurrentTenant("Default", string.Empty);
+    public void ChangeCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
 
     /// <summary>
     /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
@@ -213,7 +213,7 @@ public class UITestContext
     /// <param name="urlPrefix">
     /// The URL prefix configured for the tenant. It should neither start nor end with a slash.
     /// </param>
-    public void ChangeCurrentTenant(string tenantName, string urlPrefix)
+    public void SwitchCurrentTenant(string tenantName, string urlPrefix)
     {
         TenantName = tenantName;
         UrlPrefix = urlPrefix;

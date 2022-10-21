@@ -33,7 +33,7 @@ public class TenantTests : UITestBase
                 await context.SignInDirectlyAsync();
 
                 // Create the tenant with a custom admin user.
-                await context.CreateAndChangeToTenantAsync(
+                await context.CreateAndSwitchToTenantAsync(
                     TestTenantUrlPrefix,
                     TestTenantUrlPrefix,
                     new OrchardCoreSetupParameters

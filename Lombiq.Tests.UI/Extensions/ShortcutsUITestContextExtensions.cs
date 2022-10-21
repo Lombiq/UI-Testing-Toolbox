@@ -473,9 +473,9 @@ public static class ShortcutsUITestContextExtensions
                 activateShell);
 
     /// <summary>
-    /// Creates, sets up and navigates to a new URL-prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
+    /// Creates, sets up, switches to, and navigates to a new URL-prefixed tenant.
     /// </summary>
-    public static async Task CreateAndChangeToTenantAsync(
+    public static async Task CreateAndSwitchToTenantAsync(
         this UITestContext context,
         string name,
         string urlPrefix,
@@ -535,7 +535,7 @@ public static class ShortcutsUITestContextExtensions
                 await setupService.SetupAsync(setupContext);
             });
 
-        context.ChangeCurrentTenant(name, urlPrefix);
+        context.SwitchCurrentTenant(name, urlPrefix);
         await context.GoToRelativeUrlAsync("/");
     }
 

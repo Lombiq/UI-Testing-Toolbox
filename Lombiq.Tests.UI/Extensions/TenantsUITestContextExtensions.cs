@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class TenantsUITestContextExtensions
 {
-    public static async Task CreateAndChangeToTenantManuallyAsync(
+    public static async Task CreateAndSwitchToTenantManuallyAsync(
         this UITestContext context,
         string name,
         string urlPrefix = "",
@@ -18,7 +18,7 @@ public static class TenantsUITestContextExtensions
 
         await context.ClickReliablyOnAsync(By.LinkText("Setup"));
 
-        context.ChangeCurrentTenant(name, urlPrefix);
+        context.SwitchCurrentTenant(name, urlPrefix);
     }
 
     public static async Task CreateTenantManuallyAsync(
