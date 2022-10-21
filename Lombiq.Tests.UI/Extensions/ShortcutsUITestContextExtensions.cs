@@ -192,13 +192,13 @@ public static class ShortcutsUITestContextExtensions
                     var userManager = serviceProvider.GetRequiredService<UserManager<IUser>>();
                     if ((await userManager.FindByNameAsync(userName)) is not User user)
                     {
-                        throw new UserNotFoundException($"{userName} not found!");
+                        throw new UserNotFoundException($"User with the name \"{userName}\" not found.");
                     }
 
                     var roleManager = serviceProvider.GetRequiredService<RoleManager<IRole>>();
                     if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                     {
-                        throw new RoleNotFoundException($"{roleName} not found!");
+                        throw new RoleNotFoundException($"Role with the name \"{roleName}\" not found.");
                     }
 
                     await userManager.AddToRoleAsync(user, role.NormalizedRoleName);
@@ -225,7 +225,7 @@ public static class ShortcutsUITestContextExtensions
                     var roleManager = serviceProvider.GetRequiredService<RoleManager<IRole>>();
                     if ((await roleManager.FindByNameAsync(roleManager.NormalizeKey(roleName))) is not Role role)
                     {
-                        throw new RoleNotFoundException($"{roleName} not found!");
+                        throw new RoleNotFoundException($"Role with the name \"{roleName}\" not found.");
                     }
 
                     var permissionClaim = role.RoleClaims.FirstOrDefault(roleClaim =>
@@ -236,7 +236,7 @@ public static class ShortcutsUITestContextExtensions
                         var permissionProviders = serviceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
                         if (!await PermissionExistsAsync(permissionProviders, permissionName))
                         {
-                            throw new PermissionNotFoundException($"{permissionName} not found!");
+                            throw new PermissionNotFoundException($"Permission with the name \"{permissionName}\" not found.");
                         }
 
                         role.RoleClaims.Add(new() { ClaimType = Permission.ClaimType, ClaimValue = permissionName });
@@ -365,7 +365,7 @@ public static class ShortcutsUITestContextExtensions
 
                     if (recipe == null)
                     {
-                        throw new RecipeNotFoundException($"{recipeName} not found!");
+                        throw new RecipeNotFoundException($"Recipe with the name {recipeName} not found.");
                     }
 
                     // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
@@ -447,7 +447,7 @@ public static class ShortcutsUITestContextExtensions
 
                     if (themeFeature == null)
                     {
-                        throw new ThemeNotFoundException($"{id} not found.");
+                        throw new ThemeNotFoundException($"Theme with the feature ID {id} not found.");
                     }
 
                     if (IsAdminTheme(themeFeature.Extension.Manifest))
@@ -563,7 +563,7 @@ public static class ShortcutsUITestContextExtensions
                 var workflowType = await workflowTypeStore.GetAsync(workflowTypeId);
                 if (workflowType == null)
                 {
-                    throw new WorkflowTypeNotFoundException($"{workflowTypeId} not found!");
+                    throw new WorkflowTypeNotFoundException($"Workflow type with the ID {workflowTypeId} not found.");
                 }
 
                 var securityTokenService = serviceProvider.GetRequiredService<ISecurityTokenService>();
