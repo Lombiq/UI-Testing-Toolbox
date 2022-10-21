@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -33,14 +33,15 @@ public class TenantTests : UITestBase
                 await context.SignInDirectlyAsync();
 
                 // Create the tenant with a custom admin user.
-                await context.CreateAndEnterTenantAsync(
+                await context.CreateAndChangeToTenantAsync(
                     TestTenantUrlPrefix,
                     TestTenantUrlPrefix,
-                    "Lombiq.OSOCE.Tests",
-                    new TenantSetupParameters
+                    new OrchardCoreSetupParameters
                     {
-                        UserName = tenantAdminName,
                         SiteName = TestTenantDisplayName,
+                        RecipeId = "Lombiq.OSOCE.Tests",
+                        TablePrefix = TestTenantUrlPrefix,
+                        UserName = tenantAdminName,
                     });
 
                 // Verify successful setup with custom site name.

@@ -82,10 +82,10 @@ public class BasicTests : UITestBase
                 // By default, apart from some commonly known exceptions, the browser log should be empty. However,
                 // ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on that.
                 configuration.AssertBrowserLog =
-                    messages =>
+                    logEntries =>
                         {
-                            var messagesWithoutToggle = messages.Where(message =>
-                                !message.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                            var messagesWithoutToggle = logEntries.Where(logEntry =>
+                                !logEntry.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                             OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                         });
 

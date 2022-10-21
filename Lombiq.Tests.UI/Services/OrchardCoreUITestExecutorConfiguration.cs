@@ -183,9 +183,9 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for every
         // page.
-        messages => messages.ShouldNotContain(
-            message => IsValidBrowserLogEntry(message),
-            messages.Where(IsValidBrowserLogEntry).ToFormattedString());
+        logEntries => logEntries.ShouldNotContain(
+            logEntry => IsValidBrowserLogEntry(logEntry),
+            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
 
     public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
         logEntry =>

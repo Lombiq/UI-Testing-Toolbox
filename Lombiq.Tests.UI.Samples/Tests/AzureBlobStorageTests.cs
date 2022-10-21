@@ -42,10 +42,10 @@ public class AzureBlobStorageTests : UITestBase
                 configuration.UseAzureBlobStorage = true;
 
                 configuration.AssertBrowserLog =
-                    messages =>
+                    logEntries =>
                     {
-                        var messagesWithoutToggle = messages.Where(message =>
-                            !message.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                        var messagesWithoutToggle = logEntries.Where(logEntry =>
+                            !logEntry.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
                         OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
                     };
             });
