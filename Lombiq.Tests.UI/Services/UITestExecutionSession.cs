@@ -643,17 +643,25 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
 
-            var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+            var sitesDirectoryPath = Path.Combine(contentRootPath, "App_Data", "Sites");
+            var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
 
-            if (!File.Exists(appSettingsPath))
+            foreach (var tenantDirectoryPath in tenantDirectoryPaths)
             {
-                throw new InvalidOperationException(
-                    "The setup snapshot's appsettings.json file wasn't found. This most possibly means that the setup failed.");
-            }
+                var appSettingsPath = Path.Combine(tenantDirectoryPath, "appsettings.json");
 
-            var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
-            appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
-            await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
+                if (!File.Exists(appSettingsPath))
+                {
+                    throw new InvalidOperationException(
+                        "The setup snapshot's appsettings.json file for the tenant " +
+                        Path.GetFileName(tenantDirectoryPath) +
+                        " wasn't found. This most possibly means that the tenant's setup failed.");
+                }
+
+                var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
+                appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
+                await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
+            }
         }
 
         _configuration.OrchardCoreConfiguration.BeforeAppStart =

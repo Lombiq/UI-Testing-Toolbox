@@ -2,7 +2,7 @@ using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
-using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
@@ -479,10 +479,12 @@ public static class ShortcutsUITestContextExtensions
         this UITestContext context,
         string name,
         string urlPrefix,
-        string recipeName,
-        TenantSetupParameters setupParameters = null)
+        OrchardCoreSetupParameters setupParameters)
     {
-        setupParameters ??= new TenantSetupParameters();
+        setupParameters ??= new OrchardCoreSetupParameters(context);
+        var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
+            ? "SqlConnection"
+            : setupParameters.DatabaseProvider.ToString();
 
         await context.Application.UsingScopeAsync(
             async serviceProvider =>
@@ -498,11 +500,7 @@ public static class ShortcutsUITestContextExtensions
                 shellSettings.RequestUrlPrefix = urlPrefix;
                 shellSettings.State = TenantState.Uninitialized;
 
-                shellSettings["ConnectionString"] = setupParameters.ConnectionString;
-                shellSettings["TablePrefix"] = name;
-                shellSettings["DatabaseProvider"] = setupParameters.DatabaseProvider;
-                shellSettings["Secret"] = Guid.NewGuid().ToString();
-                shellSettings["RecipeName"] = recipeName;
+                shellSettings["RecipeName"] = setupParameters.RecipeId;
 
                 await shellHost.UpdateShellSettingsAsync(shellSettings);
             });
@@ -513,7 +511,7 @@ public static class ShortcutsUITestContextExtensions
                 var setupService = serviceProvider.GetRequiredService<ISetupService>();
 
                 var setupRecipes = await setupService.GetSetupRecipesAsync();
-                var recipeDescriptor = setupRecipes.First(recipe => recipe.Name == recipeName);
+                var recipeDescriptor = setupRecipes.First(recipe => recipe.Name == setupParameters.RecipeId);
                 var shellSettings = serviceProvider.GetRequiredService<IShellHost>().GetSettings(name);
 
                 var setupContext = new SetupContext
@@ -528,10 +526,10 @@ public static class ShortcutsUITestContextExtensions
                         { SetupConstants.AdminUsername, setupParameters.UserName },
                         { SetupConstants.AdminEmail, setupParameters.Email },
                         { SetupConstants.AdminPassword, setupParameters.Password },
-                        { SetupConstants.SiteTimeZone, setupParameters.TimeZone },
-                        { SetupConstants.DatabaseProvider, setupParameters.DatabaseProvider },
+                        { SetupConstants.SiteTimeZone, setupParameters.SiteTimeZoneValue },
+                        { SetupConstants.DatabaseProvider, databaseProvider },
                         { SetupConstants.DatabaseConnectionString, setupParameters.ConnectionString },
-                        { SetupConstants.DatabaseTablePrefix, shellSettings["TablePrefix"] },
+                        { SetupConstants.DatabaseTablePrefix, setupParameters.TablePrefix },
                     },
                 };
 
