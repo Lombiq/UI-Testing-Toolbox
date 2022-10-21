@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class TenantsUITestContextExtensions
 {
-    public static async Task CreateAndEnterTenantManuallyAsync(
+    public static async Task CreateAndChangeToTenantManuallyAsync(
         this UITestContext context,
         string name,
         string urlPrefix = "",

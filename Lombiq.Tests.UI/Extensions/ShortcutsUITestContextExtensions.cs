@@ -475,7 +475,7 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Creates, sets up and navigates to a new URL-prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
     /// </summary>
-    public static async Task CreateAndEnterTenantAsync(
+    public static async Task CreateAndChangeToTenantAsync(
         this UITestContext context,
         string name,
         string urlPrefix,
