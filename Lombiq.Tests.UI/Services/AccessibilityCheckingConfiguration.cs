@@ -42,8 +42,11 @@ public class AccessibilityCheckingConfiguration
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
     [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
-    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
-        EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule;
+    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule
+    {
+        get => AccessibilityCheckingAndAssertionOnPageChangeRule;
+        set => AccessibilityCheckingAndAssertionOnPageChangeRule = value;
+    }
 
     /// <summary>
     /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run for
