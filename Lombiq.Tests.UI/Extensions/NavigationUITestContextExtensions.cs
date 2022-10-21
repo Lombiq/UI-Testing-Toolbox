@@ -167,7 +167,7 @@ public static class NavigationUITestContextExtensions
         this UITestContext context,
         OrchardCoreSetupParameters parameters = null)
     {
-        var setupPage = await context.GoToSetupPageAsync(!parameters.RunSetupOnCurrentPage);
+        var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
         setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
 
         return setupPage.PageUri.Value;
