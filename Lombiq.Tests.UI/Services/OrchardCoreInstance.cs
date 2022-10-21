@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
-using OrchardCore.Modules;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
