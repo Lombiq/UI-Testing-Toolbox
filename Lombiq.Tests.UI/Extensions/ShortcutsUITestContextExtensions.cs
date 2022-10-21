@@ -540,7 +540,7 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
-    /// Retrieves URI for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow.
+    /// Retrieves URL for a <see cref="OrchardCore.Workflows.Http.Activities.HttpRequestEvent"/> in a workflow.
     /// </summary>
     /// <exception cref="WorkflowTypeNotFoundException">
     /// If no <see cref="WorkflowType"/> found with the given <paramref name="workflowTypeId"/>.

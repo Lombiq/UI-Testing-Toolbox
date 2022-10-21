@@ -17,6 +17,19 @@ internal static class OrchardCoreUITestBaseCounter
     public static bool AppFolderCreated { get; set; }
 }
 
+/// <summary>
+/// Delegate with the signature of <see
+/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupAsync(Func{UITestContext, Task}, Browser,
+/// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>CustomAdminPrefixTestCase</c> in
+/// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegeate
+/// parameters.
+/// </summary>
+// If you change this, then also change the corresponding method below.
+public delegate Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+
 public abstract class OrchardCoreUITestBase<TEntryPoint>
      where TEntryPoint : class
 {
@@ -31,6 +44,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
+    // If you change this, then also change the corresponding delegate above.
     protected abstract Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
