@@ -492,7 +492,6 @@ public static class ShortcutsUITestContextExtensions
                 var shellHost = serviceProvider.GetRequiredService<IShellHost>();
                 if (shellHost.TryGetSettings(name, out _)) throw new InvalidOperationException("The tenant already exists.");
 
-                // Creates a default shell settings based on the configuration.
                 var shellSettings = serviceProvider.GetRequiredService<IShellSettingsManager>().CreateDefaultSettings();
 
                 shellSettings.Name = name;
