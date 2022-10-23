@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -166,6 +167,16 @@ public class UITestContext
     {
         Configuration.AssertBrowserLog?.Invoke(Scope.Driver.GetAndEmptyBrowserLog());
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Clears the application and historic browser logs.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
+    public void ClearLogs(CancellationToken cancellationToken = default)
+    {
+        foreach (var log in Application.GetLogs(cancellationToken)) log.Remove();
+        ClearHistoricBrowserLog();
     }
 
     /// <summary>

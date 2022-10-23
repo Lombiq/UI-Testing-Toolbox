@@ -48,7 +48,7 @@ public static class SecurityShortcutsTestCases
                 await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
                 await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<RoleNotFoundException>();
 
-                CleanUpLogs(context);
+                context.ClearLogs();
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);
@@ -61,7 +61,7 @@ public static class SecurityShortcutsTestCases
                 await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)
                     .ShouldThrowAsync<PermissionNotFoundException>();
 
-                CleanUpLogs(context);
+                context.ClearLogs();
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);
@@ -71,12 +71,5 @@ public static class SecurityShortcutsTestCases
         await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
         await context.SignInDirectlyAsync(UserUserName);
         (await context.GetCurrentUserNameAsync()).ShouldBe(UserUserName);
-    }
-
-    private static void CleanUpLogs(UITestContext context)
-    {
-        // Remove logs to have a clean slate.
-        foreach (var log in context.Application.GetLogs()) log.Remove();
-        context.ClearHistoricBrowserLog();
     }
 }
