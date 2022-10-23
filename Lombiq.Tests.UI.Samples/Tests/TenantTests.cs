@@ -15,6 +15,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // like to test the tenant creation-setup process itself, then look into using CreateNewTenantManuallyAsync() instead.
 public class TenantTests : UITestBase
 {
+    private const string TestTenantName = "Test";
     private const string TestTenantUrlPrefix = "test";
     private const string TestTenantDisplayName = "Lombiq's OSOCE - Test Tenant";
 
@@ -34,7 +35,7 @@ public class TenantTests : UITestBase
 
                 // Create the tenant with a custom admin user.
                 await context.CreateAndSwitchToTenantAsync(
-                    TestTenantUrlPrefix,
+                    TestTenantName,
                     TestTenantUrlPrefix,
                     new OrchardCoreSetupParameters
                     {
