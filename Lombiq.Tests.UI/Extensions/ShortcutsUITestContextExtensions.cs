@@ -168,7 +168,7 @@ public static class ShortcutsUITestContextExtensions
                         var exceptionLines = new StringBuilder();
                         exceptionLines.AppendLine("Create user error:");
                         errors.ForEach(entry =>
-                            exceptionLines.AppendLine(CultureInfo.InvariantCulture, $"{entry.Key}: {entry.Value}"));
+                            exceptionLines.AppendLine(CultureInfo.InvariantCulture, $"- {entry.Key}: {entry.Value}"));
                         throw new CreateUserFailedException(exceptionLines.ToString());
                     }
                 },
