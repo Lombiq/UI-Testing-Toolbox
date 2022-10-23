@@ -20,6 +20,7 @@ public sealed class AtataScope : IDisposable
         get => _baseUri;
         set
         {
+            ArgumentNullException.ThrowIfNull(value);
             _baseUri = value;
             AtataContext.BaseUrl = value.ToString();
         }
