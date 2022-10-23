@@ -18,7 +18,6 @@ public sealed class AtataScope : IDisposable
     public Uri BaseUri
     {
         get => _baseUri;
-
         set
         {
             _baseUri = value;
