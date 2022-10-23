@@ -482,6 +482,8 @@ public static class ShortcutsUITestContextExtensions
         OrchardCoreSetupParameters setupParameters)
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
+        // Change "SqlConnection" to OrchardCore.Data.DatabaseProviderValue.SqlConnection after the Orchard upgrade to
+        // 1.5.
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
             ? "SqlConnection"
             : setupParameters.DatabaseProvider.ToString();
