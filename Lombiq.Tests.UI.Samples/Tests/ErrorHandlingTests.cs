@@ -130,7 +130,7 @@ public class ErrorHandlingTests : UITestBase
                             "This point shouldn't be reachable if the logs are properly kept.");
                     };
 
-                    // No need to add to create a failure dump folder for this test, since it'll always fail.
+                    // No need to create a failure dump folder for this test, since it'll always fail.
                     configuration.FailureDumpConfiguration.CreateFailureDump = false;
                 }));
 }
