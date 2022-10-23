@@ -166,7 +166,7 @@ public static class ShortcutsUITestContextExtensions
                     if (user == null)
                     {
                         var exceptionLines = new StringBuilder();
-                        exceptionLines.AppendLine("Create user error:");
+                        exceptionLines.AppendLine("User creation error:");
                         errors.ForEach(entry =>
                             exceptionLines.AppendLine(CultureInfo.InvariantCulture, $"- {entry.Key}: {entry.Value}"));
                         throw new CreateUserFailedException(exceptionLines.ToString());
@@ -365,7 +365,7 @@ public static class ShortcutsUITestContextExtensions
 
                     if (recipe == null)
                     {
-                        throw new RecipeNotFoundException($"Recipe with the name {recipeName} not found.");
+                        throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
                     }
 
                     // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
