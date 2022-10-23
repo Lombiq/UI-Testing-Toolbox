@@ -26,7 +26,7 @@ public class SqlServerConfiguration
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
         $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
             "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;" +
-            "TrustServerCertificate=true;Encrypt=false");
+            "TrustServerCertificate=true;Encrypt=false;MultiSubnetFailover=True");
 }
 
 public class SqlServerRunningContext
