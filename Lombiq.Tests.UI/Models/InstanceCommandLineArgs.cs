@@ -7,6 +7,8 @@ public class InstanceCommandLineArgumentsBuilder
 {
     private readonly List<string> _arguments = new();
 
+    public IEnumerable<string> Arguments => _arguments;
+
     public InstanceCommandLineArgumentsBuilder AddSwitch(string argument)
     {
         _arguments.Add($"{PrepareArg(argument)}");
@@ -24,8 +26,5 @@ public class InstanceCommandLineArgumentsBuilder
     [Obsolete("Use AddSwitch or AddWithValue instead.")]
     public InstanceCommandLineArgumentsBuilder Add(string value) => throw new NotSupportedException();
 
-    private static string PrepareArg(string argument) =>
-        $"--{argument.TrimStart('-')}";
-
-    public IEnumerable<string> Arguments => _arguments;
+    private static string PrepareArg(string argument) => $"--{argument.TrimStart('-')}";
 }
