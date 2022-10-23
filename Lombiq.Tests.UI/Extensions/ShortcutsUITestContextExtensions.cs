@@ -473,7 +473,8 @@ public static class ShortcutsUITestContextExtensions
                 activateShell);
 
     /// <summary>
-    /// Creates, sets up, switches to, and navigates to a new URL-prefixed tenant.
+    /// Creates, sets up, switches to (with <see cref="UITestContext.SwitchCurrentTenant(string, string)"/>), and
+    /// navigates to a new URL-prefixed tenant.
     /// </summary>
     public static async Task CreateAndSwitchToTenantAsync(
         this UITestContext context,
