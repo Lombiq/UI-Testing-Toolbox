@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.Counters;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -39,7 +40,10 @@ public static class NavigationUITestContextExtensions
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
-                context.Driver.Navigate().GoToUrl(absoluteUri);
+                using (new NavigationProbe(context.CounterDataCollector, absoluteUri))
+                {
+                    context.Driver.Navigate().GoToUrl(absoluteUri);
+                }
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));

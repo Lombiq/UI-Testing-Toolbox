@@ -1,4 +1,5 @@
 using Lombiq.Tests.Integration.Services;
+using Lombiq.Tests.UI.Services.Counters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Web;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,14 +26,17 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 {
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
-    private readonly List<IStore> _createdStores = new();
+    private readonly ConcurrentBag<IStore> _createdStores = new();
+    private readonly CounterDataCollector _counterDataCollector;
 
     public OrchardApplicationFactory(
+        CounterDataCollector counterDataCollector,
         Action<IWebHostBuilder> configuration = null,
         Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
     {
         _configuration = configuration;
         _configureOrchard = configureOrchard;
+        _counterDataCollector = counterDataCollector;
     }
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
@@ -90,13 +95,14 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 return null;
             }
 
-            lock (_createdStores)
-            {
-                var fakeStore = new FakeStore((IStore)storeDescriptor.ImplementationFactory.Invoke(serviceProvider));
-                _createdStores.Add(fakeStore);
+            store.Configuration.ConnectionFactory = new ProbedConnectionFactory(
+                store.Configuration.ConnectionFactory,
+                _counterDataCollector);
 
-                return fakeStore;
-            }
+            var fakeStore = new FakeStore(store);
+            _createdStores.Add(fakeStore);
+
+            return fakeStore;
         });
     }
 

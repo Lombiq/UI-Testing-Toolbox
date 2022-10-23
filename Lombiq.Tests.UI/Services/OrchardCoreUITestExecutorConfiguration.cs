@@ -141,6 +141,11 @@ public class OrchardCoreUITestExecutorConfiguration
         Justification = "Deliberately modifiable by consumer code.")]
     public Dictionary<string, object> CustomConfiguration { get; } = new();
 
+    /// <summary>
+    /// Gets or sets configuration for performance counting and monitoring.
+    /// </summary>
+    public CounterConfiguration CounterConfiguration { get; set; } = new();
+
     public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
     {
         if (instance == null || AssertAppLogsAsync == null) return;

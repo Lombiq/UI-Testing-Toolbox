@@ -95,13 +95,19 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    /// <summary>
+    /// Gets the currently running <see cref="CounterDataCollector"/> instance.
+    /// </summary>
+    public CounterDataCollector CounterDataCollector { get; init; }
+
     public UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
-        RunningContextContainer runningContextContainer)
+        RunningContextContainer runningContextContainer,
+        CounterDataCollector counterDataCollector)
     {
         Id = id;
         TestManifest = testManifest;
@@ -111,6 +117,7 @@ public class UITestContext
         Scope = scope;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
+        CounterDataCollector = counterDataCollector;
     }
 
     /// <summary>
