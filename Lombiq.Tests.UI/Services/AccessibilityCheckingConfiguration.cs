@@ -41,7 +41,7 @@ public class AccessibilityCheckingConfiguration
     /// </summary>
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
-    // Once this method is removed, remove 'Accessbility' from the spelling whitelist.
+    // Once this method is removed, remove 'Accessbility' from the spelling whitelist in GitHub Actions.
     [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
     public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule
     {
