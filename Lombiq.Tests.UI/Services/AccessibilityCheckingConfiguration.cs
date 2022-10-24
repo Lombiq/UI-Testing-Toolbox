@@ -42,7 +42,7 @@ public class AccessibilityCheckingConfiguration
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
     [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
-    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule
+    public Predicate<UITestContext> AccessbilityChekingAndAssertionOnPageChangeRule
     {
         get => AccessibilityCheckingAndAssertionOnPageChangeRule;
         set => AccessibilityCheckingAndAssertionOnPageChangeRule = value;
