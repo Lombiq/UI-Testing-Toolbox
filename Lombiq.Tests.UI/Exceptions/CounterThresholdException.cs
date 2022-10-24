@@ -4,11 +4,22 @@ using System.Text;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-// We need constructors with required informations.
-#pragma warning disable CA1032 // Implement standard exception constructors
 public class CounterThresholdException : Exception
-#pragma warning restore CA1032 // Implement standard exception constructors
 {
+    public CounterThresholdException()
+    {
+    }
+
+    public CounterThresholdException(string message)
+        : this(probe: null, counter: null, value: null, message)
+    {
+    }
+
+    public CounterThresholdException(string message, Exception innerException)
+        : this(probe: null, counter: null, value: null, message, innerException)
+    {
+    }
+
     public CounterThresholdException(
         ICounterProbe probe,
         ICounterKey counter,
@@ -40,11 +51,14 @@ public class CounterThresholdException : Exception
         ICounterProbe probe,
         ICounterKey counter,
         ICounterValue value,
-        string message) =>
-        new StringBuilder()
-            .AppendLine(probe.DumpHeadline())
-            .AppendLine(counter.Dump())
-            .AppendLine(value.Dump())
-            .AppendLine(message ?? string.Empty)
-            .ToString();
+        string message)
+    {
+        var builder = new StringBuilder();
+        if (probe is not null) builder.AppendLine(probe.DumpHeadline());
+        if (counter is not null) builder.AppendLine(counter.Dump());
+        if (value is not null) builder.AppendLine(value.Dump());
+        if (!string.IsNullOrEmpty(message)) builder.AppendLine(message);
+
+        return builder.ToString();
+    }
 }
