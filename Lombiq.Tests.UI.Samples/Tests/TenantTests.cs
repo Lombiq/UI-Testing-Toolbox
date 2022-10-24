@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -11,13 +11,11 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Testing in multi-tenancy context is not yet fully supported (https://github.com/Lombiq/UI-Testing-Toolbox/issues/80)
-// but you can create sites, and features that don't navigate to an absolute path work. If you have to navigate, either
-// use context.GoToRelativeUrlAsync() but remember to use include the tenant url prefix, or change context.TenantName
-// (context.CreateAndEnterTenantAsync() already does this) and then use context.GoToAsync<TController>() to
-// navigate by MVC actions.
+// You can also test multi-tenant web apps. Creating tenants on the fly is supported as well with a shortcut. If you'd
+// like to test the tenant creation-setup process itself, then look into using CreateNewTenantManuallyAsync() instead.
 public class TenantTests : UITestBase
 {
+    private const string TestTenantName = "Test";
     private const string TestTenantUrlPrefix = "test";
     private const string TestTenantDisplayName = "Lombiq's OSOCE - Test Tenant";
 
@@ -32,14 +30,20 @@ public class TenantTests : UITestBase
             async context =>
             {
                 const string tenantAdminName = "tenantAdmin";
+
                 await context.SignInDirectlyAsync();
 
-                // Create the tenant with custom admin name.
-                await context.CreateAndEnterTenantAsync(
-                    TestTenantDisplayName,
+                // Create the tenant with a custom admin user.
+                await context.CreateAndSwitchToTenantAsync(
+                    TestTenantName,
                     TestTenantUrlPrefix,
-                    "Lombiq.OSOCE.Tests",
-                    new CreateTenant { UserName = tenantAdminName });
+                    new OrchardCoreSetupParameters
+                    {
+                        SiteName = TestTenantDisplayName,
+                        RecipeId = "Lombiq.OSOCE.Tests",
+                        TablePrefix = TestTenantUrlPrefix,
+                        UserName = tenantAdminName,
+                    });
 
                 // Verify successful setup with custom site name.
                 context
@@ -51,7 +55,7 @@ public class TenantTests : UITestBase
                 (await context.GetCurrentUserNameAsync()).ShouldBe(tenantAdminName);
                 context.GetCurrentUri().AbsolutePath.ShouldStartWith($"/{TestTenantUrlPrefix}");
 
-                context.TenantName = string.Empty;
+                context.ChangeCurrentTenantToDefault();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
                 context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{TestTenantUrlPrefix}");
             },

@@ -77,7 +77,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
 
     public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
     {
-        parameters ??= new OrchardCoreSetupParameters();
+        parameters ??= new OrchardCoreSetupParameters(context);
 
         Language.Set(parameters.LanguageValue);
         SiteName.Set(parameters.SiteName);
