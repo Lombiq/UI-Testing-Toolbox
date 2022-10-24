@@ -22,19 +22,30 @@ namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
+    private readonly Action<IConfigurationBuilder> _configureHost;
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly List<IStore> _createdStores = new();
 
     public OrchardApplicationFactory(
+        Action<IConfigurationBuilder> configureHost = null,
         Action<IWebHostBuilder> configuration = null,
         Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
     {
+        _configureHost = configureHost;
         _configuration = configuration;
         _configureOrchard = configureOrchard;
     }
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.ConfigureHostConfiguration(configurationBuilder =>
+            _configureHost?.Invoke(configurationBuilder));
+
+        return base.CreateHost(builder);
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
