@@ -28,7 +28,7 @@ public static class AccessibilityCheckingOrchardCoreUITestExecutorConfigurationE
 
         configuration.Events.AfterPageChange += context =>
         {
-            if (configuration.AccessibilityCheckingConfiguration.AccessbilityCheckingAndAssertionOnPageChangeRule?.Invoke(context) == true)
+            if (configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule?.Invoke(context) == true)
             {
                 context.AssertAccessibility(axeBuilderConfigurator, assertAxeResult);
             }

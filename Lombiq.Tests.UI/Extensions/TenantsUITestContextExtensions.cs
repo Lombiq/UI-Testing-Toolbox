@@ -6,7 +6,22 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class TenantsUITestContextExtensions
 {
-    public static async Task CreateNewTenantManuallyAsync(
+    public static async Task CreateAndSwitchToTenantManuallyAsync(
+        this UITestContext context,
+        string name,
+        string urlPrefix = "",
+        string urlHost = "",
+        string featureProfile = "",
+        bool navigate = true)
+    {
+        await context.CreateTenantManuallyAsync(name, urlPrefix, urlHost, featureProfile, navigate);
+
+        await context.ClickReliablyOnAsync(By.LinkText("Setup"));
+
+        context.SwitchCurrentTenant(name, urlPrefix);
+    }
+
+    public static async Task CreateTenantManuallyAsync(
         this UITestContext context,
         string name,
         string urlPrefix = "",
@@ -16,7 +31,7 @@ public static class TenantsUITestContextExtensions
     {
         if (navigate)
         {
-            await context.GoToRelativeUrlAsync("/admin/tenants");
+            await context.GoToAdminRelativeUrlAsync("/Tenants");
         }
 
         await context.ClickReliablyOnAsync(By.LinkText("Add Tenant"));
