@@ -11,16 +11,19 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 [DesignerCategory("")]
 public class ProbedDbCommand : DbCommand
 {
-    private readonly CounterDataCollector _counterDataCollector;
+    private readonly ICounterDataCollector _counterDataCollector;
     private DbConnection _dbConnection;
 
     internal DbCommand ProbedCommand { get; private set; }
 
+    // The ProbedDbCommand scope is performance counting.
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
     public override string CommandText
     {
         get => ProbedCommand.CommandText;
         set => ProbedCommand.CommandText = value;
     }
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
     public override int CommandTimeout
     {
@@ -64,7 +67,7 @@ public class ProbedDbCommand : DbCommand
         set => ProbedCommand.UpdatedRowSource = value;
     }
 
-    public ProbedDbCommand(DbCommand command, DbConnection connection, CounterDataCollector counterDataCollector)
+    public ProbedDbCommand(DbCommand command, DbConnection connection, ICounterDataCollector counterDataCollector)
     {
         _counterDataCollector = counterDataCollector ?? throw new ArgumentNullException(nameof(counterDataCollector));
         ProbedCommand = command ?? throw new ArgumentNullException(nameof(command));

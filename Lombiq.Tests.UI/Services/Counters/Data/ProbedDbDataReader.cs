@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 public class ProbedDbDataReader : DbDataReader
 #pragma warning restore CA1010 // Generic interface should also be implemented
 {
-    private CounterDataCollector CounterDataCollector { get; init; }
+    private ICounterDataCollector CounterDataCollector { get; init; }
 
     private ProbedDbCommand ProbedCommand { get; init; }
 
@@ -39,14 +39,14 @@ public class ProbedDbDataReader : DbDataReader
     public ProbedDbDataReader(
         DbDataReader reader,
         ProbedDbCommand probedCommand,
-        CounterDataCollector counterDataCollector)
+        ICounterDataCollector counterDataCollector)
         : this(reader, CommandBehavior.Default, probedCommand, counterDataCollector) { }
 
     public ProbedDbDataReader(
         DbDataReader reader,
         CommandBehavior behavior,
         ProbedDbCommand probedCommand,
-        CounterDataCollector counterDataCollector)
+        ICounterDataCollector counterDataCollector)
     {
         CounterDataCollector = counterDataCollector ?? throw new ArgumentNullException(nameof(counterDataCollector));
         ProbedCommand = probedCommand ?? throw new ArgumentNullException(nameof(probedCommand));

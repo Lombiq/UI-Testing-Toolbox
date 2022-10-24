@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 [DesignerCategory("")]
 public class ProbedDbConnection : DbConnection
 {
-    private readonly CounterDataCollector _counterDataCollector;
+    private readonly ICounterDataCollector _counterDataCollector;
 
     internal DbConnection ProbedConnection { get; private set; }
 
@@ -33,7 +33,7 @@ public class ProbedDbConnection : DbConnection
 
     protected override bool CanRaiseEvents => true;
 
-    public ProbedDbConnection(DbConnection connection, CounterDataCollector counterDataCollector)
+    public ProbedDbConnection(DbConnection connection, ICounterDataCollector counterDataCollector)
     {
         _counterDataCollector = counterDataCollector ?? throw new ArgumentNullException(nameof(counterDataCollector));
         ProbedConnection = connection ?? throw new ArgumentNullException(nameof(connection));

@@ -27,10 +27,10 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly ConcurrentBag<IStore> _createdStores = new();
-    private readonly CounterDataCollector _counterDataCollector;
+    private readonly ICounterDataCollector _counterDataCollector;
 
     public OrchardApplicationFactory(
-        CounterDataCollector counterDataCollector,
+        ICounterDataCollector counterDataCollector,
         Action<IWebHostBuilder> configuration = null,
         Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
     {
