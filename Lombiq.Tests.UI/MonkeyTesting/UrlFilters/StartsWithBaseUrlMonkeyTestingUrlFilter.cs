@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 
 /// <summary>
 /// URL filter that matches the URL against the base URL of the application under test, i.e. it disallows leaving the
-/// application.
+/// tenant.
 /// </summary>
 public sealed class StartsWithBaseUrlMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
 {

@@ -50,11 +50,11 @@ public static class NavigationUITestContextExtensions
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
     public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
-        new(context.Scope.BaseUri, relativeUrl);
+        new(context.Scope.BaseUri, relativeUrl.TrimStart('/'));
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
-        var combinedUriString = string.Concat(context.AdminUrlPrefix, adminRelativeUrl);
+        var combinedUriString = context.AdminUrlPrefix + adminRelativeUrl;
 
         return context.GetAbsoluteUri(combinedUriString);
     }
@@ -103,13 +103,13 @@ public static class NavigationUITestContextExtensions
     // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
 
-    public static async Task<T> GoToPageAsync<T>(this UITestContext context)
+    public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
         where T : PageObject<T>
     {
         var page = context.ExecuteLogged(
             nameof(GoToPageAsync),
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>());
+            () => context.Scope.AtataContext.Go.To<T>(navigate: navigate));
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -150,8 +150,8 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreSetupPage>();
+    public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context, bool navigate = true) =>
+        context.GoToPageAsync<OrchardCoreSetupPage>(navigate);
 
     public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreLoginPage>();
@@ -167,7 +167,7 @@ public static class NavigationUITestContextExtensions
         this UITestContext context,
         OrchardCoreSetupParameters parameters = null)
     {
-        var setupPage = await context.GoToSetupPageAsync();
+        var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
         setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
 
         return setupPage.PageUri.Value;
