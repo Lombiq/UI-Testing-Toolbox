@@ -41,14 +41,22 @@ public class AccessibilityCheckingConfiguration
     /// </summary>
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
+    // Once this method is removed, remove 'Accessbility' from the spelling whitelist in GitHub Actions.
+    [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
+    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule
+    {
+        get => AccessibilityCheckingAndAssertionOnPageChangeRule;
+        set => AccessibilityCheckingAndAssertionOnPageChangeRule = value;
+    }
+
     /// <summary>
     /// Gets or sets a predicate that determines whether accessibility checking and asserting the results should run for
     /// the current page. This is only used if <see cref="RunAccessibilityCheckingAssertionOnAllPageChanges"/> is set to
     /// <see langword="true"/>. Defaults to <see
-    /// cref="EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule"/>.
+    /// cref="EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule"/>.
     /// </summary>
-    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule { get; set; } =
-        EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule;
+    public Predicate<UITestContext> AccessibilityCheckingAndAssertionOnPageChangeRule { get; set; } =
+        EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule;
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking happens.
@@ -73,6 +81,6 @@ public class AccessibilityCheckingConfiguration
                 items.Select(item =>
                     $"{item.Help}: {Environment.NewLine}{string.Join(Environment.NewLine, item.Nodes.Select(node => "    " + node.Html))}"));
 
-    public static readonly Predicate<UITestContext> EnableOnValidatablePagesAccessbilityCheckingAndAssertionOnPageChangeRule =
+    public static readonly Predicate<UITestContext> EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
 }
