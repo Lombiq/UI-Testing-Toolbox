@@ -41,8 +41,9 @@ public class AccessibilityCheckingConfiguration
     /// </summary>
     public bool RunAccessibilityCheckingAssertionOnAllPageChanges { get; set; }
 
+    // Once this method is removed, remove 'Accessbility' from the spelling whitelist.
     [Obsolete("Use the correctly named AccessibilityCheckingAndAssertionOnPageChangeRule instead.")]
-    public Predicate<UITestContext> AccessbilityChekingAndAssertionOnPageChangeRule
+    public Predicate<UITestContext> AccessbilityCheckingAndAssertionOnPageChangeRule
     {
         get => AccessibilityCheckingAndAssertionOnPageChangeRule;
         set => AccessibilityCheckingAndAssertionOnPageChangeRule = value;
