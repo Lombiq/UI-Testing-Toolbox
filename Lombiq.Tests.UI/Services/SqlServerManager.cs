@@ -303,8 +303,8 @@ public sealed class SqlServerManager : IAsyncDisposable
         }
         catch (FailedOperationException)
         {
-            // This can throw all kinds of random exceptions when the server is under load that don't actually cause any
-            // issues.
+            // This can cause all kinds of random exceptions that don't actually cause any issues when the server is
+            // under load.
         }
     }
 

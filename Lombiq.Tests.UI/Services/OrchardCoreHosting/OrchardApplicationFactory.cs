@@ -127,16 +127,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
         _createdStores.Clear();
 
-        try
-        {
-            await base.DisposeAsync();
-        }
-        catch (NullReferenceException)
-        {
-            // The base DisposeAsync() randomly throws an NRE when tests are concurrently executed locally. This doesn't
-            // seem to be a problem, though.
-        }
-
+        await base.DisposeAsync();
         SqliteConnection.ClearAllPools();
     }
 }

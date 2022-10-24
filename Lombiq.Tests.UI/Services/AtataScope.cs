@@ -10,26 +10,14 @@ namespace Lombiq.Tests.UI.Services;
 /// </summary>
 public sealed class AtataScope : IDisposable
 {
-    private Uri _baseUri;
-
     public AtataContext AtataContext { get; }
     public IWebDriver Driver => AtataContext.Driver;
-
-    public Uri BaseUri
-    {
-        get => _baseUri;
-        set
-        {
-            ArgumentNullException.ThrowIfNull(value);
-            _baseUri = value;
-            AtataContext.BaseUrl = value.ToString();
-        }
-    }
+    public Uri BaseUri { get; }
 
     public AtataScope(AtataContext atataContext, Uri baseUri)
     {
         AtataContext = atataContext;
-        _baseUri = baseUri;
+        BaseUri = baseUri;
     }
 
     /// <summary>

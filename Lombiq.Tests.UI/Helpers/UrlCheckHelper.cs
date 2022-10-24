@@ -14,10 +14,10 @@ public static class UrlCheckHelper
     {
         var path = context.GetCurrentUri().PathAndQuery;
 
-        // Strip off URL prefix if present.
-        if (!string.IsNullOrEmpty(context.UrlPrefix) && path[1..].StartsWithOrdinal(context.UrlPrefix))
+        // Strip off tenant URL prefix if present.
+        if (!string.IsNullOrEmpty(context.TenantName) && path[1..].StartsWithOrdinal(context.TenantName))
         {
-            path = path[(1 + context.UrlPrefix.Length)..];
+            path = path[(1 + context.TenantName.Length)..];
         }
 
         return path.StartsWithOrdinalIgnoreCase("/admin") ||

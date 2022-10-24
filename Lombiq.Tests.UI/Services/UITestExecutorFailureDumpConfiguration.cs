@@ -12,7 +12,6 @@ public class UITestExecutorFailureDumpConfiguration
     public bool UseShortNames { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     public string DumpsDirectoryPath { get; set; } = "FailureDumps";
-    public bool CreateFailureDump { get; set; } = true;
     public bool CaptureAppSnapshot { get; set; } = true;
     public bool CaptureScreenshots { get; set; } = true;
     public bool CaptureHtmlSource { get; set; } = true;

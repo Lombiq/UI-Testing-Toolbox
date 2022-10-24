@@ -12,7 +12,8 @@ public sealed class FakeStore : IStore
     private readonly ConcurrentBag<ISession> _createdSessions = new();
     private readonly IStore _store;
 
-    public FakeStore(IStore store) => _store = store;
+    public FakeStore(IStore store) =>
+        _store = store;
 
     public IConfiguration Configuration => _store.Configuration;
 
@@ -26,8 +27,7 @@ public sealed class FakeStore : IStore
         return session;
     }
 
-    public IEnumerable<IndexDescriptor> Describe(Type target, string collection = null) =>
-        _store.Describe(target, collection);
+    public IEnumerable<IndexDescriptor> Describe(Type target, string collection = null) => _store.Describe(target, collection);
 
     public void Dispose()
     {

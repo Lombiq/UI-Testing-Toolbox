@@ -15,7 +15,6 @@ public class OrchardCoreSetupParameters
     public string UserName { get; set; } = DefaultUser.UserName;
     public string Email { get; set; } = DefaultUser.Email;
     public string Password { get; set; } = DefaultUser.Password;
-    public bool RunSetupOnCurrentPage { get; set; }
 
     public OrchardCoreSetupParameters()
     {

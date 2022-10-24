@@ -72,45 +72,30 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
 
     public Task TakeSnapshotAsync(string snapshotDirectoryPath)
     {
-        var sitesDirectoryPath = SitesDirectoryPath(snapshotDirectoryPath);
-        FileSystemHelper.EnsureDirectoryExists(sitesDirectoryPath);
+        var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
+
+        FileSystemHelper.EnsureDirectoryExists(mediaFolderPath);
 
         return IterateThroughBlobsAsync(
             blobClient =>
             {
                 var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
-
-                var tenantDirectoryName = Path.GetDirectoryName(blobUrl);
-                var tenantMediaDirectoryPath = Path.Combine(sitesDirectoryPath, tenantDirectoryName, "Media");
-                FileSystemHelper.EnsureDirectoryExists(tenantMediaDirectoryPath);
-
-                var fileSubPath = blobUrl[(tenantDirectoryName.Length + 1)..]
-                    .ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
-                var fileFullPath = Path.Combine(tenantMediaDirectoryPath, fileSubPath);
-
-                return blobClient.DownloadToAsync(fileFullPath);
+                var blobPath = blobUrl.ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
+                var blobFullPath = Path.Combine(mediaFolderPath, blobPath);
+                FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(blobFullPath));
+                return blobClient.DownloadToAsync(blobFullPath);
             });
     }
 
     public async Task RestoreSnapshotAsync(string snapshotDirectoryPath)
     {
-        var sitesDirectoryPath = SitesDirectoryPath(snapshotDirectoryPath);
-        var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
-
-        foreach (var tenantDirectoryPath in tenantDirectoryPaths)
+        var mediaFolderPath = GetMediaFolderPath(snapshotDirectoryPath);
+        foreach (var filePath in Directory.EnumerateFiles(mediaFolderPath, "*.*", SearchOption.AllDirectories))
         {
-            var tenantDirectoryName = Path.GetFileName(tenantDirectoryPath);
-            var tenantMediaDirectoryPath = Path.Combine(tenantDirectoryPath, "Media");
-
-            foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
-            {
-                var relativePath = filePath.ReplaceOrdinalIgnoreCase(tenantMediaDirectoryPath, string.Empty);
-                var blobUrl = _basePath + "/" +
-                    tenantDirectoryName +
-                    relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
-                var blobClient = _blobContainer.GetBlobClient(blobUrl);
-                await blobClient.UploadAsync(filePath);
-            }
+            var relativePath = filePath.ReplaceOrdinalIgnoreCase(mediaFolderPath, string.Empty);
+            var relativeBlobUrl = relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
+            var blobClient = _blobContainer.GetBlobClient(_basePath + relativeBlobUrl);
+            await blobClient.UploadAsync(filePath);
         }
     }
 
@@ -142,6 +127,6 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         }
     }
 
-    private static string SitesDirectoryPath(string snapshotDirectoryPath) =>
-        Path.Combine(Path.GetFullPath(snapshotDirectoryPath), "App_Data", "Sites");
+    private static string GetMediaFolderPath(string snapshotDirectoryPath) =>
+        Path.Combine(Path.GetFullPath(snapshotDirectoryPath), "App_Data", "Sites", "Default", "Media");
 }

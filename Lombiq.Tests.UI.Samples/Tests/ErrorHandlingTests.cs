@@ -39,8 +39,9 @@ public class ErrorHandlingTests : UITestBase
                 }
                 catch (PageChangeAssertionException)
                 {
-                    // Remove all logs to have a clean slate.
-                    context.ClearLogs();
+                    // Remove logs to have a clean slate.
+                    foreach (var log in context.Application.GetLogs()) log.Remove();
+                    context.ClearHistoricBrowserLog();
                 }
             },
             browser);
@@ -62,7 +63,7 @@ public class ErrorHandlingTests : UITestBase
                 }
                 catch (PageChangeAssertionException)
                 {
-                    // Remove browser logs to have a clean slate.
+                    // Remove logs to have a clean slate.
                     context.ClearHistoricBrowserLog();
                 }
             },
@@ -128,9 +129,6 @@ public class ErrorHandlingTests : UITestBase
                         throw new InvalidOperationException(
                             "This point shouldn't be reachable if the logs are properly kept.");
                     };
-
-                    // No need to create a failure dump folder for this test, since it'll always fail.
-                    configuration.FailureDumpConfiguration.CreateFailureDump = false;
                 }));
 }
 
