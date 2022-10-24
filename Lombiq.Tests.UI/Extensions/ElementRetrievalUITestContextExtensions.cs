@@ -82,7 +82,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
     public static void ShouldBeSuccess(this UITestContext context, string matchText = null, TimeSpan? within = null)
     {
-        context.SucccessMessageExists(matchText, within);
+        context.SuccessMessageExists(matchText, within);
 
         context.Missing(By.CssSelector(".message-warning"));
         context.Missing(By.CssSelector(".message-error"));
@@ -93,7 +93,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
     /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
-    public static void SucccessMessageExists(this UITestContext context, string matchText = null, TimeSpan? within = null)
+    public static void SuccessMessageExists(this UITestContext context, string matchText = null, TimeSpan? within = null)
     {
         var by = By.CssSelector(".message-success");
         if (within is { } timeSpan) by = by.Within(timeSpan);

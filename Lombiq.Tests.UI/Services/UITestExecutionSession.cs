@@ -385,12 +385,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
-            var accessbilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
-            _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessbilityReportPath);
+            var accessibilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
+            _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
             if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessbilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessibilityReportPath);
             }
         }
 
@@ -732,14 +732,14 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     {
         if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
 
-        var screnshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
-        FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
+        var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        FileSystemHelper.EnsureDirectoryExists(screenshotsPath);
 
         try
         {
             context
                 .TakeScreenshot()
-                .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
+                .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount));
         }
         catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
         {
