@@ -41,6 +41,14 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        builder.ConfigureHostConfiguration(configurationBuilder =>
+            _configureHost?.Invoke(configurationBuilder));
+
+        return base.CreateHost(builder);
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
         builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
         return base.CreateHost(builder);
     }
