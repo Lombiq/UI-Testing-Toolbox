@@ -47,6 +47,12 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         return base.CreateHost(builder);
     }
 
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
+        return base.CreateHost(builder);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(ConfigureTestServices)
@@ -111,10 +117,10 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         });
     }
 
-    // This is required because OrchardCore adds OrchardCore.Mvc.SharedViewCompilerProvider as IViewCompilerProvider but it
-    // holds a IViewCompiler(Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler) instance reference in
-    // a static member(_compiler) and it not get released on IHost.StopAsync() call, and this cause an ObjectDisposedException
-    // on next run.
+    // This is required because OrchardCore adds OrchardCore.Mvc.SharedViewCompilerProvider as IViewCompilerProvider but
+    // it holds a IViewCompiler(Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler) instance
+    // reference in a static member(_compiler) and it not get released on IHost.StopAsync() call, and this cause an
+    // ObjectDisposedException on next run.
     private static void AddFakeViewCompilerProvider(IServiceCollection services) =>
         services.AddSingleton<IViewCompilerProvider, FakeViewCompilerProvider>();
 
