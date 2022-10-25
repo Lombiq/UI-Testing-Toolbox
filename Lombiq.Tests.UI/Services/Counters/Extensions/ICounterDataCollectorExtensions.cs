@@ -1,13 +1,12 @@
-using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Data;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Extensions;
+namespace Lombiq.Tests.UI.Services.Counters.Extensions;
 
-public static class CounterDataCollectorExtensions
+public static class ICounterDataCollectorExtensions
 {
     public static int DbCommandExecuteNonQuery(this ICounterDataCollector collector, DbCommand dbCommand)
     {
@@ -39,7 +38,7 @@ public static class CounterDataCollectorExtensions
         return dbCommand.ExecuteScalarAsync(cancellationToken);
     }
 
-    public static DbDataReader DbCommandExecuteDbDatareader(
+    public static DbDataReader DbCommandExecuteDbDataReader(
         this ICounterDataCollector collector,
         DbCommand dbCommand,
         CommandBehavior behavior)
@@ -48,7 +47,7 @@ public static class CounterDataCollectorExtensions
         return dbCommand.ExecuteReader(behavior);
     }
 
-    public static Task<DbDataReader> DbCommandExecuteDbDatareaderAsync(
+    public static Task<DbDataReader> DbCommandExecuteDbDataReaderAsync(
         this ICounterDataCollector collector,
         DbCommand dbCommand,
         CommandBehavior behavior,

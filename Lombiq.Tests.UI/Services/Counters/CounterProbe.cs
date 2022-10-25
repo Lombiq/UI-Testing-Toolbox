@@ -43,7 +43,6 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
         if (!_disposed)
         {
             try { OnAssertData(); }
-            catch { throw; }
             finally
             {
                 if (disposing)

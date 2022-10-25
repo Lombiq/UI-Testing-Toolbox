@@ -25,7 +25,17 @@ public class BasicOrchardFeaturesTests : UITestBase
     public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
         ExecuteTestAsync(
             context => context.TestBasicOrchardFeaturesAsync(RecipeIds.BasicOrchardFeaturesTests),
-            browser);
+            browser,
+            configuration =>
+            {
+                // The UI Testing Toolbox includes DbCommand execution counter, after the end of test it checks the
+                // number of executed commands with the same Sql command and parameter set against the threshold value
+                // in its configuration. If the executed command count is greater then the threshold, it raises a
+                // CounterThresholdException. So here we set the minimum required value to avoid it.
+                configuration.CounterConfiguration.Running.DbCommandExecutionRepetitionThreshold = 26;
+
+                return Task.CompletedTask;
+            });
 }
 
 // END OF TRAINING SECTION: Basic Orchard features tests.

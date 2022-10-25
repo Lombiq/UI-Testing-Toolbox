@@ -78,7 +78,7 @@ public class ProbedDbConnection : DbConnection
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && ProbedConnection != null)
+        if (disposing && ProbedConnection is not null)
         {
             ProbedConnection.StateChange -= StateChangeHandler;
             ProbedConnection.Dispose();

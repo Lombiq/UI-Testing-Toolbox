@@ -1,4 +1,4 @@
-using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services.Counters.Extensions;
 using System;
 using System.ComponentModel;
 using System.Data;
@@ -99,7 +99,7 @@ public class ProbedDbCommand : DbCommand
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
         new ProbedDbDataReader(
-            _counterDataCollector.DbCommandExecuteDbDatareader(ProbedCommand, behavior),
+            _counterDataCollector.DbCommandExecuteDbDataReader(ProbedCommand, behavior),
             behavior,
             this,
             _counterDataCollector);
@@ -108,7 +108,7 @@ public class ProbedDbCommand : DbCommand
         CommandBehavior behavior,
         CancellationToken cancellationToken) =>
         new ProbedDbDataReader(
-            await _counterDataCollector.DbCommandExecuteDbDatareaderAsync(ProbedCommand, behavior, cancellationToken),
+            await _counterDataCollector.DbCommandExecuteDbDataReaderAsync(ProbedCommand, behavior, cancellationToken),
             behavior,
             this,
             _counterDataCollector);
