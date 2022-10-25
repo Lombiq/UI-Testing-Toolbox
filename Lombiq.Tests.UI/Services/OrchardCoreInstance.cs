@@ -180,11 +180,12 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
 
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
+            configuration =>
+                configuration.AddCommandLine(arguments.Arguments.ToArray()),
             builder => builder
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment(Environments.Development)
-                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Arguments.ToArray())),
+                .UseEnvironment(Environments.Development),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 
