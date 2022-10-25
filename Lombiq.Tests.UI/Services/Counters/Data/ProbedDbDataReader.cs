@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services.Counters.Data;
 
-// Generic IEnumerable<> interface is not implemented in DbDatareader.
+// Generic IEnumerable<> interface is not implemented in DbDataReader.
 #pragma warning disable CA1010 // Generic interface should also be implemented
 public class ProbedDbDataReader : DbDataReader
 #pragma warning restore CA1010 // Generic interface should also be implemented
