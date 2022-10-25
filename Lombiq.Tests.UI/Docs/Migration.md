@@ -4,7 +4,7 @@
 
 ### Preparing the web application project
 
-1. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app.
+1. Remove `Lombiq.Tests.UI.AppExtensions` project reference or NuGet package from the web app, if your `Program` file/class not using functionality from it (e.g. `configuration.IsUITesting()`).
 2. Add `Microsoft.Extensions.Configuration.ConfigurationManager` instance directly to `WebApplicationBuilder.Services` in your `Program` file/class.
 
 ```diff
