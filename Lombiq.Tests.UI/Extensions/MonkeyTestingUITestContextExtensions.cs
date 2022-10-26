@@ -61,7 +61,9 @@ public static class MonkeyTestingUITestContextExtensions
         string startingRelativeUrl = null)
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
-        if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
+
+        if (string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToDashboardAsync();
+        else await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
 
         options ??= new MonkeyTestingOptions();
         options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter(context));
