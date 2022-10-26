@@ -21,7 +21,7 @@ internal static class OrchardCoreUITestBaseCounter
 /// Delegate with the signature of <see
 /// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupAsync(Func{UITestContext, Task}, Browser,
 /// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>CustomAdminPrefixTestCase</c> in
-/// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegeate
+/// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate
 /// parameters.
 /// </summary>
 // If you change this, then also change the corresponding method below.
@@ -134,10 +134,10 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
         ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
     protected virtual Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsynct,
+        Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(testAsynct, browser, changeConfiguration.AsCompletedTask());
+        ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.

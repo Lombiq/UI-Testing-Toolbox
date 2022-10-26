@@ -18,9 +18,9 @@ public sealed class AtataScope : IDisposable
     public Uri BaseUri
     {
         get => _baseUri;
-
         set
         {
+            ArgumentNullException.ThrowIfNull(value);
             _baseUri = value;
             AtataContext.BaseUrl = value.ToString();
         }

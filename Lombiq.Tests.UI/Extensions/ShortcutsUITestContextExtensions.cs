@@ -138,7 +138,7 @@ public static class ShortcutsUITestContextExtensions
     /// Creates a user with the given parameters.
     /// </summary>
     /// <exception cref="CreateUserFailedException">
-    /// If creating the user with the given parameters was not successfull.
+    /// If creating the user with the given parameters was not successful.
     /// </exception>
     public static Task CreateUserAsync(
         this UITestContext context,
@@ -166,9 +166,9 @@ public static class ShortcutsUITestContextExtensions
                     if (user == null)
                     {
                         var exceptionLines = new StringBuilder();
-                        exceptionLines.AppendLine("Create user error:");
+                        exceptionLines.AppendLine("User creation error:");
                         errors.ForEach(entry =>
-                            exceptionLines.AppendLine(CultureInfo.InvariantCulture, $"{entry.Key}: {entry.Value}"));
+                            exceptionLines.AppendLine(CultureInfo.InvariantCulture, $"- {entry.Key}: {entry.Value}"));
                         throw new CreateUserFailedException(exceptionLines.ToString());
                     }
                 },
@@ -365,7 +365,7 @@ public static class ShortcutsUITestContextExtensions
 
                     if (recipe == null)
                     {
-                        throw new RecipeNotFoundException($"Recipe with the name {recipeName} not found.");
+                        throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
                     }
 
                     // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
@@ -473,15 +473,18 @@ public static class ShortcutsUITestContextExtensions
                 activateShell);
 
     /// <summary>
-    /// Creates, sets up and navigates to a new URL-prefixed tenant. Also changes <see cref="UITestContext.TenantName"/>.
+    /// Creates, sets up, switches to (with <see cref="UITestContext.SwitchCurrentTenant(string, string)"/>), and
+    /// navigates to a new URL-prefixed tenant.
     /// </summary>
-    public static async Task CreateAndChangeToTenantAsync(
+    public static async Task CreateAndSwitchToTenantAsync(
         this UITestContext context,
         string name,
         string urlPrefix,
         OrchardCoreSetupParameters setupParameters)
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
+        // Change "SqlConnection" to OrchardCore.Data.DatabaseProviderValue.SqlConnection after the Orchard upgrade to
+        // 1.5.
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
             ? "SqlConnection"
             : setupParameters.DatabaseProvider.ToString();
@@ -535,7 +538,7 @@ public static class ShortcutsUITestContextExtensions
                 await setupService.SetupAsync(setupContext);
             });
 
-        context.ChangeCurrentTenant(name, urlPrefix);
+        context.SwitchCurrentTenant(name, urlPrefix);
         await context.GoToRelativeUrlAsync("/");
     }
 

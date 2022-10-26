@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -83,7 +84,7 @@ public class UITestContext
 
     /// <summary>
     /// Gets the current tenant name. When testing sites with multi-tenancy use
-    /// <see cref="ChangeCurrentTenant(string, string)"/>.
+    /// <see cref="SwitchCurrentTenant(string, string)"/>.
     /// </summary>
     public string TenantName { get; private set; } = "Default";
 
@@ -169,6 +170,16 @@ public class UITestContext
     }
 
     /// <summary>
+    /// Clears the application and historic browser logs.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
+    public void ClearLogs(CancellationToken cancellationToken = default)
+    {
+        foreach (var log in Application.GetLogs(cancellationToken)) log.Remove();
+        ClearHistoricBrowserLog();
+    }
+
+    /// <summary>
     /// Invokes the registered <see cref="PageChangeEventHandler"/> s. Should be called when the browser loads a new
     /// page in the app.
     /// </summary>
@@ -204,7 +215,7 @@ public class UITestContext
     /// <summary>
     /// Changes the current tenant context to the Default one. Note that this doesn't navigate the browser.
     /// </summary>
-    public void ChangeCurrentTenantToDefault() => ChangeCurrentTenant("Default", string.Empty);
+    public void ChangeCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
 
     /// <summary>
     /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
@@ -213,7 +224,7 @@ public class UITestContext
     /// <param name="urlPrefix">
     /// The URL prefix configured for the tenant. It should neither start nor end with a slash.
     /// </param>
-    public void ChangeCurrentTenant(string tenantName, string urlPrefix)
+    public void SwitchCurrentTenant(string tenantName, string urlPrefix)
     {
         TenantName = tenantName;
         UrlPrefix = urlPrefix;
