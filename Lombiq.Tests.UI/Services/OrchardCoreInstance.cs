@@ -65,14 +65,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private string _url;
     private TestReverseProxy _reverseProxy;
 
+    public IServiceProvider Services => _orchardApplication?.Services;
+
     public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
     {
         _configuration = configuration;
         _contextId = contextId;
         _testOutputHelper = testOutputHelper;
     }
-
-    public IServiceProvider Services => _orchardApplication?.Services;
 
     public async Task<Uri> StartUpAsync()
     {
@@ -181,11 +181,12 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
 
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
+            configuration =>
+                configuration.AddCommandLine(arguments.Arguments.ToArray()),
             builder => builder
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment(Environments.Development)
-                .ConfigureAppConfiguration(configuration => configuration.AddCommandLine(arguments.Arguments.ToArray())),
+                .UseEnvironment(Environments.Development),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 

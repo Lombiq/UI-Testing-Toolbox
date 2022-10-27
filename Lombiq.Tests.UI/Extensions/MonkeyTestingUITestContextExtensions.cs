@@ -52,7 +52,7 @@ public static class MonkeyTestingUITestContextExtensions
     /// The username to sign in with directly. Defaults to <see cref="DefaultUser.UserName"/>.
     /// </param>
     /// <param name="startingRelativeUrl">
-    /// The relative URL to start monkey testing from. Defaults to <c>"/admin"</c>.
+    /// The relative URL to start monkey testing from. Defaults to <see cref="UITestContext.AdminUrlPrefix"/>.
     /// </param>
     public static async Task TestAdminAsMonkeyRecursivelyAsync(
         this UITestContext context,
@@ -61,7 +61,9 @@ public static class MonkeyTestingUITestContextExtensions
         string startingRelativeUrl = null)
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
-        if (!string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
+
+        if (string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToDashboardAsync();
+        else await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
 
         options ??= new MonkeyTestingOptions();
         options.UrlFilters.Add(new AdminMonkeyTestingUrlFilter(context));

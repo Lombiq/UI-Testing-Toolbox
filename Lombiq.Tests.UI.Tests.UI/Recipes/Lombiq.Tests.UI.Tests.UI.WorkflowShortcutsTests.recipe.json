@@ -1,0 +1,60 @@
+{
+  "name": "Lombiq.Tests.UI.Tests.UI.WorkflowShortcutsTests",
+  "displayName": "Lombiq UI Testing Toolbox - UI Tests - WorkflowShortcutsTests",
+  "description": "Test recipe for WorkflowShortcutsTests.",
+  "author": "Lombiq Technologies",
+  "website": "https://github.com/Lombiq/Orchard-Privacy",
+  "version": "1.0",
+  "issetuprecipe": false,
+  "categories": [
+    "test"
+  ],
+  "tags": [
+    "hidden"
+  ],
+  "variables": {
+    "testWorkflowTypeId": "testworkflow000000",
+    "testHttpRequestActivityId": "testhttpevent00000"
+  },
+  "steps": [
+    {
+      "name": "Feature",
+      "enable": [
+        "OrchardCore.Workflows.Http"
+      ]
+    },
+    {
+      "name": "WorkflowType",
+      "data": [
+        {
+          "WorkflowTypeId": "[js: variables('testWorkflowTypeId')]",
+          "Name": "Test",
+          "IsEnabled": true,
+          "IsSingleton": false,
+          "LockTimeout": 0,
+          "LockExpiration": 0,
+          "DeleteFinishedWorkflows": false,
+          "Activities": [
+            {
+              "ActivityId": "[js: variables('testHttpRequestActivityId')]",
+              "Name": "HttpRequestEvent",
+              "X": 20,
+              "Y": 100,
+              "IsStart": true,
+              "Properties": {
+                "ActivityMetadata": {
+                  "Title": "Test HTTP Request"
+                },
+                "HttpMethod": "GET",
+                "Url": "/workflows/Invoke?token=CfDJ8BtxLPJD0O1AigqobIx0mBsmvYzTrbwFAac2QNMffPoT5KmTI7-hinxabRodKzV3XOfrrt2st8ekOh3y3i0976hmqhnVYMJ6lLbd0UtmmhqJueJPAhNkhrijb6_nMIhtdRy_y3ixLInICBlX3TJjp0fVpaqGwUWL6B4fw-ldbCm9lq0henb_QH27PuAUnoSTy-PXUyYJmgLml9C9bV6v3l0CMVMmQ8HUiirl_Fx5cp7k",
+                "ValidateAntiforgeryToken": true,
+                "TokenLifeSpan": 0
+              }
+            }
+          ],
+          "Transitions": []
+        }
+      ]
+    }
+  ]
+}

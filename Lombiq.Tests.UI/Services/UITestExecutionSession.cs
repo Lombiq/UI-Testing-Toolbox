@@ -68,7 +68,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             if (_hasSetupOperation)
             {
-                var snapshotSubdirectory = "Default";
+                var snapshotSubdirectory = "SQLite";
                 if (_configuration.UseSqlServer)
                 {
                     snapshotSubdirectory = _configuration.UseAzureBlobStorage
@@ -77,7 +77,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 }
                 else if (_configuration.UseAzureBlobStorage)
                 {
-                    snapshotSubdirectory = "AzureBlob";
+                    snapshotSubdirectory = "SQLite-AzureBlob";
                 }
 
                 snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
@@ -169,8 +169,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
 
-            _context.FailureDumpContainer.Values
-                .ForEach(value => value.Dispose());
+            _context.FailureDumpContainer.Values.ForEach(value => value.Dispose());
             _context.FailureDumpContainer.Clear();
         }
 
@@ -222,6 +221,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         int retryCount,
         IDictionary<string, IFailureDumpItem> failureDumpContainer)
     {
+        if (!_dumpConfiguration.CreateFailureDump) return;
+
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
 
@@ -306,7 +307,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         catch (Exception dumpException)
         {
             _testOutputHelper.WriteLineTimestampedAndDebug(
-                $"Saving dump({dumpRelativePath}) of the test from context failed with the following exception: {dumpException}");
+                $"Saving dump ({dumpRelativePath}) of the test from context failed with the following exception: {dumpException}");
         }
     }
 
@@ -384,12 +385,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
-            var accessbilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
-            _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessbilityReportPath);
+            var accessibilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
+            _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
             if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessbilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessibilityReportPath);
             }
         }
 
@@ -642,17 +643,25 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
 
-            var appSettingsPath = Path.Combine(contentRootPath, "App_Data", "Sites", "Default", "appsettings.json");
+            var sitesDirectoryPath = Path.Combine(contentRootPath, "App_Data", "Sites");
+            var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
 
-            if (!File.Exists(appSettingsPath))
+            foreach (var tenantDirectoryPath in tenantDirectoryPaths)
             {
-                throw new InvalidOperationException(
-                    "The setup snapshot's appsettings.json file wasn't found. This most possibly means that the setup failed.");
-            }
+                var appSettingsPath = Path.Combine(tenantDirectoryPath, "appsettings.json");
 
-            var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
-            appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
-            await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
+                if (!File.Exists(appSettingsPath))
+                {
+                    throw new InvalidOperationException(
+                        "The setup snapshot's appsettings.json file for the tenant " +
+                        Path.GetFileName(tenantDirectoryPath) +
+                        " wasn't found. This most possibly means that the tenant's setup failed.");
+                }
+
+                var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
+                appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
+                await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
+            }
         }
 
         _configuration.OrchardCoreConfiguration.BeforeAppStart =
@@ -674,7 +683,9 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
             arguments
-                .AddWithValue("OrchardCore:OrchardCore_Media_Azure:BasePath", value: azureBlobStorageContext.BasePath)
+                .AddWithValue(
+                    "OrchardCore:OrchardCore_Media_Azure:BasePath",
+                    value: azureBlobStorageContext.BasePath + "/{{ ShellSettings.Name }}")
                 .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
                     value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
@@ -721,14 +732,14 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     {
         if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
 
-        var screnshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
-        FileSystemHelper.EnsureDirectoryExists(screnshotsPath);
+        var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        FileSystemHelper.EnsureDirectoryExists(screenshotsPath);
 
         try
         {
             context
                 .TakeScreenshot()
-                .SaveAsFile(GetScreenshotPath(screnshotsPath, _screenshotCount));
+                .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount));
         }
         catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
         {
