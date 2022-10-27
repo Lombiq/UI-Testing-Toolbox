@@ -17,7 +17,7 @@ namespace Lombiq.Tests.UI.Services;
 /// </remarks>
 public static class TestConfigurationManager
 {
-    private static readonly IConfiguration _configuration = BuildConfiguration();
+    public static IConfiguration RootConfiguration { get; } = BuildConfiguration();
 
     public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", throwIfNullOrEmpty: true), CultureInfo.InvariantCulture);
 
@@ -45,7 +45,7 @@ public static class TestConfigurationManager
     public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
     {
         var prefixedKey = "Lombiq_Tests_UI:" + key;
-        var config = _configuration.GetValue<string>(prefixedKey);
+        var config = RootConfiguration.GetValue<string>(prefixedKey);
 
         return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
             ? throw new InvalidOperationException($"The configuration with the key {prefixedKey} was null or empty.")
@@ -58,7 +58,7 @@ public static class TestConfigurationManager
         var result = new T();
 
         var prefixedKey = "Lombiq_Tests_UI:" + typeof(T).Name;
-        _configuration.Bind(prefixedKey, result);
+        RootConfiguration.Bind(prefixedKey, result);
 
         return result;
     }
