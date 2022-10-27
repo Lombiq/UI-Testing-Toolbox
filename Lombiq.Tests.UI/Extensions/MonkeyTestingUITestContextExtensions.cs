@@ -52,7 +52,7 @@ public static class MonkeyTestingUITestContextExtensions
     /// The username to sign in with directly. Defaults to <see cref="DefaultUser.UserName"/>.
     /// </param>
     /// <param name="startingRelativeUrl">
-    /// The relative URL to start monkey testing from. Defaults to <c>"/admin"</c>.
+    /// The relative URL to start monkey testing from. Defaults to <see cref="UITestContext.AdminUrlPrefix"/>.
     /// </param>
     public static async Task TestAdminAsMonkeyRecursivelyAsync(
         this UITestContext context,
