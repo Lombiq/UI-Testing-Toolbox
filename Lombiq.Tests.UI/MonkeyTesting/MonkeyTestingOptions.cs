@@ -141,6 +141,12 @@ public sealed class MonkeyTestingOptions
         return this;
     }
 
+    public MonkeyTestingOptions ExcludeLogOffPageFromMonkeyTesting()
+    {
+        UrlFilters.Add(new NotStartsWithMonkeyTestingUrlFilter("/Users/LogOff"));
+        return this;
+    }
+
     /// <summary>
     /// Adds the login page (/Login) and the register page (/Register) to the URL filters (i.e. monkey testing will not
     /// happen on those pages).
