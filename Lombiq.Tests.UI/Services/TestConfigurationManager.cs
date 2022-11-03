@@ -17,6 +17,10 @@ namespace Lombiq.Tests.UI.Services;
 /// </remarks>
 public static class TestConfigurationManager
 {
+    /// <summary>
+    /// Gets the root <see cref="IConfiguration"/> that you can use to access configuration values from environment
+    /// variables, or a local or global TestConfiguration.json file.
+    /// </summary>
     public static IConfiguration RootConfiguration { get; } = BuildConfiguration();
 
     public static int GetAgentIndex() => int.Parse(GetConfiguration("AgentIndex", throwIfNullOrEmpty: true), CultureInfo.InvariantCulture);
