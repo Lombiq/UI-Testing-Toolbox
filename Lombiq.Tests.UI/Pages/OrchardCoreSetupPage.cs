@@ -108,7 +108,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
             {
                 throw new InvalidOperationException(
                     $"{nameof(OrchardCoreSetupParameters)}.{nameof(parameters.DatabaseProvider)}: " +
-                    "If the selected database provider is other than SQLite a connection string must be provided.");
+                    "If the selected database provider is other than SQLite, a connection string must be provided.");
             }
 
             if (!string.IsNullOrEmpty(parameters.TablePrefix)) TablePrefix.Set(parameters.TablePrefix);
