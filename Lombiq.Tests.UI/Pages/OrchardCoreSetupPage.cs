@@ -29,6 +29,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
         [Term("Sql Server")]
         SqlServer,
         Sqlite,
+        [Term("MySql")]
         MySql,
         Postgres,
         ProvidedByEnvironment,
