@@ -61,8 +61,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="160.6161.0" />
-    <!-- Can't update to Microsoft.SqlServer.SqlManagementObjects v170.8.0 or later until an Orchard upgrade:
-    Its Microsoft.Data.SqlClient dependency is higher than that required by OrchardCore.Data.YesSql. -->
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.8.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
     <!-- During Orchard upgrades, this needs to be kept up to date with the version Orchard uses. -->
