@@ -105,7 +105,7 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
 ```json
 {
   "SqlServerDatabaseConfiguration": {
-    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=true;Encrypt=false;MultiSubnetFailover=True"
+    "ConnectionStringTemplate": "Server=.;Database=LombiqUITestingToolbox_{{id}};User Id=sa;Password=Password1!;MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=true;Encrypt=false"
   },
   "DockerConfiguration": {
     "ContainerSnapshotPath": "/data/Snapshots",
@@ -114,6 +114,6 @@ SQL Server on Linux only has SQL Authentication and you still have to tell the t
 }
 ```
 
-Note that `TrustServerCertificate=true;Encrypt=false;MultiSubnetFailover=True` is used in the connection string due to breaking changes in _Microsoft.Data.SqlClient_ as described in [this issue](https://github.com/dotnet/SqlClient/issues/1479). The same is also present in the default value of the connection string template. This configuration would be a security hole in production environment, but it's safe for testing and development.
+Note that `TrustServerCertificate=true;Encrypt=false` is used in the connection string due to breaking changes in _Microsoft.Data.SqlClient_ as described in [this issue](https://github.com/dotnet/SqlClient/issues/1479). The same is also present in the default value of the connection string template. This configuration would be a security hole in production environment, but it's safe for testing and development.
 
 The default value of `ContainerSnapshotPath` is `"/data/Snapshots"` so you can omit that.
