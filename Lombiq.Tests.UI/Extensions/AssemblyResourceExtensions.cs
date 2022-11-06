@@ -1,5 +1,6 @@
 using SixLabors.ImageSharp;
 using System.Reflection;
+using System.Xml;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -10,8 +11,11 @@ public static class AssemblyResourceExtensions
     /// </summary>
     public static Image GetResourceImageSharpImage(this Assembly assembly, string name)
     {
-        using var resourceStream = assembly.GetManifestResourceStream(name);
+        if (assembly.GetManifestResourceStream(name) is not { } resourceStream) return null;
 
-        return Image.Load(resourceStream);
+        using (resourceStream)
+        {
+            return Image.Load(resourceStream);
+        }
     }
 }
