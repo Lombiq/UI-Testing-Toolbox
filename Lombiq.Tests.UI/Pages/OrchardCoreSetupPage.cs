@@ -29,8 +29,10 @@ public sealed class OrchardCoreSetupPage : Page<_>
         [Term("Sql Server")]
         SqlServer,
         Sqlite,
+        [Term("MySql")]
         MySql,
         Postgres,
+        ProvidedByEnvironment,
     }
 
     [FindById("culturesList")]
@@ -81,25 +83,33 @@ public sealed class OrchardCoreSetupPage : Page<_>
 
         Language.Set(parameters.LanguageValue);
         SiteName.Set(parameters.SiteName);
-        // If there are a lot of recipes and "headless" mode is disabled, the recipe can become unclickable because the
-        // list of recipes is too long and it's off the screen, so we need to use JavaScript for clicking it.
-        context
-            .ExecuteScript("document.querySelectorAll(\"a[data-recipe-name='" + parameters.RecipeId + "']\")[0]" +
-            ".click()");
-        DatabaseProvider.Set(parameters.DatabaseProvider);
+
+        if (!string.IsNullOrEmpty(parameters.RecipeId))
+        {
+            // If there are a lot of recipes and "headless" mode is disabled, the recipe can become unclickable because
+            // the list of recipes is too long and it's off the screen, so we need to use JavaScript for clicking it.
+            context
+                .ExecuteScript("document.querySelectorAll(\"a[data-recipe-name='" + parameters.RecipeId + "']\")[0]" +
+                ".click()");
+        }
+
+        if (parameters.DatabaseProvider != DatabaseType.ProvidedByEnvironment)
+        {
+            DatabaseProvider.Set(parameters.DatabaseProvider);
+        }
 
         if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
         {
             SiteTimeZone.Set(parameters.SiteTimeZoneValue);
         }
 
-        if (parameters.DatabaseProvider != DatabaseType.Sqlite)
+        if (parameters.DatabaseProvider is not DatabaseType.Sqlite and not DatabaseType.ProvidedByEnvironment)
         {
             if (string.IsNullOrEmpty(parameters.ConnectionString))
             {
                 throw new InvalidOperationException(
                     $"{nameof(OrchardCoreSetupParameters)}.{nameof(parameters.DatabaseProvider)}: " +
-                    "If the selected database provider is other than SQLite a connection string must be provided.");
+                    "If the selected database provider is other than SQLite, a connection string must be provided.");
             }
 
             if (!string.IsNullOrEmpty(parameters.TablePrefix)) TablePrefix.Set(parameters.TablePrefix);

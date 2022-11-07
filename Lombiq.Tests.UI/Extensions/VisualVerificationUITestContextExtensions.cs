@@ -7,11 +7,11 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -271,13 +271,15 @@ to customize the name of the dump item.";
         configurator?.Invoke(configuration);
 
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
-            .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame));
+            .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
+            .ToList();
         var testFrame = stackTrace
             .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
             testFrame = stackTrace
+                .AsEnumerable()
                 .Reverse()
                 .TakeWhile(frame => frame.GetMethodBase() != testFrame.GetMethodBase())
                 .TakeLast(configuration.StackOffset)
@@ -299,9 +301,9 @@ to customize the name of the dump item.";
         approvedContext.BaselineFileName = configuration.BaselineFileNameFormatter(configuration, approvedContext);
 
         // Try loading baseline image from embedded resources first.
-        approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType.Namespace}.{approvedContext.BaselineFileName}.png";
-        var baselineImage = (Image)testFrame.MethodInfo.DeclaringType.Assembly
-            .TryGetResourceBitmap(approvedContext.BaselineResourceName);
+        approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType!.Namespace}.{approvedContext.BaselineFileName}.png";
+        var baselineImage = testFrame.MethodInfo.DeclaringType.Assembly
+            .GetResourceImageSharpImage(approvedContext.BaselineResourceName);
 
         if (baselineImage == null)
         {
@@ -316,7 +318,7 @@ to customize the name of the dump item.";
                     Path.Combine(
                         VisualVerificationMatchNames.DumpFolderName,
                         suggestedImageFileName),
-                    suggestedImage.Clone(new Rectangle(Point.Empty, suggestedImage.Size), suggestedImage.PixelFormat),
+                    suggestedImage.Clone(),
                     messageIfExists: HintFailureDumpItemAlreadyExists);
 
                 throw new VisualVerificationSourceInformationNotAvailableException(
@@ -334,20 +336,20 @@ to customize the name of the dump item.";
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
 
-                suggestedImage.Save(approvedContext.BaselineImagePath, ImageFormat.Png);
+                suggestedImage.Save(approvedContext.BaselineImagePath, new PngEncoder());
 
                 // Appending suggested baseline image to failure dump too.
                 context.AppendFailureDump(
                     Path.Combine(
                         VisualVerificationMatchNames.DumpFolderName,
                         $"{approvedContext.BaselineFileName}.png"),
-                    suggestedImage.Clone(new Rectangle(Point.Empty, suggestedImage.Size), suggestedImage.PixelFormat),
+                    suggestedImage.Clone(),
                     messageIfExists: HintFailureDumpItemAlreadyExists);
 
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
-            baselineImage = Image.FromFile(approvedContext.BaselineImagePath);
+            baselineImage = Image.Load(approvedContext.BaselineImagePath);
         }
 
         try
@@ -398,9 +400,7 @@ to customize the name of the dump item.";
         using var fullScreenImage = context.TakeFullPageScreenshot();
 
         // We take a screenshot of the element area. This will be compared to a baseline image.
-        using var elementImageOriginal = context.TakeElementScreenshot(element)
-            .ToImageSharpImage()
-            .ShouldNotBeNull();
+        using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
         // Checking the size of captured image.
         elementImageOriginal.Width
@@ -408,15 +408,14 @@ to customize the name of the dump item.";
         elementImageOriginal.Height
             .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
 
-        using var baselineImageOriginal = baseline
-            .ToImageSharpImage();
+        using var baselineImageOriginal = baseline.Clone();
 
         // Here we crop the regionOfInterest.
         using var baselineImageCropped = baselineImageOriginal.Clone();
         using var elementImageCropped = elementImageOriginal.Clone();
 
-        baselineImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
-        elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion.ToImageSharpRectangle()));
+        baselineImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion));
+        elementImageCropped.Mutate(imageContext => imageContext.Crop(cropRegion));
 
         // At this point, we have baseline and captured images too.
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
@@ -452,7 +451,7 @@ to customize the name of the dump item.";
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")),
-                fullScreenImage.Clone(new Rectangle(Point.Empty, fullScreenImage.Size), fullScreenImage.PixelFormat),
+                fullScreenImage.Clone(),
                 messageIfExists: HintFailureDumpItemAlreadyExists);
 
             // The original element screenshot

@@ -1,16 +1,11 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using SixLabors.ImageSharp;
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
-// We need Image class from SixLabors.ImageSharp, but there is an Image class in System.Drawing too. So lets call
-// SixLabors.ImageSharp.Image as ImageSharpImage.
-using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -76,44 +71,18 @@ public static class FailureDumpUITestContextExtensions
     /// </summary>
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
-    /// <param name="bitmap">
+    /// <param name="image">
     /// File content. The <see cref="Image"/> will be disposed at the end.
     /// </param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
-        Image bitmap,
-        string messageIfExists = null) => context
-        .AppendFailureDump(
-            fileName,
-            bitmap,
-            content =>
-            {
-                var memoryStream = new MemoryStream();
-                bitmap.Save(memoryStream, ImageFormat.Png);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                return Task.FromResult((Stream)memoryStream);
-            },
-            messageIfExists: messageIfExists);
-
-    /// <summary>
-    /// Appends <see cref="ImageSharpImage"/> as file content to be collected on failure dump.
-    /// </summary>
-    /// <param name="context"><see cref="UITestContext"/> instance.</param>
-    /// <param name="fileName">The name of the file.</param>
-    /// <param name="image">
-    /// File content. The <see cref="ImageSharpImage"/> will be disposed at the end.
-    /// </param>
-    public static void AppendFailureDump(
-        this UITestContext context,
-        string fileName,
-        ImageSharpImage image,
+        Image image,
         string messageIfExists = null) => context
         .AppendFailureDump(
             fileName,
             image,
-            content => Task.FromResult(image.ToStream()),
+            _ => Task.FromResult(image.ToStream()),
             messageIfExists: messageIfExists);
 
     private static void AppendFailureDumpInternal(
