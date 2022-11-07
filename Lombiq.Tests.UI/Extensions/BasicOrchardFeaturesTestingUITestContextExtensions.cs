@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -107,6 +108,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         await context.TestLoginAsync();
         await context.TestContentOperationsAsync();
         await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestMediaOperationsAsync();
         await context.TestLogoutAsync();
     }
 
@@ -492,18 +494,71 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
                     .Features[featureName].CheckBox.Check()
                     .BulkActions.Toggle.Click()
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
+                    .Features[featureName].CheckBox.Check()
+                    .BulkActions.Toggle.Click()
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+            });
 
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
-                .Features[featureName].CheckBox.Check()
-                .BulkActions.Toggle.Click()
+    public static Task TestMediaOperationsAsync(this UITestContext context) =>
+        context.ExecuteTestAsync(
+            "Test media operations",
+            async () =>
+            {
+                // Upload files to root
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+                context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"))
+                    .ShouldBeAsString("Image.png");
+                context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
+                    .ShouldBeAsString("Document.pdf");
 
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                // Create folder
+                await context.GoToRelativeUrlAsync("/Admin/Media");
+                await context.Get(By.CssSelector("#folder-tree .treeroute .folder-actions")).ClickReliablyAsync(context);
+
+                var folderNameInput = context.Get(By.Id("create-folder-name"));
+                folderNameInput.SendKeys("Example Folder");
+
+                await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
+
+                // Remove when upgraded to OC1.5
+                await context.ClickReliablyOnAsync(By.CssSelector(".ta-navbar-brand"));
+
+                // Upload files to folder
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+                context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"))
+                    .ShouldBeAsString("Image.png");
+                context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
+                    .ShouldBeAsString("Document.pdf");
+
+                // Delete files
+                await context
+                    .Get(By.CssSelector("#mediaContainerMain div.media-container-middle.p-3 tr:nth-child(1) a.btn.btn-link.btn-sm.delete-button"))
+                    .ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
+
+                await context
+                    .Get(By.CssSelector("#mediaContainerMain div.media-container-middle.p-3 tr:nth-child(2) a.btn.btn-link.btn-sm.delete-button"))
+                    .ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
+
+                // Delete folder
+                var deleteFolderButton =
+                    context.Get(By.CssSelector("#folder-tree > li > ol > li.selected > div > a > div.btn-group.folder-actions > a:nth-child(2)"));
+                await deleteFolderButton.ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
             });
 
     /// <summary>
