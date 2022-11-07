@@ -1,10 +1,11 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -26,10 +27,10 @@ public static class ScreenshotUITestContextExtensions
     /// <summary>
     /// Takes a screenshot of the whole page, including content that needs to be scrolled down to.
     /// </summary>
-    public static Bitmap TakeFullPageScreenshot(this UITestContext context)
+    public static Image TakeFullPageScreenshot(this UITestContext context)
     {
         var originalScrollPosition = context.GetScrollPosition();
-        var images = new Dictionary<Point, Bitmap>();
+        var images = new Dictionary<Point, Image>();
 
         try
         {
@@ -72,12 +73,11 @@ public static class ScreenshotUITestContextExtensions
                     ? viewportSize.Height
                     : viewportSize.Height - (viewportSize.Height % position.Y));
 
-            var screenshot = new Bitmap(viewportSize.Width, height, PixelFormat.Format32bppArgb);
-            using var graphics = Graphics.FromImage(screenshot);
+            var screenshot = new SixLabors.ImageSharp.Image<Argb32>(viewportSize.Width, height);
 
-            foreach (var item in images)
+            foreach (var (point, image) in images)
             {
-                graphics.DrawImage(item.Value, item.Key);
+                screenshot.Mutate(ctx => ctx.DrawImage(image, point, 1));
             }
 
             return screenshot;
@@ -101,7 +101,7 @@ public static class ScreenshotUITestContextExtensions
     /// <summary>
     /// Takes a screenshot of an element region only.
     /// </summary>
-    public static Bitmap TakeElementScreenshot(this UITestContext context, IWebElement element)
+    public static Image TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
@@ -119,14 +119,13 @@ public static class ScreenshotUITestContextExtensions
                 + $"{elementAbsoluteSize.Height.ToTechnicalString()}.");
         }
 
-        return screenshot.Clone(
-            new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height),
-            screenshot.PixelFormat);
+        var bounds = new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
+        return screenshot.Clone(ctx => ctx.Crop(bounds));
     }
 
     /// <summary>
     /// Takes a screenshot of an element region only.
     /// </summary>
-    public static Bitmap TakeElementScreenshot(this UITestContext context, By elementSelector) =>
+    public static Image TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
 }
