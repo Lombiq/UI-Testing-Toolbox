@@ -1,6 +1,5 @@
 using SixLabors.ImageSharp;
 using System.Reflection;
-using System.Xml;
 
 namespace Lombiq.Tests.UI.Extensions;
 
