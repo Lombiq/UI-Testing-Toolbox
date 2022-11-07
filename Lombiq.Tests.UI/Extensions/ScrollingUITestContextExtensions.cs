@@ -1,8 +1,8 @@
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Globalization;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -12,14 +12,23 @@ public static class ScrollingUITestContextExtensions
     /// <summary>
     /// Scrolls to a selected element in the document.
     /// </summary>
-    public static void ScrollTo(this UITestContext context, By by) =>
-        context.ScrollTo(context.Get(by).Location);
+    public static void ScrollTo(this UITestContext context, By by)
+    {
+        var location = context.Get(by).Location;
+        context.ScrollTo(location.X, location.Y);
+    }
 
     /// <summary>
     /// Scrolls to a particular set of coordinates in the document.
     /// </summary>
     public static void ScrollTo(this UITestContext context, Point position) =>
-        context.ExecuteScript($"window.scrollTo(arguments[0], arguments[1], \"instant\");", position.X, position.Y);
+        context.ScrollTo(position.X, position.Y);
+
+    /// <summary>
+    /// Scrolls to a particular set of coordinates in the document.
+    /// </summary>
+    public static void ScrollTo(this UITestContext context, int x, int y) =>
+        context.ExecuteScript("window.scrollTo(arguments[0], arguments[1], \"instant\");", x, y);
 
     /// <summary>
     /// Scrolls the document vertically to the given <paramref name="position"/>.

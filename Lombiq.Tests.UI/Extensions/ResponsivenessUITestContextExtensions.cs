@@ -1,9 +1,9 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Globalization;
 using Xunit.Abstractions;
 
@@ -35,7 +35,7 @@ public static class ResponsivenessUITestContextExtensions
     {
         context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
             "Set window size to {0}x{1}.", size.Width, size.Height);
-        context.Driver.Manage().Window.Size = size;
+        context.Driver.Manage().Window.Size = new System.Drawing.Size(size.Width, size.Height);
     }
 
     /// <summary>
