@@ -68,9 +68,7 @@
     <PackageReference Include="OrchardCore.Abstractions" Version="1.5.0" />
     <PackageReference Include="Selenium.Axe" Version="4.0.2" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
-    <!-- Can't update to WebDriverManager v2.14.1 or later until an Orchard upgrade: Its AngleSharp dependency is
-    higher than that required by HtmlSanitizer, required by OrchardCore.Infrastructure. -->
-    <PackageReference Include="WebDriverManager" Version="2.13.0" />
+    <PackageReference Include="WebDriverManager" Version="2.16.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
   </ItemGroup>
 
