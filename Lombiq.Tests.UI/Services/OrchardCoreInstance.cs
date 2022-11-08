@@ -136,7 +136,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
-                    ContentLoader = async () => await File.ReadAllTextAsync(filePath, cancellationToken),
+                    ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
                 })
             : Enumerable.Empty<IApplicationLog>();
     }
