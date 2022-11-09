@@ -126,8 +126,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
     {
-        if (cancellationToken == default) cancellationToken = CancellationToken.None;
-
         var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
         return Directory.Exists(logFolderPath)
             ? Directory
@@ -136,9 +134,16 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
-                    ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
+                    Content = GetFileContent(filePath),
                 })
             : Enumerable.Empty<IApplicationLog>();
+    }
+
+    public string GetFileContent(string filePath)
+    {
+        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var streamReader = new StreamReader(fileStream);
+        return streamReader.ReadToEnd();
     }
 
     public TService GetRequiredService<TService>() =>
@@ -215,9 +220,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     {
         public string Name { get; init; }
         public string FullName { get; init; }
-        public Func<Task<string>> ContentLoader { get; init; }
-
-        public Task<string> GetContentAsync() => ContentLoader();
+        public string Content { get; init; }
 
         public void Remove()
         {

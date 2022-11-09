@@ -11,5 +11,5 @@ public static class ApplicationLogEnumerableExtensions
     public static async Task<string> ToFormattedStringAsync(this IEnumerable<IApplicationLog> logs) =>
         string.Join(
             Environment.NewLine + Environment.NewLine,
-            await Task.WhenAll(logs.Select(async log => log.Name + Environment.NewLine + Environment.NewLine + await log.GetContentAsync())));
+            await Task.WhenAll(logs.Select(log => Task.FromResult(log.Name + Environment.NewLine + Environment.NewLine + log.Content))));
 }
