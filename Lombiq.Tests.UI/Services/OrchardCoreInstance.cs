@@ -134,16 +134,16 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
-                    Content = GetFileContent(filePath),
+                    ContentLoader = () => GetFileContentAsync(filePath),
                 })
             : Enumerable.Empty<IApplicationLog>();
     }
 
-    public string GetFileContent(string filePath)
+    public async Task<string> GetFileContentAsync(string filePath)
     {
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
-        return streamReader.ReadToEnd();
+        return await streamReader.ReadToEndAsync();
     }
 
     public TService GetRequiredService<TService>() =>
@@ -220,7 +220,9 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     {
         public string Name { get; init; }
         public string FullName { get; init; }
-        public string Content { get; init; }
+        public Func<Task<string>> ContentLoader { get; init; }
+
+        public Task<string> GetContentAsync() => ContentLoader();
 
         public void Remove()
         {

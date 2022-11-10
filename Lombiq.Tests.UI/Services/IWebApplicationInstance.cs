@@ -67,10 +67,10 @@ public interface IApplicationLog
     string Name { get; }
 
     /// <summary>
-    /// Gets the content of the log, in case of log files reads the file contents.
+    /// Returns the content of the log, in case of log files reads the file contents.
     /// </summary>
     /// <returns>The contents.</returns>
-    string Content { get; }
+    Task<string> GetContentAsync();
 
     /// <summary>
     /// Removes the log if possible.
