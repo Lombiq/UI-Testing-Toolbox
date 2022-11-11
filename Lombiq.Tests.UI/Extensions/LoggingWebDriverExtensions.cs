@@ -1,7 +1,26 @@
 using OpenQA.Selenium;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
+
+[Obsolete($"Use {nameof(LogEntry)} instead.")]
+public class BrowserLogMessage
+{
+    public string Source { get; set; }
+
+    public MessageLevel Level { get; set; }
+    public DateTime DateTimeUtc { get; set; }
+    public string Message { get; set; }
+
+    public enum MessageLevel
+    {
+        Severe,
+        Warning,
+        Info,
+    }
+}
 
 public static class LoggingWebDriverExtensions
 {
@@ -12,4 +31,8 @@ public static class LoggingWebDriverExtensions
     /// </summary>
     public static IEnumerable<LogEntry> GetAndEmptyBrowserLog(this IWebDriver driver) =>
         driver.Manage().Logs.GetLog(LogType.Browser);
+
+    [Obsolete($"Use {nameof(GetAndEmptyBrowserLog)} instead.")]
+    public static Task<IEnumerable<BrowserLogMessage>> GetAndEmptyBrowserLogAsync(this IWebDriver driver) =>
+        throw new NotSupportedException($"Use {nameof(GetAndEmptyBrowserLog)} instead.");
 }
