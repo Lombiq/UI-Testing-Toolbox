@@ -12,4 +12,7 @@ public static class SeleniumLogEntryExtensions
     public static bool IsNotFoundLogEntry(this LogEntry logEntry, string url) =>
         logEntry.Message.ContainsOrdinalIgnoreCase(
             @$"{url} - Failed to load resource: the server responded with a status of 404");
+
+    [Obsolete("Use IsNotFoundLogEntry() instead.")]
+    public static bool IsNotFoundMessage(this LogEntry logEntry, string url) => logEntry.IsNotFoundLogEntry(url);
 }
