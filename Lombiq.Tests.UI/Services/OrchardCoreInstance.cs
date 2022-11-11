@@ -139,6 +139,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             : Enumerable.Empty<IApplicationLog>();
     }
 
+    // This needs to be public and instance-level. If it's private static then it causes the app under test not to
+    // launch under Ubuntu for some reason, while working under Windows.
     public async Task<string> GetFileContentAsync(string filePath)
     {
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
