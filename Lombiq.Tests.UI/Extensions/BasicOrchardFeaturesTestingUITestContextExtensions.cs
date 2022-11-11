@@ -536,8 +536,6 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
 
-                await context.ClickReliablyOnAsync(By.CssSelector(".ta-navbar-brand"));
-
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload");
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
                 context.WaitForPageLoad();
