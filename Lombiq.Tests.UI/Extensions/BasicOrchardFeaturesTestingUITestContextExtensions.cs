@@ -511,7 +511,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             "Test media operations",
             async () =>
             {
-                context.GoToRelativeUrlAsync("Admin/Media");
+                await context.GoToRelativeUrlAsync("Admin/Media");
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload");
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
