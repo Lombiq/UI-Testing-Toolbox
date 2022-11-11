@@ -23,5 +23,8 @@ public class InstanceCommandLineArgumentsBuilder
         return this;
     }
 
+    [Obsolete("Use AddSwitch or AddWithValue instead.")]
+    public InstanceCommandLineArgumentsBuilder Add(string value) => throw new NotSupportedException();
+
     private static string PrepareArg(string argument) => $"--{argument.TrimStart('-')}";
 }
