@@ -311,7 +311,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         }
     }
 
-    private async Task SaveTestOutputAsync(string debugInformationPath)
+    private Task SaveTestOutputAsync(string debugInformationPath)
     {
         try
         {
@@ -320,25 +320,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             message += " testOutputPath: " + testOutputPath2;
 
             throw new InvalidOperationException(message);
-
-            if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
-            {
-                // While this depends on the directory creation in the above try block it needs to come after the catch
-                // otherwise the message saved there wouldn't be included.
-
-                var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
-                await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "TestOutput", testOutputPath);
-                }
-            }
         }
         catch (Exception testOutputHelperException)
         {
             _testOutputHelper.WriteLine(
                 $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
+            return Task.CompletedTask;
         }
     }
 
