@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -310,19 +311,31 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         }
     }
 
-    private Task SaveTestOutputAsync(string debugInformationPath)
+    private async Task SaveTestOutputAsync(string debugInformationPath)
     {
         try
         {
-            var message = "_testOutputHelper type:" + _testOutputHelper.GetType();
+            var concreteTestOutputHelper = _testOutputHelper as TestOutputHelper;
+            concreteTestOutputHelper ??= (_testOutputHelper as ITestOutputHelperDecorator)?.Decorated as TestOutputHelper;
 
-            throw new InvalidOperationException(message);
+            if (concreteTestOutputHelper != null)
+            {
+                // While this depends on the directory creation in the above try block it needs to come after the catch
+                // otherwise the message saved there wouldn't be included.
+
+                var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
+                await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
+
+                if (_configuration.ReportTeamCityMetadata)
+                {
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "TestOutput", testOutputPath);
+                }
+            }
         }
         catch (Exception testOutputHelperException)
         {
             _testOutputHelper.WriteLine(
                 $"Saving the contents of the test output failed with the following exception: {testOutputHelperException}");
-            return Task.CompletedTask;
         }
     }
 
