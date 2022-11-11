@@ -27,7 +27,7 @@ public class MonkeyTests : UITestBase
 
     // The basic idea is that you unleash monkey testing on specific pages or sections of the site, like a contact form
     // or the content management UI. First, we test a single page.
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
@@ -42,7 +42,7 @@ public class MonkeyTests : UITestBase
 
     // Recursive testing will just continue testing following the configured rules until it runs out of time or new
     // pages.
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
@@ -57,7 +57,7 @@ public class MonkeyTests : UITestBase
             browser);
 
     // Let's test with an authenticated user too.
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -71,7 +71,7 @@ public class MonkeyTests : UITestBase
                     logEntries.Where(IsValidAdminBrowserLogEntry).ToFormattedString()));
 
     // Let's just test the background tasks management admin area.
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task TestAdminBackgroundTasksAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>

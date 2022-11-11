@@ -19,7 +19,7 @@ public class EmailTests : UITestBase
     {
     }
 
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task SendingTestEmailShouldWork(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>

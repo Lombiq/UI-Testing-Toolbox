@@ -26,7 +26,7 @@ public class BasicVisualVerificationTests : UITestBase
     // the Chrome version 67 and 68 in the image rendering. This caused that the rendered image looked similar, but
     // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
     // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
-    [Theory, Chrome]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
     public Task VerifyBlogImage(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -54,7 +54,7 @@ public class BasicVisualVerificationTests : UITestBase
     // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
     // in 2022.
-    [Theory, Chrome, Edge]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -79,7 +79,7 @@ public class BasicVisualVerificationTests : UITestBase
             browser);
 
     // Checking that everything is OK with the homepage, just for fun.
-    [Theory, Chrome, Edge]
+    [Theory(Skip = "Not needed for troubleshooting."), Chrome, Edge]
     public Task VerifyHomePage(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
