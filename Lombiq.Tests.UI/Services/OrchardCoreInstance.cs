@@ -139,6 +139,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             : Enumerable.Empty<IApplicationLog>();
     }
 
+    public async Task<string> GetFileContentAsync(string filePath)
+    {
+        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var streamReader = new StreamReader(fileStream);
+        return await streamReader.ReadToEndAsync();
+    }
+
     public TService GetRequiredService<TService>() =>
         _orchardApplication.Services.GetRequiredService<TService>();
 
@@ -207,13 +214,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
         return;
-    }
-
-    private static async Task<string> GetFileContentAsync(string filePath)
-    {
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var streamReader = new StreamReader(fileStream);
-        return await streamReader.ReadToEndAsync();
     }
 
     private class ApplicationLog : IApplicationLog
