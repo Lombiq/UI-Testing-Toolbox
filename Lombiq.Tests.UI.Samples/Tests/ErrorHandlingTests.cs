@@ -29,19 +29,11 @@ public class ErrorHandlingTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                try
-                {
-                    await context.GoToErrorPageDirectlyAsync();
+                await context.GoToErrorPageDirectlyAsync();
 
-                    // This point should be unreachable because Orchard logs are automatically asserted after a page
-                    // load.
-                    throw new InvalidOperationException("The log assertion didn't happen after page load!");
-                }
-                catch (PageChangeAssertionException)
-                {
-                    // Remove all logs to have a clean slate.
-                    context.ClearLogs();
-                }
+                // This point should be unreachable because Orchard logs are automatically asserted after a page
+                // load.
+                throw new InvalidOperationException("The log assertion didn't happen after page load!");
             },
             browser);
 
