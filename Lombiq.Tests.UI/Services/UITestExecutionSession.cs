@@ -315,6 +315,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     {
         try
         {
+            var message = "_testOutputHelper is TestOutputHelper?" + (_testOutputHelper is TestOutputHelper);
+            var testOutputPath2 = Path.Combine(debugInformationPath, "TestOutput.log");
+            message += " testOutputPath: " + testOutputPath2;
+
+            throw new InvalidOperationException(message);
+
             if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
             {
                 // While this depends on the directory creation in the above try block it needs to come after the catch
