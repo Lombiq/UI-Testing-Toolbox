@@ -17,7 +17,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -315,9 +314,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     {
         try
         {
-            var message = "_testOutputHelper is TestOutputHelper?" + (_testOutputHelper is TestOutputHelper);
-            var testOutputPath2 = Path.Combine(debugInformationPath, "TestOutput.log");
-            message += " testOutputPath: " + testOutputPath2;
+            var message = "_testOutputHelper type:" + _testOutputHelper.GetType();
 
             throw new InvalidOperationException(message);
         }
