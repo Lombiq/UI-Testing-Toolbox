@@ -17,7 +17,7 @@ public class AccessibilityTest : UITestBase
     {
     }
 
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task FrontendPagesShouldBeAccessible(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>

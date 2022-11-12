@@ -24,7 +24,7 @@ public class ErrorHandlingTests : UITestBase
     // It's easier to diagnose a test failure if you know whether an element is missing because there something is
     // actually missing or there was a server-side error. The below test visits a page where the action method throws an
     // exception.
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task ServerSideErrorOnLoadedPageShouldHaltTest(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
@@ -47,7 +47,7 @@ public class ErrorHandlingTests : UITestBase
 
     // You can interact with the browser log and its history as well. E.g. 404s and JS exceptions show up in the browser
     // log.
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task ClientSideErrorOnLoadedPageShouldHaltTest(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
@@ -70,7 +70,7 @@ public class ErrorHandlingTests : UITestBase
 
     // To be able to trust the test above, we have to be sure that the browser logs survive the navigation events and
     // all get collected into the historic browser log.
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task BrowserLogsShouldPersist(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
@@ -102,7 +102,7 @@ public class ErrorHandlingTests : UITestBase
             },
             browser);
 
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task ErrorDuringSetupShouldHaltTest(Browser browser) =>
         Should.ThrowAsync<PageChangeAssertionException>(() =>
             ExecuteTestAfterSetupAsync(

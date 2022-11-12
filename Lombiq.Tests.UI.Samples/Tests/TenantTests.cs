@@ -24,7 +24,7 @@ public class TenantTests : UITestBase
     {
     }
 
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task CreatingTenantShouldWork(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>

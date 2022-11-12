@@ -23,7 +23,7 @@ public class SqlServerTests : UITestBase
 
     // Here we have basically two of the same tests as in BasicTests but now we're using SQL Server as the site's
     // database. If they still work and there are no errors in the log then the app works with SQL Server too.
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task AnonymousHomePageShouldExistWithSqlServer(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context => context.CheckIfAnonymousHomePageExistsAsync(),
@@ -31,7 +31,7 @@ public class SqlServerTests : UITestBase
             // Note the configuration! We could also set this globally in UITestBase.
             configuration => configuration.UseSqlServer = true);
 
-    [Theory(Skip = "Not needed for troubleshooting."), Chrome]
+    [Theory, Chrome]
     public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
