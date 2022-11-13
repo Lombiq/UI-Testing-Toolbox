@@ -606,6 +606,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
         var atataScope = AtataFactory.StartAtataScope(_testOutputHelper, uri, _configuration);
 
+        _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. (CreateContextAsync) ");
+
         return new UITestContext(
             contextId,
             _testManifest,
