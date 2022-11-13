@@ -26,8 +26,11 @@ public class UITestBase : OrchardCoreUITestBase<Program>
     protected override Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
+    {
+        _testOutputHelper.WriteLineTimestamped("This point is reached. (ExecuteTestAfterSetupAsync) ");
+        return ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
+    }
 
     // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync() and
     // do something before or after they're executed but this is not always necessary.
