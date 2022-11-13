@@ -469,7 +469,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
+            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Restarted the app. ");
+
             await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Restarted the app and " +
+                "navigated to the result Url. ");
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
@@ -605,8 +610,6 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         }
 
         var atataScope = AtataFactory.StartAtataScope(_testOutputHelper, uri, _configuration);
-
-        _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. (CreateContextAsync) ");
 
         return new UITestContext(
             contextId,
