@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -38,8 +37,7 @@ public class BasicTests : UITestBase
                 // Are we logged out?
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
             },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            browser);
 
     // Let's click around now. The login page is quite important, so let's make sure it works. While it's an Orchard
     // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
@@ -70,8 +68,7 @@ public class BasicTests : UITestBase
                 // the login process multiple times. Use context.SignInDirectly() instead. Check out the
                 // ShortcutsShouldWork test below.
             },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            browser);
 
     // Let's see if turning features on and off breaks something. Keep in mind that the Orchard logs are checked
     // automatically so if there's an exception or anything, the test will fail.
@@ -117,8 +114,7 @@ public class BasicTests : UITestBase
                 // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
                 await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
             },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            browser);
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.
