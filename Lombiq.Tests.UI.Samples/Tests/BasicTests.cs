@@ -28,6 +28,7 @@ public class BasicTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
+                _testOutputHelper.WriteLineTimestamped("Test AnonymousHomePageShouldExist is reached.");
                 // Is the title correct?
                 context
                     .Get(By.ClassName("navbar-brand"))
