@@ -321,7 +321,10 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     {
         try
         {
-            if (_testOutputHelper is TestOutputHelper concreteTestOutputHelper)
+            var concreteTestOutputHelper = _testOutputHelper as TestOutputHelper;
+            concreteTestOutputHelper ??= (_testOutputHelper as ITestOutputHelperDecorator)?.Decorated as TestOutputHelper;
+
+            if (concreteTestOutputHelper != null)
             {
                 // While this depends on the directory creation in the above try block it needs to come after the catch
                 // otherwise the message saved there wouldn't be included.
