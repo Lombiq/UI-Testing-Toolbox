@@ -236,7 +236,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
         var originalTestOutputHelper = _testOutputHelper;
         (_testOutputHelper, var afterTest) =
-            GitHubActionsGroupingTestOutputHelper.CreateWrapper(_testOutputHelper, testManifest);
+            GitHubActionsGroupingTestOutputHelper.CreateDecorator(_testOutputHelper, testManifest);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
