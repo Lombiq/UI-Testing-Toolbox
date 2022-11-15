@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.IO;
 using System.Threading;

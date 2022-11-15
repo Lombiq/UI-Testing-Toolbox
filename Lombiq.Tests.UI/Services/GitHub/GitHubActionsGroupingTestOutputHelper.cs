@@ -2,7 +2,7 @@ using Lombiq.Tests.UI.Models;
 using System;
 using Xunit.Abstractions;
 
-namespace Lombiq.Tests.UI.Services;
+namespace Lombiq.Tests.UI.Services.GitHub;
 
 internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperDecorator
 {

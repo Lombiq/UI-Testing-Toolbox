@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
 using System.Threading.Tasks;
