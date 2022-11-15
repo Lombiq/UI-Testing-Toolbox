@@ -28,7 +28,7 @@ public static class WebDriverFactory
         {
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-            chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Warning);
+            chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
             // Disabling the Chrome sandbox can speed things up a bit, so it's recommended when you get a lot of
             // timeouts during parallel execution:
