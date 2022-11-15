@@ -92,7 +92,9 @@ public static class UITestExecutor
             {
                 // When the last try failed.
 
-                if (GitHubActionsGroupingTestOutputHelper.IsGitHubEnvironment.Value)
+                if (configuration.ExtendGitHubActionsOutput &&
+                    configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations &&
+                    GitHubHelper.IsGitHubEnvironment)
                 {
                     new GitHubAnnotationWriter(configuration.TestOutputHelper)
                         .ErrorInTest(ex, testManifest.XunitTest.TestCase);

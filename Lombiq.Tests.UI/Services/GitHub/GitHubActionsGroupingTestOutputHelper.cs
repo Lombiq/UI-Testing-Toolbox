@@ -6,16 +6,13 @@ namespace Lombiq.Tests.UI.Services.GitHub;
 
 internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperDecorator
 {
-    public static Lazy<bool> IsGitHubEnvironment { get; } = new(() =>
-        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ENV")));
-
     private readonly string _groupName;
 
     private bool _isStarted;
 
     public ITestOutputHelper Decorated { get; private set; }
 
-    public GitHubActionsGroupingTestOutputHelper(ITestOutputHelper decorated, string groupName)
+    private GitHubActionsGroupingTestOutputHelper(ITestOutputHelper decorated, string groupName)
     {
         Decorated = decorated;
         _groupName = groupName;
@@ -50,7 +47,7 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
         ITestOutputHelper testOutputHelper,
         UITestManifest testManifest)
     {
-        if (!IsGitHubEnvironment.Value ||
+        if (!GitHubHelper.IsGitHubEnvironment ||
             testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.Class?.Name is not { } className ||
             testManifest.Name is not { } testName)
         {
