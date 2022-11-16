@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Xunit.Abstractions;
 
-namespace Lombiq.Tests.UI.Services;
+namespace Lombiq.Tests.UI.Services.GitHub;
 
 public class GitHubAnnotationWriter
 {
