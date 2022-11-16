@@ -113,7 +113,7 @@ public class ErrorHandlingTests : UITestBase
                     // The test is guaranteed to fail so we don't want to retry it needlessly.
                     configuration.MaxRetryCount = 0;
 
-                    // Otherwise, a GitHub Actions error annotation would appear in the workfow run summary, indicating
+                    // Otherwise, a GitHub Actions error annotation would appear in the workflow run summary, indicating
                     // a problem, despite them being expected.
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
 
