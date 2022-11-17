@@ -113,6 +113,10 @@ public class ErrorHandlingTests : UITestBase
                     // The test is guaranteed to fail so we don't want to retry it needlessly.
                     configuration.MaxRetryCount = 0;
 
+                    // Otherwise, a GitHub Actions error annotation would appear in the workflow run summary, indicating
+                    // a problem, despite them being expected.
+                    configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
+
                     // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
                     configuration.SetupConfiguration.SetupOperation = async context =>
                     {

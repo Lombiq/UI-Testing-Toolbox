@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.IO;
 using System.Threading;
@@ -91,7 +92,9 @@ public static class UITestExecutor
             {
                 // When the last try failed.
 
-                if (GitHubActionsGroupingTestOutputHelper.IsGitHubEnvironment.Value)
+                if (configuration.ExtendGitHubActionsOutput &&
+                    configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations &&
+                    GitHubHelper.IsGitHubEnvironment)
                 {
                     new GitHubAnnotationWriter(configuration.TestOutputHelper)
                         .ErrorInTest(ex, testManifest.XunitTest.TestCase);
