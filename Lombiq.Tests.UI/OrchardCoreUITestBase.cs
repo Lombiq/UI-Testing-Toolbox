@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
 using System.Threading.Tasks;
@@ -234,10 +235,6 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     {
         var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
 
-        var originalTestOutputHelper = _testOutputHelper;
-        (_testOutputHelper, var afterTest) =
-            GitHubActionsGroupingTestOutputHelper.CreateDecorator(_testOutputHelper, testManifest);
-
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
             OrchardCoreConfiguration = new OrchardCoreConfiguration(),
@@ -247,6 +244,15 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
         };
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+
+        var originalTestOutputHelper = _testOutputHelper;
+        Action afterTest = null;
+        if (configuration.ExtendGitHubActionsOutput && configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping)
+        {
+            (_testOutputHelper, afterTest) =
+                GitHubActionsGroupingTestOutputHelper.CreateDecorator(_testOutputHelper, testManifest);
+            configuration.TestOutputHelper = _testOutputHelper;
+        }
 
         try
         {

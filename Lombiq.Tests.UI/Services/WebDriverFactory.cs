@@ -47,8 +47,10 @@ public static class WebDriverFactory
 
             chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
             chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
-            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
-            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
+            // By default localhost is only allowed in IPv4.
+            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1";
+            // Helps with misconfigured hosts.
+            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
             return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
