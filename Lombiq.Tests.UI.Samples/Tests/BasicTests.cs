@@ -68,14 +68,7 @@ public class BasicTests : UITestBase
                 // the login process multiple times. Use context.SignInDirectly() instead. Check out the
                 // ShortcutsShouldWork test below.
             },
-            browser,
-            configuration =>
-            {
-                configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
-                configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = false;
-
-                return Task.CompletedTask;
-            });
+            browser);
 
     // Let's see if turning features on and off breaks something. Keep in mind that the Orchard logs are checked
     // automatically so if there's an exception or anything, the test will fail.
