@@ -41,6 +41,8 @@ public static class NavigationUITestContextExtensions
 
                 context.Driver.Navigate().GoToUrl(absoluteUri);
 
+                context.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
             });
