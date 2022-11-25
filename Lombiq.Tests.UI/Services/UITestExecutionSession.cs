@@ -440,7 +440,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
                 Microsoft.Extensions.Logging.LogLevel.Warning,
                 "UI test may be flaky",
-                $"The {_testManifest.Name} test was attempted {(retryCount + 1).ToTechnicalString()} times. This may indicate it being flaky.",
+                $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
+                    "retried. This may indicate it being flaky.",
                 string.Empty);
         }
     }
