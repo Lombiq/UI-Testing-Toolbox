@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,8 +14,6 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // We'll see some simpler tests as a start. Each of them will teach us important concepts.
 public class BasicTests : UITestBase
 {
-    private static int _executionCounter;
-
     public BasicTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
@@ -27,16 +24,10 @@ public class BasicTests : UITestBase
     // so-called data-driven tests. See here for more info:
     // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
     [Theory, Chrome]
-    public Task FlakyAnonymousHomePageShouldExist(Browser browser) =>
+    public Task AnonymousHomePageShouldExist(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                if (_executionCounter == 0)
-                {
-                    _executionCounter++;
-                    throw new InvalidOperationException("This is a test.");
-                }
-
                 // Is the title correct?
                 context
                     .Get(By.ClassName("navbar-brand"))
