@@ -1,3 +1,4 @@
+using Atata;
 using Atata.HtmlValidation;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -241,12 +242,18 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             if (_dumpConfiguration.CaptureHtmlSource)
             {
-                var htmlPath = Path.Combine(debugInformationPath, "PageSource.html");
-                await File.WriteAllTextAsync(htmlPath, _context.Scope.Driver.PageSource);
+                _context.RefreshCurrentAtataContext();
+                _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
+
+                var file = _context.Scope.AtataContext.Artifacts.Files.Value
+                    .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
+
+                var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
+                File.Copy(file.FullName.Value, snapshotDumpPath);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", htmlPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
                 }
             }
 

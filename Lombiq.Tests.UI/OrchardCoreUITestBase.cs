@@ -247,7 +247,9 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
         var originalTestOutputHelper = _testOutputHelper;
         Action afterTest = null;
-        if (configuration.ExtendGitHubActionsOutput && configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping)
+        if (configuration.ExtendGitHubActionsOutput &&
+            configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping &&
+            GitHubHelper.IsGitHubEnvironment)
         {
             (_testOutputHelper, afterTest) =
                 GitHubActionsGroupingTestOutputHelper.CreateDecorator(_testOutputHelper, testManifest);
