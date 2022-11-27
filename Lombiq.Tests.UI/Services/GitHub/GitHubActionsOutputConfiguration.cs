@@ -15,4 +15,11 @@ public class GitHubActionsOutputConfiguration
     /// in the GitHub Actions output. This only takes effect when tests are executed from a GitHub Actions workflow.
     /// </summary>
     public bool EnableErrorAnnotations { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether test retries should be surfaced as warning annotations (<see
+    /// href="https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message"/>)
+    /// in the GitHub Actions output. This only takes effect when tests are executed from a GitHub Actions workflow.
+    /// </summary>
+    public bool EnableTestRetryWarningAnnotations { get; set; } = true;
 }
