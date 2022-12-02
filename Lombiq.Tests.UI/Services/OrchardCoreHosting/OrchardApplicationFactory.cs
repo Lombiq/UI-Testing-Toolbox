@@ -19,6 +19,11 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
+internal static class OrchardApplicationFactoryCounter
+{
+    public static object CreateHostLock { get; } = new();
+}
+
 public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
@@ -42,7 +47,14 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
-        return base.CreateHost(builder);
+        // This lock is to avoid parallel start of the application. The
+        // Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.CreateHost() starts a new thread for the
+        // web application instance which can cause issues in eg.: NLog.Config.Factory<TBaseType, TAttributeType>.RegisterDefinition()
+        // which is using not thread safe Dictionary to store cached types when initializing default logger instance.
+        lock (OrchardApplicationFactoryCounter.CreateHostLock)
+        {
+            return base.CreateHost(builder);
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
