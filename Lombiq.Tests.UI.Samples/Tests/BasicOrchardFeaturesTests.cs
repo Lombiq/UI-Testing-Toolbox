@@ -28,9 +28,9 @@ public class BasicOrchardFeaturesTests : UITestBase
             browser,
             configuration =>
             {
-                // The UI Testing Toolbox includes DbCommand execution counter, after the end of test it checks the
-                // number of executed commands with the same Sql command and parameter set against the threshold value
-                // in its configuration. If the executed command count is greater then the threshold, it raises a
+                // The UI Testing Toolbox includes a DbCommand execution counter. After the end of the test, it checks the
+                // number of executed commands with the same SQL command and parameter set against the threshold value
+                // in its configuration. If the executed command count is greater than the threshold, it raises a
                 // CounterThresholdException. So here we set the minimum required value to avoid it.
                 configuration.CounterConfiguration.Running.DbCommandExecutionRepetitionThreshold = 26;
 

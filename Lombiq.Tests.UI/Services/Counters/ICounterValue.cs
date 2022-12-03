@@ -8,6 +8,6 @@ public interface ICounterValue
     /// <summary>
     /// Dumps the value content to a human readable format.
     /// </summary>
-    /// <returns>A human readable string representation of instance.</returns>
+    /// <returns>A human-readable string representation of the instance.</returns>
     string Dump();
 }

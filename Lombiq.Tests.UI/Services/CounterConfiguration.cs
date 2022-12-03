@@ -56,7 +56,7 @@ public class CounterConfiguration
                         probe,
                         key,
                         counterValue,
-                        $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}");
+                        $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}.");
                 }
             });
 }

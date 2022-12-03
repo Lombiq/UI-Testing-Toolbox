@@ -29,7 +29,7 @@ public abstract class CounterProbeBase : ICounterProbe
         if (counter is not TCounter value)
         {
             throw new ArgumentException(
-                $"The type of ${nameof(counter)} is not compatible with ${typeof(TCounter).Name}");
+                $"The type of ${nameof(counter)} is not compatible with ${typeof(TCounter).Name}.");
         }
 
         update.Invoke(value);
