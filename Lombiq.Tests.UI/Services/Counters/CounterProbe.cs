@@ -34,7 +34,11 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
     protected virtual void OnAssertData() =>
         CounterDataCollector.AssertCounter(this);
 
-    protected virtual void OnDispose()
+    protected virtual void OnDisposing()
+    {
+    }
+
+    protected virtual void OnDisposed()
     {
     }
 
@@ -42,12 +46,13 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
     {
         if (!_disposed)
         {
+            OnDisposing();
             try { OnAssertData(); }
             finally
             {
                 if (disposing)
                 {
-                    OnDispose();
+                    OnDisposed();
                 }
 
                 _disposed = true;

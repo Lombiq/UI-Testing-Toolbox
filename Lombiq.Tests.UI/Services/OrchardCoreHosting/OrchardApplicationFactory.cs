@@ -1,6 +1,8 @@
 using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Services.Counters;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -18,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using YesSql;
+using ISession = YesSql.ISession;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
@@ -87,6 +90,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         {
             AddFakeStore(builderServices);
             AddFakeViewCompilerProvider(builderServices);
+            AddSessionProbe(builderServices);
         });
     }
 
@@ -112,6 +116,29 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             _createdStores.Add(fakeStore);
 
             return fakeStore;
+        });
+    }
+
+    private void AddSessionProbe(IServiceCollection services)
+    {
+        var sessionDescriptor = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(ISession));
+
+        services.RemoveAll<ISession>();
+
+        services.AddScoped<ISession>(serviceProvider =>
+        {
+            var session = (ISession)sessionDescriptor.ImplementationFactory.Invoke(serviceProvider);
+            if (session is null)
+            {
+                return null;
+            }
+
+            var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+
+            return new SessionProbe(
+                _counterDataCollector,
+                new Uri(httpContextAccessor.HttpContext.Request.GetEncodedUrl()),
+                session);
         });
     }
 

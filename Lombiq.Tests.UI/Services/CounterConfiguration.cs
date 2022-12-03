@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Data;
@@ -38,15 +39,28 @@ public class CounterConfiguration
                     ? nameof(configuration.DbReaderReadPerNavigationThreshold)
                     : nameof(configuration.DbReaderReadThreshold);
 
-                AssertIntegerCounterValue<DbExecuteCounterKey>(probe, executeThresholdName, executeThreshold);
-                AssertIntegerCounterValue<DbReadCounterKey>(probe, readThresholdName, readThreshold);
+                AssertIntegerCounterValue<DbExecuteCounterKey>(
+                    probe,
+                    configuration.ExcludeFilter ?? (key => false),
+                    executeThresholdName,
+                    executeThreshold);
+                AssertIntegerCounterValue<DbReadCounterKey>(
+                    probe,
+                    configuration.ExcludeFilter ?? (key => false),
+                    readThresholdName,
+                    readThreshold);
             }
         };
 
-    public static void AssertIntegerCounterValue<TKey>(ICounterProbe probe, string thresholdName, int threshold)
+    public static void AssertIntegerCounterValue<TKey>(
+        ICounterProbe probe,
+        Func<ICounterKey, bool> excludeFilter,
+        string thresholdName,
+        int threshold)
         where TKey : ICounterKey =>
         probe.Counters.Keys
             .OfType<TKey>()
+            .Where(key => !excludeFilter(key))
             .ForEach(key =>
             {
                 if (probe.Counters[key] is IntegerCounterValue counterValue
@@ -59,4 +73,17 @@ public class CounterConfiguration
                         $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}.");
                 }
             });
+
+    public static bool DefaultExcludeFilter(ICounterKey key)
+    {
+        if (key is DbExecuteCounterKey dbExecuteCounter)
+        {
+            if (dbExecuteCounter.CommandText == @"SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex] AS [WorkflowTypeStartActivitiesIndex_a1] ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id] WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0) and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))")
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
