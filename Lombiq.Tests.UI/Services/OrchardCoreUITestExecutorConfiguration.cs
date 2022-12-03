@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -75,6 +76,14 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </remarks>
     public bool ReportTeamCityMetadata { get; set; } =
         TestConfigurationManager.GetBoolConfiguration("OrchardCoreUITestExecutorConfiguration:ReportTeamCityMetadata", defaultValue: false);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether, when running in a GitHub Actions workflow, the workflow run output
+    /// should be extended with test-level grouping and error annotations.
+    /// </summary>
+    public bool ExtendGitHubActionsOutput { get; set; } = true;
+
+    public GitHubActionsOutputConfiguration GitHubActionsOutputConfiguration { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the configuration for the initial setup of the Orchard Core app under test.

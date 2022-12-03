@@ -1,55 +1,53 @@
-﻿using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Models;
 using System;
 using Xunit.Abstractions;
 
-namespace Lombiq.Tests.UI.Services;
+namespace Lombiq.Tests.UI.Services.GitHub;
 
-internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelper
+internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperDecorator
 {
-    public static Lazy<bool> IsGitHubEnvironment { get; } = new(() =>
-        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ENV")));
-
-    private readonly ITestOutputHelper _inner;
     private readonly string _groupName;
 
     private bool _isStarted;
 
-    public GitHubActionsGroupingTestOutputHelper(ITestOutputHelper inner, string groupName)
+    public ITestOutputHelper Decorated { get; private set; }
+
+    private GitHubActionsGroupingTestOutputHelper(ITestOutputHelper decorated, string groupName)
     {
-        _inner = inner;
+        Decorated = decorated;
         _groupName = groupName;
     }
 
     public void WriteLine(string message)
     {
         Start();
-        _inner.WriteLine(message);
+        Decorated.WriteLine(message);
     }
 
     public void WriteLine(string format, params object[] args)
     {
         Start();
-        _inner.WriteLine(format, args);
+        Decorated.WriteLine(format, args);
     }
 
     private void Start()
     {
         if (_isStarted) return;
 
-        _inner.WriteLine($"::group::{_groupName}");
+        Decorated.WriteLine($"::group::{_groupName}");
         _isStarted = true;
     }
 
     private void EndGroup()
     {
-        if (_isStarted) _inner.WriteLine("::endgroup::");
+        if (_isStarted) Decorated.WriteLine("::endgroup::");
     }
 
-    public static (ITestOutputHelper WrappedOutputHelper, Action AfterTest) CreateWrapper(
+    public static (ITestOutputHelper DecoratedOutputHelper, Action AfterTest) CreateDecorator(
         ITestOutputHelper testOutputHelper,
         UITestManifest testManifest)
     {
-        if (!IsGitHubEnvironment.Value ||
+        if (!GitHubHelper.IsGitHubEnvironment ||
             testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.Class?.Name is not { } className ||
             testManifest.Name is not { } testName)
         {
