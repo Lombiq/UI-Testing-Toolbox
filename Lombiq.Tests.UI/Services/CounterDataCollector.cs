@@ -21,10 +21,8 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 
     public override void Increment(ICounterKey counter)
     {
-        _probes.SelectWhere(probe => probe, probe => probe.IsRunning)
-            .ForEach(probe => probe.Increment(counter));
-
-        base.Increment(counter);
+        _probes.Where(probe => probe.IsRunning).ForEach(probe => probe.Increment(counter));
+        base. Increment(counter);
     }
 
     public override string DumpHeadline() => nameof(CounterDataCollector);
