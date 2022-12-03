@@ -10,5 +10,5 @@ public class NavigationProbe : CounterProbe
         : base(counterDataCollector) =>
         AbsoluteUri = absoluteUri;
 
-    public override string DumpHeadline() => $"{nameof(NavigationProbe)}, AbsoluteUri={AbsoluteUri}";
+    public override string DumpHeadline() => $"{nameof(NavigationProbe)}, AbsoluteUri = {AbsoluteUri}";
 }
