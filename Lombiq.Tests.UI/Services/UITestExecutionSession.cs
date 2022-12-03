@@ -1,3 +1,4 @@
+using Atata;
 using Atata.HtmlValidation;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -5,6 +6,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using Newtonsoft.Json.Linq;
@@ -140,11 +142,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 throw;
             }
 
-            _testOutputHelper.WriteLineTimestampedAndDebug(
-                "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
-                retryCount + 1,
-                _configuration.MaxRetryCount - retryCount,
-                _configuration.RetryInterval);
+            LogRetry(retryCount);
 
             await Task.Delay(_configuration.RetryInterval);
         }
@@ -247,12 +245,18 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             if (_dumpConfiguration.CaptureHtmlSource)
             {
-                var htmlPath = Path.Combine(debugInformationPath, "PageSource.html");
-                await File.WriteAllTextAsync(htmlPath, _context.Scope.Driver.PageSource);
+                _context.RefreshCurrentAtataContext();
+                _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
+
+                var file = _context.Scope.AtataContext.Artifacts.Files.Value
+                    .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
+
+                var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
+                File.Copy(file.FullName.Value, snapshotDumpPath);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", htmlPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
                 }
             }
 
@@ -424,6 +428,27 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                     $"no report generated due to {nameof(HtmlValidationOptions)}.{nameof(HtmlValidationOptions.SaveResultToFile)} " +
                     "being false.");
             }
+        }
+    }
+
+    private void LogRetry(int retryCount)
+    {
+        _testOutputHelper.WriteLineTimestampedAndDebug(
+            "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
+            retryCount + 1,
+            _configuration.MaxRetryCount - retryCount,
+            _configuration.RetryInterval);
+
+        if (_configuration.ExtendGitHubActionsOutput &&
+            _configuration.GitHubActionsOutputConfiguration.EnableTestRetryWarningAnnotations &&
+            GitHubHelper.IsGitHubEnvironment)
+        {
+            new GitHubAnnotationWriter(_testOutputHelper).Annotate(
+                Microsoft.Extensions.Logging.LogLevel.Warning,
+                "UI test may be flaky",
+                $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
+                    "retried. This may indicate it being flaky.",
+                string.Empty);
         }
     }
 
