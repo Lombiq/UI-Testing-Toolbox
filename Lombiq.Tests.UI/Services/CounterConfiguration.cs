@@ -73,17 +73,4 @@ public class CounterConfiguration
                         $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}.");
                 }
             });
-
-    public static bool DefaultExcludeFilter(ICounterKey key)
-    {
-        if (key is DbExecuteCounterKey dbExecuteCounter)
-        {
-            if (dbExecuteCounter.CommandText == @"SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex] AS [WorkflowTypeStartActivitiesIndex_a1] ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id] WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0) and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))")
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
