@@ -19,11 +19,6 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-internal static class OrchardApplicationFactoryCounter
-{
-    public static object CreateHostLock { get; } = new();
-}
-
 public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
@@ -154,4 +149,9 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
         SqliteConnection.ClearAllPools();
     }
+}
+
+internal static class OrchardApplicationFactoryCounter
+{
+    public static object CreateHostLock { get; } = new();
 }
