@@ -134,18 +134,9 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
-                    ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
+                    ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
                 })
             : Enumerable.Empty<IApplicationLog>();
-    }
-
-    // This needs to be public and instance-level. If it's private static then it causes the app under test not to
-    // launch under Ubuntu for some reason, while working under Windows.
-    public async Task<string> GetFileContentAsync(string filePath)
-    {
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var streamReader = new StreamReader(fileStream);
-        return await streamReader.ReadToEndAsync();
     }
 
     public TService GetRequiredService<TService>() =>
@@ -216,6 +207,19 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
         return;
+    }
+
+    // Use cancellationToken in ReadToEndAsync() once it's available after a .NET upgrade, see:
+    // https://github.com/dotnet/runtime/pull/61898.
+#pragma warning disable S1172 // Unused method parameters should be removed
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore S1172 // Unused method parameters should be removed
+    {
+        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var streamReader = new StreamReader(fileStream);
+        return await streamReader.ReadToEndAsync();
     }
 
     private class ApplicationLog : IApplicationLog

@@ -107,17 +107,11 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
 
-            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Created the context. ");
-
             _context.SetDefaultBrowserSize();
-
-            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Browser size is set. ");
 
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
-
-            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Logs asserted. ");
 
             return true;
         }
@@ -503,12 +497,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Restarted the app. ");
-
             await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
-
-            _testOutputHelper.WriteLineTimestampedAndDebug("This point is reached. Restarted the app and " +
-                "navigated to the result Url. ");
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {

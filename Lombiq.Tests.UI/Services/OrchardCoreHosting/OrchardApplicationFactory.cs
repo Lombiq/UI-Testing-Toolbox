@@ -65,11 +65,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
                 factory.Configuration.Variables["configDir"] = environment.ContentRootPath;
 
-                loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions
-                {
-                    ReplaceLoggerFactory = true,
-                    RemoveLoggerFactoryFilter = false,
-                });
+                loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
             });
 
         _configuration?.Invoke(builder);
