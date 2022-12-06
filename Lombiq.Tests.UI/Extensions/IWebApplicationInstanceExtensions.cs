@@ -1,12 +1,10 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.AspNetCore.Http;
+using OrchardCore.BackgroundTasks;
 using OrchardCore.Environment.Shell;
-using OrchardCore.Environment.Shell.Builders;
 using OrchardCore.Environment.Shell.Scope;
-using OrchardCore.Modules;
 using OrchardCore.Recipes.Models;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -61,45 +59,5 @@ public static class IWebApplicationInstanceExtensions
         {
             httpContextAccessor.HttpContext = originalHttpContext;
         }
-    }
-}
-
-// This is from the 1.4 version of Orchard Core. During an Orchard upgrade to 1.5, remove this, and use the now public
-// implementation in OrchardCore.Abstractions.
-internal static class ShellExtensions
-{
-    public static HttpContext CreateHttpContext(this ShellContext shell)
-    {
-        var context = shell.Settings.CreateHttpContext();
-
-        context.Features.Set(new ShellContextFeature
-        {
-            ShellContext = shell,
-            OriginalPathBase = string.Empty,
-            OriginalPath = "/",
-        });
-
-        return context;
-    }
-
-    public static HttpContext CreateHttpContext(this ShellSettings settings)
-    {
-        var context = new DefaultHttpContext().UseShellScopeServices();
-
-        context.Request.Scheme = "https";
-
-        var urlHost = settings.RequestUrlHost?.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-
-        context.Request.Host = new HostString(urlHost ?? "localhost");
-
-        if (!string.IsNullOrWhiteSpace(settings.RequestUrlPrefix))
-        {
-            context.Request.PathBase = "/" + settings.RequestUrlPrefix;
-        }
-
-        context.Request.Path = "/";
-        context.Items["IsBackground"] = true;
-
-        return context;
     }
 }
