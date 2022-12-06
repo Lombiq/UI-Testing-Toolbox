@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services.Counters.Data;
 
+// This is required to avoid the component being visible in VS Toolbox.
 [DesignerCategory("")]
 public class ProbedDbCommand : DbCommand
 {
