@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium;
 using Shouldly;

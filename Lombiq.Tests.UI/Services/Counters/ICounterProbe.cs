@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Services.Counters;
@@ -13,6 +14,11 @@ public interface ICounterProbe
     bool IsRunning { get; }
 
     /// <summary>
+    /// Gets or sets a callback which is called when the probe completed capturing the data.
+    /// </summary>
+    Action<ICounterProbe> CaptureCompleted { get; set; }
+
+    /// <summary>
     /// Gets the collected values.
     /// </summary>
     IDictionary<ICounterKey, ICounterValue> Counters { get; }
@@ -25,14 +31,14 @@ public interface ICounterProbe
     void Increment(ICounterKey counter);
 
     /// <summary>
-    /// Dumps the probe headline to a human readable format.
+    /// Dumps the probe headline to a human-readable format.
     /// </summary>
-    /// <returns>A human readable string representation of instance in one line.</returns>
+    /// <returns>A human-readable string representation of instance in one line.</returns>
     public string DumpHeadline();
 
     /// <summary>
-    /// Dumps the probe content to a human readable format.
+    /// Dumps the probe content to a human-readable format.
     /// </summary>
-    /// <returns>A human readable string representation of instance.</returns>
-    string Dump();
+    /// <returns>A human-readable representation of instance.</returns>
+    IEnumerable<string> Dump();
 }

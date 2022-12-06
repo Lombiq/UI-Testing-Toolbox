@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lombiq.Tests.UI.Services.Counters;
 
 // The Equals must be implemented in consumer classes.
@@ -9,5 +11,5 @@ public abstract class CounterKey : ICounterKey
     protected abstract int HashCode();
     public override bool Equals(object obj) => Equals(obj as ICounterKey);
     public override int GetHashCode() => HashCode();
-    public abstract string Dump();
+    public abstract IEnumerable<string> Dump();
 }

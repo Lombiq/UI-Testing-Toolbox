@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -106,6 +107,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             _context.FailureDumpContainer.Clear();
             _context.CounterDataCollector.Reset();
+            _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Running);
             _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Running.AssertCounterData
                 ?? CounterConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Running);
             failureDumpContainer = _context.FailureDumpContainer;
@@ -115,6 +117,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
+            _context.CounterDataCollector.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
             _context.CounterDataCollector.AssertCounter();
 
             return true;
@@ -476,6 +479,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
                 // config to be available at startup too.
                 _context = await CreateContextAsync();
+
+                _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Setup);
                 _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Setup.AssertCounterData
                     ?? CounterConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
 
@@ -487,6 +492,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
+                _context.CounterDataCollector.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
                 _context.CounterDataCollector.AssertCounter();
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
@@ -610,7 +616,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        var counterDataCollector = new CounterDataCollector();
+        var counterDataCollector = new CounterDataCollector(_testOutputHelper);
 
         _applicationInstance = new OrchardCoreInstance<TEntryPoint>(
             _configuration.OrchardCoreConfiguration,

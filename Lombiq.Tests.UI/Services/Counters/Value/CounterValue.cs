@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Services.Counters.Value;
 
@@ -7,6 +8,6 @@ public abstract class CounterValue<TValue> : ICounterValue
 {
     public TValue Value { get; set; }
 
-    public virtual string Dump() =>
-        FormattableString.Invariant($"{GetType().Name} value: {Value}");
+    public virtual IEnumerable<string> Dump() =>
+        new[] { FormattableString.Invariant($"{GetType().Name} value: {Value}") };
 }

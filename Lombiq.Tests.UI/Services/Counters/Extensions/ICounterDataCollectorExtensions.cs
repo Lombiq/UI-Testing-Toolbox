@@ -10,7 +10,8 @@ public static class ICounterDataCollectorExtensions
 {
     public static int DbCommandExecuteNonQuery(this ICounterDataCollector collector, DbCommand dbCommand)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteNonQuery();
     }
 
@@ -19,13 +20,15 @@ public static class ICounterDataCollectorExtensions
         DbCommand dbCommand,
         CancellationToken cancellationToken)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public static object DbCommandExecuteScalar(this ICounterDataCollector collector, DbCommand dbCommand)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteScalar();
     }
 
@@ -34,7 +37,8 @@ public static class ICounterDataCollectorExtensions
         DbCommand dbCommand,
         CancellationToken cancellationToken)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteScalarAsync(cancellationToken);
     }
 
@@ -43,7 +47,8 @@ public static class ICounterDataCollectorExtensions
         DbCommand dbCommand,
         CommandBehavior behavior)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteReader(behavior);
     }
 
@@ -53,7 +58,8 @@ public static class ICounterDataCollectorExtensions
         CommandBehavior behavior,
         CancellationToken cancellationToken)
     {
-        collector.Increment(DbExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
+        collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
         return dbCommand.ExecuteReaderAsync(behavior, cancellationToken);
     }
 }

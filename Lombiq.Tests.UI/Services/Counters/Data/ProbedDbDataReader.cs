@@ -16,7 +16,7 @@ public class ProbedDbDataReader : DbDataReader
 
     private ProbedDbCommand ProbedCommand { get; init; }
 
-    private DbReadCounterKey CounterKey { get; init; }
+    private DbReaderReadCounterKey CounterKey { get; init; }
 
     internal DbDataReader ProbedReader { get; private set; }
 
@@ -52,7 +52,7 @@ public class ProbedDbDataReader : DbDataReader
         ProbedCommand = probedCommand ?? throw new ArgumentNullException(nameof(probedCommand));
         ProbedReader = reader ?? throw new ArgumentNullException(nameof(reader));
         Behavior = behavior;
-        CounterKey = DbReadCounterKey.CreateFrom(ProbedCommand);
+        CounterKey = DbReaderReadCounterKey.CreateFrom(ProbedCommand);
     }
 
     public override bool GetBoolean(int ordinal) => ProbedReader.GetBoolean(ordinal);

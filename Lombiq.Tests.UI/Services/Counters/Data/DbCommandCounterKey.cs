@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
 
 namespace Lombiq.Tests.UI.Services.Counters.Data;
 
@@ -22,29 +20,35 @@ public abstract class DbCommandCounterKey : CounterKey
     {
         if (ReferenceEquals(this, other)) return true;
 
-        return other is DbExecuteCounterKey otherKey
+        return other is DbCommandCounterKey otherKey
+            && other.GetType() == GetType()
             && GetType() == otherKey.GetType()
-            && CommandText == otherKey.CommandText
+            && string.Equals(CommandText, otherKey.CommandText, StringComparison.OrdinalIgnoreCase)
             && Parameters
                 .Select(param => (param.Key, param.Value))
                 .SequenceEqual(otherKey.Parameters.Select(param => (param.Key, param.Value)));
     }
 
-    public override string Dump()
+    public override IEnumerable<string> Dump()
     {
-        var builder = new StringBuilder();
+        var lines = new List<string>
+        {
+            GetType().Name,
+            $"\t{CommandText}",
+        };
 
-        builder.AppendLine(GetType().Name)
-            .AppendLine(CultureInfo.InvariantCulture, $"\t{CommandText}");
-        var commandParams = Parameters.Select((parameter, index) =>
-            FormattableString.Invariant(
-                $"[{index.ToTechnicalString()}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
-            .Join(", ");
-        builder.AppendLine(CultureInfo.InvariantCulture, $"\t\t{commandParams}");
+        if (Parameters.Any())
+        {
+            var commandParams = Parameters.Select((parameter, index) =>
+                FormattableString.Invariant(
+                    $"[{index.ToTechnicalString()}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
+                .Join(", ");
+            lines.Add($"\t\t{commandParams}");
+        }
 
-        return builder.ToString();
+        return lines;
     }
 
-    protected override int HashCode() => StringComparer.Ordinal.GetHashCode(CommandText);
+    protected override int HashCode() => StringComparer.Ordinal.GetHashCode(CommandText.ToUpperInvariant());
     public override string ToString() => $"[{GetType().Name}] {CommandText}";
 }

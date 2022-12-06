@@ -1,5 +1,7 @@
 using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Services.Counters;
+using Lombiq.Tests.UI.Services.Counters.Middlewares;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -27,11 +29,11 @@ namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
+    private readonly ICounterDataCollector _counterDataCollector;
     private readonly Action<IConfigurationBuilder> _configureHost;
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly ConcurrentBag<IStore> _createdStores = new();
-    private readonly ICounterDataCollector _counterDataCollector;
 
     public OrchardApplicationFactory(
         ICounterDataCollector counterDataCollector,
@@ -39,10 +41,10 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         Action<IWebHostBuilder> configuration = null,
         Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
     {
+        _counterDataCollector = counterDataCollector;
         _configureHost = configureHost;
         _configuration = configuration;
         _configureOrchard = configureOrchard;
-        _counterDataCollector = counterDataCollector;
     }
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
@@ -50,6 +52,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
+
         return base.CreateHost(builder);
     }
 
@@ -73,25 +76,28 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     private void ConfigureTestServices(IServiceCollection services)
     {
+        services.AddSingleton(_counterDataCollector);
+
         var builder = services
-                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
-                .ImplementationInstance as OrchardCoreBuilder
-                ?? throw new InvalidOperationException(
-                    "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+            .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
+            .ImplementationInstance as OrchardCoreBuilder
+            ?? throw new InvalidOperationException(
+                "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
         var configuration = services
-                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
-                .ImplementationInstance as ConfigurationManager
-                ?? throw new InvalidOperationException(
-                    $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
+            .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
+            .ImplementationInstance as ConfigurationManager
+            ?? throw new InvalidOperationException(
+                $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
 
         _configureOrchard?.Invoke(configuration, builder);
 
-        builder.ConfigureServices(builderServices =>
-        {
-            AddFakeStore(builderServices);
-            AddFakeViewCompilerProvider(builderServices);
-            AddSessionProbe(builderServices);
-        });
+        builder.Configure(app => app.UseMiddleware<PageLoadProbeMiddleware>())
+            .ConfigureServices(builderServices =>
+            {
+                AddFakeStore(builderServices);
+                AddFakeViewCompilerProvider(builderServices);
+                AddSessionProbe(builderServices);
+            });
     }
 
     private void AddFakeStore(IServiceCollection services)
@@ -137,6 +143,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
             return new SessionProbe(
                 _counterDataCollector,
+                httpContextAccessor.HttpContext.Request.Method,
                 new Uri(httpContextAccessor.HttpContext.Request.GetEncodedUrl()),
                 session);
         });

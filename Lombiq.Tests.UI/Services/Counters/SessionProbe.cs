@@ -11,18 +11,20 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public sealed class SessionProbe : CounterProbe, ISession
 {
     private readonly ISession _session;
+    public string RequestMethod { get; init; }
     public Uri AbsoluteUri { get; init; }
     DbTransaction ISession.CurrentTransaction => _session.CurrentTransaction;
     IStore ISession.Store => _session.Store;
 
-    public SessionProbe(ICounterDataCollector counterDataCollector, Uri absoluteUri, ISession session)
+    public SessionProbe(ICounterDataCollector counterDataCollector, string requestMethod, Uri absoluteUri, ISession session)
         : base(counterDataCollector)
     {
+        RequestMethod = requestMethod;
         AbsoluteUri = absoluteUri;
         _session = session;
     }
 
-    public override string DumpHeadline() => $"{nameof(NavigationProbe)}, AbsoluteUri = {AbsoluteUri}";
+    public override string DumpHeadline() => $"{nameof(SessionProbe)}, [{RequestMethod}]{AbsoluteUri}";
 
     protected override void OnDisposing() => _session.Dispose();
 

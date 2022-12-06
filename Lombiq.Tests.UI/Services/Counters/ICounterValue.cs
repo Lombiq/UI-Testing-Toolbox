@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lombiq.Tests.UI.Services.Counters;
 
 /// <summary>
@@ -6,8 +8,8 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public interface ICounterValue
 {
     /// <summary>
-    /// Dumps the value content to a human readable format.
+    /// Dumps the value content to a human-readable format.
     /// </summary>
-    /// <returns>A human-readable string representation of the instance.</returns>
-    string Dump();
+    /// <returns>A human-readable representation of the instance.</returns>
+    IEnumerable<string> Dump();
 }

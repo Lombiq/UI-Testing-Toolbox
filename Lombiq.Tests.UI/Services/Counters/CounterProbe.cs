@@ -1,5 +1,6 @@
 using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.Services.Counters;
 
@@ -10,19 +11,21 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
     public override bool IsRunning => !_disposed;
     public ICounterDataCollector CounterDataCollector { get; init; }
 
-    public override string Dump()
+    public override IEnumerable<string> Dump()
     {
-        var builder = new StringBuilder();
-
-        builder.AppendLine(DumpHeadline());
-
-        foreach (var entry in Counters)
+        var lines = new List<string>
         {
-            builder.AppendLine(entry.Key.Dump())
-                .AppendLine(entry.Value.Dump());
-        }
+            DumpHeadline(),
+        };
 
-        return builder.ToString();
+        lines.AddRange(
+            Counters.SelectMany(entry =>
+                entry.Key.Dump()
+                    .Concat(entry.Value.Dump().Select(line => $"\t{line}")))
+            .Concat(DumpSummary())
+            .Select(line => $"\t{line}"));
+
+        return lines;
     }
 
     protected CounterProbe(ICounterDataCollector counterDataCollector)
@@ -56,6 +59,7 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
                 }
 
                 _disposed = true;
+                OnCaptureCompleted();
             }
         }
     }

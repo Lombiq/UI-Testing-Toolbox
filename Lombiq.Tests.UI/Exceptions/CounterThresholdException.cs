@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services.Counters;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Lombiq.Tests.UI.Exceptions;
@@ -55,8 +56,8 @@ public class CounterThresholdException : Exception
     {
         var builder = new StringBuilder();
         if (probe is not null) builder.AppendLine(probe.DumpHeadline());
-        if (counter is not null) builder.AppendLine(counter.Dump());
-        if (value is not null) builder.AppendLine(value.Dump());
+        if (counter is not null) counter.Dump().ForEach(line => builder.AppendLine(line));
+        if (value is not null) value.Dump().ForEach(line => builder.AppendLine(line));
         if (!string.IsNullOrEmpty(message)) builder.AppendLine(message);
 
         return builder.ToString();

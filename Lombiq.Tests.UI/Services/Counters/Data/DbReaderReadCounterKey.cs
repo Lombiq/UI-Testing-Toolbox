@@ -4,14 +4,14 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.Services.Counters.Data;
 
-public sealed class DbExecuteCounterKey : DbCommandCounterKey
+public class DbReaderReadCounterKey : DbCommandCounterKey
 {
-    public DbExecuteCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
+    public DbReaderReadCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
         : base(commandText, parameters)
     {
     }
 
-    public static DbExecuteCounterKey CreateFrom(DbCommand dbCommand) =>
+    public static DbReaderReadCounterKey CreateFrom(DbCommand dbCommand) =>
         new(
             dbCommand.CommandText,
             dbCommand.Parameters
