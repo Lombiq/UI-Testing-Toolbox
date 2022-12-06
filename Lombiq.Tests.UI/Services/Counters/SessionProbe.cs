@@ -32,11 +32,11 @@ public sealed class SessionProbe : CounterProbe, ISession
         _session.Save(obj, checkConcurrency, collection);
     void ISession.Delete(object item, string collection) =>
         _session.Delete(item, collection);
-    bool ISession.Import(object item, int id, int version, string collection) =>
+    bool ISession.Import(object item, long id, long version, string collection) =>
         _session.Import(item, id, version, collection);
     void ISession.Detach(object item, string collection) =>
         _session.Detach(item, collection);
-    Task<IEnumerable<T>> ISession.GetAsync<T>(int[] ids, string collection) =>
+    Task<IEnumerable<T>> ISession.GetAsync<T>(long[] ids, string collection) =>
         _session.GetAsync<T>(ids, collection);
     IQuery ISession.Query(string collection) =>
         _session.Query(collection);
