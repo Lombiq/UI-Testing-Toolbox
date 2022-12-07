@@ -55,7 +55,7 @@
     <PackageReference Include="Atata.Bootstrap" Version="2.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="2.2.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="2.2.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.14.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.14.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="2.0.76" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
@@ -63,14 +63,11 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="161.6319.0-preview" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.8.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
-    <!-- During Orchard upgrades, this needs to be kept up to date with the version Orchard uses. -->
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.4.0" />
+    <PackageReference Include="OrchardCore.Logging.NLog" Version="1.5.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.5.0" />
     <PackageReference Include="Selenium.Axe" Version="4.0.5" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
-    <!-- Can't update to WebDriverManager v2.14.1 or later until an Orchard upgrade: Its AngleSharp dependency is
-    higher than that required by HtmlSanitizer, required by OrchardCore.Infrastructure. -->
-    <PackageReference Include="WebDriverManager" Version="2.13.0" />
+    <PackageReference Include="WebDriverManager" Version="2.16.2" />
     <PackageReference Include="xunit" Version="2.4.2" />
   </ItemGroup>
 
@@ -90,10 +87,10 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="2.1.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="4.7.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="4.7.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="4.7.0" />
+    <PackageReference Include="Lombiq.Tests" Version="2.2.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.0.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.2.1-alpha.0.osoe-84" />
   </ItemGroup>
 
@@ -114,3 +111,4 @@
   </ItemGroup>
 
 </Project>
+

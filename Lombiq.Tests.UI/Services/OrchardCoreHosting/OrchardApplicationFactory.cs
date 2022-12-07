@@ -42,7 +42,15 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
-        return base.CreateHost(builder);
+        // This lock is to avoid parallel start of the application.
+        // Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.CreateHost() starts a new thread for the web
+        // application instance which can cause issues in e.g.:
+        // NLog.Config.Factory<TBaseType, TAttributeType>.RegisterDefinition() which is using non-thread-safe Dictionary
+        // to store cached types when initializing the default logger instance.
+        lock (OrchardApplicationFactoryCounter.CreateHostLock)
+        {
+            return base.CreateHost(builder);
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -137,4 +145,9 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
         SqliteConnection.ClearAllPools();
     }
+}
+
+internal static class OrchardApplicationFactoryCounter
+{
+    public static object CreateHostLock { get; } = new();
 }
