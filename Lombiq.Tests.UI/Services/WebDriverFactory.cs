@@ -8,13 +8,9 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
-using WebDriverManager.Helpers;
-using Architecture = WebDriverManager.Helpers.Architecture;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -47,8 +43,10 @@ public static class WebDriverFactory
 
             chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
             chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
-            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1"; // By default localhost is only allowed in IPv4.
-            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1"; // Helps with misconfigured hosts.
+            // By default localhost is only allowed in IPv4.
+            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1";
+            // Helps with misconfigured hosts.
+            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
             return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
@@ -62,7 +60,7 @@ public static class WebDriverFactory
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new CustomEdgeConfig(), () =>
+        CreateDriver(new EdgeConfig(), () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -201,72 +199,5 @@ public static class WebDriverFactory
     {
         public ChromeOptions Options { get; init; }
         public ChromeDriverService Service { get; set; }
-    }
-
-    // This is because of the WebDriverManager.DriverConfigs.Impl.EdgeConfig in WebDriverManager doesn't support Edge on
-    // Linux. This is now done in WebDriverManage.NET: https://github.com/rosolko/WebDriverManager.Net/issues/196. We
-    // need to add it after an Orchard upgrade, see: https://github.com/Lombiq/UI-Testing-Toolbox/issues/181.
-    private sealed class CustomEdgeConfig : IDriverConfig
-    {
-        public string GetName() => "Edge";
-
-        public string GetBinaryName()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "msedgedriver";
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "msedgedriver.exe";
-            }
-
-            throw new PlatformNotSupportedException("Your operating system is not supported");
-        }
-
-        public string GetUrl32() => GetUrl(Architecture.X32);
-
-        public string GetUrl64() => GetUrl(Architecture.X64);
-
-        public string GetLatestVersion() => GetLatestVersion("https://msedgedriver.azureedge.net/LATEST_STABLE");
-
-        private static string GetLatestVersion(string url)
-        {
-            var uri = new Uri(url);
-            using var client = new HttpClient();
-
-            return client.GetStringAsync(uri).Result.Trim();
-        }
-
-        public string GetMatchingBrowserVersion()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return RegistryHelper.GetInstalledBrowserVersionLinux("microsoft-edge", "--version");
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return RegistryHelper.GetInstalledBrowserVersionWin("msedge.exe");
-            }
-
-            throw new PlatformNotSupportedException("Your operating system is not supported");
-        }
-
-        private static string GetUrl(Architecture architecture)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && architecture == Architecture.X64)
-            {
-                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_linux{((int)architecture).ToTechnicalString()}.zip";
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return $"https://msedgedriver.azureedge.net/<version>/edgedriver_win{((int)architecture).ToTechnicalString()}.zip";
-            }
-
-            throw new PlatformNotSupportedException("Your operating system is not supported");
-        }
     }
 }

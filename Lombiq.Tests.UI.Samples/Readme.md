@@ -21,7 +21,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Accessibility tests](Tests/AccessibilityTest.cs)
 - [Using SQL Server](Tests/SqlServerTests.cs)
 - [Using Azure Blob Storage](Tests/AzureBlobStorageTests.cs)
-- [Error handling](Tests/ErrorHandlingtests.cs)
+- [Error handling](Tests/ErrorHandlingTests.cs)
 - [Monkey tests](Tests/MonkeyTests.cs)
 - [Database snapshot tests](Tests/DatabaseSnapshotTests.cs)
 - [Basic visual verification tests](Tests/BasicVisualVerificationTests.cs)

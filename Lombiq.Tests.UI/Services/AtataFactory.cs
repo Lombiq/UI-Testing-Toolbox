@@ -39,7 +39,8 @@ public static class AtataFactory
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .UseUtcTimeZone();
+            .UseUtcTimeZone()
+            .PageSnapshots.UseCdpOrPageSourceStrategy();
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));

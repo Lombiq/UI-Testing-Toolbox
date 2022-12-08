@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Constants;
 using Lombiq.Tests.UI.Services;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,15 +28,15 @@ public class DatabaseSnapshotTests : UITestBase
          ExecuteTestAsync(
                 async context =>
                 {
-                    const string AppForDatabaseTestFolder = "AppForDatabaseTest";
+                    var appForDatabaseTestFolder = Path.Combine("Temp", "AppForDatabaseTest");
 
                     await context.GoToSetupPageAndSetupOrchardCoreAsync(RecipeIds.BasicOrchardFeaturesTests);
-                    await context.Application.TakeSnapshotAsync(AppForDatabaseTestFolder);
+                    await context.Application.TakeSnapshotAsync(appForDatabaseTestFolder);
 
                     await ExecuteTestFromExistingDBAsync(
                          async context => await context.TestBasicOrchardFeaturesExceptSetupAsync(),
                          browser,
-                         AppForDatabaseTestFolder);
+                         appForDatabaseTestFolder);
                 },
                 browser);
 }
