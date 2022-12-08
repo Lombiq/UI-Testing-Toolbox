@@ -22,7 +22,7 @@ public class AzureBlobStorageConfiguration
     /// execution you can just delete the container (it'll be created if it doesn't exist). This configuration will be
     /// automatically passed to the tested app.
     /// </summary>
-    public string ContainerName { get; set; } = "lombiquitestingtoolbox";
+    public string ContainerName { get; set; } = "lombiquitestingtoolbox"; // #no-spell-check
 }
 
 public class AzureBlobStorageRunningContext
