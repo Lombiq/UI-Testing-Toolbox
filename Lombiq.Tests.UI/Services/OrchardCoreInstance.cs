@@ -126,8 +126,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
     {
-        if (cancellationToken == default) cancellationToken = CancellationToken.None;
-
         var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
         return Directory.Exists(logFolderPath)
             ? Directory
@@ -136,7 +134,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     Name = Path.GetFileName(filePath),
                     FullName = Path.GetFullPath(filePath),
-                    ContentLoader = () => File.ReadAllTextAsync(filePath, cancellationToken),
+                    ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
                 })
             : Enumerable.Empty<IApplicationLog>();
     }
@@ -209,6 +207,19 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
         return;
+    }
+
+    // Use cancellationToken in ReadToEndAsync() once it's available after a .NET upgrade, see:
+    // https://github.com/dotnet/runtime/pull/61898.
+#pragma warning disable S1172 // Unused method parameters should be removed
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore S1172 // Unused method parameters should be removed
+    {
+        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var streamReader = new StreamReader(fileStream);
+        return await streamReader.ReadToEndAsync();
     }
 
     private class ApplicationLog : IApplicationLog
