@@ -527,4 +527,57 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .Text
                     .ShouldBeAsString("Image.png");
                 context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
+                    .Text
+                    .ShouldBeAsString("Document.pdf");
+
+                await context.Get(By.CssSelector("#folder-tree .treeroot .folder-actions")).ClickReliablyAsync(context);
+
+                var folderNameInput = context.Get(By.Id("create-folder-name"));
+                folderNameInput.SendKeys("Example Folder");
+
+                await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
+
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+                context.WaitForPageLoad();
+                var image = context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"));
+                image.Text.ShouldBeAsString("Image.png");
+                var pdf = context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"));
+                pdf.Text.ShouldBeAsString("Document.pdf");
+
+                await image.ClickReliablyAsync(context);
+                await context
+                    .Get(By.CssSelector(
+                        "#mediaContainerMain div.media-container-middle.p-3 tr:nth-child(2) a.btn.btn-link.btn-sm.delete-button"))
+                    .ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
+
+                var deleteFolderButton =
+                    context.Get(By.CssSelector("#folder-tree > li > ol > li.selected > div > a > div.btn-group.folder-actions > a:nth-child(2)"));
+                await deleteFolderButton.ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
+            });
+
+    /// <summary>
+    /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
+    /// </summary>
+    /// <param name="testName">The test name.</param>
+    /// <param name="testFunctionAsync">The test action.</param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static Task ExecuteTestAsync(
+        this UITestContext context, string testName, Func<Task> testFunctionAsync)
+    {
+        if (context is null) throw new ArgumentNullException(nameof(context));
+        if (testName is null) throw new ArgumentNullException(nameof(testName));
+        if (testFunctionAsync is null) throw new ArgumentNullException(nameof(testFunctionAsync));
+
+        return ExecuteTestInnerAsync(context, testName, testFunctionAsync);
+    }
+
+    private static Task ExecuteTestInnerAsync(
+        UITestContext context, string testName, Func<Task> testFunctionAsync) =>
+        context.ExecuteLoggedAsync(testName, testFunctionAsync);
+}
