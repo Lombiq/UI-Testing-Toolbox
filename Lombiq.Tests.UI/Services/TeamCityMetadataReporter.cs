@@ -52,7 +52,7 @@ public static class TeamCityMetadataReporter
         .Replace("'", "|'", StringComparison.Ordinal)
         .Replace("\n", "n", StringComparison.Ordinal)
         .Replace("\r", "|r", StringComparison.Ordinal)
-        .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal)
+        .Replace(@"\uNNNN", "|0xNNNN", StringComparison.Ordinal) // #spell-check-ignore-line
         .Replace("[", "|[", StringComparison.Ordinal)
         .Replace("]", "|]", StringComparison.Ordinal);
 }

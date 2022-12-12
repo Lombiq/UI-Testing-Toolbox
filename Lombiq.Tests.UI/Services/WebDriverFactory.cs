@@ -35,7 +35,7 @@ public static class WebDriverFactory
 
             // Linux-specific setting, may be necessary for running in containers, see
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-            chromeConfig.Options.AddArgument("disable-dev-shm-usage");
+            chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
 
             chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
@@ -51,7 +51,8 @@ public static class WebDriverFactory
             return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
 
-        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath && Directory.Exists(driverPath))
+        var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
+        if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
             return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }

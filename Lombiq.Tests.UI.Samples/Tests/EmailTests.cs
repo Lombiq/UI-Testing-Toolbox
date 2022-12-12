@@ -43,7 +43,7 @@ public class EmailTests : UITestBase
                     {
                         try
                         {
-                            await context.ClickReliablyOnAsync(By.Id("emailtestsend"));
+                            await context.ClickReliablyOnAsync(By.Id("emailtestsend")); // #spell-check-ignore-line
                             return true;
                         }
                         catch (WebDriverException ex) when (ex.Message.Contains("move target out of bounds"))
