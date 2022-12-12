@@ -51,7 +51,8 @@ public static class WebDriverFactory
             return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
         }
 
-        if (Environment.GetEnvironmentVariable("CHROMEWEBDRIVER") is { } driverPath && Directory.Exists(driverPath)) // #spell-check-ignore-line
+        var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
+        if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
             return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
