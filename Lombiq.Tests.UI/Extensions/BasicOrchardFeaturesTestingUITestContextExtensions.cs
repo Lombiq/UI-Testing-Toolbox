@@ -1,4 +1,4 @@
-using  Atata;
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
