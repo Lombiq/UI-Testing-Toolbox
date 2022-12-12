@@ -517,22 +517,44 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.GoToAdminRelativeUrlAsync("/Media");
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload");
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
 
-                // Workaround for pending uploads.
+                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
                 context.WaitForPageLoad();
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(4) .break-word"))
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(3) .break-word"))
                     .Text
-                    .ShouldBeAsString("Image.png");
+                    .ShouldBeAsString(FileUploadHelper.SamplePngFileName);
+
+                await context
+                    .Get(By.CssSelector($"a[href=\"/media/{FileUploadHelper.SamplePngFileName}\"]"))
+                    .ClickReliablyAsync(context);
+
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync("/Media");
+
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+
+                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
+                context.WaitForPageLoad();
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
+
                 context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
                     .Text
-                    .ShouldBeAsString("Document.pdf");
+                    .ShouldBeAsString(FileUploadHelper.SamplePdfFileName);
 
-                // Files opened via view link
+                await context
+                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2)"))
+                    .ClickReliablyAsync(context);
+
+                await context
+                    .Get(By.CssSelector($"a[href=\"/media/{FileUploadHelper.SamplePdfFileName}\"]"))
+                    .ClickReliablyAsync(context);
+
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync("/Media");
 
                 await context.Get(By.CssSelector("#folder-tree .treeroot .folder-actions")).ClickReliablyAsync(context);
 
