@@ -1,5 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
@@ -513,7 +514,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             "Test media operations",
             async () =>
             {
-                await context.GoToRelativeUrlAsync("Admin/Media");
+                await context.GoToAdminRelativeUrlAsync("Media");
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload");
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
@@ -531,10 +532,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .Text
                     .ShouldBeAsString("Document.pdf");
 
+                // Files opened via view link
+
                 await context.Get(By.CssSelector("#folder-tree .treeroot .folder-actions")).ClickReliablyAsync(context);
 
-                var folderNameInput = context.Get(By.Id("create-folder-name"));
-                folderNameInput.SendKeys("Example Folder");
+                context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
 
                 await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
 
@@ -543,10 +545,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 var image = context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"));
-                image.Text.ShouldBeAsString("Image.png");
+                image.Text.ShouldBe(FileUploadHelper.SamplePngPath);
                 var pdf = context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"));
-                pdf.Text.ShouldBeAsString("Document.pdf");
+                pdf.Text.ShouldBe(FileUploadHelper.SamplePdfPath);
 
                 await image.ClickReliablyAsync(context);
                 await context
@@ -555,10 +557,14 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
+                // Check file disappearance.
+
                 var deleteFolderButton =
                     context.Get(By.CssSelector("#folder-tree > li > ol > li.selected > div > a > div.btn-group.folder-actions > a:nth-child(2)"));
                 await deleteFolderButton.ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
+
+                // Check folder disappearance.
             });
 
     /// <summary>
