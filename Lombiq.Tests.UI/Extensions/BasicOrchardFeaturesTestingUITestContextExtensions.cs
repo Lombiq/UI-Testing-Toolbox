@@ -579,14 +579,22 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
-                // Check file disappearance.
+                var fileNames = context.GetAll(By.CssSelector("#mediaContainerMain tbody tr .break-word"));
+                foreach (var fileName in fileNames)
+                {
+                    fileName.Text.ShouldNotBe(FileUploadHelper.SamplePngFileName);
+                }
 
                 var deleteFolderButton =
                     context.Get(By.CssSelector("#folder-tree > li > ol > li.selected > div > a > div.btn-group.folder-actions > a:nth-child(2)"));
                 await deleteFolderButton.ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
-                // Check folder disappearance.
+                var folders = context.GetAll(By.CssSelector("#folder-tree ol li .folder-name"));
+                foreach (var folder in folders)
+                {
+                    folder.Text.ShouldNotBe("Example Folder");
+                }
             });
 
     /// <summary>
