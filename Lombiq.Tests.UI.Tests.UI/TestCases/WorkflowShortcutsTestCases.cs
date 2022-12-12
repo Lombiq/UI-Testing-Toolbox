@@ -15,7 +15,7 @@ public static class WorkflowShortcutsTestCases
             {
                 await context.EnableFeatureDirectlyAsync(ShortcutsFeatureIds.Workflows);
                 await context.ExecuteRecipeDirectlyAsync("Lombiq.Tests.UI.Tests.UI.WorkflowShortcutsTests");
-                (await context.GenerateHttpEventUrlAsync("testworkflow000000", "testhttpevent00000"))
+                (await context.GenerateHttpEventUrlAsync("testworkflow000000", "testhttpevent00000")) // #spell-check-ignore-line
                     .ShouldStartWith("/workflows/Invoke?token=");
             },
             browser,
