@@ -514,7 +514,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             "Test media operations",
             async () =>
             {
-                await context.GoToAdminRelativeUrlAsync("Media");
+                await context.GoToAdminRelativeUrlAsync("/Media");
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload");
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
@@ -545,10 +545,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 var image = context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"));
-                image.Text.ShouldBe(FileUploadHelper.SamplePngPath);
+                image.Text.ShouldBe(FileUploadHelper.SamplePngFileName);
                 var pdf = context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"));
-                pdf.Text.ShouldBe(FileUploadHelper.SamplePdfPath);
+                pdf.Text.ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await image.ClickReliablyAsync(context);
                 await context
