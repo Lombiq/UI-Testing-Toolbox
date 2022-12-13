@@ -514,6 +514,9 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             "Test media operations",
             async () =>
             {
+                var imageName = FileUploadHelper.SamplePngFileName;
+                var documentName = FileUploadHelper.SamplePdfFileName;
+
                 await context.GoToAdminRelativeUrlAsync("/Media");
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
@@ -523,12 +526,12 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context
-                    .Get(By.XPath("//span[contains(text(), 'Image.png')]"))
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"))
                     .Text
                     .ShouldBe(FileUploadHelper.SamplePngFileName);
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{FileUploadHelper.SamplePngFileName}\"]"))
+                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]"))
                     .ClickReliablyAsync(context);
 
                 context.WaitForPageLoad();
@@ -541,16 +544,16 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context
-                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]"))
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"))
                     .Text
                     .ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await context
-                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]/ancestor::tr"))
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr"))
                     .ClickReliablyAsync(context);
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{FileUploadHelper.SamplePdfFileName}\"]"))
+                    .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
 
                 context.WaitForPageLoad();
@@ -568,16 +571,16 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.WaitForPageLoad();
                 var image = context
-                    .Get(By.XPath("//span[contains(text(), 'Image.png')]"));
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
                 image.Text.ShouldBe(FileUploadHelper.SamplePngFileName);
                 var pdf = context
-                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]"));
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"));
                 pdf.Text.ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await image.ClickReliablyAsync(context);
 
                 await context
-                    .Get(By.XPath("//span[contains(text(), 'Image.png')]/ancestor::tr"))
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]/ancestor::tr"))
                     .Get(By.CssSelector("a.btn.btn-link.btn-sm.delete-button"))
                     .ClickReliablyAsync(context);
 
