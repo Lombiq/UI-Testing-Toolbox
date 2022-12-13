@@ -523,7 +523,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(3) .break-word"))
+                    .Get(By.XPath("//span[contains(text(), 'Image.png')]"))
                     .Text
                     .ShouldBe(FileUploadHelper.SamplePngFileName);
 
@@ -541,12 +541,12 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
+                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]"))
                     .Text
                     .ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2)"))
+                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]/ancestor::tr"))
                     .ClickReliablyAsync(context);
 
                 await context
@@ -568,17 +568,19 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.WaitForPageLoad();
                 var image = context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"));
+                    .Get(By.XPath("//span[contains(text(), 'Image.png')]"));
                 image.Text.ShouldBe(FileUploadHelper.SamplePngFileName);
                 var pdf = context
-                    .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(1) .break-word"));
+                    .Get(By.XPath("//span[contains(text(), 'Document.pdf')]"));
                 pdf.Text.ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await image.ClickReliablyAsync(context);
+
                 await context
-                    .Get(By.CssSelector(
-                        "#mediaContainerMain div.media-container-middle.p-3 tr:nth-child(2) a.btn.btn-link.btn-sm.delete-button"))
+                    .Get(By.XPath("//span[contains(text(), 'Image.png')]/ancestor::tr"))
+                    .Get(By.CssSelector("a.btn.btn-link.btn-sm.delete-button"))
                     .ClickReliablyAsync(context);
+
                 await context.ClickModalOkAsync();
 
                 var fileNames = context.GetAll(By.CssSelector("#mediaContainerMain tbody tr .break-word"));
@@ -588,7 +590,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 }
 
                 var deleteFolderButton =
-                    context.Get(By.CssSelector("#folder-tree > li > ol > li.selected > div > a > div.btn-group.folder-actions > a:nth-child(2)"));
+                    context.Get(By.CssSelector("#folder-tree  li.selected  div.btn-group.folder-actions .svg-inline--fa.fa-trash"));
                 await deleteFolderButton.ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
