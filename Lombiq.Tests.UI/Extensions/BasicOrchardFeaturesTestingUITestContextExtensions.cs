@@ -516,7 +516,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             {
                 await context.GoToAdminRelativeUrlAsync("/Media");
 
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
 
                 // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
                 context.WaitForPageLoad();
@@ -534,7 +534,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync("/Media");
 
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
 
                 // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
                 context.WaitForPageLoad();
@@ -556,14 +556,16 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync("/Media");
 
-                await context.Get(By.CssSelector("#folder-tree .treeroot .folder-actions")).ClickReliablyAsync(context);
+                await context
+                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions")) // #spell-check-ignore-line
+                    .ClickReliablyAsync(context);
 
                 context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
 
                 await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
 
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.WaitForPageLoad();
                 var image = context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"));
