@@ -525,7 +525,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(3) .break-word"))
                     .Text
-                    .ShouldBeAsString(FileUploadHelper.SamplePngFileName);
+                    .ShouldBe(FileUploadHelper.SamplePngFileName);
 
                 await context
                     .Get(By.CssSelector($"a[href=\"/media/{FileUploadHelper.SamplePngFileName}\"]"))
@@ -543,7 +543,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2) .break-word"))
                     .Text
-                    .ShouldBeAsString(FileUploadHelper.SamplePdfFileName);
+                    .ShouldBe(FileUploadHelper.SamplePdfFileName);
 
                 await context
                     .Get(By.CssSelector("#mediaContainerMain tbody tr:nth-child(2)"))
