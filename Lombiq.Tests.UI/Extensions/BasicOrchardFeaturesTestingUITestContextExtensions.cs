@@ -533,6 +533,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context
                     .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]"))
                     .ClickReliablyAsync(context);
+                context.SwitchToFirstWindow();
 
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync("/Media");
@@ -555,6 +556,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context
                     .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
+                context.SwitchToFirstWindow();
 
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync("/Media");
