@@ -59,7 +59,23 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         // to store cached types when initializing the default logger instance.
         lock (OrchardApplicationFactoryCounter.CreateHostLock)
         {
-            return base.CreateHost(builder);
+            // Moving host startup out of the xUnit synchronization context to a new thread, to avoid potential
+            // deadlocks and thus dotnet test getting randomly stuck due to sync-over-async code in
+            // WebApplicationFactory. See ASP.NET Core issue: https://github.com/dotnet/aspnetcore/issues/43353. See our
+            // issue for more details about the whole topic: https://github.com/Lombiq/UI-Testing-Toolbox/issues/228.
+            // Solution taken from:
+            // https://www.strathweb.com/2021/05/the-curious-case-of-asp-net-core-integration-test-deadlock/.
+
+            // The original CreateHost() is just the following:
+            ////var host = builder.Build();
+            ////host.Start();
+            ////return host;
+            // See https://github.com/dotnet/aspnetcore/blob/main/src/Mvc/Mvc.Testing/src/WebApplicationFactory.cs for
+            // the latest source.
+
+            var host = builder.Build();
+            Task.Run(() => host.StartAsync()).GetAwaiter().GetResult();
+            return host;
         }
     }
 
