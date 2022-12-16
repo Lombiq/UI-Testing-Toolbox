@@ -1,8 +1,10 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -107,6 +109,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         await context.TestLoginAsync();
         await context.TestContentOperationsAsync();
         await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestMediaOperationsAsync();
         await context.TestLogoutAsync();
     }
 
@@ -504,6 +507,103 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
                     .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
                     .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+            });
+
+    public static Task TestMediaOperationsAsync(this UITestContext context) =>
+        context.ExecuteTestAsync(
+            "Test media operations",
+            async () =>
+            {
+                var imageName = FileUploadHelper.SamplePngFileName;
+                var documentName = FileUploadHelper.SamplePdfFileName;
+
+                await context.GoToAdminRelativeUrlAsync("/Media");
+
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+
+                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
+                context.WaitForPageLoad();
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
+
+                context
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"))
+                    .Text
+                    .ShouldBe(FileUploadHelper.SamplePngFileName);
+
+                await context
+                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]"))
+                    .ClickReliablyAsync(context);
+                context.SwitchToFirstWindow();
+
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync("/Media");
+
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+
+                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
+                context.WaitForPageLoad();
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
+
+                context
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"))
+                    .Text
+                    .ShouldBe(FileUploadHelper.SamplePdfFileName);
+
+                await context
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr"))
+                    .ClickReliablyAsync(context);
+
+                await context
+                    .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
+                    .ClickReliablyAsync(context);
+                context.SwitchToFirstWindow();
+
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync("/Media");
+
+                await context
+                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions")) // #spell-check-ignore-line
+                    .ClickReliablyAsync(context);
+
+                context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
+
+                await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
+
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.WaitForPageLoad();
+                var image = context
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
+                image.Text.ShouldBe(FileUploadHelper.SamplePngFileName);
+                var pdf = context
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"));
+                pdf.Text.ShouldBe(FileUploadHelper.SamplePdfFileName);
+
+                await image.ClickReliablyAsync(context);
+
+                await context
+                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]/ancestor::tr"))
+                    .Get(By.CssSelector("a.btn.btn-link.btn-sm.delete-button"))
+                    .ClickReliablyAsync(context);
+
+                await context.ClickModalOkAsync();
+
+                var fileNames = context.GetAll(By.CssSelector("#mediaContainerMain tbody tr .break-word"));
+                foreach (var fileName in fileNames)
+                {
+                    fileName.Text.ShouldNotBe(FileUploadHelper.SamplePngFileName);
+                }
+
+                var deleteFolderButton =
+                    context.Get(By.CssSelector("#folder-tree  li.selected  div.btn-group.folder-actions .svg-inline--fa.fa-trash"));
+                await deleteFolderButton.ClickReliablyAsync(context);
+                await context.ClickModalOkAsync();
+
+                var folders = context.GetAll(By.CssSelector("#folder-tree ol li .folder-name"));
+                foreach (var folder in folders)
+                {
+                    folder.Text.ShouldNotBe("Example Folder");
+                }
             });
 
     /// <summary>

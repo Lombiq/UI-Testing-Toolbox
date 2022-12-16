@@ -40,7 +40,7 @@ if (horde) horde.stop();";
     const customLogger = {{
         log: function () {{
             console.log.apply(null, arguments);
-            if (['click', 'dblclick', 'mouseup'].some(mouseAction => arguments[2] === mouseAction)) {{
+            if (['click', 'dblclick', 'mouseup'].some(mouseAction => arguments[2] === mouseAction)) {{ // #spell-check-ignore-line
                 var message = Array.prototype.slice.call(arguments, 2).join(' ');
                 sessionStorage.setItem('lastgremlinsclick', message);
             }}
