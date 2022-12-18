@@ -525,10 +525,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
-                context
-                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"))
-                    .Text
-                    .ShouldBe(FileUploadHelper.SamplePngFileName);
+                context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
                     .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]"))
@@ -544,10 +541,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
-                context
-                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"))
-                    .Text
-                    .ShouldBe(FileUploadHelper.SamplePdfFileName);
+                context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
                 await context
                     .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr"))
@@ -572,12 +566,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.WaitForPageLoad();
-                var image = context
-                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
-                image.Text.ShouldBe(FileUploadHelper.SamplePngFileName);
-                var pdf = context
-                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]"));
-                pdf.Text.ShouldBe(FileUploadHelper.SamplePdfFileName);
+
+                var image = context.Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
+
+                context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
                 await image.ClickReliablyAsync(context);
 
@@ -591,7 +583,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 var fileNames = context.GetAll(By.CssSelector("#mediaContainerMain tbody tr .break-word"));
                 foreach (var fileName in fileNames)
                 {
-                    fileName.Text.ShouldNotBe(FileUploadHelper.SamplePngFileName);
+                    fileName.Text.ShouldNotBe(imageName);
                 }
 
                 var deleteFolderButton =
