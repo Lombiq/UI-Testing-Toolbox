@@ -528,7 +528,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]"))
+                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]").OfAnyVisibility())
                     .ClickReliablyAsync(context);
                 context.SwitchToFirstWindow();
 
@@ -544,7 +544,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
                 await context
-                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr"))
+                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility())
                     .ClickReliablyAsync(context);
 
                 await context
