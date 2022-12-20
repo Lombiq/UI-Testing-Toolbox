@@ -1,4 +1,3 @@
-using Atata;
 using Codeuctivity.ImageSharpCompare;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
@@ -18,7 +17,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -291,18 +289,13 @@ to customize the name of the dump item.";
             throw new VisualVerificationCallerMethodNotFoundException();
         }
 
-        var approvedContext = new VisualVerificationMatchApprovedContext
-        {
-            ModuleName = testFrame.GetModuleName(),
-            MethodName = testFrame.GetMethodName(),
-            BrowserName = context.Driver.As<IHasCapabilities>().Capabilities.GetCapability("browserName") as string,
-        };
-
-        approvedContext.BaselineFileName = configuration.BaselineFileNameFormatter(configuration, approvedContext);
+        var approvedContext = new VisualVerificationMatchApprovedContext(context, configuration, testFrame);
 
         // Try loading baseline image from embedded resources first.
-        approvedContext.BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType!.Namespace}.{approvedContext.BaselineFileName}.png";
-        var baselineImage = testFrame.MethodInfo.DeclaringType.Assembly
+        var baselineImage = testFrame
+            .MethodInfo
+            .DeclaringType?
+            .Assembly
             .GetResourceImageSharpImage(approvedContext.BaselineResourceName);
 
         if (baselineImage == null)
@@ -323,29 +316,13 @@ to customize the name of the dump item.";
 
                 throw new VisualVerificationSourceInformationNotAvailableException(
                     $"Source information not available, make sure you are compiling with full debug information."
-                    + $" Frame: {testFrame.MethodInfo.DeclaringType.Name}.{testFrame.MethodInfo.Name}."
+                    + $" Frame: {testFrame.MethodInfo.DeclaringType?.Name}.{testFrame.MethodInfo.Name}."
                     + $" The suggested baseline image was added to the failure dump as {suggestedImageFileName}");
             }
 
-            approvedContext.ModuleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
-            approvedContext.BaselineImagePath = Path.Combine(
-                approvedContext.ModuleDirectory,
-                $"{approvedContext.BaselineFileName}.png");
-
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                using var suggestedImage = context.TakeElementScreenshot(element);
-
-                suggestedImage.Save(approvedContext.BaselineImagePath, new PngEncoder());
-
-                // Appending suggested baseline image to failure dump too.
-                context.AppendFailureDump(
-                    Path.Combine(
-                        VisualVerificationMatchNames.DumpFolderName,
-                        $"{approvedContext.BaselineFileName}.png"),
-                    suggestedImage.Clone(),
-                    messageIfExists: HintFailureDumpItemAlreadyExists);
-
+                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
@@ -360,12 +337,32 @@ to customize the name of the dump item.";
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
                 cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
-                    .WithFileNameSuffix(string.Empty));
+                    .WithFileNameSuffix(string.Empty),
+                approvedContext);
         }
         finally
         {
             baselineImage?.Dispose();
         }
+    }
+
+    private static void SaveSuggestedImage(
+        this UITestContext context,
+        IWebElement element,
+        string baselineImagePath,
+        string baselineFileName)
+    {
+        using var suggestedImage = context.TakeElementScreenshot(element);
+
+        suggestedImage.Save(baselineImagePath, new PngEncoder());
+
+        // Appending suggested baseline image to failure dump too.
+        context.AppendFailureDump(
+            Path.Combine(
+                VisualVerificationMatchNames.DumpFolderName,
+                $"{baselineFileName}.png"),
+            suggestedImage.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
     }
 
     private static void AssertVisualVerification(
@@ -388,7 +385,8 @@ to customize the name of the dump item.";
         Image baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null)
+        Action<VisualMatchConfiguration> configurator = null,
+        VisualVerificationMatchApprovedContext approvedContext = null)
     {
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
@@ -403,10 +401,22 @@ to customize the name of the dump item.";
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
         // Checking the size of captured image.
-        elementImageOriginal.Width
-            .ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width);
-        elementImageOriginal.Height
-            .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
+        try
+        {
+            elementImageOriginal.Width
+                .ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width);
+            elementImageOriginal.Height
+                .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
+        }
+        catch
+        {
+            if (approvedContext != null)
+            {
+                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
+            }
+
+            throw;
+        }
 
         using var baselineImageOriginal = baseline.Clone();
 
@@ -645,41 +655,4 @@ calculated differences:
 
     private static MethodBase GetMethodBase(this EnhancedStackFrame frame) =>
         frame.MethodInfo.MethodBase ?? frame.MethodInfo.SubMethodBase;
-
-    private static string GetModuleName(this EnhancedStackFrame frame)
-    {
-        var currentMethod = frame.MethodInfo.DeclaringType;
-        string moduleName;
-
-        // This is required to retrieve the class from the inheritance chain where the method was declared but not
-        // overridden.
-        do
-        {
-            moduleName = currentMethod.Name;
-            currentMethod = currentMethod.DeclaringType;
-        }
-        while (currentMethod is not null);
-
-        var depthMark = new Regex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture);
-        if (depthMark.IsMatch(moduleName))
-        {
-            moduleName = depthMark.Match(moduleName).Groups["module"].Value;
-        }
-
-        return moduleName;
-    }
-
-    // Retrieves the method name. Removes the decoration in case of if it inherited from a base class but not overridden.
-    // Because of the inheritance, the method name gets some decoration in stack trace.
-    private static string GetMethodName(this EnhancedStackFrame frame)
-    {
-        var methodName = frame.MethodInfo.Name;
-        var inheritedMethod = new Regex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture);
-        if (inheritedMethod.IsMatch(methodName))
-        {
-            methodName = inheritedMethod.Match(methodName).Groups["method"].Value;
-        }
-
-        return methodName;
-    }
 }
