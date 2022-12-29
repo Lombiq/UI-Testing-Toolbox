@@ -88,9 +88,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.0.1-alpha.0.osoe-84" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.0.1-alpha.0.osoe-84" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.0.1-alpha.0.osoe-84" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.2.1-alpha.3.osoe-84" />
   </ItemGroup>
 
