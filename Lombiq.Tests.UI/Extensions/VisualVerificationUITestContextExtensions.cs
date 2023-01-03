@@ -350,11 +350,12 @@ to customize the name of the dump item.";
         this UITestContext context,
         IWebElement element,
         string baselineImagePath,
-        string baselineFileName)
+        string baselineFileName,
+        bool saveToTestFolder = true)
     {
         using var suggestedImage = context.TakeElementScreenshot(element);
 
-        suggestedImage.Save(baselineImagePath, new PngEncoder());
+        if (saveToTestFolder) suggestedImage.Save(baselineImagePath, new PngEncoder());
 
         // Appending suggested baseline image to failure dump too.
         context.AppendFailureDump(
@@ -400,21 +401,29 @@ to customize the name of the dump item.";
         // We take a screenshot of the element area. This will be compared to a baseline image.
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
-        // Checking the size of captured image.
-        try
+        // Checking the dimensions of captured image. This needs to happen before any other diffing, because that can
+        // only be done on images with the same dimensions.
+        var cropWidth = cropRegion.Left + cropRegion.Width;
+        var cropHeight = cropRegion.Top + cropRegion.Height;
+        if (elementImageOriginal.Width < cropWidth || elementImageOriginal.Height < cropHeight)
         {
-            var message = "This happens if the baseline image has larger dimensions than the captured area.";
-            elementImageOriginal.Width.ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width, message);
-            elementImageOriginal.Height.ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height, message);
-        }
-        catch
-        {
+            var cropRegionName = regionOfInterest == null ? "baseline image" : "selected region of interest";
+            var message = $"The dimensions of the captured element ({elementImageOriginal.Width.ToTechnicalString()}" +
+                $"px x {elementImageOriginal.Height.ToTechnicalString()}px) are smaller than the dimensions of the " +
+                $"{cropRegionName} ({cropWidth.ToTechnicalString()}px x {cropHeight.ToTechnicalString()}px). This " +
+                "can happen if due to a change in the app the captured element got smaller than before, or if the " +
+                $"{cropRegionName} is mistakenly too large.";
+
             if (approvedContext != null)
             {
-                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
+                message += " The suggested baseline image with a screenshot of the captured element was saved to the " +
+                    "failure dump. Compare this with the original image used by the test and if suitable, use it as " +
+                    "the baseline going forward.";
+                context.SaveSuggestedImage(
+                    element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName, saveToTestFolder: false);
             }
 
-            throw;
+            throw new VisualVerificationAssertionException(message);
         }
 
         using var baselineImageOriginal = baseline.Clone();
