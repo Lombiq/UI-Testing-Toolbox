@@ -401,8 +401,8 @@ to customize the name of the dump item.";
         // We take a screenshot of the element area. This will be compared to a baseline image.
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
-        // Checking the dimensions of captured image. This needs to happen before any other diffing, because that can
-        // only be done on images with the same dimensions.
+        // Checking the dimensions of captured image. This needs to happen before any other comparisons, because that
+        // can only be done on images with the same dimensions.
         var cropWidth = cropRegion.Left + cropRegion.Width;
         var cropHeight = cropRegion.Top + cropRegion.Height;
         if (elementImageOriginal.Width < cropWidth || elementImageOriginal.Height < cropHeight)
