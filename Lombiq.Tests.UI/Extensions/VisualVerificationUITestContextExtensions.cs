@@ -403,10 +403,9 @@ to customize the name of the dump item.";
         // Checking the size of captured image.
         try
         {
-            elementImageOriginal.Width
-                .ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width);
-            elementImageOriginal.Height
-                .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
+            var message = "This happens if the baseline image has larger dimensions than the captured area.";
+            elementImageOriginal.Width.ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width, message);
+            elementImageOriginal.Height.ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height, message);
         }
         catch
         {
