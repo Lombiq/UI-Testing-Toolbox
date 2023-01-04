@@ -591,11 +591,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await deleteFolderButton.ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
-                var folders = context.GetAll(By.CssSelector("#folder-tree ol li .folder-name"));
-                foreach (var folder in folders)
-                {
-                    folder.Text.ShouldNotBe("Example Folder");
-                }
+                context.Missing(By.CssSelector("#folder-tree ol li .folder-name [text='Example Folder']"));
             });
 
     /// <summary>
