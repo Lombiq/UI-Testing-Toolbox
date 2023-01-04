@@ -580,18 +580,14 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 await context.ClickModalOkAsync();
 
-                var fileNames = context.GetAll(By.CssSelector("#mediaContainerMain tbody tr .break-word"));
-                foreach (var fileName in fileNames)
-                {
-                    fileName.Text.ShouldNotBe(imageName);
-                }
+                context.Missing(By.XPath("//span[text()=' Image.png ' and @class='break-word']"));
 
                 var deleteFolderButton =
                     context.Get(By.CssSelector("#folder-tree  li.selected  div.btn-group.folder-actions .svg-inline--fa.fa-trash"));
                 await deleteFolderButton.ClickReliablyAsync(context);
                 await context.ClickModalOkAsync();
 
-                context.Missing(By.CssSelector("#folder-tree ol li .folder-name [text='Example Folder']"));
+                context.Missing(By.XPath("//div[text()='Example Folder' and @class='folder-name ms-2']"));
             });
 
     /// <summary>
