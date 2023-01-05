@@ -446,12 +446,11 @@ to customize the name of the dump item.";
             .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
 
-        // Now we are one step away from the end. Here we create a statistical summary of the differences
-        // between the captured and the baseline image. In the end, the lower values are better.
-        // You can read more about how these statistical calculations are created here:
+        // Now we are one step away from the end. Here we create a statistical summary of the differences between the
+        // captured and the baseline image. In the end, the lower values are better. You can read more about how these
+        // statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = baselineImageCropped
-            .CompareTo(elementImageCropped);
+        var diff = baselineImageCropped.CompareTo(elementImageCropped);
 
         try
         {
