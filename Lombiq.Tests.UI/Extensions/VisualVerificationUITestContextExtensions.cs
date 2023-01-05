@@ -350,21 +350,23 @@ to customize the name of the dump item.";
         this UITestContext context,
         IWebElement element,
         string baselineImagePath,
-        string baselineFileName,
-        bool saveToTestFolder = true)
+        string baselineFileName)
     {
         using var suggestedImage = context.TakeElementScreenshot(element);
+        suggestedImage.Save(baselineImagePath, new PngEncoder());
+        context.AddImageToFailureDump(baselineFileName, suggestedImage);
+    }
 
-        if (saveToTestFolder) suggestedImage.Save(baselineImagePath, new PngEncoder());
-
-        // Appending suggested baseline image to failure dump too.
+    private static void AddImageToFailureDump(
+        this UITestContext context,
+        string fileName,
+        Image image) =>
         context.AppendFailureDump(
             Path.Combine(
                 VisualVerificationMatchNames.DumpFolderName,
-                $"{baselineFileName}.png"),
-            suggestedImage.Clone(),
+                $"{fileName}.png"),
+            image.Clone(),
             messageIfExists: HintFailureDumpItemAlreadyExists);
-    }
 
     private static void AssertVisualVerification(
         this UITestContext context,
@@ -419,8 +421,8 @@ to customize the name of the dump item.";
                 message += " The suggested baseline image with a screenshot of the captured element was saved to the " +
                     "failure dump. Compare this with the original image used by the test and if suitable, use it as " +
                     "the baseline going forward.";
-                context.SaveSuggestedImage(
-                    element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName, saveToTestFolder: false);
+                using var elementImage = context.TakeElementScreenshot(element);
+                context.AddImageToFailureDump(approvedContext.BaselineFileName, elementImage);
             }
 
             throw new VisualVerificationAssertionException(message);
