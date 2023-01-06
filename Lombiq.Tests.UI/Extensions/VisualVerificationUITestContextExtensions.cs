@@ -419,10 +419,9 @@ to customize the name of the dump item.";
                 $"px x {elementImageOriginal.Height.ToTechnicalString()}px) are smaller than the dimensions of the " +
                 $"{cropRegionName} ({cropWidth.ToTechnicalString()}px x {cropHeight.ToTechnicalString()}px). This " +
                 "can happen if due to a change in the app the captured element got smaller than before, or if the " +
-                $"{cropRegionName} is mistakenly too large." +
-                " The suggested baseline image with a screenshot of the captured element was saved to the " +
-                "failure dump. Compare this with the original image used by the test and if suitable, use it as the " +
-                "baseline going forward.";
+                $"{cropRegionName} is mistakenly too large. The suggested baseline image with a screenshot of the " +
+                "captured element was saved to the failure dump. Compare this with the original image used by the " +
+                "test and if suitable, use it as the baseline going forward.";
             context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
 
             throw new VisualVerificationAssertionException(message);
