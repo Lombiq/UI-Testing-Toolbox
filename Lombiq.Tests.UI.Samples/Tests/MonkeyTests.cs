@@ -109,9 +109,6 @@ public class MonkeyTests : UITestBase
 
     private static bool IsValidAdminBrowserLogEntry(LogEntry logEntry) =>
         OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry(logEntry) &&
-        // This is necessary to work around this bug: https://github.com/OrchardCMS/OrchardCore/issues/11420.
-        !logEntry.Message.ContainsOrdinalIgnoreCase(
-            "Blocked attempt to show a 'beforeunload' confirmation panel for a frame that never had a user gesture since its load.") &&
         // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
         // parameters are required.
         !logEntry.Message.ContainsOrdinalIgnoreCase("/api/graphql - Failed to load resource: the server responded with a status of 400");
