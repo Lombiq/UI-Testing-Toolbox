@@ -1,3 +1,5 @@
+using System;
+
 namespace Lombiq.Tests.UI.Models;
 
 public class VisualVerificationMatchConfiguration<TSelf>
@@ -34,6 +36,14 @@ public class VisualVerificationMatchConfiguration<TSelf>
 
         return (TSelf)this;
     }
+
+    public string WrapFileName(string fileName) =>
+        new[]
+        {
+            FileNamePrefix,
+            fileName,
+            FileNameSuffix,
+        }.JoinNotNullOrEmpty("-");
 }
 
 public class VisualMatchConfiguration : VisualVerificationMatchConfiguration<VisualMatchConfiguration> { }

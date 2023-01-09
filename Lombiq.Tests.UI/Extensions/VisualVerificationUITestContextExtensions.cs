@@ -460,13 +460,7 @@ to customize the name of the dump item.";
             // Here we append all the relevant items to the failure dump to help the investigation.
             // The full-page screenshot
             context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.FullScreenImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
+                configuration.WrapFileName(VisualVerificationMatchNames.FullScreenImageFileName),
                 fullScreenImage);
 
             // The original element screenshot
@@ -474,59 +468,29 @@ to customize the name of the dump item.";
 
             // The original baseline image
             context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.BaselineImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
+                configuration.WrapFileName(VisualVerificationMatchNames.BaselineImageFileName),
                 baselineImageOriginal);
 
             // The cropped baseline image
             context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedBaselineImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
+                configuration.WrapFileName(VisualVerificationMatchNames.CroppedBaselineImageFileName),
                 baselineImageCropped);
 
             // The cropped element image
             context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedElementImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
+                configuration.WrapFileName(VisualVerificationMatchNames.CroppedElementImageFileName),
                 elementImageCropped);
 
             // The diff image
             context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.DiffImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
+                configuration.WrapFileName(VisualVerificationMatchNames.DiffImageFileName),
                 diffImage);
 
             // The diff stats
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.DiffLogFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
+                    configuration.WrapFileName(VisualVerificationMatchNames.DiffLogFileName)),
                 content: string.Format(
                     CultureInfo.InvariantCulture,
                     @"
