@@ -139,29 +139,40 @@ public static class UITestExecutor
         // length and characters play a role (a path containing either the same characters or having the same length
         // would work but not both). Playing safe here.
 
-        // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which
-        // usually make it long.
+        try
+        {
+            Directory.CreateDirectory(dumpRootPath);
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+        }
+        catch (Exception ex) when (
+            (ex is IOException &&
+                ex.Message.ContainsOrdinalIgnoreCase("The filename, directory name, or volume label syntax is incorrect."))
+            || ex is PathTooLongException)
+        {
+            // The OS doesn't like the path or it's too long. So we shorten it by removing the test parameters which
+            // usually make it long.
 
-        var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
-        var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
+            var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
+            var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
 
-        // Can't use string.GetHasCode() because that varies between executions.
-        var hashedParameters = Sha256Helper
-            .ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
+            // Can't use string.GetHasCode() because that varies between executions.
+            var hashedParameters = Sha256Helper
+                .ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
 
-        dumpFolderNameBase =
-            dumpFolderNameBase[0..(openingBracketIndex + 1)] +
-            hashedParameters +
-            dumpFolderNameBase[closingBracketIndex..];
+            dumpFolderNameBase =
+                dumpFolderNameBase[0..(openingBracketIndex + 1)] +
+                hashedParameters +
+                dumpFolderNameBase[closingBracketIndex..];
 
-        dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
+            dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
-        configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-            "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +
-                "full name ({0}) will be put into the folder to help troubleshooting if the test fails.",
-            testManifest.Name);
+            configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +
+                    "full name ({0}) will be put into the folder to help troubleshooting if the test fails.",
+                testManifest.Name);
+        }
 
         return dumpRootPath;
     }
