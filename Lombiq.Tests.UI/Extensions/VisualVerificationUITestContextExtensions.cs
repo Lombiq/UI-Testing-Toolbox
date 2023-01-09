@@ -400,13 +400,7 @@ to customize the name of the dump item.";
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
         var originalElementScreenshotFileName =
-            new[]
-            {
-                configuration.FileNamePrefix,
-                VisualVerificationMatchNames.ElementImageFileName,
-                configuration.FileNameSuffix,
-            }
-            .JoinNotNullOrEmpty("-");
+            configuration.WrapFileName(VisualVerificationMatchNames.ElementImageFileName);
 
         // Checking the dimensions of captured image. This needs to happen before any other comparisons, because that
         // can only be done on images with the same dimensions.
@@ -458,25 +452,14 @@ to customize the name of the dump item.";
         catch
         {
             // Here we append all the relevant items to the failure dump to help the investigation.
-            void AddImageToFailureDumpLocal(string fileName, Image image) =>
-                context.AddImageToFailureDump(configuration.WrapFileName(fileName), image);
+            void AddImageToFailureDumpLocal(string fileName, Image image, bool dontWrap = false) =>
+                context.AddImageToFailureDump(dontWrap ? fileName : configuration.WrapFileName(fileName), image);
 
-            // The full-page screenshot.
             AddImageToFailureDumpLocal(VisualVerificationMatchNames.FullScreenImageFileName, fullScreenImage);
-
-            // The original element screenshot.
-            context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
-
-            // The original baseline image.
+            AddImageToFailureDumpLocal(originalElementScreenshotFileName, elementImageOriginal, dontWrap: true);
             AddImageToFailureDumpLocal(VisualVerificationMatchNames.BaselineImageFileName, baselineImageOriginal);
-
-            // The cropped baseline image.
             AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedBaselineImageFileName, baselineImageCropped);
-
-            // The cropped element image.
             AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedElementImageFileName, elementImageCropped);
-
-            // The diff image.
             AddImageToFailureDumpLocal(VisualVerificationMatchNames.DiffImageFileName, diffImage);
 
             // The diff stats.
