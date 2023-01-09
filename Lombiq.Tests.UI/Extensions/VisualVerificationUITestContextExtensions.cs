@@ -446,7 +446,7 @@ to customize the name of the dump item.";
             .ShouldNotBeNull();
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences between the
-        // captured and the baseline image. In the end, the lower values are better. You can read more about how these
+        // captured and the baseline image. In the end, lower values are better. You can read more about how these
         // statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
         var diff = baselineImageCropped.CompareTo(elementImageCropped);
@@ -458,35 +458,28 @@ to customize the name of the dump item.";
         catch
         {
             // Here we append all the relevant items to the failure dump to help the investigation.
-            // The full-page screenshot
-            context.AddImageToFailureDump(
-                configuration.WrapFileName(VisualVerificationMatchNames.FullScreenImageFileName),
-                fullScreenImage);
+            void AddImageToFailureDumpLocal(string fileName, Image image) =>
+                context.AddImageToFailureDump(configuration.WrapFileName(fileName), image);
 
-            // The original element screenshot
+            // The full-page screenshot.
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.FullScreenImageFileName, fullScreenImage);
+
+            // The original element screenshot.
             context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
 
-            // The original baseline image
-            context.AddImageToFailureDump(
-                configuration.WrapFileName(VisualVerificationMatchNames.BaselineImageFileName),
-                baselineImageOriginal);
+            // The original baseline image.
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.BaselineImageFileName, baselineImageOriginal);
 
-            // The cropped baseline image
-            context.AddImageToFailureDump(
-                configuration.WrapFileName(VisualVerificationMatchNames.CroppedBaselineImageFileName),
-                baselineImageCropped);
+            // The cropped baseline image.
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedBaselineImageFileName, baselineImageCropped);
 
-            // The cropped element image
-            context.AddImageToFailureDump(
-                configuration.WrapFileName(VisualVerificationMatchNames.CroppedElementImageFileName),
-                elementImageCropped);
+            // The cropped element image.
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedElementImageFileName, elementImageCropped);
 
-            // The diff image
-            context.AddImageToFailureDump(
-                configuration.WrapFileName(VisualVerificationMatchNames.DiffImageFileName),
-                diffImage);
+            // The diff image.
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.DiffImageFileName, diffImage);
 
-            // The diff stats
+            // The diff stats.
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
