@@ -108,20 +108,11 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public Task ResumeAsync() => StartOrchardAppAsync();
 
-    public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
+    public Task TakeSnapshotAsync(string snapshotDirectoryPath)
     {
         ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
-        await PauseAsync();
-
-        if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
-
-        Directory.CreateDirectory(snapshotDirectoryPath);
-
-        await _configuration.BeforeTakeSnapshot
-            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
-
-        FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
+        return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
     public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
@@ -220,6 +211,20 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
         return await streamReader.ReadToEndAsync();
+    }
+
+    private async Task TakeSnapshotInnerAsync(string snapshotDirectoryPath)
+    {
+        await PauseAsync();
+
+        if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
+
+        Directory.CreateDirectory(snapshotDirectoryPath);
+
+        await _configuration.BeforeTakeSnapshot
+            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
+
+        FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
 
     private class ApplicationLog : IApplicationLog
