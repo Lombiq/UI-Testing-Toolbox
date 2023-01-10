@@ -115,8 +115,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         string snapshotDirectoryPathRemote,
         string snapshotDirectoryPathLocal = null,
         string containerName = null,
-        bool useCompressionIfAvailable = false,
-        int maxRetries = 3)
+        bool useCompressionIfAvailable = false)
     {
         var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
         var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
@@ -135,46 +134,29 @@ public sealed class SqlServerManager : IAsyncDisposable
             useCompressionIfAvailable &&
             (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
 
-        var retryCount = 0;
-
-        do
+        var backup = new Backup
         {
-            // We need to recreate the backup object and set its devices each time we retry, because the SMO API
-            // disposes them after the backup completes.
-            var backup = new Backup
-            {
-                Action = BackupActionType.Database,
-                CopyOnly = true,
-                Checksum = true,
-                Incremental = false,
-                ContinueAfterError = false,
-                // We don't need compression for setup snapshots as those backups will be only short-lived and we want
-                // them to be fast.
-                CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
-                SkipTapeHeader = true,
-                UnloadTapeAfter = false,
-                NoRewind = true,
-                FormatMedia = true,
-                Initialize = true,
-                Database = _databaseName,
-            };
+            Action = BackupActionType.Database,
+            CopyOnly = true,
+            Checksum = true,
+            Incremental = false,
+            ContinueAfterError = false,
+            // We don't need compression for setup snapshots as those backups will be only short-lived and we want them
+            // to be fast.
+            CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
+            SkipTapeHeader = true,
+            UnloadTapeAfter = false,
+            NoRewind = true,
+            FormatMedia = true,
+            Initialize = true,
+            Database = _databaseName,
+        };
 
-            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
-            backup.Devices.Add(destination);
-            // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
-            // which is messy.
-            backup.SqlBackup(server);
-
-            await Task.Delay(1000);
-            retryCount++;
-        }
-        while (!File.Exists(filePathLocal) && retryCount < maxRetries + 1);
-
-        if (!File.Exists(filePathLocal))
-        {
-            throw new FileNotFoundException(
-                $"Failed to create snapshot file at \"{filePathRemote}\" after {maxRetries.ToTechnicalString()} retries.");
-        }
+        var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
+        backup.Devices.Add(destination);
+        // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event which
+        // is messy.
+        backup.SqlBackup(server);
 
         if (!string.IsNullOrEmpty(containerName))
         {
@@ -198,7 +180,8 @@ public sealed class SqlServerManager : IAsyncDisposable
     public async Task RestoreSnapshotAsync(
         string snapshotDirectoryPathRemote,
         string snapshotDirectoryPathLocal,
-        string containerName)
+        string containerName,
+        int maxRetries = 3)
     {
         if (_isDisposed)
         {
@@ -220,8 +203,22 @@ public sealed class SqlServerManager : IAsyncDisposable
             // Clean up leftovers.
             await DockerExecuteAsync(containerName, "rm", "-f", remote);
 
-            // Copy back snapshot.
-            await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
+            var retryCount = 0;
+
+            do
+            {
+                // Copy back snapshot.
+                await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
+                await Task.Delay(1000);
+                retryCount++;
+            }
+            while (!File.Exists(remote) && retryCount < maxRetries + 1);
+
+            if (!File.Exists(remote))
+            {
+                throw new FileNotFoundException(
+                    $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
+            }
 
             // Reset ownership.
             await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
