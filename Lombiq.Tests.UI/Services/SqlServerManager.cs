@@ -170,7 +170,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         }
         while (!File.Exists(filePathLocal) && retryCount < maxRetries + 1);
 
-        if (!File.Exists(filePathRemote))
+        if (!File.Exists(filePathLocal))
         {
             throw new FileNotFoundException(
                 $"Failed to create snapshot file at \"{filePathRemote}\" after {maxRetries.ToTechnicalString()} retries.");
