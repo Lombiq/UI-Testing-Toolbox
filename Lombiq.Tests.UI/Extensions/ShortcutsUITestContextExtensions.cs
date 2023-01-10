@@ -333,7 +333,7 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     /// <returns>Basic information about the Orchard Core application's executable.</returns>
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
-        context.GetApi().GetApplicationInfoAsync();
+        context.GetApi().GetApplicationInfoFromApiAsync();
 
     // This is required to instantiate ILogger<>.
     private sealed class ExecuteRecipeShortcut { }
@@ -426,7 +426,7 @@ public static class ShortcutsUITestContextExtensions
     public interface IShortcutsApi
     {
         [Get("api/ApplicationInfo")]
-        Task<ApplicationInfo> GetApplicationInfoAsync();
+        Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
     }
 
     /// <summary>
