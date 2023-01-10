@@ -74,13 +74,14 @@ public static class ReliabilityUITestContextExtensions
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
     /// <summary>
-    /// Executes the async process and retries if an element becomes stale ( <see
+    /// Executes the async process and retries if an element becomes stale (throws <see
     /// cref="StaleElementReferenceException"/>). If the operation didn't succeed then throws a <see
     /// cref="TimeoutException"/>.
     ///
     /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
-    /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
-    /// only happens once at a time so this should pass by the 2nd try.
+    /// running operations such as <see cref="ElementRetrievalUITestContextExtensions.GetAll(UITestContext, By)"/>,
+    /// causing stale virtual DOM. Such change tends to be near instantaneous and only happens once at a time so this
+    /// should pass by the 2nd try.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
@@ -109,7 +110,8 @@ public static class ReliabilityUITestContextExtensions
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries until no element is stale (throws <see
+    /// cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
