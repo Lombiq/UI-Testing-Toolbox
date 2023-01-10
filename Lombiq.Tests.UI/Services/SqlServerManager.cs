@@ -135,8 +135,6 @@ public sealed class SqlServerManager : IAsyncDisposable
             useCompressionIfAvailable &&
             (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
 
-        var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
-
         var retryCount = 0;
 
         do
@@ -160,6 +158,8 @@ public sealed class SqlServerManager : IAsyncDisposable
                 Initialize = true,
                 Database = _databaseName,
             };
+
+            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
             backup.Devices.Add(destination);
             // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
             // which is messy.
@@ -172,7 +172,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
         if (!File.Exists(filePathRemote))
         {
-            throw new InvalidOperationException(
+            throw new FileNotFoundException(
                 $"Failed to create snapshot file at \"{filePathRemote}\" after {maxRetries.ToTechnicalString()} retries.");
         }
 
