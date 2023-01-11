@@ -213,7 +213,7 @@ public sealed class SqlServerManager : IAsyncDisposable
                 // Copy back snapshot.
                 await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
 
-                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", remote[..remote.LastIndexOf('\\')]);
+                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", remote[..remote.LastIndexOf('/')]);
 
                 retryCount++;
 
