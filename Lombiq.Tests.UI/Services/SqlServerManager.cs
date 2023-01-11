@@ -2,6 +2,7 @@ using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
@@ -205,16 +206,21 @@ public sealed class SqlServerManager : IAsyncDisposable
 
             var retryCount = 0;
 
+            string result;
+
             do
             {
                 // Copy back snapshot.
                 await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
-                await Task.Delay(1000);
-                retryCount++;
-            }
-            while (!File.Exists(remote) && retryCount < maxRetries + 1);
+                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", remote);
 
-            if (!File.Exists(remote))
+                retryCount++;
+
+                await Task.Delay(1000);
+            }
+            while (result.IsNullOrEmpty() && retryCount < maxRetries + 1);
+
+            if (result.IsNullOrEmpty())
             {
                 throw new FileNotFoundException(
                     $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
@@ -257,6 +263,13 @@ public sealed class SqlServerManager : IAsyncDisposable
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
         return _docker.ExecuteAsync(arguments, additionalExceptionText: null, CancellationToken.None);
+    }
+
+    private Task<string> DockerExecuteAndGetOutputAsync(string containerName, params object[] command)
+    {
+        var arguments = new List<object> { "exec", "-u", 0, containerName };
+        arguments.AddRange(command);
+        return _docker.ExecuteAndGetOutputAsync(arguments, additionalExceptionText: null, CancellationToken.None);
     }
 
     public async ValueTask DisposeAsync()
