@@ -132,8 +132,6 @@ public static class UITestExecutor
 
         var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-        dumpRootPath = dumpRootPath.Length > 10 ? Guid.NewGuid().ToString("N")[..12] : dumpRootPath;
-
         DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
 
         // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name, or
