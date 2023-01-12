@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,12 +33,6 @@ internal static class OrchardCoreInstanceCounter
 {
     public const string UrlPrefix = "https://localhost:";
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     static OrchardCoreInstanceCounter()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
