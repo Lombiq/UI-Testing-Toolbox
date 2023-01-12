@@ -10,7 +10,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -24,7 +23,6 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class VisualVerificationUITestContextExtensions
 {
     private const string ConditionLessThenOrEqualTo = "less than or equal to";
-
     private const string HintFailureDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
 to customize the name of the dump item.";
@@ -190,10 +188,11 @@ to customize the name of the dump item.";
                 configurator?.Invoke(configuration);
                 configuration.WithFileNameSuffix(
                     new[]
-                        {
-                            elementSelector.ToString().MakeFileSystemFriendly(), configuration.FileNameSuffix,
-                        }
-                        .JoinNotNullOrEmpty("-")
+                    {
+                            elementSelector.ToString().MakeFileSystemFriendly(),
+                            configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")
                 );
             });
 
@@ -250,10 +249,11 @@ to customize the name of the dump item.";
                 configurator?.Invoke(configuration);
                 configuration.WithFileNameSuffix(
                     new[]
-                        {
-                            elementSelector.ToString().MakeFileSystemFriendly(), configuration.FileNameSuffix,
-                        }
-                        .JoinNotNullOrEmpty("-")
+                    {
+                        elementSelector.ToString().MakeFileSystemFriendly(),
+                        configuration.FileNameSuffix,
+                    }
+                    .JoinNotNullOrEmpty("-")
                 );
             });
 
@@ -271,22 +271,8 @@ to customize the name of the dump item.";
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
             .ToList();
-
-        context.AppendFailureDump(
-            Path.Combine(VisualVerificationMatchNames.DumpFolderName, configuration.WrapFileName("stacktrace-base.txt")),
-            content: stackTrace.ToString());
-
-        var nonVisualVerificationMethodFrames = stackTrace
-            .Where(frame => !IsVisualVerificationMethod(frame))
-            .ToList();
-
-        context.AppendFailureDump(
-            Path.Combine(VisualVerificationMatchNames.DumpFolderName, configuration.WrapFileName("stacktrace-filtered.txt")),
-            content: nonVisualVerificationMethodFrames
-                .Select(frame => frame.ToString())
-                .JoinNotNullOrEmpty(Environment.NewLine));
-
-        var testFrame = nonVisualVerificationMethodFrames.FirstOrDefault();
+        var testFrame = stackTrace
+            .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
