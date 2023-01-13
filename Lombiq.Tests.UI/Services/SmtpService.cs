@@ -40,13 +40,10 @@ public sealed class SmtpService : IAsyncDisposable
     private int _webUIPort;
     private CancellationTokenSource _cancellationTokenSource;
 
-    // Not actually unnecessary.
-#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage(
         "Performance",
         "CA1810:Initialize reference type static fields inline",
         Justification = "No GetAgentIndexOrDefault() duplication this way.")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     static SmtpService()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;

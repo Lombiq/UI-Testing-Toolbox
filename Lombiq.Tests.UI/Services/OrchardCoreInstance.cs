@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,12 +33,6 @@ internal static class OrchardCoreInstanceCounter
 {
     public const string UrlPrefix = "https://localhost:";
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     static OrchardCoreInstanceCounter()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -108,20 +101,11 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public Task ResumeAsync() => StartOrchardAppAsync();
 
-    public async Task TakeSnapshotAsync(string snapshotDirectoryPath)
+    public Task TakeSnapshotAsync(string snapshotDirectoryPath)
     {
         ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
-        await PauseAsync();
-
-        if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
-
-        Directory.CreateDirectory(snapshotDirectoryPath);
-
-        await _configuration.BeforeTakeSnapshot
-            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
-
-        FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
+        return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
     public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
@@ -220,6 +204,20 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
         return await streamReader.ReadToEndAsync();
+    }
+
+    private async Task TakeSnapshotInnerAsync(string snapshotDirectoryPath)
+    {
+        await PauseAsync();
+
+        if (Directory.Exists(snapshotDirectoryPath)) Directory.Delete(snapshotDirectoryPath, recursive: true);
+
+        Directory.CreateDirectory(snapshotDirectoryPath);
+
+        await _configuration.BeforeTakeSnapshot
+            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
+
+        FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
 
     private class ApplicationLog : IApplicationLog
