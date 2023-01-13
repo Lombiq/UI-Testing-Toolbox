@@ -33,7 +33,7 @@ to customize the name of the dump item.";
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
@@ -59,7 +59,7 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
@@ -108,7 +108,7 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
@@ -140,7 +140,7 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
@@ -163,7 +163,7 @@ to customize the name of the dump item.";
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
@@ -211,7 +211,7 @@ to customize the name of the dump item.";
     /// <param name="element">The target element.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be  null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
@@ -337,8 +337,7 @@ to customize the name of the dump item.";
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
                 cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
-                    .WithFileNameSuffix(string.Empty),
-                approvedContext);
+                    .WithFileNameSuffix(string.Empty));
         }
         finally
         {
@@ -353,17 +352,18 @@ to customize the name of the dump item.";
         string baselineFileName)
     {
         using var suggestedImage = context.TakeElementScreenshot(element);
-
         suggestedImage.Save(baselineImagePath, new PngEncoder());
-
-        // Appending suggested baseline image to failure dump too.
-        context.AppendFailureDump(
-            Path.Combine(
-                VisualVerificationMatchNames.DumpFolderName,
-                $"{baselineFileName}.png"),
-            suggestedImage.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+        context.AddImageToFailureDump(baselineFileName + ".png", suggestedImage);
     }
+
+    private static void AddImageToFailureDump(
+        this UITestContext context,
+        string fileName,
+        Image image) =>
+        context.AppendFailureDump(
+            Path.Combine(VisualVerificationMatchNames.DumpFolderName, fileName),
+            image.Clone(),
+            messageIfExists: HintFailureDumpItemAlreadyExists);
 
     private static void AssertVisualVerification(
         this UITestContext context,
@@ -385,8 +385,7 @@ to customize the name of the dump item.";
         Image baseline,
         Action<ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualMatchConfiguration> configurator = null,
-        VisualVerificationMatchApprovedContext approvedContext = null)
+        Action<VisualMatchConfiguration> configurator = null)
     {
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
@@ -400,22 +399,32 @@ to customize the name of the dump item.";
         // We take a screenshot of the element area. This will be compared to a baseline image.
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
-        // Checking the size of captured image.
-        try
-        {
-            elementImageOriginal.Width
-                .ShouldBeGreaterThanOrEqualTo(cropRegion.Left + cropRegion.Width);
-            elementImageOriginal.Height
-                .ShouldBeGreaterThanOrEqualTo(cropRegion.Top + cropRegion.Height);
-        }
-        catch
-        {
-            if (approvedContext != null)
+        var originalElementScreenshotFileName =
+            new[]
             {
-                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
+                configuration.FileNamePrefix,
+                VisualVerificationMatchNames.ElementImageFileName,
+                configuration.FileNameSuffix,
             }
+            .JoinNotNullOrEmpty("-");
 
-            throw;
+        // Checking the dimensions of captured image. This needs to happen before any other comparisons, because that
+        // can only be done on images with the same dimensions.
+        var cropWidth = cropRegion.Left + cropRegion.Width;
+        var cropHeight = cropRegion.Top + cropRegion.Height;
+        if (elementImageOriginal.Width < cropWidth || elementImageOriginal.Height < cropHeight)
+        {
+            var cropRegionName = regionOfInterest == null ? "baseline image" : "selected region of interest";
+            var message = $"The dimensions of the captured element ({elementImageOriginal.Width.ToTechnicalString()}" +
+                $"px x {elementImageOriginal.Height.ToTechnicalString()}px) are smaller than the dimensions of the " +
+                $"{cropRegionName} ({cropWidth.ToTechnicalString()}px x {cropHeight.ToTechnicalString()}px). This " +
+                "can happen if due to a change in the app the captured element got smaller than before, or if the " +
+                $"{cropRegionName} is mistakenly too large. The suggested baseline image with a screenshot of the " +
+                "captured element was saved to the failure dump. Compare this with the original image used by the " +
+                "test and if suitable, use it as the baseline going forward.";
+            context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
+
+            throw new VisualVerificationAssertionException(message);
         }
 
         using var baselineImageOriginal = baseline.Clone();
@@ -436,12 +445,11 @@ to customize the name of the dump item.";
             .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
 
-        // Now we are one step away from the end. Here we create a statistical summary of the differences
-        // between the captured and the baseline image. In the end, the lower values are better.
-        // You can read more about how these statistical calculations are created here:
+        // Now we are one step away from the end. Here we create a statistical summary of the differences between the
+        // captured and the baseline image. In the end, the lower values are better. You can read more about how these
+        // statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
-        var diff = baselineImageCropped
-            .CompareTo(elementImageCropped);
+        var diff = baselineImageCropped.CompareTo(elementImageCropped);
 
         try
         {
@@ -451,88 +459,62 @@ to customize the name of the dump item.";
         {
             // Here we append all the relevant items to the failure dump to help the investigation.
             // The full-page screenshot
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.FullScreenImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                fullScreenImage.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    VisualVerificationMatchNames.FullScreenImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-"),
+                fullScreenImage);
 
             // The original element screenshot
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.ElementImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                elementImageOriginal.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
 
             // The original baseline image
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.BaselineImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                baselineImageOriginal.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    VisualVerificationMatchNames.BaselineImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-"),
+                baselineImageOriginal);
 
             // The cropped baseline image
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.CroppedBaselineImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                baselineImageCropped.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    VisualVerificationMatchNames.CroppedBaselineImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-"),
+                baselineImageCropped);
 
             // The cropped element image
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.CroppedElementImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                elementImageCropped.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    VisualVerificationMatchNames.CroppedElementImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-"),
+                elementImageCropped);
 
             // The diff image
-            context.AppendFailureDump(
-                Path.Combine(
-                    VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.DiffImageFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
-                diffImage.Clone(),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+            context.AddImageToFailureDump(
+                new[]
+                {
+                    configuration.FileNamePrefix,
+                    VisualVerificationMatchNames.DiffImageFileName,
+                    configuration.FileNameSuffix,
+                }
+                .JoinNotNullOrEmpty("-"),
+                diffImage);
 
             // The diff stats
             context.AppendFailureDump(
