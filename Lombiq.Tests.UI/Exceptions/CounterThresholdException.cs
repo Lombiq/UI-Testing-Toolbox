@@ -56,8 +56,8 @@ public class CounterThresholdException : Exception
     {
         var builder = new StringBuilder();
         if (probe is not null) builder.AppendLine(probe.DumpHeadline());
-        if (counter is not null) counter.Dump().ForEach(line => builder.AppendLine(line));
-        if (value is not null) value.Dump().ForEach(line => builder.AppendLine(line));
+        counter?.Dump().ForEach(line => builder.AppendLine(line));
+        value?.Dump().ForEach(line => builder.AppendLine(line));
         if (!string.IsNullOrEmpty(message)) builder.AppendLine(message);
 
         return builder.ToString();
