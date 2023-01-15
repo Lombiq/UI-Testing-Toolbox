@@ -61,6 +61,10 @@ public class BasicVisualVerificationTests : UITestBase
             {
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
 
+                // It's recommended to check the most specific element suitable, not the whole page. However, you can
+                // also do that, just don't specify any elementSelector when calling AssertVisualVerificationApproved().
+                // Be mindful of elements that may change on their own, like a copyright notice in the footer that
+                // includes the current year.
                 var navbarElementSelector = By.ClassName("navbar-brand");
 
                 // Here we check that the rendered content visually equals the baseline image within a given error
@@ -75,25 +79,6 @@ public class BasicVisualVerificationTests : UITestBase
                             // platform/browser.
                             .WithUsePlatformAsSuffix()
                             .WithUseBrowserNameAsSuffix());
-            },
-            browser);
-
-    // Checking that everything is OK with the homepage, just for fun.
-    [Theory, Chrome, Edge]
-    public Task VerifyHomePage(Browser browser) =>
-        ExecuteTestAfterSetupAsync(
-            context =>
-            {
-                context.SetViewportSize(CommonDisplayResolutions.HdPlus);
-                context.HideScrollbar();
-
-                // Here we don't need any element selector to validate the whole page.
-                context.AssertVisualVerificationApproved(0, configurator: configuration =>
-                    configuration
-                        // These configurations below are to generate/use different baseline images on each
-                        // platform/browser.
-                        .WithUsePlatformAsSuffix()
-                        .WithUseBrowserNameAsSuffix());
             },
             browser);
 }

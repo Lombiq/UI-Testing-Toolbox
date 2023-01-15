@@ -7,29 +7,33 @@ namespace Lombiq.Tests.UI.Helpers;
 
 public static class ReliabilityHelper
 {
-    private static readonly Func<Func<Task<bool>>, Func<Task<bool>>> _retryIfStaleProcess = innerProcess => () =>
+    private static readonly Func<Func<Task<bool>>, Func<Task<bool>>> _retryIfStaleProcess = innerProcess => async () =>
     {
         try
         {
-            return innerProcess();
+            // This needs to use await instead of returning the Task directly, because only this way can we catch the
+            // exception below.
+            return await innerProcess();
         }
         catch (StaleElementReferenceException)
         {
             // When navigating away this exception will be thrown for all old element references. Not nice to use
             // exceptions but there doesn't seem to be a better way to do this.
-            return Task.FromResult(false);
+            return false;
         }
     };
 
-    private static readonly Func<Func<Task<bool>>, Func<Task<bool>>> _retryIfNotStaleProcess = innerProcess => () =>
+    private static readonly Func<Func<Task<bool>>, Func<Task<bool>>> _retryIfNotStaleProcess = innerProcess => async () =>
     {
         try
         {
-            return innerProcess();
+            // This needs to use await instead of returning the Task directly, because only this way can we catch the
+            // exception below.
+            return await innerProcess();
         }
         catch (StaleElementReferenceException)
         {
-            return Task.FromResult(true);
+            return true;
         }
     };
 
