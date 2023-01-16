@@ -43,10 +43,11 @@ public sealed class SqlServerManager : IAsyncDisposable
     private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
+    private static readonly SemaphoreSlim _semaphore;
 
     private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private int _databaseId;
     private string _serverName;
     private string _databaseName;
@@ -62,6 +63,7 @@ public sealed class SqlServerManager : IAsyncDisposable
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
         _portLeaseManager = new PortLeaseManager(13000 + agentIndexTimesHundred, 13099 + agentIndexTimesHundred);
+        _semaphore = new(1, 1);
     }
 
     public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
@@ -327,7 +329,6 @@ public sealed class SqlServerManager : IAsyncDisposable
         DropDatabaseIfExists(CreateServer());
 
         await _portLeaseManager.StopLeaseAsync(_databaseId);
-        _semaphore.Dispose();
     }
 
     // It's easier to use the server name directly instead of the connection string as that also requires the referenced
