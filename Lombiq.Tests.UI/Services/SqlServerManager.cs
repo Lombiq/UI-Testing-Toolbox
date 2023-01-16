@@ -63,7 +63,6 @@ public sealed class SqlServerManager : IAsyncDisposable
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
         _portLeaseManager = new PortLeaseManager(13000 + agentIndexTimesHundred, 13099 + agentIndexTimesHundred);
-        _semaphore = new(1, 1);
     }
 
     public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
