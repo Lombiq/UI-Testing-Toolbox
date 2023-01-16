@@ -42,13 +42,10 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     private BlobContainerClient _blobContainer;
     private bool _isDisposed;
 
-    // Not actually unnecessary.
-#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage(
         "Performance",
         "CA1810:Initialize reference type static fields inline",
         Justification = "No GetAgentIndexOrDefault() duplication this way.")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     static AzureBlobStorageManager()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
