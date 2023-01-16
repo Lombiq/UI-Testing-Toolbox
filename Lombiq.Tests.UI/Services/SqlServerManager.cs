@@ -43,7 +43,7 @@ public sealed class SqlServerManager : IAsyncDisposable
     private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
-    private static readonly SemaphoreSlim _semaphore;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
