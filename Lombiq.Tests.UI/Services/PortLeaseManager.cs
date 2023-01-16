@@ -1,5 +1,6 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,12 @@ namespace Lombiq.Tests.UI.Services;
 /// <remarks>
 /// <para>You may think it's about managing the rent of a sea harbor but rest assured it isn't.</para>
 /// </remarks>
+[SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
+        "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
+        "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
 public class PortLeaseManager
 {
     private readonly IEnumerable<int> _availablePortsRange;
