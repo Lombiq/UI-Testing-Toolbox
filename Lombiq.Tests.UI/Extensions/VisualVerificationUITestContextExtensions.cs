@@ -296,7 +296,7 @@ to customize the name of the dump item.";
             .MethodInfo
             .DeclaringType?
             .Assembly
-            .GetResourceImageSharpImage(approvedContext.BaselineResourceName);
+            .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
 
         if (baselineImage == null)
         {
@@ -305,7 +305,7 @@ to customize the name of the dump item.";
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
 
-                var suggestedImageFileName = $"{approvedContext.BaselineFileName}.png";
+                var suggestedImageFileName = $"{approvedContext.BaselineImageFileName}.png";
 
                 context.AppendFailureDump(
                     Path.Combine(
@@ -322,7 +322,7 @@ to customize the name of the dump item.";
 
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
+                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineImageFileName);
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
@@ -336,7 +336,7 @@ to customize the name of the dump item.";
                 baselineImage,
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
-                cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
+                cfg => cfg.WithFileNamePrefix(approvedContext.BaselineImageFileName)
                     .WithFileNameSuffix(string.Empty));
         }
         finally
@@ -608,9 +608,9 @@ calculated differences:
             {
                 loadedFrom = $"file: {approvedContext.BaselineImagePath}";
             }
-            else if (!string.IsNullOrEmpty(approvedContext.BaselineResourceName))
+            else if (!string.IsNullOrEmpty(approvedContext.BaselineImageResourceName))
             {
-                loadedFrom = $"embedded resource: {approvedContext.BaselineResourceName}";
+                loadedFrom = $"embedded resource: {approvedContext.BaselineImageResourceName}";
             }
 
             if (!string.IsNullOrEmpty(loadedFrom))

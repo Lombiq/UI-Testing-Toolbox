@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Helpers;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,12 @@ public delegate Task<(UITestContext Context, Uri ResultUri)> AppInitializer();
 /// snapshot can be used for further operations. Create a single instance of this for every kind of snapshot (like an
 /// Orchard application already set up).
 /// </summary>
+[SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
+        "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
+        "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
 public class SynchronizingWebApplicationSnapshotManager
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
