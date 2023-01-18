@@ -237,7 +237,7 @@ public sealed class SqlServerManager : IAsyncDisposable
                     result = await DockerExecuteAndGetOutputAsync(
                         containerName,
                         "ls",
-                        remote[..remote.LastIndexOf('/')]);
+                        Path.GetFileName(remote);
 
                     retryCount++;
 
