@@ -377,7 +377,7 @@ public sealed class SqlServerManager : IAsyncDisposable
                     Path.Combine(local),
                     $"{containerName}:{remote}");
 
-                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", remote[..remote.LastIndexOf('/')]);
+                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", Path.GetDirectoryName(remote));
 
                 if (result.IsNullOrEmpty())
                 {
