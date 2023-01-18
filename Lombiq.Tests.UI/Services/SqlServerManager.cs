@@ -1,6 +1,7 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
@@ -221,45 +222,7 @@ public sealed class SqlServerManager : IAsyncDisposable
                 // Clean up leftovers.
                 await DockerExecuteAsync(containerName, "rm", "-f", remote);
 
-                var retryCount = 0;
-
-                string result;
-
-                do
-                {
-                    // Copy back snapshot.
-                    await _docker.ExecuteAsync(
-                        CancellationToken.None,
-                        "cp",
-                        Path.Combine(local),
-                        $"{containerName}:{remote}");
-
-                    result = await DockerExecuteAndGetOutputAsync(
-                        containerName,
-                        "ls",
-                        Path.GetFileName(remote);
-
-                    retryCount++;
-
-                    // Justification: There is only one more flow statement than the allowed amount, that is because of
-                    // the "try-finally" block which we can't avoid.
-#pragma warning disable S134 // Control flow statements "if", "switch", "for", "foreach", "while", "do"  and "try" should not be nested too deeply
-                    if (result.IsNullOrEmpty())
-                    {
-                        DebugHelper.WriteLineTimestamped($"Attempt {retryCount.ToTechnicalString()} of copying " +
-                            "snapshot failed. Retrying...");
-                    }
-#pragma warning restore S134 // Control flow statements "if", "switch", "for", "foreach", "while", "do"  and "try" should not be nested too deeply
-
-                    await Task.Delay(1000);
-                }
-                while (result.IsNullOrEmpty() && retryCount < maxRetries + 1);
-
-                if (result.IsNullOrEmpty())
-                {
-                    throw new FileNotFoundException(
-                        $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
-                }
+                await EnsureDockerFileExistsAsync(local, containerName, remote, maxRetries);
 
                 // Reset ownership.
                 await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
@@ -396,4 +359,49 @@ public sealed class SqlServerManager : IAsyncDisposable
             '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnapshotName}",
             _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnapshotName),
         };
+
+    private async Task EnsureDockerFileExistsAsync(string local, string containerName, string remote, int maxRetries)
+    {
+        var retryCount = 0;
+
+        string result;
+
+        do
+        {
+            try
+            {
+                // Copy back snapshot.
+                await _docker.ExecuteAsync(
+                    CancellationToken.None,
+                    "cp",
+                    Path.Combine(local),
+                    $"{containerName}:{remote}");
+
+                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", Path.GetFileName(remote));
+
+                if (result.IsNullOrEmpty())
+                {
+                    DebugHelper.WriteLineTimestamped($"Attempt {(retryCount + 1).ToTechnicalString()} of copying " +
+                        "snapshot failed. Retrying...");
+                }
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                result = string.Empty;
+                DebugHelper.WriteLineTimestamped($"Attempt {(retryCount + 1).ToTechnicalString()} of copying snapshot" +
+                    $" failed with InvalidOperationException: {invalidOperationException.Message}. Retrying...");
+            }
+
+            retryCount++;
+
+            await Task.Delay(1000);
+        }
+        while (result.IsNullOrEmpty() && retryCount < maxRetries + 1);
+
+        if (result.IsNullOrEmpty())
+        {
+            throw new DockerFileCopyException(
+                $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
+        }
+    }
 }
