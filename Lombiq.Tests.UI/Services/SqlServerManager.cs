@@ -1,7 +1,10 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Helpers;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
@@ -41,9 +44,11 @@ public sealed class SqlServerManager : IAsyncDisposable
     private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
+
     private int _databaseId;
     private string _serverName;
     private string _databaseName;
@@ -114,131 +119,167 @@ public sealed class SqlServerManager : IAsyncDisposable
         string containerName = null,
         bool useCompressionIfAvailable = false)
     {
-        var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
-        var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
-        var directoryPathLocal =
-            Path.GetDirectoryName(filePathLocal) ??
-            throw new InvalidOperationException($"Failed to get the directory path for local path \"{filePathLocal}\".");
+        DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in TakeSnapshotAsync().");
 
-        FileSystemHelper.EnsureDirectoryExists(directoryPathLocal);
-        if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
-
-        var server = CreateServer();
-
-        KillDatabaseProcesses(server);
-
-        var useCompression =
-            useCompressionIfAvailable &&
-            (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
-
-        var backup = new Backup
+        await _semaphore.WaitAsync();
+        try
         {
-            Action = BackupActionType.Database,
-            CopyOnly = true,
-            Checksum = true,
-            Incremental = false,
-            ContinueAfterError = false,
-            // We don't need compression for setup snapshots as those backups will be only short-lived and we want them
-            // to be fast.
-            CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
-            SkipTapeHeader = true,
-            UnloadTapeAfter = false,
-            NoRewind = true,
-            FormatMedia = true,
-            Initialize = true,
-            Database = _databaseName,
-        };
+            var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+            var filePathLocal = GetSnapshotFilePath(snapshotDirectoryPathLocal ?? snapshotDirectoryPathRemote);
+            var directoryPathLocal =
+                Path.GetDirectoryName(filePathLocal) ??
+                throw new InvalidOperationException($"Failed to get the directory path for local path \"{filePathLocal}\".");
 
-        var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
-        backup.Devices.Add(destination);
-        // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event which
-        // is messy.
-        backup.SqlBackup(server);
-
-        if (!string.IsNullOrEmpty(containerName))
-        {
+            FileSystemHelper.EnsureDirectoryExists(directoryPathLocal);
             if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
-            await Cli.Wrap("docker")
-                .WithArguments(new[] { "cp", $"{containerName}:{filePathRemote}", filePathLocal })
-                .ExecuteAsync();
-        }
+            var server = CreateServer();
 
-        if (!File.Exists(filePathLocal))
+            KillDatabaseProcesses(server);
+
+            var useCompression =
+                useCompressionIfAvailable &&
+                (server.EngineEdition == Edition.EnterpriseOrDeveloper || server.EngineEdition == Edition.Standard);
+
+            var backup = new Backup
+            {
+                Action = BackupActionType.Database,
+                CopyOnly = true,
+                Checksum = true,
+                Incremental = false,
+                ContinueAfterError = false,
+                // We don't need compression for setup snapshots as those backups will be only short-lived and we want
+                // them to be fast.
+                CompressionOption = useCompression ? BackupCompressionOptions.On : BackupCompressionOptions.Off,
+                SkipTapeHeader = true,
+                UnloadTapeAfter = false,
+                NoRewind = true,
+                FormatMedia = true,
+                Initialize = true,
+                Database = _databaseName,
+            };
+
+            var destination = new BackupDeviceItem(filePathRemote, DeviceType.File);
+            backup.Devices.Add(destination);
+            // We could use SqlBackupAsync() too but that's not Task-based async, we'd need to subscribe to an event
+            // which is messy.
+            backup.SqlBackup(server);
+
+            if (!string.IsNullOrEmpty(containerName))
+            {
+                if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
+
+                await Cli.Wrap("docker")
+                    .WithArguments(new[] { "cp", $"{containerName}:{filePathRemote}", filePathLocal })
+                    .ExecuteAsync();
+            }
+
+            if (!File.Exists(filePathLocal))
+            {
+                throw filePathLocal == filePathRemote
+                    ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
+                    : new FileNotFoundException(
+                        $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
+                        $"Are the two bound together? If you are using Docker, did you set up the local volume?");
+            }
+        }
+        finally
         {
-            throw filePathLocal == filePathRemote
-                ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
-                : new FileNotFoundException(
-                    $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
-                    $"Are the two bound together? If you are using Docker, did you set up the local volume?");
+            DebugHelper.WriteLineTimestamped($"Exiting SqlServerManager semaphore in TakeSnapshotAsync().");
+            _semaphore.Release();
         }
     }
 
     public async Task RestoreSnapshotAsync(
         string snapshotDirectoryPathRemote,
         string snapshotDirectoryPathLocal,
-        string containerName)
+        string containerName,
+        int maxRetries = 3)
     {
-        if (_isDisposed)
+        DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in RestoreSnapshotAsync().");
+
+        await _semaphore.WaitAsync();
+        try
         {
-            throw new InvalidOperationException("This instance was already disposed.");
+            if (_isDisposed)
+            {
+                throw new InvalidOperationException("This instance was already disposed.");
+            }
+
+            var server = CreateServer();
+
+            if (!server.Databases.Contains(_databaseName))
+            {
+                throw new InvalidOperationException(
+                    $"The database {_databaseName} doesn't exist. Something may have dropped it.");
+            }
+
+            if (!string.IsNullOrEmpty(containerName))
+            {
+                var remote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
+                var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
+
+                // Clean up leftovers.
+                await DockerExecuteAsync(containerName, "rm", "-f", remote);
+
+                await EnsureDockerFileExistsAsync(local, containerName, remote, maxRetries);
+
+                // Reset ownership.
+                await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
+            }
+
+            KillDatabaseProcesses(server);
+
+            var restore = new Restore();
+            restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPathRemote), DeviceType.File);
+            restore.Database = _databaseName;
+            restore.ReplaceDatabase = true;
+
+            // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
+            // https://stackoverflow.com/a/17547737/220230.
+            var dataFile = new RelocateFile
+            {
+                LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName,
+            };
+
+            var logFile = new RelocateFile
+            {
+                LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
+                PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName,
+            };
+
+            restore.RelocateFiles.Add(dataFile);
+            restore.RelocateFiles.Add(logFile);
+
+            // We're not using SqlRestoreAsync() due to the same reason we're not using SqlBackupAsync().
+            restore.SqlRestore(server);
         }
-
-        var server = CreateServer();
-
-        if (!server.Databases.Contains(_databaseName))
+        finally
         {
-            throw new InvalidOperationException($"The database {_databaseName} doesn't exist. Something may have dropped it.");
+            DebugHelper.WriteLineTimestamped($"Exiting SqlServerManager semaphore in RestoreSnapshotAsync().");
+            _semaphore.Release();
         }
-
-        if (!string.IsNullOrEmpty(containerName))
-        {
-            var remote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
-            var local = GetSnapshotFilePath(snapshotDirectoryPathLocal);
-
-            // Clean up leftovers.
-            await DockerExecuteAsync(containerName, "rm", "-f", remote);
-
-            // Copy back snapshot.
-            await _docker.ExecuteAsync(CancellationToken.None, "cp", Path.Combine(local), $"{containerName}:{remote}");
-
-            // Reset ownership.
-            await DockerExecuteAsync(containerName, "bash", "-c", $"chown mssql:root '{remote}'");
-        }
-
-        KillDatabaseProcesses(server);
-
-        var restore = new Restore();
-        restore.Devices.AddDevice(GetSnapshotFilePath(snapshotDirectoryPathRemote), DeviceType.File);
-        restore.Database = _databaseName;
-        restore.ReplaceDatabase = true;
-
-        // Since the DB is restored under a different name this relocation magic needs to happen. Taken from:
-        // https://stackoverflow.com/a/17547737/220230.
-        var dataFile = new RelocateFile
-        {
-            LogicalFileName = restore.ReadFileList(server).Rows[0][0].ToString(),
-            PhysicalFileName = server.Databases[_databaseName].FileGroups[0].Files[0].FileName,
-        };
-
-        var logFile = new RelocateFile
-        {
-            LogicalFileName = restore.ReadFileList(server).Rows[1][0].ToString(),
-            PhysicalFileName = server.Databases[_databaseName].LogFiles[0].FileName,
-        };
-
-        restore.RelocateFiles.Add(dataFile);
-        restore.RelocateFiles.Add(logFile);
-
-        // We're not using SqlRestoreAsync() due to the same reason we're not using SqlBackupAsync().
-        restore.SqlRestore(server);
     }
 
-    private Task DockerExecuteAsync(string containerName, params object[] command)
+    private Task DockerExecuteAsync(string containerName, params object[] command) =>
+        _docker.ExecuteAsync(
+            CreateArguments(containerName, command),
+            additionalExceptionText: null,
+            CancellationToken.None);
+
+    private Task<string> DockerExecuteAndGetOutputAsync(string containerName, params object[] command) =>
+        _docker.ExecuteAndGetOutputAsync(
+            CreateArguments(containerName, command),
+            additionalExceptionText: null,
+            CancellationToken.None);
+
+    private static List<object> CreateArguments(string containerName, params object[] command)
     {
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
-        return _docker.ExecuteAsync(arguments, additionalExceptionText: null, CancellationToken.None);
+
+        return arguments;
     }
 
     public async ValueTask DisposeAsync()
@@ -318,4 +359,49 @@ public sealed class SqlServerManager : IAsyncDisposable
             '/' => $"{snapshotDirectoryPath.TrimEnd('/')}/{DbSnapshotName}",
             _ => Path.Combine(Path.GetFullPath(snapshotDirectoryPath), DbSnapshotName),
         };
+
+    private async Task EnsureDockerFileExistsAsync(string local, string containerName, string remote, int maxRetries)
+    {
+        var retryCount = 0;
+
+        string result;
+
+        do
+        {
+            try
+            {
+                // Copy back snapshot.
+                await _docker.ExecuteAsync(
+                    CancellationToken.None,
+                    "cp",
+                    Path.Combine(local),
+                    $"{containerName}:{remote}");
+
+                result = await DockerExecuteAndGetOutputAsync(containerName, "ls", Path.GetDirectoryName(remote));
+
+                if (result.IsNullOrEmpty())
+                {
+                    DebugHelper.WriteLineTimestamped($"Attempt {(retryCount + 1).ToTechnicalString()} of copying " +
+                        "snapshot failed. Retrying...");
+                }
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                result = string.Empty;
+                DebugHelper.WriteLineTimestamped($"Attempt {(retryCount + 1).ToTechnicalString()} of copying snapshot" +
+                    $" failed with InvalidOperationException: {invalidOperationException.Message}. Retrying...");
+            }
+
+            retryCount++;
+
+            await Task.Delay(1000);
+        }
+        while (result.IsNullOrEmpty() && retryCount < maxRetries + 1);
+
+        if (result.IsNullOrEmpty())
+        {
+            throw new DockerFileCopyException(
+                $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
+        }
+    }
 }
