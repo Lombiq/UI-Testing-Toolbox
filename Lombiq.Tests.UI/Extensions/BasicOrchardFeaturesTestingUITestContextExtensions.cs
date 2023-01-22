@@ -496,7 +496,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 }
                 else
                 {
-                    context.Driver.Exists(customPageHeaderBy.Visible());
+                    context.Exists(customPageHeaderBy.Visible());
                 }
 
                 page.CloseWindow();
