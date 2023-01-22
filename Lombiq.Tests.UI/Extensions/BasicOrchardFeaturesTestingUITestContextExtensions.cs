@@ -24,12 +24,19 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static Task TestBasicOrchardFeaturesAsync(this UITestContext context, string setupRecipeId) =>
-        context.TestBasicOrchardFeaturesAsync(new OrchardCoreSetupParameters(context)
-        {
-            RecipeId = setupRecipeId,
-        });
+    public static Task TestBasicOrchardFeaturesAsync(
+        this UITestContext context,
+        string setupRecipeId,
+        string customPageHeaderXpath = null) =>
+        context.TestBasicOrchardFeaturesAsync(
+            new OrchardCoreSetupParameters(context)
+            {
+                RecipeId = setupRecipeId,
+            },
+            customPageHeaderXpath);
 
     /// <summary>
     /// <para>
@@ -40,13 +47,16 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
-        OrchardCoreSetupParameters setupParameters = null)
+        OrchardCoreSetupParameters setupParameters = null,
+        string customPageHeaderXpath = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAsync();
+        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderXpath);
     }
 
     /// <summary>
@@ -62,14 +72,18 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         string setupRecipeId,
-        bool dontCheckFrontend = false) =>
+        bool dontCheckFrontend = false,
+        string customPageHeaderXpath = null) =>
         context.TestBasicOrchardFeaturesExceptRegistrationAsync(
             dontCheckFrontend,
-            new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, });
+            new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, },
+            customPageHeaderXpath);
 
     /// <summary>
     /// <para>
@@ -85,29 +99,36 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
-        OrchardCoreSetupParameters setupParameters = null)
+        OrchardCoreSetupParameters setupParameters = null,
+        string customPageHeaderXpath = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend);
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend, customPageHeaderXpath);
     }
 
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup.</para>
     /// <para>The test method assumes that the site is set up.</para>
     /// </summary>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestBasicOrchardFeaturesExceptSetupAsync(this UITestContext context)
+    public static async Task TestBasicOrchardFeaturesExceptSetupAsync(
+        this UITestContext context,
+        string customPageHeaderXpath = null)
     {
         await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
         await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync();
+        await context.TestContentOperationsAsync(customPageHeaderXpath: customPageHeaderXpath);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestLogoutAsync();
@@ -123,14 +144,17 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string, that ultimately gets passed
+    /// to TestContentOperationsAsync().</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
         this UITestContext context,
-        bool dontCheckFrontend)
+        bool dontCheckFrontend,
+        string customPageHeaderXpath = null)
     {
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(dontCheckFrontend);
+        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderXpath: customPageHeaderXpath);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestLogoutAsync();
     }
@@ -434,11 +458,13 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="pageTitle">The page title to enter.</param>
+    /// <param name="customPageHeaderXpath">The XPath of a custom page header as a string.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestContentOperationsAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
-        string pageTitle = "Test page") =>
+        string pageTitle = "Test page",
+        string customPageHeaderXpath = null) =>
         context.ExecuteTestAsync(
             "Test content operations",
             async () =>
@@ -459,11 +485,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 await context.TriggerAfterPageChangeEventAsync();
 
-                context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
-                    .AggregateAssert(page => page
-                        .PageTitle.Should.Contain(pageTitle)
-                        .Find<H1<OrdinaryPage>>().Should.Equal(pageTitle))
-                    .CloseWindow();
+                var page = new OrdinaryPage(pageTitle);
+
+                context.Scope.AtataContext.Go.ToNextWindow(page);
+                page.PageTitle.Should.Contain(pageTitle);
+
+                if (string.IsNullOrEmpty(customPageHeaderXpath))
+                {
+                    page.Find<H1<OrdinaryPage>>().Should.Equal(pageTitle);
+                }
+                else
+                {
+                    context.Driver.Exists(By.XPath(customPageHeaderXpath).Visible());
+                }
+
+                page.CloseWindow();
             });
 
     /// <summary>
