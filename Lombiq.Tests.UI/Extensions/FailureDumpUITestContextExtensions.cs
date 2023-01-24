@@ -17,6 +17,7 @@ public static class FailureDumpUITestContextExtensions
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
     /// <param name="action">Gets called in failure dump collection.</param>
+    /// <param name="messageIfExists">A message to display in case the desired file already exists in the dump.</param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
@@ -33,6 +34,7 @@ public static class FailureDumpUITestContextExtensions
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
     /// <param name="content">File content.</param>
+    /// <param name="messageIfExists">A message to display in case the desired file already exists in the dump.</param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
@@ -54,6 +56,7 @@ public static class FailureDumpUITestContextExtensions
     /// <param name="content">File content.</param>
     /// <param name="getStream">Function to get a new <see cref="Stream"/> from content.</param>
     /// <param name="dispose">Action to dispose the content, if required. Can be null.</param>
+    /// <param name="messageIfExists">A message to display in case the desired file already exists in the dump.</param>
     public static void AppendFailureDump<TContent>(
         this UITestContext context,
         string fileName,
@@ -71,9 +74,8 @@ public static class FailureDumpUITestContextExtensions
     /// </summary>
     /// <param name="context"><see cref="UITestContext"/> instance.</param>
     /// <param name="fileName">The name of the file.</param>
-    /// <param name="image">
-    /// File content. The <see cref="Image"/> will be disposed at the end.
-    /// </param>
+    /// <param name="image">File content. The <see cref="Image"/> will be disposed at the end.</param>
+    /// <param name="messageIfExists">A message to display in case the desired file already exists in the dump.</param>
     public static void AppendFailureDump(
         this UITestContext context,
         string fileName,
