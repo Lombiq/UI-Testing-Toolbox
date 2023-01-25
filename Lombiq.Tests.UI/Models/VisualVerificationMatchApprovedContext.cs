@@ -12,9 +12,14 @@ public class VisualVerificationMatchApprovedContext
     public string ModuleName { get; }
     public string MethodName { get; }
     public string BrowserName { get; }
-    public string BaselineFileName { get; }
-    public string BaselineResourceName { get; }
-    public string ModuleDirectory { get; }
+    public string BaselineImageFileName { get; }
+    public string BaselineImageResourceName { get; }
+
+    /// <summary>
+    /// Gets the local file system path of the baseline image. Will be <see langword="null"/> if the test is not loaded
+    /// from source but binaries; load the image from embedded resources then instead, see <see
+    /// cref="BaselineImageResourceName"/>.
+    /// </summary>
     public string BaselineImagePath { get; }
 
     public VisualVerificationMatchApprovedContext(
@@ -26,11 +31,14 @@ public class VisualVerificationMatchApprovedContext
         MethodName = GetMethodName(testFrame);
         BrowserName = context.Driver.As<IHasCapabilities>().Capabilities.GetCapability("browserName") as string;
 
-        BaselineFileName = configuration.BaselineFileNameFormatter(configuration, this);
-        BaselineResourceName = $"{testFrame.MethodInfo.DeclaringType!.Namespace}.{BaselineFileName}.png";
+        BaselineImageFileName = configuration.BaselineFileNameFormatter(configuration, this);
+        BaselineImageResourceName = $"{testFrame.MethodInfo.DeclaringType!.Namespace}.{BaselineImageFileName}.png";
 
-        ModuleDirectory = Path.GetDirectoryName(testFrame.GetFileName());
-        BaselineImagePath = Path.Combine(ModuleDirectory!, $"{BaselineFileName}.png");
+        var testSourceDirectoryPath = Path.GetDirectoryName(testFrame.GetFileName());
+        if (!string.IsNullOrEmpty(testSourceDirectoryPath))
+        {
+            BaselineImagePath = Path.Combine(testSourceDirectoryPath!, $"{BaselineImageFileName}.png");
+        }
     }
 
     private static string GetModuleName(EnhancedStackFrame frame)

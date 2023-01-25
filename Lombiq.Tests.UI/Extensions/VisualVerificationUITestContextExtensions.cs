@@ -296,7 +296,7 @@ to customize the name of the dump item.";
             .MethodInfo
             .DeclaringType?
             .Assembly
-            .GetResourceImageSharpImage(approvedContext.BaselineResourceName);
+            .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
 
         if (baselineImage == null)
         {
@@ -305,7 +305,7 @@ to customize the name of the dump item.";
             {
                 using var suggestedImage = context.TakeElementScreenshot(element);
 
-                var suggestedImageFileName = $"{approvedContext.BaselineFileName}.png";
+                var suggestedImageFileName = $"{approvedContext.BaselineImageFileName}.png";
 
                 context.AppendFailureDump(
                     Path.Combine(
@@ -322,7 +322,7 @@ to customize the name of the dump item.";
 
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineFileName);
+                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineImageFileName);
                 throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
             }
 
@@ -336,7 +336,7 @@ to customize the name of the dump item.";
                 baselineImage,
                 diff => comparator(approvedContext, diff),
                 regionOfInterest,
-                cfg => cfg.WithFileNamePrefix(approvedContext.BaselineFileName)
+                cfg => cfg.WithFileNamePrefix(approvedContext.BaselineImageFileName)
                     .WithFileNameSuffix(string.Empty));
         }
         finally
@@ -400,13 +400,7 @@ to customize the name of the dump item.";
         using var elementImageOriginal = context.TakeElementScreenshot(element).ShouldNotBeNull();
 
         var originalElementScreenshotFileName =
-            new[]
-            {
-                configuration.FileNamePrefix,
-                VisualVerificationMatchNames.ElementImageFileName,
-                configuration.FileNameSuffix,
-            }
-            .JoinNotNullOrEmpty("-");
+            configuration.WrapFileName(VisualVerificationMatchNames.ElementImageFileName);
 
         // Checking the dimensions of captured image. This needs to happen before any other comparisons, because that
         // can only be done on images with the same dimensions.
@@ -446,7 +440,7 @@ to customize the name of the dump item.";
             .ShouldNotBeNull();
 
         // Now we are one step away from the end. Here we create a statistical summary of the differences between the
-        // captured and the baseline image. In the end, the lower values are better. You can read more about how these
+        // captured and the baseline image. In the end, lower values are better. You can read more about how these
         // statistical calculations are created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L218.
         var diff = baselineImageCropped.CompareTo(elementImageCropped);
@@ -458,75 +452,21 @@ to customize the name of the dump item.";
         catch
         {
             // Here we append all the relevant items to the failure dump to help the investigation.
-            // The full-page screenshot
-            context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.FullScreenImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
-                fullScreenImage);
+            void AddImageToFailureDumpLocal(string fileName, Image image, bool dontWrap = false) =>
+                context.AddImageToFailureDump(dontWrap ? fileName : configuration.WrapFileName(fileName), image);
 
-            // The original element screenshot
-            context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.FullScreenImageFileName, fullScreenImage);
+            AddImageToFailureDumpLocal(originalElementScreenshotFileName, elementImageOriginal, dontWrap: true);
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.BaselineImageFileName, baselineImageOriginal);
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedBaselineImageFileName, baselineImageCropped);
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedElementImageFileName, elementImageCropped);
+            AddImageToFailureDumpLocal(VisualVerificationMatchNames.DiffImageFileName, diffImage);
 
-            // The original baseline image
-            context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.BaselineImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
-                baselineImageOriginal);
-
-            // The cropped baseline image
-            context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedBaselineImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
-                baselineImageCropped);
-
-            // The cropped element image
-            context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.CroppedElementImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
-                elementImageCropped);
-
-            // The diff image
-            context.AddImageToFailureDump(
-                new[]
-                {
-                    configuration.FileNamePrefix,
-                    VisualVerificationMatchNames.DiffImageFileName,
-                    configuration.FileNameSuffix,
-                }
-                .JoinNotNullOrEmpty("-"),
-                diffImage);
-
-            // The diff stats
+            // The diff stats.
             context.AppendFailureDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
-                    new[]
-                    {
-                        configuration.FileNamePrefix,
-                        VisualVerificationMatchNames.DiffLogFileName,
-                        configuration.FileNameSuffix,
-                    }
-                    .JoinNotNullOrEmpty("-")),
+                    configuration.WrapFileName(VisualVerificationMatchNames.DiffLogFileName)),
                 content: string.Format(
                     CultureInfo.InvariantCulture,
                     @"
@@ -608,9 +548,9 @@ calculated differences:
             {
                 loadedFrom = $"file: {approvedContext.BaselineImagePath}";
             }
-            else if (!string.IsNullOrEmpty(approvedContext.BaselineResourceName))
+            else if (!string.IsNullOrEmpty(approvedContext.BaselineImageResourceName))
             {
-                loadedFrom = $"embedded resource: {approvedContext.BaselineResourceName}";
+                loadedFrom = $"embedded resource: {approvedContext.BaselineImageResourceName}";
             }
 
             if (!string.IsNullOrEmpty(loadedFrom))
