@@ -24,8 +24,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderBy">
+    /// The Selenium By to locate the custom page header, that contains the title of the current page/content item. This
+    /// ultimately gets passed to TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
