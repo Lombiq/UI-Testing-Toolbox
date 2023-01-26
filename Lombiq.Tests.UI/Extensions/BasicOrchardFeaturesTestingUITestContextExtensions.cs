@@ -24,12 +24,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static Task TestBasicOrchardFeaturesAsync(this UITestContext context, string setupRecipeId) =>
-        context.TestBasicOrchardFeaturesAsync(new OrchardCoreSetupParameters(context)
-        {
-            RecipeId = setupRecipeId,
-        });
+    public static Task TestBasicOrchardFeaturesAsync(
+        this UITestContext context,
+        string setupRecipeId,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
+        context.TestBasicOrchardFeaturesAsync(
+            new OrchardCoreSetupParameters(context)
+            {
+                RecipeId = setupRecipeId,
+            },
+            customPageHeaderCheckAsync);
 
     /// <summary>
     /// <para>
@@ -40,13 +49,18 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
-        OrchardCoreSetupParameters setupParameters = null)
+        OrchardCoreSetupParameters setupParameters = null,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAsync();
+        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderCheckAsync);
     }
 
     /// <summary>
@@ -62,14 +76,20 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         string setupRecipeId,
-        bool dontCheckFrontend = false) =>
+        bool dontCheckFrontend = false,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
         context.TestBasicOrchardFeaturesExceptRegistrationAsync(
             dontCheckFrontend,
-            new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, });
+            new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, },
+            customPageHeaderCheckAsync);
 
     /// <summary>
     /// <para>
@@ -85,29 +105,40 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
-        OrchardCoreSetupParameters setupParameters = null)
+        OrchardCoreSetupParameters setupParameters = null,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend);
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend, customPageHeaderCheckAsync);
     }
 
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup.</para>
     /// <para>The test method assumes that the site is set up.</para>
     /// </summary>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestBasicOrchardFeaturesExceptSetupAsync(this UITestContext context)
+    public static async Task TestBasicOrchardFeaturesExceptSetupAsync(
+        this UITestContext context,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
         await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync();
+        await context.TestContentOperationsAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestLogoutAsync();
@@ -123,14 +154,19 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
         this UITestContext context,
-        bool dontCheckFrontend)
+        bool dontCheckFrontend,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(dontCheckFrontend);
+        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestLogoutAsync();
     }
@@ -434,11 +470,15 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="pageTitle">The page title to enter.</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text.
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestContentOperationsAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
-        string pageTitle = "Test page") =>
+        string pageTitle = "Test page",
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
         context.ExecuteTestAsync(
             "Test content operations",
             async () =>
@@ -459,11 +499,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 await context.TriggerAfterPageChangeEventAsync();
 
-                context.Scope.AtataContext.Go.ToNextWindow(new OrdinaryPage(pageTitle))
-                    .AggregateAssert(page => page
-                        .PageTitle.Should.Contain(pageTitle)
-                        .Find<H1<OrdinaryPage>>().Should.Equal(pageTitle))
-                    .CloseWindow();
+                var page = new OrdinaryPage(pageTitle);
+
+                context.Scope.AtataContext.Go.ToNextWindow(page);
+                page.PageTitle.Should.Contain(pageTitle);
+
+                if (customPageHeaderCheckAsync == null)
+                {
+                    page.Find<H1<OrdinaryPage>>().Should.Equal(pageTitle);
+                }
+                else
+                {
+                    await customPageHeaderCheckAsync(context);
+                }
+
+                page.CloseWindow();
             });
 
     /// <summary>
