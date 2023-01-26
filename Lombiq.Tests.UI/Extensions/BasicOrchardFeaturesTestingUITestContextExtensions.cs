@@ -24,21 +24,21 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <param name="customPageHeaderBy">
-    /// The Selenium By to locate the custom page header, that contains the title of the current page/content item. This
-    /// ultimately gets passed to TestContentOperationsAsync().
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
     /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
         string setupRecipeId,
-        By customPageHeaderBy = null) =>
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
         context.TestBasicOrchardFeaturesAsync(
             new OrchardCoreSetupParameters(context)
             {
                 RecipeId = setupRecipeId,
             },
-            customPageHeaderBy);
+            customPageHeaderCheckAsync);
 
     /// <summary>
     /// <para>
@@ -49,16 +49,18 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null,
-        By customPageHeaderBy = null)
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderBy);
+        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderCheckAsync);
     }
 
     /// <summary>
@@ -74,18 +76,20 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         string setupRecipeId,
         bool dontCheckFrontend = false,
-        By customPageHeaderBy = null) =>
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
         context.TestBasicOrchardFeaturesExceptRegistrationAsync(
             dontCheckFrontend,
             new OrchardCoreSetupParameters(context) { RecipeId = setupRecipeId, },
-            customPageHeaderBy);
+            customPageHeaderCheckAsync);
 
     /// <summary>
     /// <para>
@@ -101,36 +105,40 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptRegistrationAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
         OrchardCoreSetupParameters setupParameters = null,
-        By customPageHeaderBy = null)
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend, customPageHeaderBy);
+        await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(dontCheckFrontend, customPageHeaderCheckAsync);
     }
 
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup.</para>
     /// <para>The test method assumes that the site is set up.</para>
     /// </summary>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAsync(
         this UITestContext context,
-        By customPageHeaderBy = null)
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
         await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(customPageHeaderBy: customPageHeaderBy);
+        await context.TestContentOperationsAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestLogoutAsync();
@@ -146,17 +154,19 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header, that ultimately gets passed
-    /// to TestContentOperationsAsync().</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
         this UITestContext context,
         bool dontCheckFrontend,
-        By customPageHeaderBy = null)
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderBy: customPageHeaderBy);
+        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestLogoutAsync();
     }
@@ -460,13 +470,15 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="pageTitle">The page title to enter.</param>
-    /// <param name="customPageHeaderBy">The Selenium By to locate the custom page header.</param>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text.
+    /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestContentOperationsAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
         string pageTitle = "Test page",
-        By customPageHeaderBy = null) =>
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
         context.ExecuteTestAsync(
             "Test content operations",
             async () =>
@@ -492,13 +504,13 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.Scope.AtataContext.Go.ToNextWindow(page);
                 page.PageTitle.Should.Contain(pageTitle);
 
-                if (customPageHeaderBy == null)
+                if (customPageHeaderCheckAsync == null)
                 {
                     page.Find<H1<OrdinaryPage>>().Should.Equal(pageTitle);
                 }
                 else
                 {
-                    context.Exists(customPageHeaderBy.Visible());
+                    await customPageHeaderCheckAsync(context);
                 }
 
                 page.CloseWindow();
