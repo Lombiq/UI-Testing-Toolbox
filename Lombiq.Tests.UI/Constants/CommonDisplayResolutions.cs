@@ -16,7 +16,6 @@ namespace Lombiq.Tests.UI.Constants;
 /// </remarks>
 public static class CommonDisplayResolutions
 {
-    // #spell-check-ignore-code-block
     public static readonly Size Qvga = new(320, 240);
     public static readonly Size Hvga = new(480, 320);
     public static readonly Size Nhd = new(640, 360);
