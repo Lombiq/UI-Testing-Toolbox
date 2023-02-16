@@ -7,4 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage(
     "Security",
     "MA0009:Add regex evaluation timeout",
-    Justification = "Regexes in this project don't use user input.")]
+    Justification = "Regexes in this project don't use user input.")] // #spell-check-ignore-line

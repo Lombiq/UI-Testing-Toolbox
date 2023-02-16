@@ -40,7 +40,7 @@ public static class AtataFactory
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
             .UseUtcTimeZone()
-            .PageSnapshots.UseCdpOrPageSourceStrategy();
+            .PageSnapshots.UseCdpOrPageSourceStrategy(); // #spell-check-ignore-line
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
