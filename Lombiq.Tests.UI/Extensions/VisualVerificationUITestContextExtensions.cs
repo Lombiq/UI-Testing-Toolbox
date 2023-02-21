@@ -271,8 +271,9 @@ to customize the name of the dump item.";
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
             .ToList();
-        var testFrame = stackTrace
-            .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
+        var testFrame = stackTrace.FirstOrDefault(frame =>
+            !IsVisualVerificationMethod(frame) &&
+            !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
