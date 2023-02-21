@@ -13,7 +13,7 @@ public class UserRegistrationParameters
         new()
         {
             UserName = "TestUser",
-            Email = "testuser@example.org",
+            Email = "testuser@example.org", // #spell-check-ignore-line
             Password = DefaultUser.Password,
             ConfirmPassword = DefaultUser.Password,
         };

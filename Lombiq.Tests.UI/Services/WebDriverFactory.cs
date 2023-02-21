@@ -124,7 +124,7 @@ public static class WebDriverFactory
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.AddArgument("disable-accelerated-2d-canvas");
-        options.AddArgument("disable-gpu");
+        options.AddArgument("disable-gpu"); // #spell-check-ignore-line
 
         // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
         options.AddArgument("force-color-profile=sRGB");
