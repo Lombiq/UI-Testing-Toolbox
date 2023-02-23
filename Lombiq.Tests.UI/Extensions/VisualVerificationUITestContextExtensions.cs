@@ -10,6 +10,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -26,6 +28,61 @@ public static class VisualVerificationUITestContextExtensions
     private const string HintFailureDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
 to customize the name of the dump item.";
+
+    /// <summary>
+    /// Compares the baseline image and screenshot of the selected element on multiple different resolutions.
+    /// </summary>
+    /// <param name="sizes">The comparison is performed on each of these resolutions.</param>
+    /// <param name="beforeAssertAsync">
+    /// Task to be performed after the viewport has been resized but before the screenshot is taken. This can be used
+    /// for example if the page must be loaded in the given size.
+    /// </param>
+    /// <param name="getSelector">
+    /// Returns the selector for the given screen size. This may return the same selector all the time, or a different
+    /// selector, e.g. if mobile and desktop views have different DOMs.
+    /// </param>
+    [VisualVerificationApprovedMethod]
+    public static async Task AssertVisualVerificationOnAllResolutionsAsync(
+        this UITestContext context,
+        IEnumerable<Size> sizes,
+        Func<Task> beforeAssertAsync,
+        Func<Size, By> getSelector)
+    {
+        context.HideScrollbar();
+
+        var exceptions = new List<Exception>();
+        foreach (var size in sizes)
+        {
+            context.SetViewportSize(size);
+            await beforeAssertAsync();
+
+            try
+            {
+                context.AssertVisualVerificationApproved(
+                    getSelector(size),
+                    pixelErrorPercentageThreshold: 0,
+                    configurator: configuration => configuration
+                        .WithFileNameSuffix(FormattableString.Invariant($"{size.Width}x{size.Height}")));
+            }
+            catch (Exception exception)
+            {
+                // We don't throw yet, this way if there are missing images they are generated all in one run.
+                exceptions.Add(exception);
+            }
+        }
+
+        if (exceptions.Count == 1) throw exceptions.Single();
+
+        if (exceptions.Any())
+        {
+            // The UITestExecutionSession doesn't support AggregateException with multiple inner exceptions, so we just
+            // concatenate the exceptions if there are multiple.
+            throw new InvalidOperationException(
+                "Several exceptions have occurred:\n" + string.Join("\n\n\n", exceptions.Select(ex => ex.ToString())));
+        }
+
+        context.RestoreHiddenScrollbar();
+    }
 
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
@@ -271,8 +328,9 @@ to customize the name of the dump item.";
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
             .ToList();
-        var testFrame = stackTrace
-            .FirstOrDefault(frame => !IsVisualVerificationMethod(frame));
+        var testFrame = stackTrace.FirstOrDefault(frame =>
+            !IsVisualVerificationMethod(frame) &&
+            !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
