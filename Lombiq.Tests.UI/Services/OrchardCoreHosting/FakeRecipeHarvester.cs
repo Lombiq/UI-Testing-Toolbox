@@ -32,9 +32,9 @@ public class FakeRecipeHarvester : IRecipeHarvester
     }
 
     public virtual Task<IEnumerable<RecipeDescriptor>> HarvestRecipesAsync() =>
-        _extensionManager.GetExtensions().InvokeAsync(HarvestRecipes, _logger);
+        _extensionManager.GetExtensions().InvokeAsync(HarvestRecipesAsync, _logger);
 
-    private Task<IEnumerable<RecipeDescriptor>> HarvestRecipes(IExtensionInfo extension)
+    private Task<IEnumerable<RecipeDescriptor>> HarvestRecipesAsync(IExtensionInfo extension)
     {
         var folderSubPath = PathExtensions.Combine(extension.SubPath, "Recipes");
         return HarvestRecipesAsync(folderSubPath);
