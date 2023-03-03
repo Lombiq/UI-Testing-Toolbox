@@ -144,8 +144,8 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private static void AddFakeViewCompilerProvider(IServiceCollection services) =>
         services.AddSingleton<IViewCompilerProvider, FakeViewCompilerProvider>();
 
-    // We remove the existing IRecipeHarcester implementations and add a custom implementation that uses the same come
-    // as OC but with a fix in RcipeHarvester.HarvestRecipesAsync to avoid sync over async issue.
+    // We remove the existing IRecipeHarvester implementations and add a custom implementation that uses the same come
+    // as OC but with a fix in RecipeHarvester.HarvestRecipesAsync to avoid sync over async issue.
     private static void AddFakeRecipeHarvester(IServiceCollection services)
     {
         services.RemoveAll<IRecipeHarvester>();
