@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Web;
 using OrchardCore.Recipes.Services;
+using OrchardCore.Workflows.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -108,7 +109,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             {
                 AddFakeStore(builderServices);
                 AddFakeViewCompilerProvider(builderServices);
-                AddFakeRecipeHarvester(builderServices);
+                ReplaceRecipeHarvester(builderServices);
             },
             int.MaxValue);
     }
@@ -148,12 +149,17 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     // as OC but with a fix in RecipeHarvester.HarvestRecipesAsync to avoid sync over async issue.
     // This can be removed if the related issue in OC gets fixed and merged.
     // OC issue: https://github.com/OrchardCMS/OrchardCore/issues/10329.
-    private static void AddFakeRecipeHarvester(IServiceCollection services)
+    private static void ReplaceRecipeHarvester(IServiceCollection services)
     {
-        services.RemoveAll<IRecipeHarvester>();
+        services.RemoveRange(
+            services.Where(
+                descriptor =>
+                    descriptor.ImplementationType == typeof(ApplicationRecipeHarvester)
+                    || descriptor.ImplementationType == typeof(RecipeHarvester))
+                .ToList());
 
-        services.AddScoped<IRecipeHarvester, FakeApplicationRecipeHarvester>()
-            .AddScoped<IRecipeHarvester, FakeRecipeHarvester>();
+        services.AddScoped<IRecipeHarvester, ApplicationRecipeHarvesterAsync>();
+        services.AddScoped<IRecipeHarvester, RecipeHarvesterAsync>();
     }
 
     public override async ValueTask DisposeAsync()

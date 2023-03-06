@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public class FakeRecipeHarvester : IRecipeHarvester
+public class RecipeHarvesterAsync : IRecipeHarvester
 {
     private readonly IRecipeReader _recipeReader;
     private readonly IExtensionManager _extensionManager;
     private readonly IHostEnvironment _hostingEnvironment;
     private readonly ILogger _logger;
 
-    public FakeRecipeHarvester(
+    public RecipeHarvesterAsync(
         IRecipeReader recipeReader,
         IExtensionManager extensionManager,
         IHostEnvironment hostingEnvironment,
-        ILogger<FakeRecipeHarvester> logger)
+        ILogger<RecipeHarvesterAsync> logger)
     {
         _recipeReader = recipeReader;
         _extensionManager = extensionManager;
