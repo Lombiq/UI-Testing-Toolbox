@@ -146,6 +146,8 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     // We remove the existing IRecipeHarvester implementations and add a custom implementation that uses the same code
     // as OC but with a fix in RecipeHarvester.HarvestRecipesAsync to avoid sync over async issue.
+    // This can be removed if the related issue in OC gets fixed and merged.
+    // OC issue: https://github.com/OrchardCMS/OrchardCore/issues/10329.
     private static void AddFakeRecipeHarvester(IServiceCollection services)
     {
         services.RemoveAll<IRecipeHarvester>();
