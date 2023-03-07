@@ -65,8 +65,10 @@
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="1.5.0" />
     <PackageReference Include="OrchardCore.Abstractions" Version="1.5.0" />
+    <PackageReference Include="OrchardCore.Recipes.Core" Version="1.5.0" />
     <PackageReference Include="Selenium.Axe" Version="4.0.5" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="WebDriverManager" Version="2.16.2" />
     <PackageReference Include="xunit" Version="2.4.2" />
   </ItemGroup>
