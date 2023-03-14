@@ -328,6 +328,18 @@ to customize the name of the dump item.";
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
             .ToList();
+
+        var counter = 0;
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+        Console.WriteLine($"Stack trace content:");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+        foreach (var frame in stackTrace)
+        {
+            counter++;
+            Console.WriteLine($"{counter.ToTechnicalString()}. File N ame: {frame.GetFileName()}");
+            Console.WriteLine($"{counter.ToTechnicalString()}. Method Name:{frame.GetMethod().Name}");
+        }
+
         var testFrame = stackTrace.FirstOrDefault(frame =>
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
@@ -351,7 +363,6 @@ to customize the name of the dump item.";
         }
 
         var approvedContext = new VisualVerificationMatchApprovedContext(context, configuration, testFrame);
-        Console.WriteLine($"Approved Context: {approvedContext}");
 
         // Try loading baseline image from embedded resources first.
         var baselineImage = testFrame
