@@ -2,6 +2,7 @@ using Codeuctivity.ImageSharpCompare;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -332,6 +333,9 @@ to customize the name of the dump item.";
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
+        DebugHelper.WriteLineTimestamped($"Test Frame: {testFrame}");
+        DebugHelper.WriteLineTimestamped($"Stack Trace: {stackTrace}");
+
         if (testFrame != null && configuration.StackOffset > 0)
         {
             testFrame = stackTrace
@@ -348,6 +352,7 @@ to customize the name of the dump item.";
         }
 
         var approvedContext = new VisualVerificationMatchApprovedContext(context, configuration, testFrame);
+        DebugHelper.WriteLineTimestamped($"Approved Context: {approvedContext}");
 
         // Try loading baseline image from embedded resources first.
         var baselineImage = testFrame
@@ -355,6 +360,8 @@ to customize the name of the dump item.";
             .DeclaringType?
             .Assembly
             .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
+
+        DebugHelper.WriteLineTimestamped($"Baseline Image: {baselineImage}");
 
         if (baselineImage == null)
         {
