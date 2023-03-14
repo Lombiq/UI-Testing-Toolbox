@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -29,6 +30,8 @@ public static class VisualVerificationUITestContextExtensions
     private const string HintFailureDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
 to customize the name of the dump item.";
+
+    private static readonly ITestOutputHelper _testOutputHelper;
 
     /// <summary>
     /// Compares the baseline image and screenshot of the selected element on multiple different resolutions.
@@ -333,8 +336,8 @@ to customize the name of the dump item.";
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
-        DebugHelper.WriteLineTimestamped($"Test Frame: {testFrame}");
-        DebugHelper.WriteLineTimestamped($"Stack Trace: {stackTrace}");
+        _testOutputHelper.WriteLineTimestampedAndDebug($"Test Frame: {testFrame}");
+        _testOutputHelper.WriteLineTimestampedAndDebug($"Stack Trace: {stackTrace}");
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
@@ -352,7 +355,7 @@ to customize the name of the dump item.";
         }
 
         var approvedContext = new VisualVerificationMatchApprovedContext(context, configuration, testFrame);
-        DebugHelper.WriteLineTimestamped($"Approved Context: {approvedContext}");
+        _testOutputHelper.WriteLineTimestampedAndDebug($"Approved Context: {approvedContext}");
 
         // Try loading baseline image from embedded resources first.
         var baselineImage = testFrame
@@ -361,7 +364,7 @@ to customize the name of the dump item.";
             .Assembly
             .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
 
-        DebugHelper.WriteLineTimestamped($"Baseline Image: {baselineImage}");
+        _testOutputHelper.WriteLineTimestampedAndDebug($"Baseline Image: {baselineImage}");
 
         if (baselineImage == null)
         {
