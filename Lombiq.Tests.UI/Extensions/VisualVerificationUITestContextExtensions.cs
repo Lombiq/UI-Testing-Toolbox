@@ -332,8 +332,8 @@ to customize the name of the dump item.";
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
-        Console.WriteLine($"Test Frame: {testFrame}");
-        Console.WriteLine($"Stack Trace: {stackTrace}");
+        Console.WriteLine($"Test Frame Method Info Name: {testFrame.MethodInfo.Name}");
+        Console.WriteLine($"Test Frame Stack Frame File Name: {testFrame.StackFrame.GetFileName()}");
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
@@ -360,10 +360,17 @@ to customize the name of the dump item.";
             .Assembly
             .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
 
-        Console.WriteLine($"Baseline Image: {baselineImage}");
+        if (baselineImage != null)
+        {
+            Console.WriteLine($"Baseline Image: {baselineImage}");
+        }
 
         if (baselineImage == null)
         {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            Console.WriteLine($"Baseline Image: null");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+
             // Then if no resource exists, try load baseline image from source.
             if (string.IsNullOrEmpty(testFrame.GetFileName()))
             {
