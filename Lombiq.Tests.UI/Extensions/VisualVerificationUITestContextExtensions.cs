@@ -336,8 +336,8 @@ to customize the name of the dump item.";
         foreach (var frame in stackTrace)
         {
             counter++;
-            Console.WriteLine($"{counter.ToTechnicalString()}. File N ame: {frame.GetFileName()}");
-            Console.WriteLine($"{counter.ToTechnicalString()}. Method Name:{frame.GetMethod().Name}");
+            Console.WriteLine($"{counter.ToTechnicalString()}. File Name: {frame.GetFileName()}");
+            Console.WriteLine($"{counter.ToTechnicalString()}. Method Name: {frame.GetMethod().Name}");
         }
 
         var testFrame = stackTrace.FirstOrDefault(frame =>
