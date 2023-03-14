@@ -2,7 +2,6 @@ using Codeuctivity.ImageSharpCompare;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
@@ -30,8 +29,6 @@ public static class VisualVerificationUITestContextExtensions
     private const string HintFailureDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
 to customize the name of the dump item.";
-
-    private static readonly ITestOutputHelper _testOutputHelper;
 
     /// <summary>
     /// Compares the baseline image and screenshot of the selected element on multiple different resolutions.
@@ -336,8 +333,8 @@ to customize the name of the dump item.";
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
-        _testOutputHelper.WriteLineTimestampedAndDebug($"Test Frame: {testFrame}");
-        _testOutputHelper.WriteLineTimestampedAndDebug($"Stack Trace: {stackTrace}");
+        Console.WriteLine($"Test Frame: {testFrame}");
+        Console.WriteLine($"Stack Trace: {stackTrace}");
 
         if (testFrame != null && configuration.StackOffset > 0)
         {
@@ -355,7 +352,7 @@ to customize the name of the dump item.";
         }
 
         var approvedContext = new VisualVerificationMatchApprovedContext(context, configuration, testFrame);
-        _testOutputHelper.WriteLineTimestampedAndDebug($"Approved Context: {approvedContext}");
+        Console.WriteLine($"Approved Context: {approvedContext}");
 
         // Try loading baseline image from embedded resources first.
         var baselineImage = testFrame
@@ -364,7 +361,7 @@ to customize the name of the dump item.";
             .Assembly
             .GetResourceImageSharpImage(approvedContext.BaselineImageResourceName);
 
-        _testOutputHelper.WriteLineTimestampedAndDebug($"Baseline Image: {baselineImage}");
+        Console.WriteLine($"Baseline Image: {baselineImage}");
 
         if (baselineImage == null)
         {
