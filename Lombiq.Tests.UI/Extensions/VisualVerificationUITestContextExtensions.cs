@@ -33,10 +33,6 @@ to customize the name of the dump item.";
     /// Compares the baseline image and screenshot of the selected element on multiple different resolutions.
     /// </summary>
     /// <param name="sizes">The comparison is performed on each of these resolutions.</param>
-    /// <param name="beforeAssertAsync">
-    /// Task to be performed after the viewport has been resized but before the screenshot is taken. This can be used
-    /// for example if the page must be loaded in the given size.
-    /// </param>
     /// <param name="getSelector">
     /// Returns the selector for the given screen size. This may return the same selector all the time, or a different
     /// selector, e.g. if mobile and desktop views have different DOMs.
@@ -45,7 +41,6 @@ to customize the name of the dump item.";
     public static async Task AssertVisualVerificationOnAllResolutionsAsync(
         this UITestContext context,
         IEnumerable<Size> sizes,
-        Func<Task> beforeAssertAsync,
         Func<Size, By> getSelector)
     {
         context.HideScrollbar();
@@ -54,7 +49,6 @@ to customize the name of the dump item.";
         foreach (var size in sizes)
         {
             context.SetViewportSize(size);
-            await beforeAssertAsync();
 
             try
             {
