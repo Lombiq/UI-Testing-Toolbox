@@ -18,7 +18,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -38,7 +37,7 @@ to customize the name of the dump item.";
     /// selector, e.g. if mobile and desktop views have different DOMs.
     /// </param>
     [VisualVerificationApprovedMethod]
-    public static async Task AssertVisualVerificationOnAllResolutionsAsync(
+    public static void AssertVisualVerificationOnAllResolutions(
         this UITestContext context,
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector)
