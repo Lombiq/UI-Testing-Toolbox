@@ -117,13 +117,15 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
         _configureOrchard?.Invoke(configuration, builder);
 
         builder.Configure(app => app.UseMiddleware<PageLoadProbeMiddleware>())
-            .ConfigureServices(builderServices =>
-            {
-                AddFakeStore(builderServices);
-                AddFakeViewCompilerProvider(builderServices);
-                ReplaceRecipeHarvester(builderServices);
-                AddSessionProbe(builderServices);
-            });
+            .ConfigureServices(
+                builderServices =>
+                {
+                    AddFakeStore(builderServices);
+                    AddFakeViewCompilerProvider(builderServices);
+                    ReplaceRecipeHarvester(builderServices);
+                    AddSessionProbe(builderServices);
+                },
+                int.MaxValue);
     }
 
     private void AddFakeStore(IServiceCollection services)
