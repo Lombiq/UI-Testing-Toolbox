@@ -54,7 +54,7 @@ to customize the name of the dump item.";
         foreach (var size in sizes)
         {
             context.SetViewportSize(size);
-            await beforeAssertAsync();
+            await beforeAssertAsync().ConfigureAwait(false);
 
             try
             {
