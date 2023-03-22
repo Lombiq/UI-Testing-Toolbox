@@ -36,6 +36,14 @@ to customize the name of the dump item.";
     /// Returns the selector for the given screen size. This may return the same selector all the time, or a different
     /// selector, e.g. if mobile and desktop views have different DOMs.
     /// </param>
+    /// <remarks>
+    /// <para>
+    /// The parameter "beforeAssertAsync" was removed, because it sometimes polluted the stack trace, which was
+    /// used in visual verification tests, so it caused tests to fail. The point of beforeAssertAsync was, that
+    /// sometimes the page can change on the resize window event. So the navigation happening after the window resize
+    /// ensures that the currently loaded page only existed with the desired screen size.
+    /// </para>
+    /// </remarks>
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationOnAllResolutions(
         this UITestContext context,
