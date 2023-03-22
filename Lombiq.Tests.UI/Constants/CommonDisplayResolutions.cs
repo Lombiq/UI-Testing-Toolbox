@@ -31,7 +31,7 @@ public static class CommonDisplayResolutions
     public static readonly Size WsxgaPlus = new(1680, 1050);
     public static readonly Size Fhd = new(1920, 1080);
     public static readonly Size Wuxga = new(1920, 1200);
-    public static readonly Size Dci2K = new(2048, 1080); // #spell-check-ignore-line
+    public static readonly Size Dci2K = new(2048, 1080);
     public static readonly Size Qwxga = new(2048, 1152);
     public static readonly Size Wqhd = new(2560, 1440);
     public static readonly Size Uwqhd = new(3440, 1440);

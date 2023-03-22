@@ -71,7 +71,7 @@ public static class ScreenshotUITestContextExtensions
                 position =>
                     position.Y % viewportSize.Height == 0
                     ? viewportSize.Height
-                    : viewportSize.Height - (viewportSize.Height % position.Y));
+                    : (position.Y + viewportSize.Height) % viewportSize.Height);
 
             var screenshot = new SixLabors.ImageSharp.Image<Argb32>(viewportSize.Width, height);
 

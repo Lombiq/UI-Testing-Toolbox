@@ -39,7 +39,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     protected ITestOutputHelper _testOutputHelper;
 
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
-    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
+    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait; // #spell-check-ignore-line
 
     static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
 
