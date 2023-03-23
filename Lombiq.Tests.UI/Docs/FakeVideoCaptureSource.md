@@ -58,7 +58,7 @@ public class BasicTests : UITestBase
             },
             browser,
             configuration =>
-                // Here we set the fake video sorce configuration.
+                // Here we set the fake video source configuration.
                 configuration.BrowserConfiguration.FakeVideoSource = new FakeBrowserVideoSource
                 {
                     StreamProvider = () =>
