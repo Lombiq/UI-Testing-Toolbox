@@ -25,7 +25,7 @@ ffmpeg -y -i test.mp4 -filter:v scale=480:-1 test.mjpeg
 
 ### Configuring test
 
-Add the prepared video file to your `csproj` as an `EmbeddedResource`, then configure the test method like below.
+Add the prepared video file to your `csproj` project as an `EmbeddedResource`, and then configure the test method as shown below.
 
 ```csharp
 using Lombiq.Tests.UI.Attributes;
