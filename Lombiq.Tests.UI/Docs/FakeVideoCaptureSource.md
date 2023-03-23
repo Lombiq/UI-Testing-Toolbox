@@ -12,13 +12,13 @@ _Suggestion: use `mjpeg`, it will result in a smaller file size._
 # Convert mp4 to y4m.
 ffmpeg -y -i test.mp4 -pix_fmt yuv420p test.y4m
 
-#Convert with resize to 480p.
+# Convert with resize to 480p.
 ffmpeg -y -i test.mp4 -filter:v scale=480:-1 -pix_fmt yuv420p test.y4m
 
 # Convert mp4 to mjpeg.
 ffmpeg -y -i test.mp4 test.mjpeg
 
-#Convert with resize to 480p.
+# Convert with resize to 480p.
 ffmpeg -y -i test.mp4 -filter:v scale=480:-1 test.mjpeg
 
 ```
