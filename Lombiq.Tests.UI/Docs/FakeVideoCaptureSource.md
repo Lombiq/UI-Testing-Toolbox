@@ -4,7 +4,7 @@
 
 You can use video files as a fake video capture source in Chrome browser of format `y4m` or `mjpeg`.
 
-If you have a video file in eg.: `mp4` format use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
+If you have a video file in e.g., `mp4` format, use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
 
 _Suggestion: use `mjpeg`, it will result in a smaller file size._
 
