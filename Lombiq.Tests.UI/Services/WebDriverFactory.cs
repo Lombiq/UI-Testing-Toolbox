@@ -139,7 +139,7 @@ public static class WebDriverFactory
 
         if (configuration.FakeVideoSource is not null)
         {
-            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFoleder();
+            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
 
             options.AddArgument("use-fake-device-for-media-stream");
             options.AddArgument("use-fake-ui-for-media-stream");

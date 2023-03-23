@@ -7,7 +7,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FakeBrowserVideoSourceExtensions
 {
-    public static string SaveVideoToTempFoleder(this FakeBrowserVideoSource source)
+    public static string SaveVideoToTempFolder(this FakeBrowserVideoSource source)
     {
         using var fakeCameraSource = source.StreamProvider();
         var fakeCameraSourcePath = Path.ChangeExtension(
