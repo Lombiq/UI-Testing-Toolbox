@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Models;
 using SixLabors.ImageSharp;
 using System;
 using System.Globalization;
@@ -37,4 +38,9 @@ public class BrowserConfiguration
     /// cref="CommonDisplayResolutions.Standard"/> when the setup is loaded.
     /// </summary>
     public Size DefaultBrowserSize { get; set; } = CommonDisplayResolutions.Standard;
+
+    /// <summary>
+    /// Gets or sets the fake camera video source information. See: <see cref="FakeBrowserVideoSource"/>.
+    /// </summary>
+    public FakeBrowserVideoSource FakeVideoSource { get; set; }
 }

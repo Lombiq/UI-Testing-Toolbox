@@ -10,8 +10,11 @@ public static class DirectoryPaths
     public const string Temp = nameof(Temp);
     public const string Screenshots = nameof(Screenshots);
 
+    public static string GetTempDirectoryPath(params string[] subDirectoryNames) =>
+        Path.Combine(new[] { Environment.CurrentDirectory, Temp }.Concat(subDirectoryNames).ToArray());
+
     public static string GetTempSubDirectoryPath(string contextId, params string[] subDirectoryNames) =>
-        Path.Combine(new[] { Environment.CurrentDirectory, Temp, contextId }.Concat(subDirectoryNames).ToArray());
+        GetTempDirectoryPath(new[] { contextId }.Concat(subDirectoryNames).ToArray());
 
     public static string GetScreenshotsDirectoryPath(string contextId) =>
         GetTempSubDirectoryPath(contextId, Screenshots);

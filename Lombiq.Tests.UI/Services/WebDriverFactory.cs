@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chromium;
@@ -135,6 +136,15 @@ public static class WebDriverFactory
 
         // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
         options.AddArgument("disable-smooth-scrolling");
+
+        if (configuration.FakeVideoSource is not null)
+        {
+            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFoleder();
+
+            options.AddArgument("use-fake-device-for-media-stream");
+            options.AddArgument("use-fake-ui-for-media-stream");
+            options.AddArgument($"use-file-for-fake-video-capture={fakeCameraSourceFilePath}");
+        }
 
         if (configuration.Headless) options.AddArgument("headless");
 
