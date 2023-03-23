@@ -7,7 +7,7 @@ public class FakeBrowserVideoSource
 {
     /// <summary>
     /// Gets or sets a callback that will be used to obtain the video content <see cref="Stream"/> and will be saved and used
-    /// as a fake video capture file for the chrome browser. The consumer will dispose the returned <see cref="Stream"/>
+    /// as a fake video capture file for the Chrome browser. The consumer will dispose of  the returned <see cref="Stream"/>
     /// after the callback gets called.
     /// </summary>
     public Func<Stream> StreamProvider { get; set; }
