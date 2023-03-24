@@ -12,13 +12,13 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class UITestExecutor
 {
-    private static readonly object _numberOfTestsLimitLock = new();
+    private static readonly SemaphoreSlim _numberOfTestsLimitLock = new(1, 1);
     private static SemaphoreSlim _numberOfTestsLimit;
 
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
+    public static async Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
         where TEntryPoint : class
@@ -51,15 +51,16 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
+        await _numberOfTestsLimitLock.WaitAsync();
+
         if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
         {
-            lock (_numberOfTestsLimitLock)
-            {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
-            }
+            _numberOfTestsLimit = new SemaphoreSlim(configuration.MaxParallelTests);
         }
 
-        return ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
+        _numberOfTestsLimitLock.Release();
+
+        await ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
     }
 
     private static async Task ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(
