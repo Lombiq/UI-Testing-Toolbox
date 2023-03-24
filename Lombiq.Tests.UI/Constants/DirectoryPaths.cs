@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 
 namespace Lombiq.Tests.UI.Constants;
 
@@ -10,8 +9,14 @@ public static class DirectoryPaths
     public const string Temp = nameof(Temp);
     public const string Screenshots = nameof(Screenshots);
 
+    public static string GetTempDirectoryPath(params string[] subDirectoryNames) =>
+        Path.Combine(
+            Path.Combine(Environment.CurrentDirectory, Temp),
+            Path.Combine(subDirectoryNames));
+
     public static string GetTempSubDirectoryPath(string contextId, params string[] subDirectoryNames) =>
-        Path.Combine(new[] { Environment.CurrentDirectory, Temp, contextId }.Concat(subDirectoryNames).ToArray());
+        GetTempDirectoryPath(
+            Path.Combine(contextId, Path.Combine(subDirectoryNames)));
 
     public static string GetScreenshotsDirectoryPath(string contextId) =>
         GetTempSubDirectoryPath(contextId, Screenshots);
