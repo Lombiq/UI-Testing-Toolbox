@@ -18,7 +18,7 @@ public static class UITestExecutor
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static async Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
+    public static Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
         where TEntryPoint : class
@@ -51,16 +51,7 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        await _numberOfTestsLimitLock.WaitAsync();
-
-        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
-        {
-            _numberOfTestsLimit = new SemaphoreSlim(configuration.MaxParallelTests);
-        }
-
-        _numberOfTestsLimitLock.Release();
-
-        await ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
+        return ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
     }
 
     private static async Task ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(
@@ -69,6 +60,8 @@ public static class UITestExecutor
         string dumpRootPath)
         where TEntryPoint : class
     {
+        await PrepareTestLimitAsync(configuration);
+
         var retryCount = 0;
         var passed = false;
         while (!passed)
@@ -91,7 +84,6 @@ public static class UITestExecutor
             catch (Exception ex)
             {
                 // When the last try failed.
-
                 if (configuration.ExtendGitHubActionsOutput &&
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations &&
                     GitHubHelper.IsGitHubEnvironment)
@@ -176,5 +168,17 @@ public static class UITestExecutor
         }
 
         return dumpRootPath;
+    }
+
+    private static async Task PrepareTestLimitAsync(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        await _numberOfTestsLimitLock.WaitAsync();
+
+        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
+        {
+            _numberOfTestsLimit = new SemaphoreSlim(configuration.MaxParallelTests);
+        }
+
+        _numberOfTestsLimitLock.Release();
     }
 }
