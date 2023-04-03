@@ -17,17 +17,28 @@ public class CounterConfiguration
     /// <summary>
     /// Gets the counter configuration used in the running phase of the web application.
     /// </summary>
-    public PhaseCounterConfiguration Running { get; } = new();
+    public RunningPhaseCounterConfiguration Running { get; } = new();
 
     public static Action<ICounterProbe> DefaultAssertCounterData(PhaseCounterConfiguration configuration) =>
         probe =>
         {
+            var phaseConfiguration = configuration;
+            if (phaseConfiguration is RunningPhaseCounterConfiguration runningPhaseCounterConfiguration
+                && probe is ICounterConfigurationKey counterConfigurationKey)
+            {
+                phaseConfiguration = runningPhaseCounterConfiguration.GetMaybe(counterConfigurationKey) ?? configuration;
+            }
+
             (CounterThresholdConfiguration Settings, string Name)? threshold = probe switch
             {
-                NavigationProbe => (Settings: configuration.NavigationThreshold, Name: nameof(configuration.NavigationThreshold)),
-                PageLoadProbe => (Settings: configuration.PageLoadThreshold, Name: nameof(configuration.NavigationThreshold)),
-                SessionProbe => (Settings: configuration.SessionThreshold, Name: nameof(configuration.NavigationThreshold)),
-                CounterDataCollector => (Settings: configuration.PhaseThreshold, Name: nameof(configuration.NavigationThreshold)),
+                NavigationProbe =>
+                    (Settings: phaseConfiguration.NavigationThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
+                PageLoadProbe =>
+                    (Settings: phaseConfiguration.PageLoadThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
+                SessionProbe =>
+                    (Settings: phaseConfiguration.SessionThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
+                CounterDataCollector =>
+                    (Settings: phaseConfiguration.PhaseThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
                 _ => null,
             };
 
@@ -35,17 +46,17 @@ public class CounterConfiguration
             {
                 AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
                     probe,
-                    configuration.ExcludeFilter ?? (key => false),
+                    phaseConfiguration.ExcludeFilter ?? (key => false),
                     $"{settings.Name}.{nameof(settings.Settings.DbCommandExecutionThreshold)}",
                     settings.Settings.DbCommandExecutionThreshold);
                 AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
                     probe,
-                    configuration.ExcludeFilter ?? (key => false),
+                    phaseConfiguration.ExcludeFilter ?? (key => false),
                     $"{settings.Name}.{nameof(settings.Settings.DbCommandTextExecutionThreshold)}",
                     settings.Settings.DbCommandTextExecutionThreshold);
                 AssertIntegerCounterValue<DbReaderReadCounterKey>(
                     probe,
-                    configuration.ExcludeFilter ?? (key => false),
+                    phaseConfiguration.ExcludeFilter ?? (key => false),
                     $"{settings.Name}.{nameof(settings.Settings.DbReaderReadThreshold)}",
                     settings.Settings.DbReaderReadThreshold);
             }

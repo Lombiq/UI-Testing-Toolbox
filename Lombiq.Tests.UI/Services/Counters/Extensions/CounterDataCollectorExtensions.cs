@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services.Counters.Extensions;
 
-public static class ICounterDataCollectorExtensions
+public static class CounterDataCollectorExtensions
 {
     public static int DbCommandExecuteNonQuery(this ICounterDataCollector collector, DbCommand dbCommand)
     {

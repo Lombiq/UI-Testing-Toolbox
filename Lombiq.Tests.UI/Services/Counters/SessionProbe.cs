@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Services.Counters.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +9,7 @@ using YesSql.Indexes;
 
 namespace Lombiq.Tests.UI.Services.Counters;
 
-public sealed class SessionProbe : CounterProbe, ISession
+public sealed class SessionProbe : CounterProbe, ISession, IRelativeUrlConfigurationKey
 {
     private readonly ISession _session;
     public string RequestMethod { get; init; }
@@ -58,4 +59,12 @@ public sealed class SessionProbe : CounterProbe, ISession
         // and we should count the executed db commands in it.
         Dispose();
     }
+
+    #region IRelativeUrlConfigurationKey implementation
+
+    Uri IRelativeUrlConfigurationKey.Url => AbsoluteUri;
+    bool IEquatable<ICounterConfigurationKey>.Equals(ICounterConfigurationKey other) =>
+        this.EqualsWith(other as IRelativeUrlConfigurationKey);
+
+    #endregion
 }

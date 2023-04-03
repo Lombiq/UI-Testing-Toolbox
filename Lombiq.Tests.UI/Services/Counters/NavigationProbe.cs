@@ -1,8 +1,9 @@
+using Lombiq.Tests.UI.Services.Counters.Extensions;
 using System;
 
 namespace Lombiq.Tests.UI.Services.Counters;
 
-public class NavigationProbe : CounterProbe
+public sealed class NavigationProbe : CounterProbe, IRelativeUrlConfigurationKey
 {
     public Uri AbsoluteUri { get; init; }
 
@@ -11,4 +12,12 @@ public class NavigationProbe : CounterProbe
         AbsoluteUri = absoluteUri;
 
     public override string DumpHeadline() => $"{nameof(NavigationProbe)}, AbsoluteUri = {AbsoluteUri}";
+
+    #region IRelativeUrlConfigurationKey implementation
+
+    Uri IRelativeUrlConfigurationKey.Url => AbsoluteUri;
+    bool IEquatable<ICounterConfigurationKey>.Equals(ICounterConfigurationKey other) =>
+        this.EqualsWith(other as IRelativeUrlConfigurationKey);
+
+    #endregion
 }
