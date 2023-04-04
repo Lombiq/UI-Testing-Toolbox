@@ -245,8 +245,16 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 var file = _context.Scope.AtataContext.Artifacts.Files.Value
                     .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
 
+                // Atata creates a folder with ":" in it on Ubuntu. However this is not a valid path for
+                // "actions/upload-artifact@v3.1.1"
+                var artifactDirectory = Directory.GetParent(file.FullName.Value);
+                var artifactDirectoryName = artifactDirectory.Name.Replace(":", string.Empty);
+                var sanitizedArtifectDirectory = Path.Combine(artifactDirectory.Parent.FullName, artifactDirectoryName);
+
+                Directory.Move(artifactDirectory.FullName, sanitizedArtifectDirectory);
+
                 var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
-                File.Copy(file.FullName.Value, snapshotDumpPath);
+                File.Copy(sanitizedArtifectDirectory, snapshotDumpPath);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
