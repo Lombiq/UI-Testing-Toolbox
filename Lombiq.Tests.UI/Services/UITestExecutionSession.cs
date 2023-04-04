@@ -246,7 +246,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                     .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
 
                 var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
-                File.Copy(file.Name.Value, snapshotDumpPath);
+                File.Copy(file.FullName.Value, snapshotDumpPath);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
