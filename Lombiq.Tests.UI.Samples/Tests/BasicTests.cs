@@ -32,7 +32,7 @@ public class BasicTests : UITestBase
                 context
                     .Get(By.ClassName("navbar-brand"))
                     .Text
-                    .ShouldBe("Lombiq's OSOCE - UI Testing");
+                    .ShouldBe("Lombiq's OSOCE - UI Testin");
 
                 // Are we logged out?
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
