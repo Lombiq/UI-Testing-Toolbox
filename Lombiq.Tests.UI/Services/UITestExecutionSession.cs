@@ -249,12 +249,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 // "actions/upload-artifact@v3.1.1"
                 var artifactDirectory = Directory.GetParent(file.FullName.Value);
                 var artifactDirectoryName = artifactDirectory.Name.Replace(":", string.Empty);
-                var sanitizedArtifectDirectory = Path.Combine(artifactDirectory.Parent.FullName, artifactDirectoryName);
+                var sanitizedArtifactDirectory = Path.Combine(artifactDirectory.Parent.FullName, artifactDirectoryName);
 
-                Directory.Move(artifactDirectory.FullName, sanitizedArtifectDirectory);
+                Directory.Move(artifactDirectory.FullName, sanitizedArtifactDirectory);
 
                 var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
-                File.Copy(sanitizedArtifectDirectory, snapshotDumpPath);
+                File.Copy(sanitizedArtifactDirectory, snapshotDumpPath);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
