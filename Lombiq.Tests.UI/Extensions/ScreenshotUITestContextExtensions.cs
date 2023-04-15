@@ -70,8 +70,8 @@ public static class ScreenshotUITestContextExtensions
             var height = images.Keys.Sum(
                 position =>
                     position.Y % viewportSize.Height == 0
-                    ? viewportSize.Height
-                    : (position.Y + viewportSize.Height) % viewportSize.Height);
+                        ? viewportSize.Height
+                        : (position.Y + viewportSize.Height) % viewportSize.Height);
 
             var screenshot = new SixLabors.ImageSharp.Image<Argb32>(viewportSize.Width, height);
 
@@ -119,8 +119,8 @@ public static class ScreenshotUITestContextExtensions
                 + $"{elementAbsoluteSize.Height.ToTechnicalString()}.");
         }
 
-        var bounds = new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
-        return screenshot.Clone(ctx => ctx.Crop(bounds));
+        var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementSize.Width, elementSize.Height);
+        return screenshot.Clone(ctx => ctx.Crop(cropRectangle));
     }
 
     /// <summary>
