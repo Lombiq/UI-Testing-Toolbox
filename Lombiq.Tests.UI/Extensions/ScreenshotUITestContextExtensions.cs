@@ -108,10 +108,10 @@ public static class ScreenshotUITestContextExtensions
         var elementLocation = element.Location;
         var elementSize = element.Size;
 
-        var expectedPageSize = new Size(elementLocation.X + elementSize.Width, elementLocation.Y + elementSize.Height);
+        var expectedSize = new Size(elementLocation.X + elementSize.Width, elementLocation.Y + elementSize.Height);
 
-        var widthDifference = expectedPageSize.Width - screenshot.Width;
-        var heightDifference = expectedPageSize.Height - screenshot.Height;
+        var widthDifference = expectedSize.Width - screenshot.Width;
+        var heightDifference = expectedSize.Height - screenshot.Height;
 
         if (widthDifference > 0 || heightDifference > 0)
         {
@@ -128,11 +128,9 @@ public static class ScreenshotUITestContextExtensions
             else
             {
                 throw new InvalidOperationException(
-                    "The captured screenshot size is smaller then the size required by the selected element. This can occur"
-                    + " if there was an unsuccessful scrolling operation while capturing page parts."
-                    + $" Captured size: {screenshot.Width.ToTechnicalString()} x {screenshot.Height.ToTechnicalString()}."
-                    + $" Expected size: {expectedPageSize.Width.ToTechnicalString()} x"
-                    + $" {expectedPageSize.Height.ToTechnicalString()}.");
+                    "The captured screenshot size is smaller then the size required by the selected element. This can"
+                    + " occur if there was an unsuccessful scrolling operation while capturing page parts."
+                    + $" Captured size: {AsDimensions(screenshot)}. Expected size: {AsDimensions(expectedSize)}.");
             }
         }
 
@@ -145,4 +143,10 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Image TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
+
+    private static string AsDimensions(IImageInfo image) =>
+        $"{image.Width.ToTechnicalString()} x {image.Height.ToTechnicalString()}";
+
+    private static string AsDimensions(Size size) =>
+        $"{size.Width.ToTechnicalString()} x {size.Height.ToTechnicalString()}";
 }
