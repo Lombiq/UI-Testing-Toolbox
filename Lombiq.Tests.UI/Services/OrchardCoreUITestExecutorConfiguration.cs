@@ -53,10 +53,10 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </para>
     /// </remarks>
     public int MaxParallelTests { get; set; } =
-            TestConfigurationManager.GetIntConfiguration(
-                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is not { } intValue || intValue == 0
-                ? Environment.ProcessorCount
-                : intValue;
+        TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
+            ? intValue
+            : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
     public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
