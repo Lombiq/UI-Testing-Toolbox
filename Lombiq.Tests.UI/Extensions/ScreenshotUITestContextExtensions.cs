@@ -105,18 +105,32 @@ public static class ScreenshotUITestContextExtensions
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
-        var elementAbsoluteSize = new Size(
-            element.Location.X + element.Size.Width,
-            element.Location.Y + element.Size.Height);
+        var elementLocation = element.Location;
+        var elementSize = element.Size;
 
-        if (elementAbsoluteSize.Width > screenshot.Width || elementAbsoluteSize.Height > screenshot.Height)
+        var expectedPageSize = new Size(elementLocation.X + elementSize.Width, elementLocation.Y + elementSize.Height);
+
+        var widthDifference = expectedPageSize.Width - screenshot.Width;
+        var heightDifference = expectedPageSize.Height - screenshot.Height;
+
+        // A difference of 1px can occur when both element.Location and element.Size were rounded to the next
+        // integer from exactly 0.5px, e.g. 212.5px + 287.5px = 500px in the browser, but due to both Size and Point
+        // using int for their coordinates, this will become 213px + 288px = 501px, which will be caught as an error
+        // here. In that case, we keep the elementSize as is, but reduce the Location coordinate by 1 so that cropping
+        // the full page screenshot to the desired region will not fail due to too large dimensions.
+        if (widthDifference <= 1 && heightDifference <= 1)
+        {
+            elementLocation.X -= widthDifference;
+            elementLocation.Y -= heightDifference;
+        }
+        else
         {
             throw new InvalidOperationException(
                 "The captured screenshot size is smaller then the size required by the selected element. This can occur"
                 + " if there was an unsuccessful scrolling operation while capturing page parts."
-                + $"Captured size: {screenshot.Width.ToTechnicalString()} x {screenshot.Height.ToTechnicalString()}. "
-                + $"Required size: {elementAbsoluteSize.Width.ToTechnicalString()} x "
-                + $"{elementAbsoluteSize.Height.ToTechnicalString()}.");
+                + $" Captured size: {screenshot.Width.ToTechnicalString()} x {screenshot.Height.ToTechnicalString()}."
+                + $" Expected size: {expectedPageSize.Width.ToTechnicalString()} x"
+                + $" {expectedPageSize.Height.ToTechnicalString()}.");
         }
 
         var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementSize.Width, elementSize.Height);
