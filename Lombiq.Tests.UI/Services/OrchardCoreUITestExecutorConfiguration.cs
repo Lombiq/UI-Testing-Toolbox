@@ -21,7 +21,8 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app => app.LogsShouldBeEmptyAsync();
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
+        app.LogsShouldBeEmptyAsync();
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
@@ -34,8 +35,8 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
         logEntry =>
             logEntry.Level >= LogLevel.Warning &&
-            // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for every
-            // page.
+            // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
+            // every page.
             !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
             // under a different URL.
