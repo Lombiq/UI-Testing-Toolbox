@@ -135,7 +135,7 @@ public static class ScreenshotUITestContextExtensions
         }
 
         var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementSize.Width, elementSize.Height);
-        return screenshot.Clone(ctx => ctx.Crop(cropRectangle));
+        return screenshot.Clone(image => image.Crop(cropRectangle));
     }
 
     /// <summary>
