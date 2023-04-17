@@ -1,5 +1,8 @@
 # Fake video capture source
 
+Imagine you have an application that uses video sources to access visual information from the user or the environment using [Media Capture and Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API). The goal can be QR or bar code scanning, user identification, or other computer vision applications.
+To make sure our changes do not break anything else we need a way to automatically test. Here comes the fake video capture source to the picture.
+
 ## Preparing video file
 
 You can use video files as a fake video capture source in Chrome browser of format `y4m` or `mjpeg`.
@@ -23,49 +26,6 @@ ffmpeg -y -i test.mp4 -filter:v scale=480:-1 test.mjpeg
 
 ```
 
-### Configuring test
+## Sample
 
-Add the prepared video file to your `csproj` project as an `EmbeddedResource`, and then configure the test method as shown below.
-
-```csharp
-using Lombiq.Tests.UI.Attributes;
-using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Models;
-using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
-using Shouldly;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace Lombiq.Tests.UI.Samples.Tests;
-
-public class BasicTests : UITestBase
-{
-    public BasicTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
-    [Theory, Chrome]
-    public Task TestMethod(Browser browser) =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                // ...
-            },
-            browser,
-            configuration =>
-                // Here we set the fake video source configuration.
-                configuration.BrowserConfiguration.FakeVideoSource = new FakeBrowserVideoSource
-                {
-                    StreamProvider = () =>
-                        // Load video file content from resources.
-                        typeof(BasicTests).Assembly.GetManifestResourceStream(typeof(BasicTests), "BasicTest.mjpeg"),
-                    // Set the video format.
-                    Format = FakeBrowserVideoSourceFileFormat.MJpeg,
-                });
-}
-```
+You can find usage example under [Lombiq Vue.js module for Orchard Core - UI Test Extensions](https://github.com/Lombiq/Orchard-Vue.js/tree/dev/Lombiq.VueJs.Tests.UI).
