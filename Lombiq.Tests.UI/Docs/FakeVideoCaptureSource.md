@@ -4,11 +4,11 @@ Imagine you have an application that uses video sources to access visual informa
 
 ## Preparing video file
 
-You can use video files as a fake video capture source in Chrome browser of format `y4m` or `mjpeg`.
+You can use `y4m` or `mjpeg` video files as a fake video capture source in the Chrome browser.
 
-If you have a video file in e.g., `mp4` format, use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
+If you have a video file in e.g. `mp4` format, use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
 
-_Suggestion: use `mjpeg`, it will result in a smaller file size._
+_Hint: The `mjpeg` format will usually result in a smaller file size._
 
 ```bash
 # Convert mp4 to y4m.
@@ -22,9 +22,8 @@ ffmpeg -y -i test.mp4 test.mjpeg
 
 # Convert with resize to 480p.
 ffmpeg -y -i test.mp4 -filter:v scale=480:-1 test.mjpeg
-
 ```
 
 ## Sample
 
-You can find usage example under [Lombiq Vue.js module for Orchard Core - UI Test Extensions](https://github.com/Lombiq/Orchard-Vue.js/tree/dev/Lombiq.VueJs.Tests.UI).
+You can find a usage example under [Lombiq Vue.js module for Orchard Core - UI Test Extensions](https://github.com/Lombiq/Orchard-Vue.js/tree/dev/Lombiq.VueJs.Tests.UI).
