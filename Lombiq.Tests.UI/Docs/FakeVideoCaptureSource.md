@@ -1,6 +1,6 @@
 # Fake video capture source
 
-Imagine you have an application that uses video sources to access visual information from the user or the environment using [Media Capture and Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API). The goal can be QR or bar code scanning, user identification, or other computer vision applications. To make sure our changes do not break anything else we need a way to automatically test. Here comes the fake video capture source to the picture.
+Imagine you have an application that uses video sources to access visual information from the user or the environment using [Media Capture and Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API). The goal can be QR or bar code scanning, user identification, or other computer vision applications. To make sure that future changes to the code do not break anything, we need a way to automate testing. Here, the fake video capture source comes into play.
 
 ## Preparing video file
 
