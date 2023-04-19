@@ -7,12 +7,7 @@ namespace Lombiq.Tests.UI.Exceptions;
 public class VisualVerificationBaselineImageNotFoundException : Exception
 #pragma warning restore CA1032 // Implement standard exception constructors
 {
-    public VisualVerificationBaselineImageNotFoundException(string path)
-        : this(path, innerException: null)
-    {
-    }
-
-    public VisualVerificationBaselineImageNotFoundException(string path, Exception innerException)
+    public VisualVerificationBaselineImageNotFoundException(string path, Exception innerException = null)
         : base(
             $"Baseline image file not found, thus it was created automatically under the path {path}."
             + " Please set its \"Build action\" to \"Embedded resource\" if you want to deploy a self-contained"
