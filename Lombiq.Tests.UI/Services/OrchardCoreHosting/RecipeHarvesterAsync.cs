@@ -47,7 +47,7 @@ public class RecipeHarvesterAsync : IRecipeHarvester
             .ToAsyncEnumerable();
 
         return await recipeFiles.SelectAwait(
-            async recipeFile => await _recipeReader.GetRecipeDescriptor(
+            async recipeFile => await _recipeReader.GetRecipeDescriptorAsync(
                 path,
                 recipeFile,
                 _hostingEnvironment.ContentRootFileProvider))
