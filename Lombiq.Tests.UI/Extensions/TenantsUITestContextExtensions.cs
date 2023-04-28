@@ -49,7 +49,7 @@ public static class TenantsUITestContextExtensions
 
         if (!string.IsNullOrEmpty(featureProfile))
         {
-            await context.SetDropdownByTextAsync("FeatureProfile", featureProfile);
+            await context.ClickReliablyOnAsync(By.XPath("//option[@value='Features Guard']"));
         }
 
         await context.ClickReliablyOnAsync(By.XPath("//button[contains(., 'Create')]"));
