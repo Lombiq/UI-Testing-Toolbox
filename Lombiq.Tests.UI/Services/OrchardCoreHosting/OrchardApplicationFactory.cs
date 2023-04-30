@@ -10,8 +10,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Web;
-using OrchardCore.Recipes.Services;
-using OrchardCore.Workflows.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -109,7 +107,6 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             {
                 AddFakeStore(builderServices);
                 AddFakeViewCompilerProvider(builderServices);
-                ReplaceRecipeHarvester(builderServices);
             },
             int.MaxValue);
     }
@@ -144,23 +141,6 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     // ObjectDisposedException on next run.
     private static void AddFakeViewCompilerProvider(IServiceCollection services) =>
         services.AddSingleton<IViewCompilerProvider, FakeViewCompilerProvider>();
-
-    // We remove the existing IRecipeHarvester implementations and add a custom implementation that uses the same code
-    // as OC but with a fix in RecipeHarvester.HarvestRecipesAsync to avoid sync over async issue.
-    // This can be removed if the related issue in OC gets fixed and merged.
-    // OC issue: https://github.com/OrchardCMS/OrchardCore/issues/10329.
-    private static void ReplaceRecipeHarvester(IServiceCollection services)
-    {
-        services.RemoveRange(
-            services.Where(
-                descriptor =>
-                    descriptor.ImplementationType == typeof(ApplicationRecipeHarvester)
-                    || descriptor.ImplementationType == typeof(RecipeHarvester))
-                .ToList());
-
-        services.AddScoped<IRecipeHarvester, ApplicationRecipeHarvesterAsync>();
-        services.AddScoped<IRecipeHarvester, RecipeHarvesterAsync>();
-    }
 
     public override async ValueTask DisposeAsync()
     {
