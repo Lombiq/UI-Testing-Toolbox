@@ -564,10 +564,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             "Test media operations",
             async () =>
             {
+                const string mediaPath = "/Media";
                 var imageName = FileUploadHelper.SamplePngFileName;
                 var documentName = FileUploadHelper.SamplePdfFileName;
 
-                await context.GoToAdminRelativeUrlAsync("/Media");
+                await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
 
@@ -583,7 +584,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.SwitchToFirstWindow();
 
                 context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync("/Media");
+                await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
 
@@ -603,7 +604,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.SwitchToFirstWindow();
 
                 context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync("/Media");
+                await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 await context
                     .Get(By.CssSelector("#folder-tree .treeroot .folder-actions")) // #spell-check-ignore-line
@@ -629,7 +630,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
 
                 await context.ClickModalOkAsync();
-                context.Refresh();
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 context.Missing(By.XPath("//span[text()=' Image.png ' and @class='break-word']"));
 
@@ -638,7 +640,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await deleteFolderButton.ClickReliablyAsync(context);
 
                 await context.ClickModalOkAsync();
-                context.Refresh();
+                context.WaitForPageLoad();
+                await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 context.Missing(By.XPath("//div[text()='Example Folder' and @class='folder-name ms-2']"));
             });
