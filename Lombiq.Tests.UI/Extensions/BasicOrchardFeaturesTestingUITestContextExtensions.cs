@@ -629,7 +629,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
 
                 await context.ClickModalOkAsync();
-                context.WaitForPageLoad();
+                context.Refresh();
 
                 context.Missing(By.XPath("//span[text()=' Image.png ' and @class='break-word']"));
 
@@ -638,7 +638,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await deleteFolderButton.ClickReliablyAsync(context);
 
                 await context.ClickModalOkAsync();
-                context.WaitForPageLoad();
+                context.Refresh();
 
                 context.Missing(By.XPath("//div[text()='Example Folder' and @class='folder-name ms-2']"));
             });
