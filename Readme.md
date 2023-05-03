@@ -24,7 +24,7 @@ Highlights:
 - Ready to use GitHub Actions workflows for CI builds and support for test grouping and error annotations in [Lombiq GitHub Actions](https://github.com/features/actions). This feature is automatically enabled if a GitHub environment is detected.
 - Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in a TeamCity CI/CD server.
 - Visual verification testing: You can make the test fail if the look of the app changes. Demo video [here](https://www.youtube.com/watch?v=a-1zKjxTKkk).
-- Using video files as a fake video capture source in Chrome browser. Docs [here](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md).
+- Using video files as a fake video capture source in Chrome browser. [Here's a demo video of the feature](https://www.youtube.com/watch?v=sGcD0eJ2ytc), and check out the docs [here](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md).
 
 See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
@@ -45,6 +45,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
 - [Migration guide](Lombiq.Tests.UI/Docs/Migration.md)
+- [Fake video capture source](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md)
 
 ## Contributing and support
 

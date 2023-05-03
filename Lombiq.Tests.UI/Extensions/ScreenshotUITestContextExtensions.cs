@@ -70,8 +70,8 @@ public static class ScreenshotUITestContextExtensions
             var height = images.Keys.Sum(
                 position =>
                     position.Y % viewportSize.Height == 0
-                    ? viewportSize.Height
-                    : (position.Y + viewportSize.Height) % viewportSize.Height);
+                        ? viewportSize.Height
+                        : (position.Y + viewportSize.Height) % viewportSize.Height);
 
             var screenshot = new SixLabors.ImageSharp.Image<Argb32>(viewportSize.Width, height);
 
@@ -105,22 +105,37 @@ public static class ScreenshotUITestContextExtensions
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
-        var elementAbsoluteSize = new Size(
-            element.Location.X + element.Size.Width,
-            element.Location.Y + element.Size.Height);
+        var elementLocation = element.Location;
+        var elementSize = element.Size;
 
-        if (elementAbsoluteSize.Width > screenshot.Width || elementAbsoluteSize.Height > screenshot.Height)
+        var expectedSize = new Size(elementLocation.X + elementSize.Width, elementLocation.Y + elementSize.Height);
+
+        var widthDifference = expectedSize.Width - screenshot.Width;
+        var heightDifference = expectedSize.Height - screenshot.Height;
+
+        if (widthDifference > 0 || heightDifference > 0)
         {
-            throw new InvalidOperationException(
-                "The captured screenshot size is smaller then the size required by the selected element. This can occur"
-                + " if there was an unsuccessful scrolling operation while capturing page parts."
-                + $"Captured size: {screenshot.Width.ToTechnicalString()} x {screenshot.Height.ToTechnicalString()}. "
-                + $"Required size: {elementAbsoluteSize.Width.ToTechnicalString()} x "
-                + $"{elementAbsoluteSize.Height.ToTechnicalString()}.");
+            // A difference of 1px can occur when both element.Location and element.Size were rounded to the next
+            // integer from exactly 0.5px, e.g. 212.5px + 287.5px = 500px in the browser, but due to both Size and Point
+            // using int for their coordinates, this will become 213px + 288px = 501px, which will be caught as an error
+            // here. In that case, we keep the elementSize as is, but reduce the Location coordinate by 1 so that
+            // cropping the full page screenshot to the desired region will not fail due to too large dimensions.
+            if (widthDifference <= 1 && heightDifference <= 1)
+            {
+                elementLocation.X -= widthDifference;
+                elementLocation.Y -= heightDifference;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "The captured screenshot size is smaller then the size required by the selected element. This can"
+                    + " occur if there was an unsuccessful scrolling operation while capturing page parts."
+                    + $" Captured size: {AsDimensions(screenshot)}. Expected size: {AsDimensions(expectedSize)}.");
+            }
         }
 
-        var bounds = new Rectangle(element.Location.X, element.Location.Y, element.Size.Width, element.Size.Height);
-        return screenshot.Clone(ctx => ctx.Crop(bounds));
+        var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementSize.Width, elementSize.Height);
+        return screenshot.Clone(image => image.Crop(cropRectangle));
     }
 
     /// <summary>
@@ -128,4 +143,10 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Image TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
+
+    private static string AsDimensions(IImageInfo image) =>
+        $"{image.Width.ToTechnicalString()} x {image.Height.ToTechnicalString()}";
+
+    private static string AsDimensions(Size size) =>
+        $"{size.Width.ToTechnicalString()} x {size.Height.ToTechnicalString()}";
 }
