@@ -1,4 +1,4 @@
-using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.Helpers;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
