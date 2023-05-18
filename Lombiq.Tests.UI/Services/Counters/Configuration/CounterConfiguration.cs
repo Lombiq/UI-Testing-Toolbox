@@ -26,7 +26,8 @@ public class CounterConfiguration
             if (phaseConfiguration is RunningPhaseCounterConfiguration runningPhaseCounterConfiguration
                 && probe is ICounterConfigurationKey counterConfigurationKey)
             {
-                phaseConfiguration = runningPhaseCounterConfiguration.GetMaybe(counterConfigurationKey) ?? configuration;
+                phaseConfiguration = runningPhaseCounterConfiguration.GetMaybe(counterConfigurationKey)
+                    ?? configuration;
             }
 
             (CounterThresholdConfiguration Settings, string Name)? threshold = probe switch

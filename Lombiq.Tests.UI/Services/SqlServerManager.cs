@@ -1,8 +1,8 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.Helpers;
 using Lombiq.Tests.UI.Exceptions;
-using Lombiq.Tests.UI.Helpers;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.SqlServer.Management.Common;

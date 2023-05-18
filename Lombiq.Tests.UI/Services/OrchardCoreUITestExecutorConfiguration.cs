@@ -22,6 +22,41 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
+        app.LogsShouldBeEmptyAsync();
+
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
+        app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
+
+    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
+        logEntries => logEntries.ShouldNotContain(
+            logEntry => IsValidBrowserLogEntry(logEntry),
+            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
+
+    public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
+        logEntry =>
+            logEntry.Level >= LogLevel.Warning &&
+            // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
+            // every page.
+            !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
+            // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
+            // under a different URL.
+            !logEntry.IsNotFoundLogEntry("/favicon.ico");
+
+    /// <summary>
+    /// Gets the global events available during UI test execution.
+    /// </summary>
+    public UITestExecutionEvents Events { get; } = new();
+
+    /// <summary>
+    /// Gets a dictionary storing some custom configuration data.
+    /// </summary>
+    [SuppressMessage(
+        "Design",
+        "MA0016:Prefer return collection abstraction instead of implementation",
+        Justification = "Deliberately modifiable by consumer code.")]
+    public Dictionary<string, object> CustomConfiguration { get; } = new();
+
     public BrowserConfiguration BrowserConfiguration { get; set; } = new();
     public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
     public AtataConfiguration AtataConfiguration { get; set; } = new();
@@ -54,10 +89,10 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </para>
     /// </remarks>
     public int MaxParallelTests { get; set; } =
-            TestConfigurationManager.GetIntConfiguration(
-                $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is not { } intValue || intValue == 0
-                ? Environment.ProcessorCount
-                : intValue;
+        TestConfigurationManager.GetIntConfiguration(
+            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
+            ? intValue
+            : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
     public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
@@ -138,20 +173,6 @@ public class OrchardCoreUITestExecutorConfiguration
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
 
     /// <summary>
-    /// Gets the global events available during UI test execution.
-    /// </summary>
-    public UITestExecutionEvents Events { get; } = new();
-
-    /// <summary>
-    /// Gets a dictionary storing some custom configuration data.
-    /// </summary>
-    [SuppressMessage(
-        "Design",
-        "MA0016:Prefer return collection abstraction instead of implementation",
-        Justification = "Deliberately modifiable by consumer code.")]
-    public Dictionary<string, object> CustomConfiguration { get; } = new();
-
-    /// <summary>
     /// Gets or sets configuration for performance counting and monitoring.
     /// </summary>
     public CounterConfiguration CounterConfiguration { get; set; } = new();
@@ -189,24 +210,4 @@ public class OrchardCoreUITestExecutorConfiguration
             throw;
         }
     }
-
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app => app.LogsShouldBeEmptyAsync();
-
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
-        app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
-
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
-        // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for every
-        // page.
-        logEntries => logEntries.ShouldNotContain(
-            logEntry => IsValidBrowserLogEntry(logEntry),
-            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
-
-    public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
-        logEntry =>
-            logEntry.Level >= LogLevel.Warning &&
-            !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
-            // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
-            // under a different URL.
-            !logEntry.IsNotFoundLogEntry("/favicon.ico");
 }
