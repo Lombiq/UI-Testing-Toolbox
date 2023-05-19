@@ -11,4 +11,9 @@ public interface IRelativeUrlConfigurationKey : ICounterConfigurationKey
     /// Gets the URL.
     /// </summary>
     Uri Url { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the URL should be matched exactly or substring match enough.
+    /// </summary>
+    bool ExactMatch { get; }
 }

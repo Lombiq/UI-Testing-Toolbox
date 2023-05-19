@@ -16,6 +16,7 @@ public sealed class NavigationProbe : CounterProbe, IRelativeUrlConfigurationKey
     #region IRelativeUrlConfigurationKey implementation
 
     Uri IRelativeUrlConfigurationKey.Url => AbsoluteUri;
+    bool IRelativeUrlConfigurationKey.ExactMatch => false;
     bool IEquatable<ICounterConfigurationKey>.Equals(ICounterConfigurationKey other) =>
         this.EqualsWith(other as IRelativeUrlConfigurationKey);
 

@@ -109,7 +109,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _context.CounterDataCollector.Reset();
             _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Running);
             _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Running.AssertCounterData
-                ?? CounterConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Running);
+                ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Running);
             failureDumpContainer = _context.FailureDumpContainer;
 
             _context.SetDefaultBrowserSize();
@@ -482,7 +482,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
                 _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Setup);
                 _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Setup.AssertCounterData
-                    ?? CounterConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
+                    ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
 
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();

@@ -175,7 +175,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// <summary>
     /// Gets or sets configuration for performance counting and monitoring.
     /// </summary>
-    public CounterConfiguration CounterConfiguration { get; set; } = new();
+    public CounterConfigurations CounterConfiguration { get; set; } = new();
 
     public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
     {

@@ -1,6 +1,4 @@
-using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services.Counters.Data;
-using Lombiq.Tests.UI.Services.Counters.Value;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,78 +8,84 @@ namespace Lombiq.Tests.UI.Services.Counters.Configuration;
 public class CounterConfiguration
 {
     /// <summary>
-    /// Gets the counter configuration used in the setup phase of the web application.
+    /// Gets or sets the counter assertion method.
     /// </summary>
-    public PhaseCounterConfiguration Setup { get; } = new();
+    public Action<ICounterProbe> AssertCounterData { get; set; }
 
     /// <summary>
-    /// Gets the counter configuration used in the running phase of the web application.
+    /// Gets or sets the exclude filter. Can be used to exclude counted values before assertion.
     /// </summary>
-    public RunningPhaseCounterConfiguration Running { get; } = new();
+    public Func<ICounterKey, bool> ExcludeFilter { get; set; } = DefaultExcludeFilter;
 
-    public static Action<ICounterProbe> DefaultAssertCounterData(PhaseCounterConfiguration configuration) =>
-        probe =>
-        {
-            var phaseConfiguration = configuration;
-            if (phaseConfiguration is RunningPhaseCounterConfiguration runningPhaseCounterConfiguration
-                && probe is ICounterConfigurationKey counterConfigurationKey)
-            {
-                phaseConfiguration = runningPhaseCounterConfiguration.GetMaybe(counterConfigurationKey)
-                    ?? configuration;
-            }
+    /// <summary>
+    /// Gets or sets threshold configuration used under navigation requests. See:
+    /// <see cref="UI.Extensions.NavigationUITestContextExtensions.GoToAbsoluteUrlAsync(UITestContext, Uri, bool)"/>.
+    /// See: <see cref="NavigationProbe"/>.
+    /// </summary>
+    public CounterThresholdConfiguration NavigationThreshold { get; set; } = new CounterThresholdConfiguration
+    {
+        DbCommandExecutionThreshold = 11,
+        DbCommandTextExecutionThreshold = 22,
+        DbReaderReadThreshold = 11,
+    };
 
-            (CounterThresholdConfiguration Settings, string Name)? threshold = probe switch
-            {
-                NavigationProbe =>
-                    (Settings: phaseConfiguration.NavigationThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
-                PageLoadProbe =>
-                    (Settings: phaseConfiguration.PageLoadThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
-                SessionProbe =>
-                    (Settings: phaseConfiguration.SessionThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
-                CounterDataCollector =>
-                    (Settings: phaseConfiguration.PhaseThreshold, Name: nameof(phaseConfiguration.NavigationThreshold)),
-                _ => null,
-            };
+    /// <summary>
+    /// Gets or sets threshold configuration used per <see cref="YesSql.ISession"/> lifetime. See:
+    /// <see cref="SessionProbe"/>.
+    /// </summary>
+    public CounterThresholdConfiguration SessionThreshold { get; set; } = new CounterThresholdConfiguration
+    {
+        DbCommandExecutionThreshold = 22,
+        DbCommandTextExecutionThreshold = 44,
+        DbReaderReadThreshold = 11,
+    };
 
-            if (threshold is { } settings && settings.Settings.Disable is not true)
-            {
-                AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
-                    probe,
-                    phaseConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbCommandExecutionThreshold)}",
-                    settings.Settings.DbCommandExecutionThreshold);
-                AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
-                    probe,
-                    phaseConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbCommandTextExecutionThreshold)}",
-                    settings.Settings.DbCommandTextExecutionThreshold);
-                AssertIntegerCounterValue<DbReaderReadCounterKey>(
-                    probe,
-                    phaseConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbReaderReadThreshold)}",
-                    settings.Settings.DbReaderReadThreshold);
-            }
-        };
+    /// <summary>
+    /// Gets or sets threshold configuration used per page load. See: <see cref="PageLoadProbe"/>.
+    /// </summary>
+    public CounterThresholdConfiguration PageLoadThreshold { get; set; } = new CounterThresholdConfiguration
+    {
+        DbCommandExecutionThreshold = 22,
+        DbCommandTextExecutionThreshold = 44,
+        DbReaderReadThreshold = 11,
+    };
 
-    public static void AssertIntegerCounterValue<TKey>(
-        ICounterProbe probe,
-        Func<ICounterKey, bool> excludeFilter,
-        string thresholdName,
-        int threshold)
-        where TKey : ICounterKey =>
-        probe.Counters.Keys
-            .OfType<TKey>()
-            .Where(key => !excludeFilter(key))
-            .ForEach(key =>
+    public static IEnumerable<ICounterKey> DefaultExcludeList { get; } = new List<ICounterKey>
+    {
+        new DbCommandExecuteCounterKey(
+            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            new List<KeyValuePair<string, object>>
             {
-                if (probe.Counters[key] is IntegerCounterValue counterValue
-                    && counterValue.Value > threshold)
-                {
-                    throw new CounterThresholdException(
-                        probe,
-                        key,
-                        counterValue,
-                        $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}.");
-                }
-            });
+                new("p0", "ContentCreatedEvent"),
+                new("p1", value: true),
+            }),
+        new DbCommandExecuteCounterKey(
+            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            new List<KeyValuePair<string, object>>
+            {
+                new("p0", "ContentPublishedEvent"),
+                new("p1", value: true),
+            }),
+        new DbCommandExecuteCounterKey(
+            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            new List<KeyValuePair<string, object>>
+            {
+                new("p0", "ContentUpdatedEvent"),
+                new("p1", value: true),
+            }),
+    };
+
+    public static bool DefaultExcludeFilter(ICounterKey key) => DefaultExcludeList.Contains(key);
 }

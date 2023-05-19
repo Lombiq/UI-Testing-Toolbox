@@ -1,3 +1,5 @@
+using System;
+
 namespace Lombiq.Tests.UI.Services.Counters.Extensions;
 
 public static class RelativeUrlConfigurationKeyExtensions
@@ -6,8 +8,13 @@ public static class RelativeUrlConfigurationKeyExtensions
     {
         if (ReferenceEquals(left, right)) return true;
 
-        if (left is null || right is null) return false;
+        if (left?.Url is null || right?.Url is null) return false;
 
-        return left.Url?.PathAndQuery == right.Url?.PathAndQuery;
+        var leftUrl = left.Url.IsAbsoluteUri ? left.Url.PathAndQuery : left.Url.OriginalString;
+        var rightUrl = right.Url.IsAbsoluteUri ? right.Url.PathAndQuery : right.Url.OriginalString;
+
+        return (left.ExactMatch || right.ExactMatch)
+            ? string.Equals(leftUrl, rightUrl, StringComparison.OrdinalIgnoreCase)
+            : leftUrl.StartsWithOrdinalIgnoreCase(rightUrl) || rightUrl.StartsWithOrdinalIgnoreCase(leftUrl);
     }
 }
