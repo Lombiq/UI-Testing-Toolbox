@@ -89,7 +89,7 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="2.2.1" />
+    <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.1.2" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.1.2" />
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.1.2" />
