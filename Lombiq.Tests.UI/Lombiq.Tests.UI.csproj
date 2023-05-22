@@ -100,7 +100,7 @@
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
-  https://github.com/NuGet/Home/dissussions/11541. -->
+  https://github.com/NuGet/Home/discussions/11541. -->
   <PropertyGroup Condition="'$(NuGetBuild)' == 'true'">
     <Optimize>true</Optimize>
     <DebugType>portable</DebugType>
