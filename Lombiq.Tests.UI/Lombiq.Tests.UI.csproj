@@ -90,7 +90,7 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="v5.1.3-alpha.1.osoe-548" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.1.3-alpha.1.osoe-548" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.1.3-alpha.1.osoe-548" />
     <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.1.3-alpha.1.osoe-548" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.3.1" />
