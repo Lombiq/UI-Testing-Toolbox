@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
@@ -90,13 +90,13 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.1.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.1.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="5.1.2" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="v5.1.3-alpha.1.osoe-548" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="v5.1.3-alpha.1.osoe-548" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.RestEase" Version="v5.1.3-alpha.1.osoe-548" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.3.1" />
-    <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build 
+    <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build
     to use a PNPM version higher than 7.x.x -->
-    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.3" />
+    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.4-alpha.0.osoe-548" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
@@ -114,6 +114,6 @@
     </EmbeddedResource>
     <None Remove="node_modules\**" />
   </ItemGroup>
-  
+
 </Project>
 
