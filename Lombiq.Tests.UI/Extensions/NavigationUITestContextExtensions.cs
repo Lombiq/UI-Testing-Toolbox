@@ -298,7 +298,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     public static void ClickAndAcceptPrompt(this UITestContext context, By by, string inputText = null)
     {
-        // It uses FindElement because using ClickReliablyOnAsync would throw a "Unexpected Alert Open" exception.
+        // Using FindElement() here because ClickReliablyOnAsync() would throw an "Unexpected Alert Open" exception.
         context.Driver.FindElement(by).Click();
 
         var alert = context.Driver.SwitchTo().Alert();
