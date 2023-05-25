@@ -292,6 +292,22 @@ public static class NavigationUITestContextExtensions
     }
 
     /// <summary>
+    /// Clicks on the first matching element, switches control to the JS alert/prompt box that's expected to appear,
+    /// enters <paramref name="inputText"/> as keystrokes if it's not <see langword="null"/>, accepts the alert/prompt
+    /// box, and switches control back to main document or first frame.
+    /// </summary>
+    public static void ClickAndAcceptPrompt(this UITestContext context, By by, string inputText = null)
+    {
+        // Using FindElement() here because ClickReliablyOnAsync() would throw an "Unexpected Alert Open" exception.
+        context.Driver.FindElement(by).Click();
+
+        var alert = context.Driver.SwitchTo().Alert();
+        if (inputText != null) alert.SendKeys(inputText);
+        alert.Accept();
+        context.Driver.SwitchTo().DefaultContent();
+    }
+
+    /// <summary>
     /// Refreshes (reloads) the current page.
     /// </summary>
     public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
