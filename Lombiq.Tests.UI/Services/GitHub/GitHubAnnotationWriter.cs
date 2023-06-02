@@ -42,7 +42,7 @@ public class GitHubAnnotationWriter
         title = title.Replace(',', '⹁').Replace("::", "⸬");
 
         // Sanitize message:
-        message = message.Replace("\r", string.Empty).Replace("\n", " ");
+        message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
         _testOutputHelper.WriteLine(FormattableString.Invariant(
             $"::{command} file={file},line={line},title={title}::{message}"));
