@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Extensions;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
@@ -66,7 +67,8 @@ public static class ReliabilityHelper
         {
             throw new TimeoutException(
                 "The process didn't succeed with retries before timing out " +
-                $"(timeout: {result.Wait.Timeout}, polling interval: {result.Wait.PollingInterval}).");
+                $"(timeout: {result.Wait.Timeout.ToTechnicalString()}, polling interval: " +
+                $"{result.Wait.PollingInterval.ToTechnicalString()}).");
         }
     }
 
@@ -99,7 +101,7 @@ public static class ReliabilityHelper
         {
             throw new TimeoutException(
                 "The process didn't succeed with retries before timing out " +
-                $"(timeout: {result.Wait.Timeout}, polling interval: {result.Wait.PollingInterval}).");
+                $"(timeout: {result.Wait.Timeout:c}, polling interval: {result.Wait.PollingInterval.ToTechnicalString()}).");
         }
     }
 
