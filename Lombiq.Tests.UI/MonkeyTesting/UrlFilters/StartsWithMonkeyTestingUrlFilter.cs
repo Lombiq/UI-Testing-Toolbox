@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 
@@ -17,5 +16,5 @@ public class StartsWithMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
         _relativeUrlStartsWith = relativeUrlStartsWith;
 
     public bool AllowUrl(UITestContext context, Uri url) =>
-        _relativeUrlStartsWith.Any(filterUrl => url.PathAndQuery.StartsWithOrdinalIgnoreCase(filterUrl));
+        Array.Exists(_relativeUrlStartsWith, filterUrl => url.PathAndQuery.StartsWithOrdinalIgnoreCase(filterUrl));
 }

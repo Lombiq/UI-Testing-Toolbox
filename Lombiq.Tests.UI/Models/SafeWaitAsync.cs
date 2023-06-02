@@ -147,7 +147,7 @@ public class SafeWaitAsync<T> : IWait<T>
     }
 
     private bool IsIgnoredException(Exception exception) =>
-        _ignoredExceptions.Any(type => type.IsAssignableFrom(exception.GetType()));
+        _ignoredExceptions.Exists(type => type.IsAssignableFrom(exception.GetType()));
 }
 
 internal static class CheckExtensions
