@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
+[SuppressMessage(
+    "Minor Code Smell",
+    "S2094:Classes should not be empty",
+    Justification = "Here for future use.")]
 public class SmtpServiceConfiguration
 {
 }
