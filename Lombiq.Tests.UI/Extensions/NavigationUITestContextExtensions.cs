@@ -266,15 +266,15 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeave(IWebElement, UITestContext, TimeSpan?,
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
     /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
     /// </summary>
-    public static void ClickReliablyOnUntilPageLeave(
+    public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
+        context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
