@@ -63,7 +63,7 @@ to customize the name of the dump item.";
                     getSelector(size),
                     pixelErrorPercentageThreshold: 0,
                     configurator: configuration => configuration
-                        .WithFileNameSuffix(FormattableString.Invariant($"{size.Width}x{size.Height}")));
+                        .WithFileNameSuffix(string.Create(CultureInfo.InvariantCulture, $"{size.Width}x{size.Height}")));
             }
             catch (Exception exception)
             {

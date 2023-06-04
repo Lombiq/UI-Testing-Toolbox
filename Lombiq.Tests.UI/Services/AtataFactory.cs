@@ -2,6 +2,7 @@ using Atata;
 using Atata.Cli;
 using OpenQA.Selenium;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Xunit.Abstractions;
 
@@ -101,7 +102,7 @@ public static class AtataFactory
                 // Not using parameters because the exception can throw off the string format.
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "While creating the web driver failed with the following exception, it'll be retried " +
-                    FormattableString.Invariant($"{retryCount} more time(s). Exception: {ex}"));
+                    string.Create(CultureInfo.InvariantCulture, $"{retryCount} more time(s). Exception: {ex}"));
             }
         }
     }

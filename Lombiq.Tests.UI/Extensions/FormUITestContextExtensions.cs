@@ -57,7 +57,7 @@ public static class FormUITestContextExtensions
         var editorBy = by.Then(By.CssSelector(".trumbowyg-box > .trumbowyg-editor"));
         context.Get(editorBy).Click();
 
-        expectedHtml ??= FormattableString.Invariant($"<p>{text}</p>");
+        expectedHtml ??= string.Create(CultureInfo.InvariantCulture, $"<p>{text}</p>");
 
         return context.ExecuteLoggedAsync(
             nameof(ClickAndFillInTrumbowygEditorWithRetriesAsync),
@@ -231,7 +231,7 @@ public static class FormUITestContextExtensions
     /// </summary>
     public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
         context.ExecuteScript(
-            FormattableString.Invariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
+            string.Create(CultureInfo.InvariantCulture, $"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
             $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
     public static DateTime GetDatePicker(this UITestContext context, string id) =>

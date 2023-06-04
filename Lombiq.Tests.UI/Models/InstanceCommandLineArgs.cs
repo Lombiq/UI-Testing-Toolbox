@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Lombiq.Tests.UI.Models;
 
@@ -18,7 +18,7 @@ public class InstanceCommandLineArgumentsBuilder
 
     public InstanceCommandLineArgumentsBuilder AddWithValue<T>(string key, T value)
     {
-        _arguments.Add(FormattableString.Invariant($"{PrepareArg(key)}={value}"));
+        _arguments.Add(string.Create(CultureInfo.InvariantCulture, $"{PrepareArg(key)}={value}"));
 
         return this;
     }

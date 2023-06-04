@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -228,20 +229,23 @@ public static class NavigationUITestContextExtensions
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
-        var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        var baseSelector = string.Create(CultureInfo.InvariantCulture, $".tags[data-taxonomy-content-item-id='{taxonomyId}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
     {
-        var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
+        var baseSelector = string.Create(CultureInfo.InvariantCulture, $"*[data-part='{part}'][data-field='{field}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
     private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
     {
-        var byItem = By.CssSelector(FormattableString.Invariant(
-            $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option")).Visible();
+        var byItem =
+            By.CssSelector(string.Create(
+                CultureInfo.InvariantCulture,
+                $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"))
+            .Visible();
 
         while (!context.Exists(byItem.Safely()))
         {
