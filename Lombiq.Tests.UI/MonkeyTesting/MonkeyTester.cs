@@ -6,7 +6,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
@@ -107,7 +106,7 @@ internal sealed class MonkeyTester
         return canTest;
     }
 
-    private bool ShouldTestPageUrl(Uri url) => _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
+    private bool ShouldTestPageUrl(Uri url) => _options.UrlFilters.TrueForAll(filter => filter.AllowUrl(_context, url));
 
     private bool TryGetAvailablePageToTest(out PageMonkeyTestInfo pageTestInfo)
     {
