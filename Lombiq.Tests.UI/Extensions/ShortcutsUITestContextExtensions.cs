@@ -228,7 +228,7 @@ public static class ShortcutsUITestContextExtensions
                         throw new RoleNotFoundException($"Role with the name \"{roleName}\" not found.");
                     }
 
-                    var permissionClaim = role.RoleClaims.FirstOrDefault(roleClaim =>
+                    var permissionClaim = role.RoleClaims.Find(roleClaim =>
                         roleClaim.ClaimType == Permission.ClaimType
                         && roleClaim.ClaimValue == permissionName);
                     if (permissionClaim == null)

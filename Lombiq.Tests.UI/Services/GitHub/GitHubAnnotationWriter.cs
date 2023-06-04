@@ -58,11 +58,11 @@ public class GitHubAnnotationWriter
             .Where(frame => frame.GetFileName() != null)
             .ToList();
         var stackFrame =
-            stackFrames.FirstOrDefault(frame =>
+            stackFrames.Find(frame =>
                 frame.GetMethod() is { } method &&
                 method.Name == testName &&
                 method.DeclaringType?.Name == className) ??
-            stackFrames.FirstOrDefault(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
+            stackFrames.Find(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
             stackFrames.FirstOrDefault();
         var file = stackFrame?.GetFileName() ?? "NoFile";
         var line = stackFrame?.GetFileLineNumber() ?? 1;

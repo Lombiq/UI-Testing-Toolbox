@@ -111,7 +111,7 @@ internal sealed class MonkeyTester
 
     private bool TryGetAvailablePageToTest(out PageMonkeyTestInfo pageTestInfo)
     {
-        pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.HasTimeToTest);
+        pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.HasTimeToTest);
         return pageTestInfo != null;
     }
 
@@ -122,7 +122,7 @@ internal sealed class MonkeyTester
 
         var sanitizedUrl = SanitizeUrl(url);
 
-        var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
+        var pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
             ?? new PageMonkeyTestInfo(url, sanitizedUrl, _options.PageTestTime);
 
         Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
