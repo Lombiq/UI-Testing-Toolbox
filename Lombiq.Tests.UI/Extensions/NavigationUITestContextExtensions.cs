@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -202,7 +201,7 @@ public static class NavigationUITestContextExtensions
     /// Switches control back to the most recent previous window/tab.
     /// </summary>
     public static void SwitchToLastWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.Last()), "last window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[^1]), "last window");
 
     /// <summary>
     /// Switches control back to the oldest previous window/tab.

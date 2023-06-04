@@ -50,7 +50,7 @@ public class GitHubAnnotationWriter
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
     {
-        var className = testCase.TestMethod.TestClass.Class.Name.Split('.').Last();
+        var className = testCase.TestMethod.TestClass.Class.Name.Split('.')[^1];
         var testName = testCase.TestMethod.Method.Name;
 
         var stackFrames = new StackTrace(exception, fNeedFileInfo: true)
