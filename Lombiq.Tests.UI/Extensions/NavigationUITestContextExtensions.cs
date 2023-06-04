@@ -208,7 +208,7 @@ public static class NavigationUITestContextExtensions
     /// Switches control back to the oldest previous window/tab.
     /// </summary>
     public static void SwitchToFirstWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[0]), "first window");
 
     /// <summary>
     /// Switches control back to the currently executing window/tab.
