@@ -33,11 +33,9 @@ public class UITestManifest
     }
 
     private static T GetValueOfType<T>(object instance)
-        where T : class
-    {
-        var fields = instance
+        where T : class =>
+        instance
             .GetType()
-            .GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-        return Array.Find(fields, field => field.FieldType == typeof(T))?.GetValue(instance) as T;
-    }
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+            .Find(field => field.FieldType == typeof(T))?.GetValue(instance) as T;
 }
