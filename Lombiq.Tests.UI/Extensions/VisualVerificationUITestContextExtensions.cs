@@ -1,4 +1,5 @@
 using Codeuctivity.ImageSharpCompare;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -63,7 +64,7 @@ to customize the name of the dump item.";
                     getSelector(size),
                     pixelErrorPercentageThreshold: 0,
                     configurator: configuration => configuration
-                        .WithFileNameSuffix(string.Create(CultureInfo.InvariantCulture, $"{size.Width}x{size.Height}")));
+                        .WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}")));
             }
             catch (Exception exception)
             {
