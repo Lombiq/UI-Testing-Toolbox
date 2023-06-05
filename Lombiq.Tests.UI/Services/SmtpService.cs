@@ -74,15 +74,11 @@ public sealed class SmtpService : IAsyncDisposable
 
         var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
 
-        var smtp4devConfig = (manifest["tools"] as JObject)?["rnwood.smtp4dev"];
-        // We don't need to access smtp4devConfig otherwise, this is just a null check, so using a coalesce expression
-        // would make the code less readable.
-#pragma warning disable IDE0270 // Use coalesce expression
-        if (smtp4devConfig == null)
+        // Verify that an smtp4dev configuration is in place.
+        if ((manifest["tools"] as JObject)?["rnwood.smtp4dev"] == null)
         {
             throw new InvalidOperationException("There was no smtp4dev configuration in the .NET CLI local tool manifest file.");
         }
-#pragma warning restore IDE0270 // Use coalesce expression
 
         _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync();
         _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync();
