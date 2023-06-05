@@ -132,10 +132,7 @@ public class SafeWaitAsync<T> : IWait<T>
     {
         if (typeof(TResult) == typeof(bool))
         {
-            var boolResult = result as bool?;
-
-            if (boolResult.HasValue && boolResult.Value)
-                return true;
+            if (result is true) return true;
         }
         else if (!Equals(result, default(TResult)) &&
             (result is not IEnumerable enumerable || enumerable.Cast<object>().Any()))
@@ -147,7 +144,7 @@ public class SafeWaitAsync<T> : IWait<T>
     }
 
     private bool IsIgnoredException(Exception exception) =>
-        _ignoredExceptions.Exists(type => type.IsAssignableFrom(exception.GetType()));
+        _ignoredExceptions.Exists(type => type.IsInstanceOfType(exception));
 }
 
 internal static class CheckExtensions
