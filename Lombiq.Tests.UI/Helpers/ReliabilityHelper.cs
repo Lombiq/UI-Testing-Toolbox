@@ -1,7 +1,7 @@
 using Atata;
-using Lombiq.HelpfulLibraries.Common.Extensions;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading.Tasks;
 
@@ -61,16 +61,8 @@ public static class ReliabilityHelper
     public static void DoWithRetriesOrFail(
         Func<bool> process,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
-    {
-        var result = DoWithRetriesInternal(process, timeout, interval);
-        if (!result.IsSuccess)
-        {
-            throw new TimeoutException(StringHelper.CreateInvariant(
-                $"The process didn't succeed with retries before timing out (timeout: {result.Wait.Timeout}, polling " +
-                $"interval: {result.Wait.PollingInterval})."));
-        }
-    }
+        TimeSpan? interval = null) =>
+        ThrowTimeoutExceptionIfNotSuccess(DoWithRetriesInternal(process, timeout, interval));
 
     /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
@@ -94,16 +86,8 @@ public static class ReliabilityHelper
     public static async Task DoWithRetriesOrFailAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
-    {
-        var result = await DoWithRetriesInternalAsync(processAsync, timeout, interval);
-        if (!result.IsSuccess)
-        {
-            throw new TimeoutException(
-                "The process didn't succeed with retries before timing out " +
-                $"(timeout: {result.Wait.Timeout:c}, polling interval: {result.Wait.PollingInterval.ToTechnicalString()}).");
-        }
-    }
+        TimeSpan? interval = null) =>
+        ThrowTimeoutExceptionIfNotSuccess(await DoWithRetriesInternalAsync(processAsync, timeout, interval));
 
     /// <summary>
     /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals.
@@ -269,5 +253,14 @@ public static class ReliabilityHelper
         if (interval != null) wait.PollingInterval = interval.Value;
 
         return (await wait.UntilAsync(_ => processAsync()), wait);
+    }
+
+    private static void ThrowTimeoutExceptionIfNotSuccess((bool IsSuccess, IWait<object> Wait) retriesResult)
+    {
+        if (retriesResult.IsSuccess) return;
+
+        throw new TimeoutException(StringHelper.CreateInvariant(
+            $"The process didn't succeed with retries before timing out (timeout: {retriesResult.Wait.Timeout}, " +
+            $"polling interval: {retriesResult.Wait.PollingInterval}."));
     }
 }
