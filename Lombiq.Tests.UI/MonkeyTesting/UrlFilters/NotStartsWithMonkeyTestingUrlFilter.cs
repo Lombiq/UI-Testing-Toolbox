@@ -16,5 +16,5 @@ public class NotStartsWithMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
         _relativeUrlNotStartsWith = relativeUrlNotStartsWith;
 
     public bool AllowUrl(UITestContext context, Uri url) =>
-       !_relativeUrlNotStartsWith.Exist(url.PathAndQuery.StartsWithOrdinalIgnoreCase);
+       !_relativeUrlNotStartsWith.Exists(url.PathAndQuery.StartsWithOrdinalIgnoreCase);
 }
