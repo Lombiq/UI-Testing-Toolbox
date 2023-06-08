@@ -37,6 +37,8 @@ to customize the name of the dump item.";
     /// Returns the selector for the given screen size. This may return the same selector all the time, or a different
     /// selector, e.g. if mobile and desktop views have different DOMs.
     /// </param>
+    /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     /// <remarks>
     /// <para>
     /// The parameter <c>beforeAssertAsync</c> was removed, because it sometimes polluted the stack trace, which was
@@ -49,7 +51,9 @@ to customize the name of the dump item.";
     public static void AssertVisualVerificationOnAllResolutions(
         this UITestContext context,
         IEnumerable<Size> sizes,
-        Func<Size, By> getSelector)
+        Func<Size, By> getSelector,
+        double pixelErrorPercentageThreshold = 0,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
     {
         context.HideScrollbar();
 
@@ -62,9 +66,12 @@ to customize the name of the dump item.";
             {
                 context.AssertVisualVerificationApproved(
                     getSelector(size),
-                    pixelErrorPercentageThreshold: 0,
-                    configurator: configuration => configuration
-                        .WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}")));
+                    pixelErrorPercentageThreshold: pixelErrorPercentageThreshold,
+                    configurator: configuration =>
+                    {
+                        configuration.WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}"));
+                        configurator?.Invoke(configuration);
+                    });
             }
             catch (Exception exception)
             {
