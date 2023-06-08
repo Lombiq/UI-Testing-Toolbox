@@ -92,8 +92,8 @@ to customize the name of the dump item.";
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
     /// </exception>
@@ -118,8 +118,8 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
     /// </exception>
@@ -167,8 +167,8 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="element">Target element.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
     /// </exception>
@@ -199,8 +199,8 @@ to customize the name of the dump item.";
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         Image baseline,
@@ -222,8 +222,8 @@ to customize the name of the dump item.";
     /// <param name="elementSelector">Selector for the target element.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         By elementSelector,
@@ -270,8 +270,8 @@ to customize the name of the dump item.";
     /// <param name="element">The target element.</param>
     /// <param name="baseline">The baseline image.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
-    /// <param name="regionOfInterest">Region of interest. Can be null.</param>
-    /// <param name="configurator">Action callback to configure the behavior. Can be null.</param>
+    /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
     public static void AssertVisualVerification(
         this UITestContext context,
         IWebElement element,
