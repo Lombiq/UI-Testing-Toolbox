@@ -422,7 +422,7 @@ public static class ShortcutsUITestContextExtensions
         Justification = "Just maps to controller actions.")]
     public interface IShortcutsApi
     {
-        [Get("api/ApplicationInfo")]
+        [Get("/api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
     }
 
