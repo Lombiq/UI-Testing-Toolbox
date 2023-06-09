@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
+using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
 using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
@@ -36,7 +37,6 @@ using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -479,7 +479,7 @@ public static class ShortcutsUITestContextExtensions
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
-            ? OrchardCore.Data.DatabaseProviderValue.SqlConnection
+            ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 
         await context.Application.UsingScopeAsync(
