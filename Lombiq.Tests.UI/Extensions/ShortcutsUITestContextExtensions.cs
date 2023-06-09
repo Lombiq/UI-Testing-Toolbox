@@ -416,12 +416,14 @@ public static class ShortcutsUITestContextExtensions
                 return RestService.For<IShortcutsApi>(httpClient);
             });
 
-    [SuppressMessage(
-        "StyleCop.CSharp.DocumentationRules",
-        "SA1600:Elements should be documented",
-        Justification = "Just maps to controller actions.")]
+    /// <summary>
+    /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
+    /// </summary>
     public interface IShortcutsApi
     {
+        /// <summary>
+        /// Sends a web request to <see cref="ApplicationInfoController.Get"/> endpoint.
+        /// </summary>
         [Get("/api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
     }
