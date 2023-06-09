@@ -1,4 +1,3 @@
-using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -32,7 +31,7 @@ using OrchardCore.Workflows.Http.Controllers;
 using OrchardCore.Workflows.Http.Models;
 using OrchardCore.Workflows.Models;
 using OrchardCore.Workflows.Services;
-using RestEase;
+using Refit;
 using Shouldly;
 using System;
 using System.Collections.Concurrent;
@@ -414,7 +413,7 @@ public static class ShortcutsUITestContextExtensions
                     BaseAddress = context.Scope.BaseUri,
                 };
 
-                return RestClient.For<IShortcutsApi>(httpClient);
+                return RestService.For<IShortcutsApi>(httpClient);
             });
 
     [SuppressMessage(
