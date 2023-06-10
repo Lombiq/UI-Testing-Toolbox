@@ -33,8 +33,6 @@ public class VisualVerificationMatchApprovedContext
 
         BaselineImageFileName = configuration.BaselineFileNameFormatter(configuration, this);
         BaselineImageResourceName = $"{testFrame.MethodInfo.DeclaringType!.Namespace}.{BaselineImageFileName}.png";
-        var testDirectory = new FileInfo(testFrame.GetFileName());
-        var testPath = testDirectory.Directory.FullName;
 
         var testSourceDirectoryPath = Path.GetDirectoryName(testFrame.GetFileName());
         if (!string.IsNullOrEmpty(testSourceDirectoryPath))
