@@ -1,4 +1,5 @@
 using Codeuctivity.ImageSharpCompare;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -63,7 +64,7 @@ to customize the name of the dump item.";
                     getSelector(size),
                     pixelErrorPercentageThreshold: 0,
                     configurator: configuration => configuration
-                        .WithFileNameSuffix(FormattableString.Invariant($"{size.Width}x{size.Height}")));
+                        .WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}")));
             }
             catch (Exception exception)
             {
@@ -329,7 +330,7 @@ to customize the name of the dump item.";
         var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .Where(frame => frame.GetMethodBase() != null && !IsCompilerGenerated(frame))
             .ToList();
-        var testFrame = stackTrace.FirstOrDefault(frame =>
+        var testFrame = stackTrace.Find(frame =>
             !IsVisualVerificationMethod(frame) &&
             !string.IsNullOrEmpty(frame.StackFrame.GetFileName()));
 
