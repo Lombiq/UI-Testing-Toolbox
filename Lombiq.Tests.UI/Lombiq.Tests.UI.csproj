@@ -83,6 +83,7 @@
     <ProjectReference Include="..\..\Lombiq.Tests\Lombiq.Tests.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Cli\Lombiq.HelpfulLibraries.Cli.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Refit\Lombiq.HelpfulLibraries.Refit.csproj" />
   </ItemGroup>
 
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.props" />
@@ -92,6 +93,7 @@
     <PackageReference Include="Lombiq.Tests" Version="2.2.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.1.1" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.1.1" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="5.1.1" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.3.0" />
   </ItemGroup>
 

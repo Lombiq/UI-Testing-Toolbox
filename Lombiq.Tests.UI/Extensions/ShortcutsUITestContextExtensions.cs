@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Pages;
@@ -413,7 +414,7 @@ public static class ShortcutsUITestContextExtensions
                     BaseAddress = context.Scope.BaseUri,
                 };
 
-                return RestService.For<IShortcutsApi>(httpClient);
+                return RefitHelper.WithNewtonsoft<IShortcutsApi>(httpClient);
             });
 
     /// <summary>
