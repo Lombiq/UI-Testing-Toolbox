@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
@@ -42,15 +43,15 @@ public class GitHubAnnotationWriter
         title = title.Replace(',', '⹁').Replace("::", "⸬");
 
         // Sanitize message:
-        message = message.Replace("\r", string.Empty).Replace("\n", " ");
+        message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
-        _testOutputHelper.WriteLine(FormattableString.Invariant(
-            $"::{command} file={file},line={line},title={title}::{message}"));
+        _testOutputHelper.WriteLine(
+            StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
     }
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
     {
-        var className = testCase.TestMethod.TestClass.Class.Name.Split('.').Last();
+        var className = testCase.TestMethod.TestClass.Class.Name.Split('.')[^1];
         var testName = testCase.TestMethod.Method.Name;
 
         var stackFrames = new StackTrace(exception, fNeedFileInfo: true)
@@ -58,11 +59,11 @@ public class GitHubAnnotationWriter
             .Where(frame => frame.GetFileName() != null)
             .ToList();
         var stackFrame =
-            stackFrames.FirstOrDefault(frame =>
+            stackFrames.Find(frame =>
                 frame.GetMethod() is { } method &&
                 method.Name == testName &&
                 method.DeclaringType?.Name == className) ??
-            stackFrames.FirstOrDefault(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
+            stackFrames.Find(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
             stackFrames.FirstOrDefault();
         var file = stackFrame?.GetFileName() ?? "NoFile";
         var line = stackFrame?.GetFileLineNumber() ?? 1;

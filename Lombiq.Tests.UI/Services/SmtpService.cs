@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
+// Here for future use.
+#pragma warning disable S2094 // Classes should not be empty
 public class SmtpServiceConfiguration
+#pragma warning restore S2094 // Classes should not be empty
 {
 }
 
@@ -71,8 +74,8 @@ public sealed class SmtpService : IAsyncDisposable
 
         var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
 
-        var smtp4devConfig = (manifest["tools"] as JObject)?["rnwood.smtp4dev"];
-        if (smtp4devConfig == null)
+        // Verify that an smtp4dev configuration is in place.
+        if ((manifest["tools"] as JObject)?["rnwood.smtp4dev"] == null)
         {
             throw new InvalidOperationException("There was no smtp4dev configuration in the .NET CLI local tool manifest file.");
         }

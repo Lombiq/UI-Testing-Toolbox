@@ -228,7 +228,7 @@ public static class ShortcutsUITestContextExtensions
                         throw new RoleNotFoundException($"Role with the name \"{roleName}\" not found.");
                     }
 
-                    var permissionClaim = role.RoleClaims.FirstOrDefault(roleClaim =>
+                    var permissionClaim = role.RoleClaims.Find(roleClaim =>
                         roleClaim.ClaimType == Permission.ClaimType
                         && roleClaim.ClaimValue == permissionName);
                     if (permissionClaim == null)
@@ -336,7 +336,9 @@ public static class ShortcutsUITestContextExtensions
         context.GetApi().GetApplicationInfoFromApiAsync();
 
     // This is required to instantiate ILogger<>.
+#pragma warning disable S2094 // Classes should not be empty
     private sealed class ExecuteRecipeShortcut { }
+#pragma warning restore S2094 // Classes should not be empty
 
     /// <summary>
     /// Executes a recipe identified by its name directly.
@@ -361,12 +363,8 @@ public static class ShortcutsUITestContextExtensions
                         .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
                     var recipe = recipeCollections
                         .SelectMany(recipeCollection => recipeCollection)
-                        .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
-
-                    if (recipe == null)
-                    {
-                        throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
-                    }
+                        .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName)
+                        ?? throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
 
                     // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
                     var executionId = Guid.NewGuid().ToString("n");
@@ -443,12 +441,8 @@ public static class ShortcutsUITestContextExtensions
                 {
                     var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
                     var themeFeature = (await shellFeatureManager.GetAvailableFeaturesAsync())
-                        .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id);
-
-                    if (themeFeature == null)
-                    {
-                        throw new ThemeNotFoundException($"Theme with the feature ID {id} not found.");
-                    }
+                        .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id)
+                        ?? throw new ThemeNotFoundException($"Theme with the feature ID {id} not found.");
 
                     if (IsAdminTheme(themeFeature.Extension.Manifest))
                     {
@@ -560,12 +554,8 @@ public static class ShortcutsUITestContextExtensions
             {
                 var workflowTypeStore = serviceProvider.GetRequiredService<IWorkflowTypeStore>();
 
-                var workflowType = await workflowTypeStore.GetAsync(workflowTypeId);
-                if (workflowType == null)
-                {
-                    throw new WorkflowTypeNotFoundException($"Workflow type with the ID {workflowTypeId} not found.");
-                }
-
+                var workflowType = await workflowTypeStore.GetAsync(workflowTypeId)
+                    ?? throw new WorkflowTypeNotFoundException($"Workflow type with the ID {workflowTypeId} not found.");
                 var securityTokenService = serviceProvider.GetRequiredService<ISecurityTokenService>();
                 var token = securityTokenService.CreateToken(
                     new WorkflowPayload(workflowType.WorkflowTypeId, activityId),
