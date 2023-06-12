@@ -13,7 +13,7 @@ public static class ScriptingUITestContextExtensions
         context.ExecuteLogged(nameof(ExecuteAsyncScript), script, () => context.Driver.ExecuteAsyncScript(script, args));
 
     /// <summary>
-    /// Uses Javascript to set form inputs to values that are hard or impossible by normal means.
+    /// Uses JavaScript to set form inputs to values that are hard or impossible by normal means.
     /// </summary>
     public static void SetValueWithScript(this UITestContext context, string id, object value) =>
         ExecuteScript(
