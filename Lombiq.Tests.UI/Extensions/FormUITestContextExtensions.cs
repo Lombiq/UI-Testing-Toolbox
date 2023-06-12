@@ -77,7 +77,7 @@ public static class FormUITestContextExtensions
     }
 
     /// <summary>
-    /// Uses Javascript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
+    /// Uses JavaScript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
     /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose the
     /// CodeMirror library globally for editing the existing instance and this editor can't be filled using regular
     /// Selenium interactions either.
@@ -85,17 +85,17 @@ public static class FormUITestContextExtensions
     public static void SetMarkdownEasyMdeWysiwygEditor(this UITestContext context, string id, string text)
     {
         var script = $@"
-                /* First get rid of the existing editor instance. */
-                document.querySelector('#{id} + .EasyMDEContainer').remove();
-                /* Create a new one using the same call found in OC's MarkdownBodyPart-Wysiwyg.Edit.cshtml */
-                var mde = new EasyMDE({{
-                    element: document.getElementById('{id}'),
-                    forceSync: true,
-                    toolbar: mdeToolbar,
-                    autoDownloadFontAwesome: false,
-                }});
-                /* Finally set the value programmatically. */
-                mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
+            /* First get rid of the existing editor instance. */
+            document.querySelector('#{id} + .EasyMDEContainer').remove();
+            /* Create a new one using the same call found in OC's MarkdownBodyPart-Wysiwyg.Edit.cshtml */
+            var mde = new EasyMDE({{
+                element: document.getElementById('{id}'),
+                forceSync: true,
+                toolbar: mdeToolbar,
+                autoDownloadFontAwesome: false,
+            }});
+            /* Finally set the value programmatically. */
+            mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
 
         context.ExecuteScript(script);
     }
