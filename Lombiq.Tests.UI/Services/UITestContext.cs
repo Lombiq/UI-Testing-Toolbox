@@ -214,7 +214,7 @@ public class UITestContext
     /// <summary>
     /// Changes the current tenant context to the Default one. Note that this doesn't navigate the browser.
     /// </summary>
-    public void ChangeCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
+    public void SwitchCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
 
     /// <summary>
     /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
