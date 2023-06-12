@@ -166,6 +166,38 @@ public static class FormUITestContextExtensions
                 interval));
 
     /// <summary>
+    /// Fills a CodeMirror editor with the given text, and retries if the value doesn't stick.
+    /// </summary>
+    public static Task FillInCodeMirrorEditorWithRetriesAsync(
+        this UITestContext context,
+        By by,
+        string text,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.ExecuteLoggedAsync(
+        nameof(FillInCodeMirrorEditorWithRetriesAsync),
+        $"{by} - \"{text}\"",
+        () => context.DoWithRetriesOrFailAsync(
+            () =>
+            {
+                // Approach taken from https://stackoverflow.com/a/57621266/220230.
+
+                // Getting CodeMirror element.
+                var codeMirrorEditor = context.Get(by);
+
+                // Clicking the first line of code inside CodeMirror to bring it in focus.
+                codeMirrorEditor.Get(By.ClassName("CodeMirror-line")).Click();
+
+                // Sending keystrokes to textarea once CodeMirror is in focus.
+                IWebElement GetTextArea() => codeMirrorEditor.Get(By.CssSelector("textarea").OfAnyVisibility());
+                GetTextArea().SendKeys(text);
+
+                return Task.FromResult(GetTextArea().GetValue() == text);
+            },
+            timeout,
+            interval));
+
+    /// <summary>
     /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
     /// </summary>
     public static bool IsElementChecked(this UITestContext context, By by) =>
