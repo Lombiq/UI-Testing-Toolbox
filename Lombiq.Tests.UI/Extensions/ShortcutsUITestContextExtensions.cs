@@ -1,5 +1,5 @@
-using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Pages;
@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
+using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
 using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
@@ -32,12 +33,11 @@ using OrchardCore.Workflows.Http.Controllers;
 using OrchardCore.Workflows.Http.Models;
 using OrchardCore.Workflows.Models;
 using OrchardCore.Workflows.Services;
-using RestEase;
+using Refit;
 using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -421,16 +421,18 @@ public static class ShortcutsUITestContextExtensions
                     BaseAddress = context.Scope.BaseUri,
                 };
 
-                return RestClient.For<IShortcutsApi>(httpClient);
+                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
             });
 
-    [SuppressMessage(
-        "StyleCop.CSharp.DocumentationRules",
-        "SA1600:Elements should be documented",
-        Justification = "Just maps to controller actions.")]
+    /// <summary>
+    /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
+    /// </summary>
     public interface IShortcutsApi
     {
-        [Get("api/ApplicationInfo")]
+        /// <summary>
+        /// Sends a web request to <see cref="ApplicationInfoController.Get"/> endpoint.
+        /// </summary>
+        [Get("/api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
     }
 
@@ -486,7 +488,7 @@ public static class ShortcutsUITestContextExtensions
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
-            ? OrchardCore.Data.DatabaseProviderValue.SqlConnection
+            ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 
         await context.Application.UsingScopeAsync(
