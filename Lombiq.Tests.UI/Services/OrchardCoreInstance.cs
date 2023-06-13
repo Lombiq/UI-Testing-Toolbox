@@ -220,7 +220,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
 
-    private class ApplicationLog : IApplicationLog
+    private sealed class ApplicationLog : IApplicationLog
     {
         public string Name { get; init; }
         public string FullName { get; init; }

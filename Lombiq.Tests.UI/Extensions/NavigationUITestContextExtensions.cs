@@ -1,11 +1,11 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -202,13 +202,13 @@ public static class NavigationUITestContextExtensions
     /// Switches control back to the most recent previous window/tab.
     /// </summary>
     public static void SwitchToLastWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.Last()), "last window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[^1]), "last window");
 
     /// <summary>
     /// Switches control back to the oldest previous window/tab.
     /// </summary>
     public static void SwitchToFirstWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[0]), "first window");
 
     /// <summary>
     /// Switches control back to the currently executing window/tab.
@@ -229,20 +229,22 @@ public static class NavigationUITestContextExtensions
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
-        var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        var baseSelector = StringHelper.CreateInvariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
     {
-        var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
+        var baseSelector = StringHelper.CreateInvariant($"*[data-part='{part}'][data-field='{field}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
     private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
     {
-        var byItem = By.CssSelector(FormattableString.Invariant(
-            $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option")).Visible();
+        var byItem =
+            By.CssSelector(StringHelper.CreateInvariant(
+                $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"))
+            .Visible();
 
         while (!context.Exists(byItem.Safely()))
         {
@@ -263,15 +265,15 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeave(IWebElement, UITestContext, TimeSpan?,
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
     /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
     /// </summary>
-    public static void ClickReliablyOnUntilPageLeave(
+    public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
+        context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.

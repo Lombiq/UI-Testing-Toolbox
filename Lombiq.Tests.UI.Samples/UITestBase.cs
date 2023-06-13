@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI.Samples;
 
 // This will be the base class for our UI test classes. Here we'll set up some common configuration. Inheriting test
 // classes is not mandatory but the approach is simple and effective.
-public class UITestBase : OrchardCoreUITestBase<Program>
+public abstract class UITestBase : OrchardCoreUITestBase<Program>
 {
     protected UITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)

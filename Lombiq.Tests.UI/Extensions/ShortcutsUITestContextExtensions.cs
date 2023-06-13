@@ -1,5 +1,5 @@
-using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Pages;
@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
+using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
 using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
@@ -32,12 +33,11 @@ using OrchardCore.Workflows.Http.Controllers;
 using OrchardCore.Workflows.Http.Models;
 using OrchardCore.Workflows.Models;
 using OrchardCore.Workflows.Services;
-using RestEase;
+using Refit;
 using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -228,7 +228,7 @@ public static class ShortcutsUITestContextExtensions
                         throw new RoleNotFoundException($"Role with the name \"{roleName}\" not found.");
                     }
 
-                    var permissionClaim = role.RoleClaims.FirstOrDefault(roleClaim =>
+                    var permissionClaim = role.RoleClaims.Find(roleClaim =>
                         roleClaim.ClaimType == Permission.ClaimType
                         && roleClaim.ClaimValue == permissionName);
                     if (permissionClaim == null)
@@ -336,7 +336,9 @@ public static class ShortcutsUITestContextExtensions
         context.GetApi().GetApplicationInfoFromApiAsync();
 
     // This is required to instantiate ILogger<>.
+#pragma warning disable S2094 // Classes should not be empty
     private sealed class ExecuteRecipeShortcut { }
+#pragma warning restore S2094 // Classes should not be empty
 
     /// <summary>
     /// Executes a recipe identified by its name directly.
@@ -361,12 +363,8 @@ public static class ShortcutsUITestContextExtensions
                         .AwaitEachAsync(harvester => harvester.HarvestRecipesAsync());
                     var recipe = recipeCollections
                         .SelectMany(recipeCollection => recipeCollection)
-                        .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName);
-
-                    if (recipe == null)
-                    {
-                        throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
-                    }
+                        .SingleOrDefault(recipeDescriptor => recipeDescriptor.Name == recipeName)
+                        ?? throw new RecipeNotFoundException($"Recipe with the name \"{recipeName}\" not found.");
 
                     // Logic copied from OrchardCore.Recipes.Controllers.AdminController.
                     var executionId = Guid.NewGuid().ToString("n");
@@ -416,16 +414,18 @@ public static class ShortcutsUITestContextExtensions
                     BaseAddress = context.Scope.BaseUri,
                 };
 
-                return RestClient.For<IShortcutsApi>(httpClient);
+                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
             });
 
-    [SuppressMessage(
-        "StyleCop.CSharp.DocumentationRules",
-        "SA1600:Elements should be documented",
-        Justification = "Just maps to controller actions.")]
+    /// <summary>
+    /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
+    /// </summary>
     public interface IShortcutsApi
     {
-        [Get("api/ApplicationInfo")]
+        /// <summary>
+        /// Sends a web request to <see cref="ApplicationInfoController.Get"/> endpoint.
+        /// </summary>
+        [Get("/api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
     }
 
@@ -443,12 +443,8 @@ public static class ShortcutsUITestContextExtensions
                 {
                     var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
                     var themeFeature = (await shellFeatureManager.GetAvailableFeaturesAsync())
-                        .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id);
-
-                    if (themeFeature == null)
-                    {
-                        throw new ThemeNotFoundException($"Theme with the feature ID {id} not found.");
-                    }
+                        .FirstOrDefault(feature => feature.IsTheme() && feature.Id == id)
+                        ?? throw new ThemeNotFoundException($"Theme with the feature ID {id} not found.");
 
                     if (IsAdminTheme(themeFeature.Extension.Manifest))
                     {
@@ -484,7 +480,7 @@ public static class ShortcutsUITestContextExtensions
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
-            ? OrchardCore.Data.DatabaseProviderValue.SqlConnection
+            ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 
         await context.Application.UsingScopeAsync(
@@ -560,12 +556,8 @@ public static class ShortcutsUITestContextExtensions
             {
                 var workflowTypeStore = serviceProvider.GetRequiredService<IWorkflowTypeStore>();
 
-                var workflowType = await workflowTypeStore.GetAsync(workflowTypeId);
-                if (workflowType == null)
-                {
-                    throw new WorkflowTypeNotFoundException($"Workflow type with the ID {workflowTypeId} not found.");
-                }
-
+                var workflowType = await workflowTypeStore.GetAsync(workflowTypeId)
+                    ?? throw new WorkflowTypeNotFoundException($"Workflow type with the ID {workflowTypeId} not found.");
                 var securityTokenService = serviceProvider.GetRequiredService<ISecurityTokenService>();
                 var token = securityTokenService.CreateToken(
                     new WorkflowPayload(workflowType.WorkflowTypeId, activityId),
