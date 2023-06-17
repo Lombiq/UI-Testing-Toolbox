@@ -1,4 +1,5 @@
 ﻿using Lombiq.Tests.UI.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -34,21 +35,29 @@ public static class BrowserUITestContextExtensions
         return cookieContainer;
     }
 
+    [SuppressMessage(
+        "Security",
+        "SCS0004: Certificate Validation has been disabled.",
+        Justification = "Necessary for local testing.")]
+    [SuppressMessage(
+        "Security",
+        "CA5399: HttpClient is created without enabling CheckCertificateRevocationList.",
+        Justification = "Necessary for local testing.")]
     public static async Task<T> FetchWithBrowserContextAsync<T>(
         this UITestContext context,
         HttpMethod method,
         string address,
         Func<HttpResponseMessage, Task<T>> processResponseAsync)
     {
-        var searchUrl = new Uri(new Uri(context.Driver.Url), address);
+        using var handler = new HttpClientHandler
+        {
+            CookieContainer = context.GetCookieContainer(),
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+        };
 
-        // Certificate checking is not necessary because the request URL is relative to where the browser already is.
-#pragma warning disable CA5399 // HttpClient is created without enabling CheckCertificateRevocationList
-        using var handler = new HttpClientHandler { CookieContainer = context.GetCookieContainer() };
         using var client = new HttpClient(handler);
-        using var request = new HttpRequestMessage(method, searchUrl);
+        using var request = new HttpRequestMessage(method, new Uri(new Uri(context.Driver.Url), address));
         using var response = await client.SendAsync(request);
-#pragma warning restore CA5399
 
         return await processResponseAsync(response);
     }
