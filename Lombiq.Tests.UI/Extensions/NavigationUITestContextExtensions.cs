@@ -241,20 +241,16 @@ public static class NavigationUITestContextExtensions
 
     public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
-        var searchUrl = new Uri(
-            new Uri(context.Driver.Url),
-            context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url"));
-
-        int index;
-
-        using (var handler = new HttpClientHandler { CookieContainer = context.GetCookieContainer() })
-        using (var client = new HttpClient(handler))
-        using (var response = await client.GetAsync(searchUrl))
-        {
-            var json = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
-            index = result.IndexOf(result.First(item => item.DisplayText == text));
-        }
+        var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
+        var index = await context.FetchWithBrowserContextAsync(
+            HttpMethod.Get,
+            searchUrl,
+            async response =>
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
+                return result.IndexOf(result.First(item => item.DisplayText == text));
+            });
 
         await context.SetContentPickerByIndexAsync(part, field, index);
     }
