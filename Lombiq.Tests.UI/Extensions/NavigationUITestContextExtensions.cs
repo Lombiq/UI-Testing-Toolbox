@@ -4,9 +4,18 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using OrchardCore.ContentFields.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -232,6 +241,27 @@ public static class NavigationUITestContextExtensions
     {
         var baseSelector = ByHelper.Css($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
+    }
+
+    public static async Task SetContentPickerByDisplayText(this UITestContext context, string part, string field, string text)
+    {
+        var searchUrl = new Uri(
+            new Uri(context.Driver.Url),
+            context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url"));
+
+        int index;
+
+        using (var client = new HttpClient())
+        using (var response = await client.GetAsync(searchUrl))
+        await using (var stream = await response.Content.ReadAsStreamAsync())
+        using (var textReader = new StreamReader(stream))
+        await using (var jsonReader = new JsonTextReader(textReader))
+        {
+            var result = new JsonSerializer().Deserialize<IList<VueMultiselectItemViewModel>>(jsonReader);
+            index = result.IndexOf(result.First(item => item.DisplayText == text));
+        }
+
+        await context.SetContentPickerByIndexAsync(part, field, index);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
