@@ -1,4 +1,5 @@
-﻿using Lombiq.Tests.UI.Services;
+﻿using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ public static class BrowserUITestContextExtensions
         };
 
         using var client = new HttpClient(handler);
-        using var request = new HttpRequestMessage(method, new Uri(new Uri(context.Driver.Url), address));
+        using var request = new HttpRequestMessage(method, new Uri(context.GetCurrentUri(), address));
         using var response = await client.SendAsync(request);
 
         return await processResponseAsync(response);
