@@ -243,7 +243,7 @@ public static class NavigationUITestContextExtensions
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
-    public static async Task SetContentPickerByDisplayText(this UITestContext context, string part, string field, string text)
+    public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
         var searchUrl = new Uri(
             new Uri(context.Driver.Url),
