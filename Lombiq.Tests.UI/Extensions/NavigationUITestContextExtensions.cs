@@ -251,13 +251,12 @@ public static class NavigationUITestContextExtensions
 
         int index;
 
-        using (var client = new HttpClient())
+        using (var handler = new HttpClientHandler { CookieContainer = context.GetCookieContainer() })
+        using (var client = new HttpClient(handler))
         using (var response = await client.GetAsync(searchUrl))
-        await using (var stream = await response.Content.ReadAsStreamAsync())
-        using (var textReader = new StreamReader(stream))
-        await using (var jsonReader = new JsonTextReader(textReader))
         {
-            var result = new JsonSerializer().Deserialize<IList<VueMultiselectItemViewModel>>(jsonReader);
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
             index = result.IndexOf(result.First(item => item.DisplayText == text));
         }
 
