@@ -1,11 +1,17 @@
 using Atata;
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using OrchardCore.ContentFields.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -229,26 +235,41 @@ public static class NavigationUITestContextExtensions
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
-        var baseSelector = StringHelper.CreateInvariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        var baseSelector = ByHelper.Css($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
+    }
+
+    public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
+    {
+        var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
+        var index = await context.FetchWithBrowserContextAsync(
+            HttpMethod.Get,
+            searchUrl,
+            async response =>
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
+                return result.IndexOf(result.First(item => item.DisplayText == text));
+            });
+
+        await context.SetContentPickerByIndexAsync(part, field, index);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
     {
-        var baseSelector = StringHelper.CreateInvariant($"*[data-part='{part}'][data-field='{field}']");
+        var baseSelector = ByHelper.GetContentPickerSelector(part, field);
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
-    private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
+    private static async Task SetFieldDropdownByIndexAsync(UITestContext context, By baseSelector, int index)
     {
-        var byItem =
-            By.CssSelector(StringHelper.CreateInvariant(
-                $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option"))
+        var byItem = baseSelector
+            .Then(ByHelper.Css($".multiselect__element:nth-child({index + 1}) .multiselect__option"))
             .Visible();
 
         while (!context.Exists(byItem.Safely()))
         {
-            await context.ClickReliablyOnAsync(By.CssSelector(baseSelector + " .multiselect__select"));
+            await context.ClickReliablyOnAsync(baseSelector.Then(By.CssSelector(".multiselect__select")));
         }
 
         await context.ClickReliablyOnAsync(byItem);

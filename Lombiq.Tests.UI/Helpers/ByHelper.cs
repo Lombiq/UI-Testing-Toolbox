@@ -2,6 +2,8 @@ using Atata;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Lombiq.Tests.UI.Helpers;
 
@@ -31,4 +33,19 @@ public static class ByHelper
     /// </summary>
     public static By TextContains(string innerText, string element = "*") =>
         By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(innerText)})]");
+
+    /// <summary>
+    /// Creates a <see langword="string"/> from an interpolated string with the invariant culture. This prevents culture-
+    /// sensitive formatting of interpolated values.
+    /// </summary>
+    public static By Css(this DefaultInterpolatedStringHandler value) =>
+        By.CssSelector(string.Create(CultureInfo.InvariantCulture, ref value));
+
+    /// <summary>
+    /// Returns a CSS selector that looks up a content picker field.
+    /// </summary>
+    /// <param name="part">The name of the content part.</param>
+    /// <param name="field">The name of the content picker field.</param>
+    public static By GetContentPickerSelector(string part, string field) =>
+        Css($"*[data-part='{part}'][data-field='{field}']");
 }
