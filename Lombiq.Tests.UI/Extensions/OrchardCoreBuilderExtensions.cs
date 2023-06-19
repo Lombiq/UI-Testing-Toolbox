@@ -36,7 +36,10 @@ public static class OrchardCoreBuilderExtensions
                 .AddSingleton<IModuleStaticFileProvider>(serviceProvider =>
                     new ModuleEmbeddedStaticFileProvider(serviceProvider.GetRequiredService<IApplicationContext>())));
 
-        if (enableShortcutsDuringUITesting) builder.AddTenantFeatures("Lombiq.Tests.UI.Shortcuts", "OrchardCore.Roles");
+        if (enableShortcutsDuringUITesting) builder.AddTenantFeatures(
+            "Lombiq.Tests.UI.Shortcuts",
+            "OrchardCore.Roles",
+            "OrchardCore.Users");
 
         var smtpPort = configuration.GetValue<string>("Lombiq_Tests_UI:SmtpSettings:Port");
 
