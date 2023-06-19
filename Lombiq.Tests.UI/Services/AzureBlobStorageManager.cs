@@ -99,14 +99,17 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
             var tenantDirectoryName = Path.GetFileName(tenantDirectoryPath);
             var tenantMediaDirectoryPath = Path.Combine(tenantDirectoryPath, "Media");
 
-            foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
+            if (Directory.Exists(tenantMediaDirectoryPath))
             {
-                var relativePath = filePath.ReplaceOrdinalIgnoreCase(tenantMediaDirectoryPath, string.Empty);
-                var blobUrl = _basePath + "/" +
-                    tenantDirectoryName +
-                    relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
-                var blobClient = _blobContainer.GetBlobClient(blobUrl);
-                await blobClient.UploadAsync(filePath);
+                foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
+                {
+                    var relativePath = filePath.ReplaceOrdinalIgnoreCase(tenantMediaDirectoryPath, string.Empty);
+                    var blobUrl = _basePath + "/" +
+                        tenantDirectoryName +
+                        relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
+                    var blobClient = _blobContainer.GetBlobClient(blobUrl);
+                    await blobClient.UploadAsync(filePath);
+                }
             }
         }
     }
