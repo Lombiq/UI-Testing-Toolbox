@@ -63,9 +63,10 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="161.6319.0-preview" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.8.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
-    <PackageReference Include="OrchardCore.Logging.NLog" Version="1.5.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.5.0" />
-    <PackageReference Include="OrchardCore.Recipes.Core" Version="1.5.0" />
+    <PackageReference Include="OrchardCore.ContentFields" Version="1.6.0" />
+    <PackageReference Include="OrchardCore.Logging.NLog" Version="1.6.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.6.0" />
+    <PackageReference Include="OrchardCore.Recipes.Core" Version="1.6.0" />
     <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
     <PackageReference Include="Selenium.Axe" Version="4.0.5" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
@@ -91,14 +92,14 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="5.2.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.2.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="5.2.0" />
-    <PackageReference Include="Lombiq.Npm.Targets" Version="1.3.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="6.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.0" />
+    <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
     <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build
     to use a PNPM version higher than 7.x.x. We need to upgrade solutions to use PNPM 8, also see
     https://github.com/Lombiq/NodeJs-Extensions/issues/42. -->
-    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.3" />
+    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.4" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
@@ -109,7 +110,6 @@
     <Deterministic>true</Deterministic>
     <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="node_modules\gremlins.js\dist\gremlins.min.js">
       <Link>Resources\gremlins.min.js</Link>
@@ -118,4 +118,3 @@
   </ItemGroup>
 
 </Project>
-
