@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -126,7 +127,7 @@ public static class ElementRetrievalUITestContextExtensions
             .Where(index => index >= 0)
             .ToList();
         var target = toMatch
-            .Select(item => item == null ? null : FormattableString.Invariant($"{item}"))
+            .Select(item => item == null ? null : StringHelper.CreateInvariant($"{item}"))
             .Select(item => item?.Trim())
             .ToArray();
 

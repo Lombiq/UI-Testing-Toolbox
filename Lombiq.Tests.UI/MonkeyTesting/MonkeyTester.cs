@@ -6,7 +6,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
@@ -107,11 +106,11 @@ internal sealed class MonkeyTester
         return canTest;
     }
 
-    private bool ShouldTestPageUrl(Uri url) => _options.UrlFilters.All(filter => filter.AllowUrl(_context, url));
+    private bool ShouldTestPageUrl(Uri url) => _options.UrlFilters.TrueForAll(filter => filter.AllowUrl(_context, url));
 
     private bool TryGetAvailablePageToTest(out PageMonkeyTestInfo pageTestInfo)
     {
-        pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.HasTimeToTest);
+        pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.HasTimeToTest);
         return pageTestInfo != null;
     }
 
@@ -122,7 +121,7 @@ internal sealed class MonkeyTester
 
         var sanitizedUrl = SanitizeUrl(url);
 
-        var pageTestInfo = _visitedPages.FirstOrDefault(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
+        var pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
             ?? new PageMonkeyTestInfo(url, sanitizedUrl, _options.PageTestTime);
 
         Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");

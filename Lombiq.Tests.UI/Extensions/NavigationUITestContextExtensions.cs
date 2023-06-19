@@ -1,11 +1,17 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using OrchardCore.ContentFields.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -202,13 +208,13 @@ public static class NavigationUITestContextExtensions
     /// Switches control back to the most recent previous window/tab.
     /// </summary>
     public static void SwitchToLastWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.Last()), "last window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[^1]), "last window");
 
     /// <summary>
     /// Switches control back to the oldest previous window/tab.
     /// </summary>
     public static void SwitchToFirstWindow(this UITestContext context) =>
-        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles.First()), "first window");
+        context.SwitchTo(locator => locator.Window(context.Driver.WindowHandles[0]), "first window");
 
     /// <summary>
     /// Switches control back to the currently executing window/tab.
@@ -229,24 +235,41 @@ public static class NavigationUITestContextExtensions
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
-        var baseSelector = FormattableString.Invariant($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        var baseSelector = ByHelper.Css($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
+    }
+
+    public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
+    {
+        var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
+        var index = await context.FetchWithBrowserContextAsync(
+            HttpMethod.Get,
+            searchUrl,
+            async response =>
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
+                return result.IndexOf(result.First(item => item.DisplayText == text));
+            });
+
+        await context.SetContentPickerByIndexAsync(part, field, index);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
     {
-        var baseSelector = FormattableString.Invariant($"*[data-part='{part}'][data-field='{field}']");
+        var baseSelector = ByHelper.GetContentPickerSelector(part, field);
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
-    private static async Task SetFieldDropdownByIndexAsync(UITestContext context, string baseSelector, int index)
+    private static async Task SetFieldDropdownByIndexAsync(UITestContext context, By baseSelector, int index)
     {
-        var byItem = By.CssSelector(FormattableString.Invariant(
-            $"{baseSelector} .multiselect__element:nth-child({index + 1}) .multiselect__option")).Visible();
+        var byItem = baseSelector
+            .Then(ByHelper.Css($".multiselect__element:nth-child({index + 1}) .multiselect__option"))
+            .Visible();
 
         while (!context.Exists(byItem.Safely()))
         {
-            await context.ClickReliablyOnAsync(By.CssSelector(baseSelector + " .multiselect__select"));
+            await context.ClickReliablyOnAsync(baseSelector.Then(By.CssSelector(".multiselect__select")));
         }
 
         await context.ClickReliablyOnAsync(byItem);
@@ -263,15 +286,15 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeave(IWebElement, UITestContext, TimeSpan?,
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
     /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
     /// </summary>
-    public static void ClickReliablyOnUntilPageLeave(
+    public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilPageLeave(context, timeout, interval);
+        context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
@@ -288,6 +311,22 @@ public static class NavigationUITestContextExtensions
     public static void DismissAlert(this UITestContext context)
     {
         context.Driver.SwitchTo().Alert().Dismiss();
+        context.Driver.SwitchTo().DefaultContent();
+    }
+
+    /// <summary>
+    /// Clicks on the first matching element, switches control to the JS alert/prompt box that's expected to appear,
+    /// enters <paramref name="inputText"/> as keystrokes if it's not <see langword="null"/>, accepts the alert/prompt
+    /// box, and switches control back to main document or first frame.
+    /// </summary>
+    public static void ClickAndAcceptPrompt(this UITestContext context, By by, string inputText = null)
+    {
+        // Using FindElement() here because ClickReliablyOnAsync() would throw an "Unexpected Alert Open" exception.
+        context.Driver.FindElement(by).Click();
+
+        var alert = context.Driver.SwitchTo().Alert();
+        if (inputText != null) alert.SendKeys(inputText);
+        alert.Accept();
         context.Driver.SwitchTo().DefaultContent();
     }
 

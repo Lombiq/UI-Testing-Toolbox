@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -38,6 +37,6 @@ public class UITestManifest
         instance
             .GetType()
             .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(field => field.FieldType == typeof(T))
-            ?.GetValue(instance) as T;
+            .Find(field => field.FieldType == typeof(T))?
+            .GetValue(instance) as T;
 }
