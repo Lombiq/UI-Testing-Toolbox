@@ -19,8 +19,9 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.ContentManagement",
         "OrchardCore.ContentTypes",
         "OrchardCore.DisplayManagement",
-        "OrchardCore.Users",
+        "OrchardCore.Roles",
         "OrchardCore.Tenants",
+        "OrchardCore.Users",
     }
 )]
 
