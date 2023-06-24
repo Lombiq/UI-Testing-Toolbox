@@ -144,7 +144,7 @@ public static class ScreenshotUITestContextExtensions
     public static Image TakeElementScreenshot(this UITestContext context, By elementSelector) =>
         context.TakeElementScreenshot(context.Get(elementSelector));
 
-    private static string AsDimensions(IImageInfo image) =>
+    private static string AsDimensions(Image image) =>
         $"{image.Width.ToTechnicalString()} x {image.Height.ToTechnicalString()}";
 
     private static string AsDimensions(Size size) =>
