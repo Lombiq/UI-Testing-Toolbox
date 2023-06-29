@@ -74,11 +74,13 @@ public class TenantCreateApiProxyController : Controller
     {
         if (!_currentShellSettings.IsDefaultShell())
         {
+            _logger.LogError("!_currentShellSettings.IsDefaultShell()");
             return Forbid();
         }
 
         if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageTenants))
         {
+            _logger.LogError("!await _authorizationService.AuthorizeAsync(User, Permissions.ManageTenants)");
             return this.ChallengeOrForbid("Api");
         }
 
@@ -122,6 +124,18 @@ public class TenantCreateApiProxyController : Controller
             }
         }
 
+        var errors = ModelState
+            .Where(pair => pair.Value.Errors.Any())
+            .Select(pair =>
+            {
+                var errors = string.Join(
+                    "\n  ",
+                    pair.Value.Errors.Select(error => error.ErrorMessage + "\n" + error.Exception));
+                return $"{pair.Key}:\n  {errors}\n\n";
+            });
+        _logger.LogError(
+            "Bad Model State: {Errors}",
+            string.Join("\n\n\n", errors));
         return BadRequest(ModelState);
     }
 
