@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Lombiq.HelpfulLibraries.OrchardCore.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
 using OrchardCore.Modules;
@@ -16,6 +18,9 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
+[Route("api/tenants2")]
+[ApiController]
+[Authorize(AuthenticationSchemes = "Api"), IgnoreAntiforgeryToken, AllowAnonymous]
 public class TenantCreateApiProxyController : Controller
 {
     private readonly IShellHost _shellHost;
@@ -25,6 +30,7 @@ public class TenantCreateApiProxyController : Controller
     private readonly IDataProtectionProvider _dataProtectorProvider;
     private readonly IClock _clock;
     private readonly ITenantValidator _tenantValidator;
+    private readonly ILogger<TenantCreateApiProxyController> _logger;
 
     public TenantCreateApiProxyController(
         IShellHost shellHost,
@@ -32,24 +38,39 @@ public class TenantCreateApiProxyController : Controller
         IAuthorizationService authorizationService,
         IShellSettingsManager shellSettingsManager,
         IDataProtectionProvider dataProtectorProvider,
-        IClock clock,
-        ITenantValidator tenantValidator)
+        ITenantValidator tenantValidator,
+        IOrchardServices<TenantCreateApiProxyController> services)
     {
         _shellHost = shellHost;
         _currentShellSettings = currentShellSettings;
         _authorizationService = authorizationService;
         _dataProtectorProvider = dataProtectorProvider;
         _shellSettingsManager = shellSettingsManager;
-        _clock = clock;
+        _clock = services.Clock.Value;
         _tenantValidator = tenantValidator;
+        _logger = services.Logger.Value;
     }
 
     [HttpPost]
+    [Route("create")]
     [SuppressMessage(
         "Security",
         "SCS0016:Controller method is potentially vulnerable to Cross Site Request Forgery (CSRF).",
         Justification = "It's not handled in the original either.")]
     public async Task<IActionResult> Create(TenantApiModel model)
+    {
+        try
+        {
+            return await CreateAsync(model);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Failed to Create!");
+            throw;
+        }
+    }
+
+    private async Task<IActionResult> CreateAsync(TenantApiModel model)
     {
         if (!_currentShellSettings.IsDefaultShell())
         {
