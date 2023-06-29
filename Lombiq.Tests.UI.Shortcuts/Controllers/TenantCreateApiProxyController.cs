@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
 using OrchardCore.Modules;
@@ -81,6 +82,18 @@ public class TenantCreateApiProxyController : Controller
         if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageTenants))
         {
             _logger.LogError("!await _authorizationService.AuthorizeAsync(User, Permissions.ManageTenants)");
+
+            var claims = User?
+                .Claims?
+                .GroupBy(claim => claim.Type)
+                .ToDictionary(group => group.Key, group => group.ToList());
+
+            _logger.LogError(
+                "User: {User} (IsAuthenticated: {IsAuthenticated}; AuthenticationType: {AuthenticationType}; Claims: {Claims})",
+                User?.Identity?.Name ?? "NULL",
+                User?.Identity?.AuthenticationType,
+                User?.Identity?.IsAuthenticated,
+                JsonConvert.SerializeObject(claims));
             return this.ChallengeOrForbid("Api");
         }
 
