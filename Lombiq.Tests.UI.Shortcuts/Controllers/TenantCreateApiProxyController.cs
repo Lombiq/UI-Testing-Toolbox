@@ -89,11 +89,11 @@ public class TenantCreateApiProxyController : Controller
                 .ToDictionary(group => group.Key, group => group.ToList());
 
             _logger.LogError(
-                "User: {User} (IsAuthenticated: {IsAuthenticated}; AuthenticationType: {AuthenticationType}; Claims: {Claims})",
+                "User: {User} (IsAuthenticated: {IsAuthenticated}; Claims: {Claims}; Headers: {Headers})",
                 User?.Identity?.Name ?? "NULL",
-                User?.Identity?.AuthenticationType,
                 User?.Identity?.IsAuthenticated,
-                JsonConvert.SerializeObject(claims));
+                JsonConvert.SerializeObject(claims),
+                JsonConvert.SerializeObject(Request.Headers));
             return this.ChallengeOrForbid("Api");
         }
 
