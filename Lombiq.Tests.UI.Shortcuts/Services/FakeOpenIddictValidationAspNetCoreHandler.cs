@@ -9,6 +9,7 @@ using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants;
@@ -101,6 +102,7 @@ public sealed class FakeOpenIddictValidationAspNetCoreHandler : AuthenticationHa
         return false;
     }
 
+    [SuppressMessage("Cognitive Complexity", "S3776:Refactor this method to reduce its Cognitive Complexity", Justification = "Nope.")]
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var transaction = Context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction ??
