@@ -20,7 +20,8 @@ namespace Lombiq.Tests.UI.Shortcuts.Services;
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
-public sealed class FakeOpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
+public sealed class FakeOpenIddictValidationAspNetCoreHandler :
+    AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
     IAuthenticationRequestHandler
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;
