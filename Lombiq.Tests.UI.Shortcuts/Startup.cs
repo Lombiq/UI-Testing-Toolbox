@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Logging;
 using OpenIddict.Validation.AspNetCore;
 using OrchardCore.Modules;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ public class Startup : StartupBase
     public override void ConfigureServices(IServiceCollection services)
     {
         services.Configure<MvcOptions>(options => options.Filters.Add(typeof(ApplicationInfoInjectingFilter)));
+
+        IdentityModelEventSource.ShowPII = true;
 
         services.Configure<AuthenticationOptions>(options =>
         {
