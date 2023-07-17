@@ -80,6 +80,20 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ]
     ```
 
+  Furthermore, when running your app under Windows (even if just during development), add the following to your app's _appsettings.json_ or _appsettings.Development.json_ file:
+
+    ```json
+    {
+      "OrchardCore": {
+        "OrchardCore_Localization_CultureOptions": {
+          "IgnoreSystemSettings": true
+        }
+      }
+    }
+    ```
+
+  This enforces consistent date formats regardless of the host machine's settings, see [the corresponding issue](https://github.com/OrchardCMS/OrchardCore/issues/11228).
+
 - Some features send out e-mails. You can test them with the Lombiq UI Testing Toolbox's built-in feature to run an isolated local SMTP server with a web UI. The `OrchardCore.Email` feature will be automatically enabled, as well as the rest of the configuration applied.
 - If you want the site to use Azure Blob Storage then you have to do the following:
   - The `OrchardCore.Media.Azure` feature will be automatically enabled, as well as the rest of the configuration applied.
