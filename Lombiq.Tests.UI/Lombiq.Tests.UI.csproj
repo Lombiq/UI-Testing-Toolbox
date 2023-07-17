@@ -96,10 +96,6 @@
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
-    <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build
-    to use a PNPM version higher than 7.x.x. We need to upgrade solutions to use PNPM 8, also see
-    https://github.com/Lombiq/NodeJs-Extensions/issues/42. -->
-    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.4" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
