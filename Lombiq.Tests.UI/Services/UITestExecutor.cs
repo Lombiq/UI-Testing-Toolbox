@@ -146,7 +146,7 @@ public static class UITestExecutor
             // usually make it long.
 
             var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
-            var closingBracketIndex = dumpFolderNameBase.LastIndexOf(")", StringComparison.Ordinal);
+            var closingBracketIndex = dumpFolderNameBase.LastIndexOf(')');
 
             // Can't use string.GetHasCode() because that varies between executions.
             var hashedParameters = Sha256Helper

@@ -1,5 +1,6 @@
 using AngleSharp.Text;
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
@@ -57,7 +58,7 @@ public static class FormUITestContextExtensions
         var editorBy = by.Then(By.CssSelector(".trumbowyg-box > .trumbowyg-editor"));
         context.Get(editorBy).Click();
 
-        expectedHtml ??= FormattableString.Invariant($"<p>{text}</p>");
+        expectedHtml ??= StringHelper.CreateInvariant($"<p>{text}</p>");
 
         return context.ExecuteLoggedAsync(
             nameof(ClickAndFillInTrumbowygEditorWithRetriesAsync),
@@ -76,7 +77,7 @@ public static class FormUITestContextExtensions
     }
 
     /// <summary>
-    /// Uses Javascript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
+    /// Uses JavaScript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
     /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose the
     /// CodeMirror library globally for editing the existing instance and this editor can't be filled using regular
     /// Selenium interactions either.
@@ -84,17 +85,17 @@ public static class FormUITestContextExtensions
     public static void SetMarkdownEasyMdeWysiwygEditor(this UITestContext context, string id, string text)
     {
         var script = $@"
-                /* First get rid of the existing editor instance. */
-                document.querySelector('#{id} + .EasyMDEContainer').remove();
-                /* Create a new one using the same call found in OC's MarkdownBodyPart-Wysiwyg.Edit.cshtml */
-                var mde = new EasyMDE({{
-                    element: document.getElementById('{id}'),
-                    forceSync: true,
-                    toolbar: mdeToolbar,
-                    autoDownloadFontAwesome: false,
-                }});
-                /* Finally set the value programmatically. */
-                mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
+            /* First get rid of the existing editor instance. */
+            document.querySelector('#{id} + .EasyMDEContainer').remove();
+            /* Create a new one using the same call found in OC's MarkdownBodyPart-Wysiwyg.Edit.cshtml */
+            var mde = new EasyMDE({{
+                element: document.getElementById('{id}'),
+                forceSync: true,
+                toolbar: mdeToolbar,
+                autoDownloadFontAwesome: false,
+            }});
+            /* Finally set the value programmatically. */
+            mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
 
         context.ExecuteScript(script);
     }
@@ -165,6 +166,38 @@ public static class FormUITestContextExtensions
                 interval));
 
     /// <summary>
+    /// Fills a CodeMirror editor with the given text, and retries if the value doesn't stick.
+    /// </summary>
+    public static Task FillInCodeMirrorEditorWithRetriesAsync(
+        this UITestContext context,
+        By by,
+        string text,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.ExecuteLoggedAsync(
+        nameof(FillInCodeMirrorEditorWithRetriesAsync),
+        $"{by} - \"{text}\"",
+        () => context.DoWithRetriesOrFailAsync(
+            () =>
+            {
+                // Approach taken from https://stackoverflow.com/a/57621266/220230.
+
+                // Getting CodeMirror element.
+                var codeMirrorEditor = context.Get(by);
+
+                // Clicking the first line of code inside CodeMirror to bring it in focus.
+                codeMirrorEditor.Get(By.ClassName("CodeMirror-line")).Click();
+
+                // Sending keystrokes to textarea once CodeMirror is in focus.
+                IWebElement GetTextArea() => codeMirrorEditor.Get(By.CssSelector("textarea").OfAnyVisibility());
+                GetTextArea().SendKeys(text);
+
+                return Task.FromResult(GetTextArea().GetValue() == text);
+            },
+            timeout,
+            interval));
+
+    /// <summary>
     /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
     /// </summary>
     public static bool IsElementChecked(this UITestContext context, By by) =>
@@ -231,7 +264,7 @@ public static class FormUITestContextExtensions
     /// </summary>
     public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
         context.ExecuteScript(
-            FormattableString.Invariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
+            StringHelper.CreateInvariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
             $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
     public static DateTime GetDatePicker(this UITestContext context, string id) =>

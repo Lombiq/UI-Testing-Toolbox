@@ -58,6 +58,6 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
             testOutputHelper,
             $"{className}.{testName}");
 
-        return (gitHubActionsGroupingTestOutputHelper, () => gitHubActionsGroupingTestOutputHelper.EndGroup());
+        return (gitHubActionsGroupingTestOutputHelper, gitHubActionsGroupingTestOutputHelper.EndGroup);
     }
 }

@@ -1,4 +1,4 @@
-using System;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
@@ -18,7 +18,7 @@ public class InstanceCommandLineArgumentsBuilder
 
     public InstanceCommandLineArgumentsBuilder AddWithValue<T>(string key, T value)
     {
-        _arguments.Add(FormattableString.Invariant($"{PrepareArg(key)}={value}"));
+        _arguments.Add(StringHelper.CreateInvariant($"{PrepareArg(key)}={value}"));
 
         return this;
     }

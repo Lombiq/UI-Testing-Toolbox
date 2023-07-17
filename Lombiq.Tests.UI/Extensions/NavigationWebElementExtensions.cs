@@ -69,7 +69,7 @@ public static class NavigationWebElementExtensions
     /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
-    public static void ClickReliablyUntilPageLeave(
+    public static Task ClickReliablyUntilPageLeaveAsync(
         this IWebElement element,
         UITestContext context,
         TimeSpan? timeout = null,

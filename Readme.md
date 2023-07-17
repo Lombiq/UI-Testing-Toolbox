@@ -12,7 +12,7 @@ Highlights:
 - Execute fully self-contained, repeatable, parallelizable automated UI tests on Orchard Core apps.
 - Do cross-browser testing with all current browsers, both in normal and headless modes.
 - Check the HTML structure and behavior of the app, check for errors in the Orchard logs and browser logs. Start troubleshooting from the detailed full application dumps and test logs if a test fails.
-- Start tests with a setup using recipes, start with an existing Orchard Core app or take snapshots in between tests and resume from there. Use SQLite or SQL Server database snapshots (but you can also use PostgreSQL or MySQL too without snapshots).
+- Start tests with a setup using recipes, start with an existing Orchard Core app or take snapshots in between tests and resume from there. Use SQLite or SQL Server database snapshots (but you can also use PostgreSQL or MySQL too without snapshots, see [this proof of concept](https://github.com/OrchardCMS/OrchardCore/pull/11194/files)).
 - Use local file storage or Azure Blob Storage for Media.
 - Test e-mail sending with a local SMTP server too. Everything just works.
 - Built-in tests to check that basic Orchard Core features work, like login, registration, and content management. Demo video [here](https://www.youtube.com/watch?v=jmhq63sRZrI). And a [demo video](https://www.youtube.com/watch?v=BwHoLmgrV9g) about a proof of concept to add UI testing to Orchard.
@@ -29,6 +29,13 @@ Highlights:
 See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
 Looking not just for dynamic testing but also static code analysis? Check out our [.NET Analyzers project](https://github.com/Lombiq/.NET-Analyzers).
+
+We at [Lombiq](https://lombiq.com/) also used this module for the following projects:
+
+- The new [City of Santa Monica website](https://santamonica.gov/) when migrating it from Orchard 1 to Orchard Core ([see case study](https://lombiq.com/blog/helping-the-city-of-santa-monica-with-orchard-core-consulting)).
+- The new [Smithsonian Folkways Recordings website](https://folkways.si.edu/) when migrating it from Orchard 1 to Orchard Core ([see case study](https://lombiq.com/blog/smithsonian-folkways-recordings-now-upgraded-to-orchard-core)).
+- The new [Lombiq website](https://lombiq.com/) when migrating it from Orchard 1 to Orchard Core ([see case study](https://lombiq.com/blog/how-we-renewed-and-migrated-lombiq-com-from-orchard-1-to-orchard-core)).
+- It also makes [DotNest, the Orchard SaaS](https://dotnest.com/) better.
 
 Do you want to quickly try out this project and see it in action? Check it out in our [Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions) full Orchard Core solution and also see our other useful Orchard Core-related open-source projects!
 

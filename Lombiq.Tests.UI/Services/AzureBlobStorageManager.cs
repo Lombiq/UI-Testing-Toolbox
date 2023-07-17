@@ -77,13 +77,18 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
             {
                 var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
 
-                var tenantDirectoryName = Path.GetDirectoryName(blobUrl);
+                var blobDirectoryPath = Path.GetDirectoryName(blobUrl);
+                var tenantDirectoryName = blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar) != -1
+                    ? blobDirectoryPath[..blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar)]
+                    : blobDirectoryPath;
                 var tenantMediaDirectoryPath = Path.Combine(sitesDirectoryPath, tenantDirectoryName, "Media");
-                FileSystemHelper.EnsureDirectoryExists(tenantMediaDirectoryPath);
 
                 var fileSubPath = blobUrl[(tenantDirectoryName.Length + 1)..]
                     .ReplaceOrdinalIgnoreCase("/", Path.DirectorySeparatorChar.ToString());
                 var fileFullPath = Path.Combine(tenantMediaDirectoryPath, fileSubPath);
+
+                var fileParentDirectoryPath = Path.GetDirectoryName(fileFullPath);
+                FileSystemHelper.EnsureDirectoryExists(fileParentDirectoryPath);
 
                 return blobClient.DownloadToAsync(fileFullPath);
             });
@@ -99,14 +104,17 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
             var tenantDirectoryName = Path.GetFileName(tenantDirectoryPath);
             var tenantMediaDirectoryPath = Path.Combine(tenantDirectoryPath, "Media");
 
-            foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
+            if (Directory.Exists(tenantMediaDirectoryPath))
             {
-                var relativePath = filePath.ReplaceOrdinalIgnoreCase(tenantMediaDirectoryPath, string.Empty);
-                var blobUrl = _basePath + "/" +
-                    tenantDirectoryName +
-                    relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
-                var blobClient = _blobContainer.GetBlobClient(blobUrl);
-                await blobClient.UploadAsync(filePath);
+                foreach (var filePath in Directory.EnumerateFiles(tenantMediaDirectoryPath, "*.*", SearchOption.AllDirectories))
+                {
+                    var relativePath = filePath.ReplaceOrdinalIgnoreCase(tenantMediaDirectoryPath, string.Empty);
+                    var blobUrl = _basePath + "/" +
+                        tenantDirectoryName +
+                        relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
+                    var blobClient = _blobContainer.GetBlobClient(blobUrl);
+                    await blobClient.UploadAsync(filePath);
+                }
             }
         }
     }

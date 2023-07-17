@@ -20,6 +20,7 @@
     3. Run `dotnet dev-certs https --trust` and accept the security warning that pops up. (This is why we can't automate all of this.)
     4. Now `dotnet dev-certs https --check --verbose` should display "A valid certificate was found."
 - If you have retries configured for the tests and they've been running for a long time without any visible progress then most possibly all of them are failing. This can happen e.g. if the setup or initialization steps are failing. However, by default the `OrchardCoreUITestExecutorConfiguration.FastFailSetup` configuration will quickly fail all affected tests if a common setup operation is failing, without retrying it for all tests.
+- If tests fail at the start with a 404 error, look at the URL. The test might have tried to use a `Lombiq.Tests.UI.Shortcuts` URL, without the module being referenced in the web project. Note that `Lombiq.Tests.UI.Shortcuts` is enabled by default and you need to include it as a dependency to your web project if you want to use its features.
 
 ## Issues with driving browsers
 

@@ -5,7 +5,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -150,7 +149,7 @@ public class UITestContext
             catch (NoSuchWindowException)
             {
                 // This can happen in rare instances if the current window/tab was just closed.
-                Driver.SwitchTo().Window(Driver.WindowHandles.Last());
+                Driver.SwitchTo().Window(Driver.WindowHandles[^1]);
             }
         }
         else
@@ -222,7 +221,7 @@ public class UITestContext
     /// <summary>
     /// Changes the current tenant context to the Default one. Note that this doesn't navigate the browser.
     /// </summary>
-    public void ChangeCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
+    public void SwitchCurrentTenantToDefault() => SwitchCurrentTenant("Default", string.Empty);
 
     /// <summary>
     /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
