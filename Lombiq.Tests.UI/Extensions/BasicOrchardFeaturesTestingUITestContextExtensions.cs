@@ -1,3 +1,4 @@
+using AngleSharp.Dom;
 using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
@@ -7,6 +8,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -613,10 +615,12 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
 
                 await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.WaitForPageLoad();
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
                 var image = context.Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
@@ -632,7 +636,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 await context.ClickModalOkAsync();
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
-
+                await context.ClickReliablyOnAsync(By.CssSelector("body"));
                 context.Missing(By.XPath("//span[text()=' Image.png ' and @class='break-word']"));
 
                 var deleteFolderButton =
