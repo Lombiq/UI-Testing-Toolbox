@@ -1,4 +1,3 @@
-using AngleSharp.Dom;
 using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
@@ -8,7 +7,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
