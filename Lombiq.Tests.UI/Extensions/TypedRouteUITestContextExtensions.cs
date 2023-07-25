@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase =>
         context.GoToRelativeUrlAsync(TypedRoute
-            .CreateFromExpression(actionExpression, additionalArguments)
+            .CreateFromExpression(actionExpression, additionalArguments, CreateServiceProvider())
             .ToString());
 
     /// <summary>
@@ -32,6 +33,12 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase =>
         context.GoToRelativeUrlAsync(TypedRoute
-            .CreateFromExpression(actionExpressionAsync.StripResult(), additionalArguments)
+            .CreateFromExpression(actionExpressionAsync.StripResult(), additionalArguments, CreateServiceProvider())
             .ToString());
+
+    private static IServiceProvider CreateServiceProvider()
+    {
+        var services = new ServiceCollection();
+        return services.BuildServiceProvider();
+    }
 }
