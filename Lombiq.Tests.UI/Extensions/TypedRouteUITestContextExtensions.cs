@@ -1,6 +1,8 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using OrchardCore.Admin;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase =>
         context.GoToRelativeUrlAsync(TypedRoute
-            .CreateFromExpression(actionExpression, additionalArguments)
+            .CreateFromExpression(actionExpression, additionalArguments, CreateServiceProvider(context))
             .ToString());
 
     /// <summary>
@@ -32,6 +34,17 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase =>
         context.GoToRelativeUrlAsync(TypedRoute
-            .CreateFromExpression(actionExpressionAsync.StripResult(), additionalArguments)
+            .CreateFromExpression(actionExpressionAsync.StripResult(), additionalArguments, CreateServiceProvider(context))
             .ToString());
+
+    private static IServiceProvider CreateServiceProvider(UITestContext context)
+    {
+        var services = new ServiceCollection();
+
+        // The AdminOptions.AdminUrlPrefix setter automatically trims out leading or trailing slashes so the format
+        // difference between the two properties doesn't matter.
+        services.Configure<AdminOptions>(options => options.AdminUrlPrefix = context.AdminUrlPrefix);
+
+        return services.BuildServiceProvider();
+    }
 }
