@@ -24,6 +24,6 @@ public class VisualVerificationBaselineImageNotFoundException : Exception
             + " meantime)."
         : string.Create(
             CultureInfo.InvariantCulture,
-            $"Baseline image file was not found under the path {path} and MaxRetryCount is set to {maxRetryCount}, "
+            $"Baseline image file was not found under the path {path} and maxRetryCount is set to {maxRetryCount}, "
             + $"so it won't be generated.");
 }
