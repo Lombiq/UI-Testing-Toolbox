@@ -395,8 +395,6 @@ to customize the name of the dump item.";
                         element,
                         approvedContext.BaselineImagePath,
                         approvedContext.BaselineImageFileName);
-                    throw new VisualVerificationBaselineImageNotFoundException(
-                        approvedContext.BaselineImagePath, context.Configuration.MaxRetryCount);
                 }
 
                 throw new VisualVerificationBaselineImageNotFoundException(

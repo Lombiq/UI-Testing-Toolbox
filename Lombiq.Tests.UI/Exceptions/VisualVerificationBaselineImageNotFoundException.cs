@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
@@ -22,8 +21,6 @@ public class VisualVerificationBaselineImageNotFoundException : Exception
             + " (like a NuGet package) UI testing assembly. If you run the test again, this newly created verification"
             + " file will be asserted against and the assertion will pass (unless the display of the app changed in the"
             + " meantime)."
-        : string.Create(
-            CultureInfo.InvariantCulture,
-            $"Baseline image file was not found under the path {path} and maxRetryCount is set to {maxRetryCount}, "
-            + $"so it won't be generated.");
+        : $"Baseline image file was not found under the path {path} and maxRetryCount is set to "
+            + $"{maxRetryCount.ToTechnicalString()}, so it won't be generated.";
 }
