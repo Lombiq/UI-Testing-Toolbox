@@ -1,8 +1,11 @@
+using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Lombiq.Tests.UI.Shortcuts.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
+[DevelopmentAndLocalhostOnly]
 public class InteractiveModeController : Controller
 {
     private readonly IInteractiveModeStatusAccessor _interactiveModeStatusAccessor;
@@ -16,7 +19,9 @@ public class InteractiveModeController : Controller
         return View();
     }
 
-    public IActionResult Status() => Json(_interactiveModeStatusAccessor);
+    [AllowAnonymous]
+    [Route("api/InteractiveMode/IsInteractive")]
+    public IActionResult IsInteractive() => Json(_interactiveModeStatusAccessor.Enabled);
 
     public IActionResult Continue()
     {

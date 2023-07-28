@@ -23,9 +23,11 @@
 <div class="interactive__container">
     <div class="interactive">
         <h2>@T["Interactive Mode"]</h2>
-        <p>@T["If you see this, your code has evoked the <code>context.SwitchToInteractiveAsync()</code> method. This stops the test evaluation and waits until you click the button below."]</p>
-        <a href="@Url.Action(nameof(InteractiveModeController.Continue))"
-           class="interactive__continue btn btn-primary">
+        <p>
+            @T["If you see this, your code has evoked the <code>context.SwitchToInteractiveAsync()</code> method."]
+            @T["This stops the test evaluation and waits until you click the button below."]
+        </p>
+        <a href="@Url.Action(nameof(InteractiveModeController.Continue))" class="interactive__continue btn btn-primary">
             @T["Continue Test"]
         </a>
     </div>
