@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
+[AllowAnonymous]
 [DevelopmentAndLocalhostOnly]
 public class InteractiveModeController : Controller
 {
@@ -19,7 +20,6 @@ public class InteractiveModeController : Controller
         return View();
     }
 
-    [AllowAnonymous]
     [Route("api/InteractiveMode/IsInteractive")]
     public IActionResult IsInteractive() => Json(_interactiveModeStatusAccessor.Enabled);
 
