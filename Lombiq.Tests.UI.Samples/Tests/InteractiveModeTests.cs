@@ -10,6 +10,11 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
+// Sometimes you want to debug the test session and assuming direct control would be nice. But you can't just drop a
+// breakpoint in the test, since the Orchard Core webapp and the test are the same process so it would pause both. The
+// `context.SwitchToInteractiveAsync()` extension method opens a new tab with info about the interactive mode and then
+// causes the test thread to wait until you've clicked on the "Continue Test" button in this tab. During that time you
+// can interact with OC as if it was a normal execution.
 public class InteractiveModeTests : UITestBase
 {
     public InteractiveModeTests(ITestOutputHelper testOutputHelper)
@@ -17,6 +22,7 @@ public class InteractiveModeTests : UITestBase
     {
     }
 
+    // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
     [Theory(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI."), Chrome]
     [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
     public Task SampleTest(Browser browser) =>
@@ -39,6 +45,9 @@ public class InteractiveModeTests : UITestBase
             },
             browser);
 
+    // This test checks if interactive mode works by opening it in one thread, and then clicking it away in a different
+    // thread. This ensures that the new tab correctly appears with the clickable "Continue Test" button, and then
+    // disappears once it's clicked.
     [Theory, Chrome]
     public Task EnteringInteractiveModeShouldWait(Browser browser) =>
         ExecuteTestAfterSetupAsync(
@@ -62,3 +71,5 @@ public class InteractiveModeTests : UITestBase
             },
             browser);
 }
+
+// END OF TRAINING SECTION: Interactive mode.
