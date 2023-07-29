@@ -438,7 +438,7 @@ public static class ShortcutsUITestContextExtensions
         /// <summary>
         /// Sends a web request to <see cref="InteractiveModeController.IsInteractive"/> endpoint.
         /// </summary>
-        [Get("api/InteractiveMode/IsInteractive")]
+        [Get("/api/InteractiveMode/IsInteractive")]
         Task<bool> IsInteractiveModeEnabledAsync();
     }
 

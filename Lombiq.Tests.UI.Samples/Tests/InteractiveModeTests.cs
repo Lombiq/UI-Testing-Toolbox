@@ -21,7 +21,6 @@ public class InteractiveModeTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                await context.GoToHomePageAsync();
                 var currentUrl = context.Driver.Url;
 
                 await Task.WhenAll(
