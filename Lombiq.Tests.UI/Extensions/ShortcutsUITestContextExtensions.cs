@@ -621,7 +621,7 @@ public static class ShortcutsUITestContextExtensions
         await context.EnterInteractiveModeAsync();
         await context.WaitInteractiveModeAsync();
 
-        context.ExecuteScript("window.close();");
+        context.Driver.Close();
         context.SwitchToLastWindow();
     }
 
