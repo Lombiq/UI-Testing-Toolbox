@@ -15,6 +15,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // `context.SwitchToInteractiveAsync()` extension method opens a new tab with info about the interactive mode and then
 // causes the test thread to wait until you've clicked on the "Continue Test" button in this tab. During that time you
 // can interact with OC as if it was a normal execution.
+// Note: this extension depends on Lombiq.Tests.UI.Shortcuts being enabled in your OC app.
 public class InteractiveModeTests : UITestBase
 {
     public InteractiveModeTests(ITestOutputHelper testOutputHelper)
