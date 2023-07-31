@@ -56,18 +56,6 @@ public static class WebDriverFactory
             return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        double Measure(Action action)
-        {
-            var start = DateTime.Now;
-            for (int i = 0; i < 10; i++) action();
-            return (DateTime.Now - start).TotalSeconds;
-        }
-
-        var timeWithLazy = Measure(() => CreateDriver(BrowserNames.Chrome, () => CreateDriverInner(service: null), lazy: true).Dispose());
-        var timeDirectly = Measure(() => CreateDriver(BrowserNames.Chrome, () => CreateDriverInner(service: null), lazy: false).Dispose());
-
-        // timeWithLazy: 11,1512399; timeDirectly: 11,0381774
-
         return CreateDriver(BrowserNames.Chrome, () => CreateDriverInner(service: null));
     }
 
@@ -174,7 +162,7 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(string browserName, Func<TDriver> driverFactory, bool lazy = true)
+    private static TDriver CreateDriver<TDriver>(string browserName, Func<TDriver> driverFactory)
         where TDriver : IWebDriver
     {
         // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
@@ -186,9 +174,7 @@ public static class WebDriverFactory
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
             // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
-            version = lazy
-                ? _driverSetups.GetOrAdd(browserName, name => new Lazy<string>(() => DriverSetup.AutoSetUp(name).Version)).Value
-                : DriverSetup.AutoSetUp(browserName).Version;
+            version = _driverSetups.GetOrAdd(browserName, name => new Lazy<string>(() => DriverSetup.AutoSetUp(name).Version)).Value;
 
             return driverFactory();
         }
