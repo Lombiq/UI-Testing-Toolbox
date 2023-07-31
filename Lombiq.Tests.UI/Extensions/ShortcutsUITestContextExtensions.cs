@@ -434,6 +434,12 @@ public static class ShortcutsUITestContextExtensions
         /// </summary>
         [Get("/api/ApplicationInfo")]
         Task<ApplicationInfo> GetApplicationInfoFromApiAsync();
+
+        /// <summary>
+        /// Sends a web request to <see cref="InteractiveModeController.IsInteractive"/> endpoint.
+        /// </summary>
+        [Get("/api/InteractiveMode/IsInteractive")]
+        Task<bool> IsInteractiveModeEnabledAsync();
     }
 
     /// <summary>
@@ -582,6 +588,41 @@ public static class ShortcutsUITestContextExtensions
             activateShell);
 
         return eventUrl;
+    }
+
+    /// <summary>
+    /// Opens a new tab with the <see cref="InteractiveModeController"/> <see cref="InteractiveModeController.Index"/>
+    /// page. Visiting this page enables the interactive mode flag so it can be awaited with the <see
+    /// cref="WaitInteractiveModeAsync"/> extension method.
+    /// </summary>
+    public static Task EnterInteractiveModeAsync(this UITestContext context)
+    {
+        context.Driver.SwitchTo().NewWindow(WindowType.Tab);
+        context.Driver.SwitchTo().Window(context.Driver.WindowHandles[^1]);
+
+        return context.GoToAsync<InteractiveModeController>(controller => controller.Index());
+    }
+
+    /// <summary>
+    /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
+    /// <see langword="true"/>.
+    /// </summary>
+    public static async Task WaitInteractiveModeAsync(this UITestContext context)
+    {
+        var client = context.GetApi();
+        while (await client.IsInteractiveModeEnabledAsync())
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        }
+    }
+
+    public static async Task SwitchToInteractiveAsync(this UITestContext context)
+    {
+        await context.EnterInteractiveModeAsync();
+        await context.WaitInteractiveModeAsync();
+
+        context.Driver.Close();
+        context.SwitchToLastWindow();
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>

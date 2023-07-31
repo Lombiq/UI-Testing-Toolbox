@@ -25,8 +25,9 @@ Highlights:
 - Support for [TeamCity test metadata reporting](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html) so you can see the important details and metrics of a test at a glance in a TeamCity CI/CD server.
 - Visual verification testing: You can make the test fail if the look of the app changes. Demo video [here](https://www.youtube.com/watch?v=a-1zKjxTKkk).
 - If your app uses a camera, a fake video capture source in Chrome is supported. [Here's a demo video of the feature](https://www.youtube.com/watch?v=sGcD0eJ2ytc), and check out the docs [here](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md).
+- Interactive mode for debugging the app while the test is paused. [Here's a demo of the feature](Lombiq.Tests.UI.Samples/Tests/InteractiveModeTests.cs).
 
-See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
+See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
 Looking not just for dynamic testing but also static code analysis? Check out our [.NET Analyzers project](https://github.com/Lombiq/.NET-Analyzers).
 
