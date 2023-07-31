@@ -7,16 +7,12 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
-using System.Net;
 
 namespace Lombiq.Tests.UI.Services;
 
 public static class WebDriverFactory
 {
-    private static readonly ConcurrentDictionary<string, Lazy<string>> _driverSetups = new();
-
     public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         ChromeDriver CreateDriverInner(ChromeDriverService service)
@@ -165,25 +161,10 @@ public static class WebDriverFactory
     private static TDriver CreateDriver<TDriver>(string browserName, Func<TDriver> driverFactory)
         where TDriver : IWebDriver
     {
-        // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
-        // But this way the version is also stored and can be used in the exception message if there is a problem.
-        var version = "<UNKNOWN>";
-
         try
         {
-            // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
-            // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
-            // https://stackoverflow.com/a/31637510/220230
-            version = _driverSetups.GetOrAdd(browserName, name => new Lazy<string>(() => DriverSetup.AutoSetUp(name).Version)).Value;
-
+            DriverSetup.AutoSetUp(browserName);
             return driverFactory();
-        }
-        catch (WebException ex)
-        {
-            throw new WebDriverException(
-                $"Failed to download the web driver version {version} with the message \"{ex.Message}\". If it's a " +
-                $"404 error, then likely there is no driver available for your specific browser version.",
-                ex);
         }
         catch (Exception ex)
         {
