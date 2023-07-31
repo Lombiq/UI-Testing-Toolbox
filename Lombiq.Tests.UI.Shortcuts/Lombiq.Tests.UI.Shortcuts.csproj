@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.1-alpha.0.osoe-664" />
   </ItemGroup>
 
 </Project>

@@ -93,9 +93,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="6.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="6.0.1-alpha.0.osoe-664" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.1-alpha.0.osoe-664" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.1-alpha.0.osoe-664" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
     <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build
     to use a PNPM version higher than 7.x.x. We need to upgrade solutions to use PNPM 8, also see
