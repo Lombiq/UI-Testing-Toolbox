@@ -174,7 +174,7 @@ public static class WebDriverFactory
             // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
             // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
             // https://stackoverflow.com/a/31637510/220230
-            version = _driverSetups.GetOrAdd(browserName, name => new Lazy<string>(() => DriverSetup.AutoSetUp(name).BrowserName)).Value;
+            version = _driverSetups.GetOrAdd(browserName, name => new Lazy<string>(() => DriverSetup.AutoSetUp(name).Version)).Value;
 
             return driverFactory();
         }
