@@ -13,6 +13,8 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class WebDriverFactory
 {
+    private static readonly object _setupLock = new();
+
     public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         ChromeDriver CreateDriverInner(ChromeDriverService service)
@@ -163,7 +165,7 @@ public static class WebDriverFactory
     {
         try
         {
-            DriverSetup.AutoSetUp(browserName);
+            lock (_setupLock) DriverSetup.AutoSetUp(browserName);
             return driverFactory();
         }
         catch (Exception ex)
