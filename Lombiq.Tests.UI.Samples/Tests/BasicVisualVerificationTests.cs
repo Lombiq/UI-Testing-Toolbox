@@ -54,7 +54,7 @@ public class BasicVisualVerificationTests : UITestBase
     // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
     // in 2022.
-    [Theory, Edge]
+    [Theory, Chrome, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
