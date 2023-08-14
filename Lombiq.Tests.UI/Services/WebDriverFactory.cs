@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -18,9 +19,9 @@ public static class WebDriverFactory
 {
     private static readonly object _setupLock = new();
 
-    public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        ChromeDriver CreateDriverInner(ChromeDriverService service)
+        Task<ChromeDriver> CreateDriverInnerAsync(ChromeDriverService service)
         {
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
@@ -48,20 +49,22 @@ public static class WebDriverFactory
             // Helps with misconfigured hosts.
             if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
-            return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            return Task.FromResult(
+                new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
+                    .SetCommonTimeouts(pageLoadTimeout));
         }
 
         var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
         if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
-            return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
+            return CreateDriverInnerAsync(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(BrowserNames.Chrome, () => CreateDriverInner(service: null));
+        return CreateDriverAsync(BrowserNames.Chrome, () => CreateDriverInnerAsync(service: null));
     }
 
-    public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(BrowserNames.Edge, () =>
+    public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(BrowserNames.Edge, async () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -71,7 +74,7 @@ public static class WebDriverFactory
             // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
             // sets the full path as the browser's binary location.
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                CliWrapHelper.WhichAsync("microsoft-edge-stable").GetAwaiter().GetResult().FirstOrDefault() is { } binaryLocation)
+                (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
             {
                 options.BinaryLocation = binaryLocation.FullName;
             }
@@ -84,7 +87,7 @@ public static class WebDriverFactory
             return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
-    public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static Task<FirefoxDriver> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         var options = new FirefoxOptions().SetCommonOptions();
 
@@ -101,11 +104,13 @@ public static class WebDriverFactory
 
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriver(BrowserNames.Firefox, () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
+        return CreateDriverAsync(
+            BrowserNames.Firefox,
+            () => Task.FromResult(new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout)));
     }
 
-    public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(BrowserNames.InternetExplorer, () =>
+    public static Task<InternetExplorerDriver> CreateInternetExplorerDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(BrowserNames.InternetExplorer, () =>
         {
             var options = new InternetExplorerOptions().SetCommonOptions();
 
@@ -113,7 +118,7 @@ public static class WebDriverFactory
             options.AcceptInsecureCertificates = false;
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+            return Task.FromResult(new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout));
         });
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
@@ -172,13 +177,13 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(string browserName, Func<TDriver> driverFactory)
+    private static async Task<TDriver> CreateDriverAsync<TDriver>(string browserName, Func<Task<TDriver>> driverFactory)
         where TDriver : IWebDriver
     {
         try
         {
-            lock (_setupLock) DriverSetup.AutoSetUp(browserName);
-            return driverFactory();
+            AutoSetup(browserName);
+            return await driverFactory();
         }
         catch (Exception ex)
         {
@@ -187,6 +192,13 @@ public static class WebDriverFactory
                 $"leftover web driver process that you have to kill manually. Full exception: {ex}",
                 ex);
         }
+    }
+
+    // We don't use the async version of auto setup because it doesn't do any locking. In fact it's just the sync method
+    // passed to Task.Run() so it wouldn't benefit us anyway.
+    private static void AutoSetup(string browserName)
+    {
+        lock (_setupLock) DriverSetup.AutoSetUp(browserName);
     }
 
     private sealed class ChromeConfiguration
