@@ -67,7 +67,7 @@ public static class WebDriverFactory
 
             options.SetCommonChromiumOptions(configuration);
 
-            // While the Edge driver easily locates Edge in Windows, it struggles in Linux, where the different release
+            // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
             // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
             // sets the full path as the browser's binary location.
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
