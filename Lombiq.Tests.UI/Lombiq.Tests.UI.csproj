@@ -55,6 +55,7 @@
     <PackageReference Include="Atata.Bootstrap" Version="2.1.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="2.3.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="2.2.0" />
+    <PackageReference Include="Atata.WebDriverSetup" Version="2.7.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="3.0.156" />
@@ -92,9 +93,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="6.0.1-alpha.0.gov-15" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.1-alpha.0.gov-15" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.1-alpha.0.gov-15" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="7.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="7.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="7.0.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 

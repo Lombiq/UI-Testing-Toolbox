@@ -1,3 +1,4 @@
+using Atata.WebDriverSetup;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -6,18 +7,13 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
-using System.Net;
-using WebDriverManager;
-using WebDriverManager.DriverConfigs;
-using WebDriverManager.DriverConfigs.Impl;
 
 namespace Lombiq.Tests.UI.Services;
 
 public static class WebDriverFactory
 {
-    private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
+    private static readonly object _setupLock = new();
 
     public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
@@ -58,11 +54,11 @@ public static class WebDriverFactory
             return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(new ChromeConfig(), () => CreateDriverInner(service: null));
+        return CreateDriver(BrowserNames.Chrome, () => CreateDriverInner(service: null));
     }
 
     public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new EdgeConfig(), () =>
+        CreateDriver(BrowserNames.Edge, () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -93,11 +89,11 @@ public static class WebDriverFactory
 
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriver(new FirefoxConfig(), () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
+        return CreateDriver(BrowserNames.Firefox, () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
     }
 
     public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new InternetExplorerConfig(), () =>
+        CreateDriver(BrowserNames.InternetExplorer, () =>
         {
             var options = new InternetExplorerOptions().SetCommonOptions();
 
@@ -164,38 +160,13 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(IDriverConfig driverConfig, Func<TDriver> driverFactory)
+    private static TDriver CreateDriver<TDriver>(string browserName, Func<TDriver> driverFactory)
         where TDriver : IWebDriver
     {
-        // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
-        // But this way the version is also stored and can be used in the exception message if there is a problem.
-        var version = "<UNKNOWN>";
-
         try
         {
-            // Firefox: The FirefoxConfig.GetMatchingBrowserVersion() resolves the browser version but not the
-            // geckodriver version.
-            version = driverConfig is FirefoxConfig
-                ? driverConfig.GetLatestVersion()
-                : driverConfig.GetMatchingBrowserVersion();
-
-            // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
-            // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
-            // https://stackoverflow.com/a/31637510/220230
-            _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
-            {
-                new DriverManager().SetUpDriver(driverConfig, version);
-                return true;
-            })).Value;
-
+            lock (_setupLock) DriverSetup.AutoSetUp(browserName);
             return driverFactory();
-        }
-        catch (WebException ex)
-        {
-            throw new WebDriverException(
-                $"Failed to download the web driver version {version} with the message \"{ex.Message}\". If it's a " +
-                $"404 error, then likely there is no driver available for your specific browser version.",
-                ex);
         }
         catch (Exception ex)
         {
