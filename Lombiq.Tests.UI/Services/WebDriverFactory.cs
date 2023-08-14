@@ -1,4 +1,5 @@
 using Atata.WebDriverSetup;
+using Lombiq.HelpfulLibraries.Cli.Helpers;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -8,6 +9,8 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using System;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -63,6 +66,15 @@ public static class WebDriverFactory
             var options = new EdgeOptions().SetCommonOptions();
 
             options.SetCommonChromiumOptions(configuration);
+
+            // While the Edge driver easily locates Edge in Windows, it struggles in Linux, where the different release
+            // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
+            // sets the full path as the browser's binary location.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                CliWrapHelper.WhichAsync("microsoft-edge-stable").GetAwaiter().GetResult().FirstOrDefault() is { } binaryLocation)
+            {
+                options.BinaryLocation = binaryLocation.FullName;
+            }
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
