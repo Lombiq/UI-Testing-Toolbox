@@ -1,3 +1,5 @@
+using Atata.WebDriverSetup;
+using Lombiq.HelpfulLibraries.Cli.Helpers;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -6,22 +8,20 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
-using System.Net;
-using WebDriverManager;
-using WebDriverManager.DriverConfigs;
-using WebDriverManager.DriverConfigs.Impl;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
 public static class WebDriverFactory
 {
-    private static readonly ConcurrentDictionary<string, Lazy<bool>> _driverSetups = new();
+    private static readonly object _setupLock = new();
 
-    public static ChromeDriver CreateChromeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        ChromeDriver CreateDriverInner(ChromeDriverService service)
+        Task<ChromeDriver> CreateDriverInnerAsync(ChromeDriverService service)
         {
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
@@ -49,24 +49,35 @@ public static class WebDriverFactory
             // Helps with misconfigured hosts.
             if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
-            return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout).SetCommonTimeouts(pageLoadTimeout);
+            return Task.FromResult(
+                new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
+                    .SetCommonTimeouts(pageLoadTimeout));
         }
 
         var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
         if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
-            return CreateDriverInner(ChromeDriverService.CreateDefaultService(driverPath));
+            return CreateDriverInnerAsync(ChromeDriverService.CreateDefaultService(driverPath));
         }
 
-        return CreateDriver(new ChromeConfig(), () => CreateDriverInner(service: null));
+        return CreateDriverAsync(BrowserNames.Chrome, () => CreateDriverInnerAsync(service: null));
     }
 
-    public static EdgeDriver CreateEdgeDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new EdgeConfig(), () =>
+    public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(BrowserNames.Edge, async () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
             options.SetCommonChromiumOptions(configuration);
+
+            // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
+            // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
+            // sets the full path as the browser's binary location.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
+            {
+                options.BinaryLocation = binaryLocation.FullName;
+            }
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
@@ -76,7 +87,7 @@ public static class WebDriverFactory
             return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
-    public static FirefoxDriver CreateFirefoxDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static Task<FirefoxDriver> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
         var options = new FirefoxOptions().SetCommonOptions();
 
@@ -93,11 +104,13 @@ public static class WebDriverFactory
 
         configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-        return CreateDriver(new FirefoxConfig(), () => new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout));
+        return CreateDriverAsync(
+            BrowserNames.Firefox,
+            () => Task.FromResult(new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout)));
     }
 
-    public static InternetExplorerDriver CreateInternetExplorerDriver(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriver(new InternetExplorerConfig(), () =>
+    public static Task<InternetExplorerDriver> CreateInternetExplorerDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(BrowserNames.InternetExplorer, () =>
         {
             var options = new InternetExplorerOptions().SetCommonOptions();
 
@@ -105,7 +118,7 @@ public static class WebDriverFactory
             options.AcceptInsecureCertificates = false;
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+            return Task.FromResult(new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout));
         });
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
@@ -164,38 +177,13 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static TDriver CreateDriver<TDriver>(IDriverConfig driverConfig, Func<TDriver> driverFactory)
+    private static async Task<TDriver> CreateDriverAsync<TDriver>(string browserName, Func<Task<TDriver>> driverFactory)
         where TDriver : IWebDriver
     {
-        // We could just use VersionResolveStrategy.MatchingBrowser as this is what DriverManager.SetUpDriver() does.
-        // But this way the version is also stored and can be used in the exception message if there is a problem.
-        var version = "<UNKNOWN>";
-
         try
         {
-            // Firefox: The FirefoxConfig.GetMatchingBrowserVersion() resolves the browser version but not the
-            // geckodriver version.
-            version = driverConfig is FirefoxConfig
-                ? driverConfig.GetLatestVersion()
-                : driverConfig.GetMatchingBrowserVersion();
-
-            // While SetUpDriver() does locking and caches the driver it's faster not to do any of that if the setup was
-            // already done. For 100 such calls it's around 16s vs <100ms. The Lazy<T> trick taken from:
-            // https://stackoverflow.com/a/31637510/220230
-            _ = _driverSetups.GetOrAdd(driverConfig.GetName(), _ => new Lazy<bool>(() =>
-            {
-                new DriverManager().SetUpDriver(driverConfig, version);
-                return true;
-            })).Value;
-
-            return driverFactory();
-        }
-        catch (WebException ex)
-        {
-            throw new WebDriverException(
-                $"Failed to download the web driver version {version} with the message \"{ex.Message}\". If it's a " +
-                $"404 error, then likely there is no driver available for your specific browser version.",
-                ex);
+            AutoSetup(browserName);
+            return await driverFactory();
         }
         catch (Exception ex)
         {
@@ -204,6 +192,13 @@ public static class WebDriverFactory
                 $"leftover web driver process that you have to kill manually. Full exception: {ex}",
                 ex);
         }
+    }
+
+    // We don't use the async version of auto setup because it doesn't do any locking. In fact it's just the sync method
+    // passed to Task.Run() so it wouldn't benefit us anyway.
+    private static void AutoSetup(string browserName)
+    {
+        lock (_setupLock) DriverSetup.AutoSetUp(browserName);
     }
 
     private sealed class ChromeConfiguration

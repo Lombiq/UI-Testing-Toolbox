@@ -3,7 +3,9 @@ using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
@@ -16,7 +18,16 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
+    [Obsolete($"Please use {nameof(StartAtataScopeAsync)} instead.")]
+    [SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "Backwards compatibility.")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Backwards compatibility.")]
     public static AtataScope StartAtataScope(
+        ITestOutputHelper testOutputHelper,
+        Uri baseUri,
+        OrchardCoreUITestExecutorConfiguration configuration) =>
+        StartAtataScopeAsync(testOutputHelper, baseUri, configuration).GetAwaiter().GetResult();
+
+    public static async Task<AtataScope> StartAtataScopeAsync(
         ITestOutputHelper testOutputHelper,
         Uri baseUri,
         OrchardCoreUITestExecutorConfiguration configuration)
@@ -33,7 +44,7 @@ public static class AtataFactory
         var builder = AtataContext.Configure()
             // The drivers are disposed when disposing AtataScope.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            .UseDriver(CreateDriver(browserConfiguration, timeoutConfiguration, testOutputHelper))
+            .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
 #pragma warning restore CA2000 // Dispose objects before losing scope
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
@@ -56,12 +67,12 @@ public static class AtataFactory
             .UseCmdForWindows()
             .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 
-    private static IWebDriver CreateDriver(
+    private static async Task<IWebDriver> CreateDriverAsync(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
         ITestOutputHelper testOutputHelper)
     {
-        IWebDriver From<T>(Func<BrowserConfiguration, TimeSpan, T> factory)
+        Task<T> FromAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
             where T : IWebDriver =>
             factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
 
@@ -82,10 +93,10 @@ public static class AtataFactory
             {
                 return browserConfiguration.Browser switch
                 {
-                    Browser.Chrome => From(WebDriverFactory.CreateChromeDriver),
-                    Browser.Edge => From(WebDriverFactory.CreateEdgeDriver),
-                    Browser.Firefox => From(WebDriverFactory.CreateFirefoxDriver),
-                    Browser.InternetExplorer => From(WebDriverFactory.CreateInternetExplorerDriver),
+                    Browser.Chrome => await FromAsync(WebDriverFactory.CreateChromeDriverAsync),
+                    Browser.Edge => await FromAsync(WebDriverFactory.CreateEdgeDriverAsync),
+                    Browser.Firefox => await FromAsync(WebDriverFactory.CreateFirefoxDriverAsync),
+                    Browser.InternetExplorer => await FromAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

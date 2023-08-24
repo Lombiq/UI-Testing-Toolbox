@@ -55,6 +55,7 @@
     <PackageReference Include="Atata.Bootstrap" Version="2.1.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="2.3.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="2.2.0" />
+    <PackageReference Include="Atata.WebDriverSetup" Version="2.7.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="3.0.156" />
@@ -92,14 +93,10 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="6.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="6.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="6.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="7.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="7.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="7.0.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
-    <!--The reference for NodeJs Extensions is for the reason to prevent NuGet build
-    to use a PNPM version higher than 7.x.x. We need to upgrade solutions to use PNPM 8, also see
-    https://github.com/Lombiq/NodeJs-Extensions/issues/42. -->
-    <PackageReference Include="Lombiq.NodeJs.Extensions" Version="1.2.4" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:

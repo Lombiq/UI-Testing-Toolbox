@@ -612,7 +612,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
 
-                await context.Get(By.Id("modalFooterOk")).ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(By.Id("modalFooterOk"));
+
+                // Wait until new folder is created.
+                context.Exists(
+                    By.XPath("//div[contains(@class, 'alert-info') and contains(.,'This folder is empty')]"));
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
