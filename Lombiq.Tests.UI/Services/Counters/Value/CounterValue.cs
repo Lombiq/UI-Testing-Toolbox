@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services.Counters.Value;
 
@@ -9,5 +9,5 @@ public abstract class CounterValue<TValue> : ICounterValue
     public TValue Value { get; set; }
 
     public virtual IEnumerable<string> Dump() =>
-        new[] { FormattableString.Invariant($"{GetType().Name} value: {Value}") };
+        new[] { string.Create(CultureInfo.InvariantCulture, $"{GetType().Name} value: {Value}") };
 }

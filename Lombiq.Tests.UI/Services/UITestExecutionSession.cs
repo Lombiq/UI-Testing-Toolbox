@@ -117,7 +117,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
-            _context.CounterDataCollector.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
+            _context.CounterDataCollector.Dump().ForEach(_testOutputHelper.WriteLine);
             _context.CounterDataCollector.AssertCounter();
 
             return true;

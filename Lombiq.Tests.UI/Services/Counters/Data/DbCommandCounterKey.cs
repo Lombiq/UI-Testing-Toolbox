@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Services.Counters.Data;
@@ -40,8 +41,9 @@ public abstract class DbCommandCounterKey : CounterKey
         if (Parameters.Any())
         {
             var commandParams = Parameters.Select((parameter, index) =>
-                FormattableString.Invariant(
-                    $"[{index.ToTechnicalString()}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"[{index}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
                 .Join(", ");
             lines.Add($"\t\t{commandParams}");
         }

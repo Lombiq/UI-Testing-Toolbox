@@ -54,5 +54,5 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
     public void AssertCounter() => AssertCounter(this);
 
     private void ProbeCaptureCompleted(ICounterProbe probe) =>
-        probe.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
+        probe.Dump().ForEach(_testOutputHelper.WriteLine);
 }
