@@ -63,3 +63,4 @@ public class TenantTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Testing in tenants.
+// NEXT STATION: Head over to InteractiveModeTests.cs.

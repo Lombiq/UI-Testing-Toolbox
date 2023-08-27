@@ -389,8 +389,16 @@ to customize the name of the dump item.";
 
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                context.SaveSuggestedImage(element, approvedContext.BaselineImagePath, approvedContext.BaselineImageFileName);
-                throw new VisualVerificationBaselineImageNotFoundException(approvedContext.BaselineImagePath);
+                if (context.Configuration.MaxRetryCount == 0)
+                {
+                    context.SaveSuggestedImage(
+                        element,
+                        approvedContext.BaselineImagePath,
+                        approvedContext.BaselineImageFileName);
+                }
+
+                throw new VisualVerificationBaselineImageNotFoundException(
+                    approvedContext.BaselineImagePath, context.Configuration.MaxRetryCount);
             }
 
             baselineImage = Image.Load(approvedContext.BaselineImagePath);
