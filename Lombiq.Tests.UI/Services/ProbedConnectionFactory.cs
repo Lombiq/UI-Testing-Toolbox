@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Data;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Data.Common;
 using YesSql;
@@ -19,6 +20,14 @@ public class ProbedConnectionFactory : IConnectionFactory
         _counterDataCollector = counterDataCollector;
     }
 
-    public DbConnection CreateConnection() =>
-        new ProbedDbConnection(_connectionFactory.CreateConnection(), _counterDataCollector);
+    public DbConnection CreateConnection()
+    {
+        var connection = _connectionFactory.CreateConnection();
+
+        // This consition and the ProbedSqliteConnection can be removed once
+        // https://github.com/OrchardCMS/OrchardCore/issues/14217 get fixed.
+        return connection is SqliteConnection sqliteConnection
+            ? new ProbedSqliteConnection(sqliteConnection, _counterDataCollector)
+            : new ProbedDbConnection(connection, _counterDataCollector);
+    }
 }
