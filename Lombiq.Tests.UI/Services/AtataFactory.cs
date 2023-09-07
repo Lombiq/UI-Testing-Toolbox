@@ -3,7 +3,6 @@ using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
