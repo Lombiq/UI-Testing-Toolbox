@@ -18,15 +18,6 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
-    [Obsolete($"Please use {nameof(StartAtataScopeAsync)} instead.")]
-    [SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "Backwards compatibility.")]
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Backwards compatibility.")]
-    public static AtataScope StartAtataScope(
-        ITestOutputHelper testOutputHelper,
-        Uri baseUri,
-        OrchardCoreUITestExecutorConfiguration configuration) =>
-        StartAtataScopeAsync(testOutputHelper, baseUri, configuration).GetAwaiter().GetResult();
-
     public static async Task<AtataScope> StartAtataScopeAsync(
         ITestOutputHelper testOutputHelper,
         Uri baseUri,
