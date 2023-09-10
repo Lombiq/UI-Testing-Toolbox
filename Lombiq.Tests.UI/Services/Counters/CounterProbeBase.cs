@@ -28,6 +28,11 @@ public abstract class CounterProbeBase : ICounterProbe
 
     public virtual IEnumerable<string> DumpSummary()
     {
+        if (!Counters.Any())
+        {
+            return Enumerable.Empty<string>();
+        }
+
         var lines = new List<string>
         {
             "Summary:",

@@ -25,6 +25,7 @@ public abstract class DbCommandCounterKey : CounterKey
             && other.GetType() == GetType()
             && GetType() == otherKey.GetType()
             && string.Equals(CommandText, otherKey.CommandText, StringComparison.OrdinalIgnoreCase)
+            && Parameters.Any()
             && Parameters
                 .Select(param => (param.Key, param.Value))
                 .SequenceEqual(otherKey.Parameters.Select(param => (param.Key, param.Value)));
