@@ -8,6 +8,11 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public interface ICounterValue
 {
     /// <summary>
+    /// Gets the display name of the value.
+    /// </summary>
+    string DisplayName { get; }
+
+    /// <summary>
     /// Dumps the value content to a human-readable format.
     /// </summary>
     /// <returns>A human-readable representation of the instance.</returns>

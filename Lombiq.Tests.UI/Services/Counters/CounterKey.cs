@@ -7,6 +7,7 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public abstract class CounterKey : ICounterKey
 #pragma warning restore S4035 // Classes implementing "IEquatable<T>" should be sealed
 {
+    public abstract string DisplayName { get; }
     public abstract bool Equals(ICounterKey other);
     protected abstract int HashCode();
     public override bool Equals(object obj) => Equals(obj as ICounterKey);

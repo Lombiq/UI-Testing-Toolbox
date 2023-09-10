@@ -6,6 +6,8 @@ namespace Lombiq.Tests.UI.Services.Counters.Value;
 public abstract class CounterValue<TValue> : ICounterValue
     where TValue : struct
 {
+    public virtual string DisplayName => "Count";
+
     public TValue Value { get; set; }
 
     public virtual IEnumerable<string> Dump() =>

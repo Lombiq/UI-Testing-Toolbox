@@ -6,6 +6,8 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 
 public sealed class DbCommandExecuteCounterKey : DbCommandCounterKey
 {
+    public override string DisplayName => "Database command with parameters execute counter";
+
     public DbCommandExecuteCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
         : base(commandText, parameters)
     {

@@ -10,7 +10,7 @@ public abstract class CounterProbeBase : ICounterProbe
 {
     private readonly ConcurrentDictionary<ICounterKey, ICounterValue> _counters = new();
 
-    public abstract bool IsRunning { get; }
+    public abstract bool IsAttached { get; }
     public Action<ICounterProbe> CaptureCompleted { get; set; }
     public IDictionary<ICounterKey, ICounterValue> Counters => _counters;
 
@@ -39,14 +39,14 @@ public abstract class CounterProbeBase : ICounterProbe
                 {
                     var keyGroupLines = new List<string>
                     {
-                        keyGroup.Key.Name,
+                        keyGroup.First().Key.DisplayName,
                     };
 
                     var integerCounter = keyGroup.Select(entry => entry.Value)
                         .OfType<IntegerCounterValue>()
                         .Select(value => value.Value)
                         .Max();
-                    keyGroupLines.Add($"\t{nameof(IntegerCounterValue)} max: {integerCounter.ToTechnicalString()}");
+                    keyGroupLines.Add($"\tmaximum: {integerCounter.ToTechnicalString()}");
 
                     return keyGroupLines.Select(line => $"\t{line}");
                 }));

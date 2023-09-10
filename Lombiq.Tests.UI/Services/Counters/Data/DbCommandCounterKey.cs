@@ -34,8 +34,8 @@ public abstract class DbCommandCounterKey : CounterKey
     {
         var lines = new List<string>
         {
-            GetType().Name,
-            $"\t{CommandText}",
+            DisplayName,
+            $"\tQuery: {CommandText}",
         };
 
         if (Parameters.Any())
@@ -45,7 +45,7 @@ public abstract class DbCommandCounterKey : CounterKey
                     CultureInfo.InvariantCulture,
                     $"[{index}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
                 .Join(", ");
-            lines.Add($"\t\t{commandParams}");
+            lines.Add($"\t\tParameters: {commandParams}");
         }
 
         return lines;

@@ -9,6 +9,11 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public interface ICounterKey : IEquatable<ICounterKey>
 {
     /// <summary>
+    /// Gets the display name of the key.
+    /// </summary>
+    string DisplayName { get; }
+
+    /// <summary>
     /// Dumps the key content to a human-readable format.
     /// </summary>
     /// <returns>A human-readable representation of instance.</returns>

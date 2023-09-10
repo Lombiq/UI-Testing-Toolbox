@@ -11,7 +11,7 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly ConcurrentBag<ICounterProbe> _probes = new();
-    public override bool IsRunning => true;
+    public override bool IsAttached => true;
     public Action<ICounterProbe> AssertCounterData { get; set; }
     public string Phase { get; set; }
 
@@ -32,7 +32,7 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 
     public override void Increment(ICounterKey counter)
     {
-        _probes.Where(probe => probe.IsRunning)
+        _probes.Where(probe => probe.IsAttached)
             .ForEach(probe => probe.Increment(counter));
         base.Increment(counter);
     }

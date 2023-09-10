@@ -9,9 +9,9 @@ namespace Lombiq.Tests.UI.Services.Counters;
 public interface ICounterProbe
 {
     /// <summary>
-    /// Gets a value indicating whether the instance is running.
+    /// Gets a value indicating whether the instance is attached.
     /// </summary>
-    bool IsRunning { get; }
+    bool IsAttached { get; }
 
     /// <summary>
     /// Gets or sets a callback which is called when the probe completed capturing the data.

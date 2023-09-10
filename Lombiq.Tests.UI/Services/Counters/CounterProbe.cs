@@ -8,7 +8,7 @@ public abstract class CounterProbe : CounterProbeBase, IDisposable
 {
     private bool _disposed;
 
-    public override bool IsRunning => !_disposed;
+    public override bool IsAttached => !_disposed;
     public ICounterDataCollector CounterDataCollector { get; init; }
 
     public override IEnumerable<string> Dump()

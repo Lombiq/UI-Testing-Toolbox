@@ -6,6 +6,8 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 
 public class DbReaderReadCounterKey : DbCommandCounterKey
 {
+    public override string DisplayName => "Database read counter";
+
     public DbReaderReadCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
         : base(commandText, parameters)
     {
