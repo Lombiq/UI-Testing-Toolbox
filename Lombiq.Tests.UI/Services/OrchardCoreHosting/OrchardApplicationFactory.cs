@@ -77,7 +77,9 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 var environment = context.HostingEnvironment;
                 var nLogConfig = Path.Combine(environment.ContentRootPath, "NLog.config");
                 var factory = new LogFactory()
-                    .LoadConfiguration(nLogConfig);
+                    .Setup()
+                    .LoadConfigurationFromFile(nLogConfig)
+                    .LogFactory;
 
                 factory.Configuration.Variables["configDir"] = environment.ContentRootPath;
 
