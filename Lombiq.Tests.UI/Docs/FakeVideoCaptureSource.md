@@ -24,7 +24,7 @@ ffmpeg -y -i test.mp4 test.mjpeg
 ffmpeg -y -i test.mp4 -vf "scale=480:720" test.mjpeg
 ```
 
-_Warning: Using the `-filter:v scale=480:-1` command might "ruin" the video, resulting in a black screen in the browser without warnings.`
+_Warning: Using the `-filter:v scale=480:-1` command might "ruin" the video, resulting in a black screen in the browser without warnings._
  
 ## Sample
 
