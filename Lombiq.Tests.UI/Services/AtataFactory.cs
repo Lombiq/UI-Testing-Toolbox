@@ -32,10 +32,7 @@ public static class AtataFactory
         var browserConfiguration = configuration.BrowserConfiguration;
 
         var builder = AtataContext.Configure()
-            // The drivers are disposed when disposing AtataScope.
-#pragma warning disable CA2000 // Dispose objects before losing scope
             .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
-#pragma warning restore CA2000 // Dispose objects before losing scope
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
@@ -92,10 +89,13 @@ public static class AtataFactory
             }
             catch (WebDriverException ex)
             {
+                // This warning seems to be a false positive as there is nothing that indicates its validity.
+#pragma warning disable S2589 // Boolean expressions should not be gratuitous
                 if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || currentTry >= maxTryCount)
                 {
                     throw;
                 }
+#pragma warning restore S2589 // Boolean expressions should not be gratuitous
 
                 currentTry++;
                 var retryCount = maxTryCount - currentTry;
