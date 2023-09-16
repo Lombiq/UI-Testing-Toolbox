@@ -132,7 +132,7 @@ public class SafeWaitAsync<T> : IWait<T>
     {
         if (typeof(TResult) == typeof(bool))
         {
-            if (result is true) return true;
+            if (result.Equals(true)) return true;
         }
         else if (!Equals(result, default(TResult)) &&
             (result is not IEnumerable enumerable || enumerable.Cast<object>().Any()))
