@@ -8,7 +8,7 @@ You can use `y4m` or `mjpeg` video files as a fake video capture source in the C
 
 If you have a video file in e.g. `mp4` format, use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
 
-_Hint: The `mjpeg` format will usually result in a smaller file size._
+> ℹ️ The `mjpeg` format will usually result in a smaller file size.
 
 ```bash
 # Convert mp4 to y4m.
