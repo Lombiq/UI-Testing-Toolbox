@@ -8,21 +8,23 @@ You can use `y4m` or `mjpeg` video files as a fake video capture source in the C
 
 If you have a video file in e.g. `mp4` format, use your preferred video tool to convert it to one of the formats mentioned above. If you don't have a preferred tool, simply use `ffmpeg`.
 
-_Hint: The `mjpeg` format will usually result in a smaller file size._
+> ℹ️ The `mjpeg` format will usually result in a smaller file size.
 
 ```bash
 # Convert mp4 to y4m.
 ffmpeg -y -i test.mp4 -pix_fmt yuv420p test.y4m
 
 # Convert with resize to 480p.
-ffmpeg -y -i test.mp4 -filter:v scale=480:-1 -pix_fmt yuv420p test.y4m
+ffmpeg -y -i test.mp4 -vf "scale=480:720" -pix_fmt yuv420p test.y4m
 
 # Convert mp4 to mjpeg.
 ffmpeg -y -i test.mp4 test.mjpeg
 
 # Convert with resize to 480p.
-ffmpeg -y -i test.mp4 -filter:v scale=480:-1 test.mjpeg
+ffmpeg -y -i test.mp4 -vf "scale=480:720" test.mjpeg
 ```
+
+> ⚠ Using the `-filter:v scale=480:-1` command might "ruin" the video, resulting in a black screen in the browser without warnings.
 
 ## Sample
 

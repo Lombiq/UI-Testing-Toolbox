@@ -154,6 +154,9 @@ public static class WebDriverFactory
         {
             var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
 
+            // In some cases the video would not start automatically. To avoid this scenario we are adding the
+            // "disable-gesture-requirement-for-media-playback" flag.
+            options.AddArgument("disable-gesture-requirement-for-media-playback");
             options.AddArgument("use-fake-device-for-media-stream");
             options.AddArgument("use-fake-ui-for-media-stream");
             options.AddArgument($"use-file-for-fake-video-capture={fakeCameraSourceFilePath}");
