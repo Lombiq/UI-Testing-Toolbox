@@ -66,7 +66,7 @@ public static class AtataFactory
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
         const int maxTryCount = 3;
-        var currentTry = 0;
+        var currentTry = 1;
 
         // Force headless mode if we are in Linux without a working graphical environment.
         if (!browserConfiguration.Headless && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -92,7 +92,7 @@ public static class AtataFactory
                 currentTry++;
                 var retryCount = maxTryCount - currentTry;
 
-                if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || currentTry >= maxTryCount)
+                if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || retryCount <= 0)
                 {
                     throw;
                 }
