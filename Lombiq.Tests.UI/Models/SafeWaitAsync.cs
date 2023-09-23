@@ -130,9 +130,9 @@ public class SafeWaitAsync<T> : IWait<T>
 
     protected virtual bool DoesConditionResultSatisfy<TResult>(TResult result)
     {
-        if (typeof(TResult) == typeof(bool))
+        if (result is bool resultBool)
         {
-            if (result.Equals(true)) return true;
+            if (resultBool) return true;
         }
         else if (!Equals(result, default(TResult)) &&
             (result is not IEnumerable enumerable || enumerable.Cast<object>().Any()))
