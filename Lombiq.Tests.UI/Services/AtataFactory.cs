@@ -89,16 +89,13 @@ public static class AtataFactory
             }
             catch (WebDriverException ex)
             {
-                // This warning seems to be a false positive as there is nothing that indicates its validity.
-#pragma warning disable S2589 // Boolean expressions should not be gratuitous
+                currentTry++;
+                var retryCount = maxTryCount - currentTry;
+
                 if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || currentTry >= maxTryCount)
                 {
                     throw;
                 }
-#pragma warning restore S2589 // Boolean expressions should not be gratuitous
-
-                currentTry++;
-                var retryCount = maxTryCount - currentTry;
 
                 // Not using parameters because the exception can throw off the string format.
                 testOutputHelper.WriteLineTimestampedAndDebug(
