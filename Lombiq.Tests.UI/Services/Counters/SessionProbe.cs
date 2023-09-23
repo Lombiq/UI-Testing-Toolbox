@@ -9,7 +9,7 @@ using YesSql.Indexes;
 
 namespace Lombiq.Tests.UI.Services.Counters;
 
-public sealed class SessionProbe : CounterProbe, ISession, IRelativeUrlConfigurationKey
+public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, ISession, IRelativeUrlConfigurationKey
 {
     private readonly ISession _session;
     public string RequestMethod { get; init; }

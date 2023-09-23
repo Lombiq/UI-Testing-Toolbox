@@ -10,7 +10,7 @@ public class CounterConfiguration
     /// <summary>
     /// Gets or sets the counter assertion method.
     /// </summary>
-    public Action<ICounterProbe> AssertCounterData { get; set; }
+    public Action<ICounterDataCollector, ICounterProbe> AssertCounterData { get; set; }
 
     /// <summary>
     /// Gets or sets the exclude filter. Can be used to exclude counted values before assertion.

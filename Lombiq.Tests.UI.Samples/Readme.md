@@ -27,6 +27,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Basic visual verification tests](Tests/BasicVisualVerificationTests.cs)
 - [Testing in tenants](Tests/TenantTests.cs)
 - [Interactive mode](Tests/InteractiveModeTests.cs)
+- [Duplicated SQL query detector](Tests/DuplicatedSqlQueryDetectorTests.cs)
 
 ## Adding new tutorials
 

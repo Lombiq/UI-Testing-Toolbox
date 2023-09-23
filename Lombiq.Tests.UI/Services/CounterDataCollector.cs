@@ -11,8 +11,9 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly ConcurrentBag<ICounterProbe> _probes = new();
+    private readonly ConcurrentBag<Exception> _postponedCounterExceptions = new();
     public override bool IsAttached => true;
-    public Action<ICounterProbe> AssertCounterData { get; set; }
+    public Action<ICounterDataCollector, ICounterProbe> AssertCounterData { get; set; }
     public string Phase { get; set; }
 
     public CounterDataCollector(ITestOutputHelper testOutputHelper) =>
@@ -27,6 +28,7 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
     public void Reset()
     {
         _probes.Clear();
+        _postponedCounterExceptions.Clear();
         Clear();
     }
 
@@ -38,6 +40,7 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
     }
 
     public override string DumpHeadline() => $"{nameof(CounterDataCollector)}, Phase = {Phase}";
+
     public override IEnumerable<string> Dump()
     {
         var lines = new List<string>
@@ -50,8 +53,21 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
         return lines;
     }
 
-    public void AssertCounter(ICounterProbe probe) => AssertCounterData?.Invoke(probe);
-    public void AssertCounter() => AssertCounter(this);
+    public void AssertCounter(ICounterProbe probe) => AssertCounterData?.Invoke(this, probe);
+
+    public void AssertCounter()
+    {
+        if (_postponedCounterExceptions.Any())
+        {
+            throw new AggregateException(
+                "There were exceptions out of the test execution context.",
+                _postponedCounterExceptions);
+        }
+
+        AssertCounter(this);
+    }
+
+    public void PostponeCounterException(Exception exception) => _postponedCounterExceptions.Add(exception);
 
     private void ProbeCaptureCompleted(ICounterProbe probe) =>
         probe.Dump().ForEach(_testOutputHelper.WriteLine);

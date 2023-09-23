@@ -20,8 +20,9 @@ public class CounterConfigurations
     /// </summary>
     public RunningPhaseCounterConfiguration Running { get; } = new();
 
-    public static Action<ICounterProbe> DefaultAssertCounterData(PhaseCounterConfiguration configuration) =>
-        probe =>
+    public static Action<ICounterDataCollector, ICounterProbe> DefaultAssertCounterData(
+        PhaseCounterConfiguration configuration) =>
+        (collector, probe) =>
         {
             var counterConfiguration = configuration as CounterConfiguration;
             if (counterConfiguration is RunningPhaseCounterConfiguration runningPhaseCounterConfiguration
@@ -46,21 +47,28 @@ public class CounterConfigurations
 
             if (threshold is { } settings && settings.Settings.Disable is not true)
             {
-                AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
-                    probe,
-                    counterConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbCommandExecutionThreshold)}",
-                    settings.Settings.DbCommandExecutionThreshold);
-                AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
-                    probe,
-                    counterConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbCommandTextExecutionThreshold)}",
-                    settings.Settings.DbCommandTextExecutionThreshold);
-                AssertIntegerCounterValue<DbReaderReadCounterKey>(
-                    probe,
-                    counterConfiguration.ExcludeFilter ?? (key => false),
-                    $"{settings.Name}.{nameof(settings.Settings.DbReaderReadThreshold)}",
-                    settings.Settings.DbReaderReadThreshold);
+                try
+                {
+                    AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandExecutionThreshold)}",
+                        settings.Settings.DbCommandExecutionThreshold);
+                    AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandTextExecutionThreshold)}",
+                        settings.Settings.DbCommandTextExecutionThreshold);
+                    AssertIntegerCounterValue<DbReaderReadCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbReaderReadThreshold)}",
+                        settings.Settings.DbReaderReadThreshold);
+                }
+                catch (CounterThresholdException exception) when (probe is IOutOfTestContextCounterProbe)
+                {
+                    collector.PostponeCounterException(exception);
+                }
             }
         };
 

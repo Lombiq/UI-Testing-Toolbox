@@ -1,3 +1,5 @@
+using System;
+
 namespace Lombiq.Tests.UI.Services.Counters;
 
 /// <summary>
@@ -26,4 +28,9 @@ public interface ICounterDataCollector : ICounterProbe
     /// Asserts the data collected by the instance.
     /// </summary>
     void AssertCounter();
+
+    /// <summary>
+    /// Postpones exception thrown by a counter in case when the exception was thrown out of the test context.
+    /// </summary>
+    void PostponeCounterException(Exception exception);
 }
