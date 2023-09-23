@@ -49,11 +49,7 @@ public static class IWebApplicationInstanceExtensions
             // Creating a fake HttpContext like in ModularBackgroundService.
             httpContextAccessor.HttpContext = shellScope.ShellContext.CreateHttpContext();
             var httpContext = httpContextAccessor.HttpContext;
-
-            // Seems to be a false positive warning. IDE thinks that left hand side can't be null.
-#pragma warning disable S2583 // Conditionally executed code should be reachable
-            httpContext.Request.PathBase = "/" + shellHost.GetSettings(tenant).RequestUrlPrefix ?? string.Empty;
-#pragma warning restore S2583 // Conditionally executed code should be reachable
+            httpContext.Request.PathBase = "/" + shellHost.GetSettings(tenant).RequestUrlPrefix;
             httpContext.Features.Set(new RecipeEnvironmentFeature());
 
             await shellScope.UsingAsync(execute, activateShell);
