@@ -51,29 +51,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="2.8.1" />
+    <PackageReference Include="Atata" Version="2.9.0" />
     <PackageReference Include="Atata.Bootstrap" Version="2.1.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="2.3.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="2.4.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="2.2.0" />
-    <PackageReference Include="Atata.WebDriverSetup" Version="2.7.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
+    <PackageReference Include="Atata.WebDriverSetup" Version="2.8.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
-    <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="3.0.156" />
+    <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="3.0.183" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.0.52" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.18.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="OrchardCore.ContentFields" Version="1.6.0" />
-    <PackageReference Include="OrchardCore.Logging.NLog" Version="1.6.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.6.0" />
-    <PackageReference Include="OrchardCore.Recipes.Core" Version="1.6.0" />
-    <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
-    <PackageReference Include="Selenium.Axe" Version="4.0.13" />
+    <PackageReference Include="OrchardCore.ContentFields" Version="1.7.0" />
+    <PackageReference Include="OrchardCore.Logging.NLog" Version="1.7.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.7.0" />
+    <PackageReference Include="OrchardCore.Recipes.Core" Version="1.7.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
+    <PackageReference Include="Selenium.Axe" Version="4.0.14" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="WebDriverManager" Version="2.16.2" />
-    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit" Version="2.5.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -92,10 +92,10 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="2.2.2" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="7.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="7.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="7.0.0" />
+    <PackageReference Include="Lombiq.Tests" Version="2.2.5" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="8.0.2" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="8.0.2" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="8.0.2" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 

@@ -49,8 +49,7 @@ public static class IWebApplicationInstanceExtensions
             // Creating a fake HttpContext like in ModularBackgroundService.
             httpContextAccessor.HttpContext = shellScope.ShellContext.CreateHttpContext();
             var httpContext = httpContextAccessor.HttpContext;
-
-            httpContext.Request.PathBase = "/" + shellHost.GetSettings(tenant).RequestUrlPrefix ?? string.Empty;
+            httpContext.Request.PathBase = "/" + shellHost.GetSettings(tenant).RequestUrlPrefix;
             httpContext.Features.Set(new RecipeEnvironmentFeature());
 
             await shellScope.UsingAsync(execute, activateShell);

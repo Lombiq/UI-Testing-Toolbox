@@ -3,7 +3,6 @@ using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -18,15 +17,6 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
-    [Obsolete($"Please use {nameof(StartAtataScopeAsync)} instead.")]
-    [SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "Backwards compatibility.")]
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Backwards compatibility.")]
-    public static AtataScope StartAtataScope(
-        ITestOutputHelper testOutputHelper,
-        Uri baseUri,
-        OrchardCoreUITestExecutorConfiguration configuration) =>
-        StartAtataScopeAsync(testOutputHelper, baseUri, configuration).GetAwaiter().GetResult();
-
     public static async Task<AtataScope> StartAtataScopeAsync(
         ITestOutputHelper testOutputHelper,
         Uri baseUri,
@@ -42,10 +32,7 @@ public static class AtataFactory
         var browserConfiguration = configuration.BrowserConfiguration;
 
         var builder = AtataContext.Configure()
-            // The drivers are disposed when disposing AtataScope.
-#pragma warning disable CA2000 // Dispose objects before losing scope
             .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
-#pragma warning restore CA2000 // Dispose objects before losing scope
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
@@ -102,13 +89,13 @@ public static class AtataFactory
             }
             catch (WebDriverException ex)
             {
-                if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || currentTry >= maxTryCount)
+                currentTry++;
+                var retryCount = maxTryCount - currentTry;
+
+                if (!ex.Message.ContainsOrdinalIgnoreCase("Cannot start the driver service on") || retryCount <= 0)
                 {
                     throw;
                 }
-
-                currentTry++;
-                var retryCount = maxTryCount - currentTry;
 
                 // Not using parameters because the exception can throw off the string format.
                 testOutputHelper.WriteLineTimestampedAndDebug(
