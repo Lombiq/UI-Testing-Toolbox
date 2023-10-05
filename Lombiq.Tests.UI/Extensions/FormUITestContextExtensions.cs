@@ -100,6 +100,31 @@ public static class FormUITestContextExtensions
         context.ExecuteScript(script);
     }
 
+    public static void FillInMonacoEditor(
+        this UITestContext context,
+        string editorId,
+        string text)
+    {
+        var script = $@"
+            monaco.editor.getEditors().find((element) =>
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
+            .getModel().setValue({JsonConvert.SerializeObject(text)});";
+
+        context.ExecuteScript(script);
+    }
+
+    public static string GetMonacoEditorText(
+        this UITestContext context,
+        string editorId)
+    {
+        var script = $@"
+            return monaco.editor.getEditors().find((element) =>
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
+            .getModel().getValue();";
+
+        return context.ExecuteScript(script) as string;
+    }
+
     public static void ClickAndClear(this UITestContext context, By by) =>
         context.ExecuteLogged(
             nameof(ClickAndClear),
