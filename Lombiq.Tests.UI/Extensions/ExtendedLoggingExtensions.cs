@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ExtendedLoggingExtensions
 {
     /// <summary>
-    /// Used for edge cases like when a scope becomes stale
+    /// Used for edge cases like when a scope becomes stale.
     /// </summary>
     private const int StabilityRetryCount = 3;
 
