@@ -1,6 +1,5 @@
 using Atata;
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
@@ -126,7 +125,7 @@ public static class ExtendedLoggingExtensions
                 }
             }
 
-            throw new InvalidOperandException("Impossible to reach.");
+            throw new InvalidOperationException("Impossible to reach.");
         });
 
     private static Task ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> functionAsync) =>
@@ -160,6 +159,6 @@ public static class ExtendedLoggingExtensions
             }
         }
 
-        throw new InvalidOperandException("Impossible to reach.");
+        throw new InvalidOperationException("Impossible to reach.");
     }
 }
