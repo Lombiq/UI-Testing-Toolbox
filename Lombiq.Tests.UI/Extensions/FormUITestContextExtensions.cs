@@ -101,7 +101,7 @@ public static class FormUITestContextExtensions
     }
 
     /// <summary>
-    /// Fills the <paramref name="editorId"/> matching Monaco editor with the given <paramref name="text"/> by using javascript.
+    /// Fills the <paramref name="editorId"/>-matching Monaco editor with the given <paramref name="text"/> by using JavaScript.
     /// </summary>
     public static void FillInMonacoEditor(
         this UITestContext context,
