@@ -100,6 +100,9 @@ public static class FormUITestContextExtensions
         context.ExecuteScript(script);
     }
 
+    /// <summary>
+    /// Fills the <paramref name="editorId"/> matching Monaco editor with the given <paramref name="text"/> by using javascript.
+    /// </summary>
     public static void FillInMonacoEditor(
         this UITestContext context,
         string editorId,
@@ -113,6 +116,9 @@ public static class FormUITestContextExtensions
         context.ExecuteScript(script);
     }
 
+    /// <summary>
+    /// Returns the current text of the <paramref name="editorId"/> matching Monaco editor by using javascript.
+    /// </summary>
     public static string GetMonacoEditorText(
         this UITestContext context,
         string editorId)
