@@ -117,7 +117,7 @@ public static class FormUITestContextExtensions
     }
 
     /// <summary>
-    /// Returns the current text of the <paramref name="editorId"/> matching Monaco editor by using javascript.
+    /// Returns the current text of the <paramref name="editorId"/>-matching Monaco editor by using JavaScript.
     /// </summary>
     public static string GetMonacoEditorText(
         this UITestContext context,
