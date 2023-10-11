@@ -53,7 +53,7 @@ public static class SetupHelpers
         await context.SignInDirectlyAsync(userName);
     }
 
-    // When using the Auto Setup feature (https://docs.orchardcore.net/en/dev/docs/reference/modules/AutoSetup/) you
+    // When using the Auto Setup feature (https://docs.orchardcore.net/en/latest/docs/reference/modules/AutoSetup/) you
     // don't need to run the setup like RunSetup() above. Instead, substitute the setup operation with one that just
     // opens the app and checks if the setup was successful, like you can see here.
 
