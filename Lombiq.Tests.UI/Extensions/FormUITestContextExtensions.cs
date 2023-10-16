@@ -100,6 +100,37 @@ public static class FormUITestContextExtensions
         context.ExecuteScript(script);
     }
 
+    /// <summary>
+    /// Fills the <paramref name="editorId"/>-matching Monaco editor with the given <paramref name="text"/> by using JavaScript.
+    /// </summary>
+    public static void FillInMonacoEditor(
+        this UITestContext context,
+        string editorId,
+        string text)
+    {
+        var script = $@"
+            monaco.editor.getEditors().find((element) =>
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
+            .getModel().setValue({JsonConvert.SerializeObject(text)});";
+
+        context.ExecuteScript(script);
+    }
+
+    /// <summary>
+    /// Returns the current text of the <paramref name="editorId"/>-matching Monaco editor by using JavaScript.
+    /// </summary>
+    public static string GetMonacoEditorText(
+        this UITestContext context,
+        string editorId)
+    {
+        var script = $@"
+            return monaco.editor.getEditors().find((element) =>
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
+            .getModel().getValue();";
+
+        return context.ExecuteScript(script) as string;
+    }
+
     public static void ClickAndClear(this UITestContext context, By by) =>
         context.ExecuteLogged(
             nameof(ClickAndClear),
