@@ -10,7 +10,6 @@ public class OrchardCoreAdminTopNavbar<TOwner> : Control<TOwner>
     [FindById("navbarDropdown")]
     public AccountDropdown Account { get; private set; }
 
-
     public class AccountDropdown : BSDropdownToggle<TOwner>
     {
         [FindByContent(TermMatch.Contains, TermCase.Sentence)]
