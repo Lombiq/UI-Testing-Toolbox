@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -104,7 +105,7 @@ public static class ExtendedLoggingExtensions
                 }
                 catch (StaleElementReferenceException) when (notLast)
                 {
-                    Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
             }
         });
@@ -121,7 +122,7 @@ public static class ExtendedLoggingExtensions
                 }
                 catch (StaleElementReferenceException) when (notLast)
                 {
-                    Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
             }
 
