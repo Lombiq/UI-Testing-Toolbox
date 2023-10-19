@@ -2,12 +2,18 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class ExtendedLoggingExtensions
 {
+    /// <summary>
+    /// Used for edge cases like when a scope becomes stale.
+    /// </summary>
+    private const int StabilityRetryCount = 3;
+
     public static Task ExecuteLoggedAsync(
         this UITestContext context, string operationName, IWebElement element, Func<Task> functionAsync) =>
         context.ExecuteSectionAsync(GetLogSection(operationName, element), functionAsync);
@@ -87,10 +93,41 @@ public static class ExtendedLoggingExtensions
         $"{operationName} applied to: {Environment.NewLine}{objectOfOperation}";
 
     private static void ExecuteSection(this UITestContext context, LogSection section, Action action) =>
-        context.Scope.AtataContext.Log.ExecuteSection(section, action);
+        context.Scope.AtataContext.Log.ExecuteSection(section, () =>
+        {
+            for (int i = 0; i < StabilityRetryCount; i++)
+            {
+                var notLast = i < StabilityRetryCount - 1;
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (StaleElementReferenceException) when (notLast)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+            }
+        });
 
     private static TResult ExecuteSection<TResult>(this UITestContext context, LogSection section, Func<TResult> function) =>
-        context.Scope.AtataContext.Log.ExecuteSection(section, function);
+        context.Scope.AtataContext.Log.ExecuteSection(section, () =>
+        {
+            for (int i = 0; i < StabilityRetryCount; i++)
+            {
+                var notLast = i < StabilityRetryCount - 1;
+                try
+                {
+                    return function();
+                }
+                catch (StaleElementReferenceException) when (notLast)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+            }
+
+            throw new InvalidOperationException("Impossible to reach.");
+        });
 
     private static Task ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> functionAsync) =>
         context.ExecuteSectionAsync(
@@ -104,12 +141,25 @@ public static class ExtendedLoggingExtensions
     private static async Task<TResult> ExecuteSectionAsync<TResult>(
         this UITestContext context, LogSection section, Func<Task<TResult>> functionAsync)
     {
-        // This is somewhat risky. ILogManager is not thread-safe and uses as stack to keep track of sections, so if
-        // multiple sections are started in concurrent threads, the result will be incorrect. This shouldn't be too much
-        // of an issue for now though since tests, while async, are single-threaded.
-        context.Scope.AtataContext.Log.Start(section);
-        var result = await functionAsync();
-        context.Scope.AtataContext.Log.EndSection();
-        return result;
+        for (int i = 0; i < StabilityRetryCount; i++)
+        {
+            var notLast = i < StabilityRetryCount - 1;
+            try
+            {
+                // This is somewhat risky. ILogManager is not thread-safe and uses as stack to keep track of sections, so if
+                // multiple sections are started in concurrent threads, the result will be incorrect. This shouldn't be too much
+                // of an issue for now though since tests, while async, are single-threaded.
+                context.Scope.AtataContext.Log.Start(section);
+                var result = await functionAsync();
+                context.Scope.AtataContext.Log.EndSection();
+                return result;
+            }
+            catch (StaleElementReferenceException) when (notLast)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+        }
+
+        throw new InvalidOperationException("Impossible to reach.");
     }
 }
