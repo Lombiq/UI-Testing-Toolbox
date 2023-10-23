@@ -51,7 +51,7 @@ public abstract class CounterProbeBase : ICounterProbe
                         .OfType<IntegerCounterValue>()
                         .Select(value => value.Value)
                         .Max();
-                    keyGroupLines.Add($"\tmaximum: {integerCounter.ToTechnicalString()}");
+                    keyGroupLines.Add($"\tmaximum: {integerCounter.ToTechnicalString()}"); // #spell-check-ignore-line
 
                     return keyGroupLines.Select(line => $"\t{line}");
                 }));
