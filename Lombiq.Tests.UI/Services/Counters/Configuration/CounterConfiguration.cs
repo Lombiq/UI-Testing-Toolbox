@@ -7,6 +7,13 @@ namespace Lombiq.Tests.UI.Services.Counters.Configuration;
 
 public class CounterConfiguration
 {
+    private const string WorkflowTypeStartActivitiesQuery =
+        "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+        + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+        + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+        + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+        + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))";
+
     /// <summary>
     /// Gets or sets the counter assertion method.
     /// </summary>
@@ -53,33 +60,21 @@ public class CounterConfiguration
     public static IEnumerable<ICounterKey> DefaultExcludeList { get; } = new List<ICounterKey>
     {
         new DbCommandExecuteCounterKey(
-            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
-            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
-            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
-            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
-            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            WorkflowTypeStartActivitiesQuery,
             new List<KeyValuePair<string, object>>
             {
                 new("p0", "ContentCreatedEvent"),
                 new("p1", value: true),
             }),
         new DbCommandExecuteCounterKey(
-            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
-            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
-            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
-            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
-            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            WorkflowTypeStartActivitiesQuery,
             new List<KeyValuePair<string, object>>
             {
                 new("p0", "ContentPublishedEvent"),
                 new("p1", value: true),
             }),
         new DbCommandExecuteCounterKey(
-            "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
-            + " AS [WorkflowTypeStartActivitiesIndex_a1]"
-            + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
-            + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
-            + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))",
+            WorkflowTypeStartActivitiesQuery,
             new List<KeyValuePair<string, object>>
             {
                 new("p0", "ContentUpdatedEvent"),

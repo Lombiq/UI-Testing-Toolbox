@@ -45,7 +45,7 @@ public class CounterConfigurations
                 _ => null,
             };
 
-            if (threshold is { } settings && settings.Settings.Disable is not true)
+            if (threshold is { } settings && !settings.Settings.Disable)
             {
                 try
                 {

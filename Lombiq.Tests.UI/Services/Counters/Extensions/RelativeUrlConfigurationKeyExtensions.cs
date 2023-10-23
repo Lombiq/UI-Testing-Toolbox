@@ -15,6 +15,6 @@ public static class RelativeUrlConfigurationKeyExtensions
 
         return (left.ExactMatch || right.ExactMatch)
             ? string.Equals(leftUrl, rightUrl, StringComparison.OrdinalIgnoreCase)
-            : leftUrl.StartsWithOrdinalIgnoreCase(rightUrl) || rightUrl.StartsWithOrdinalIgnoreCase(leftUrl);
+            : leftUrl.EqualsOrdinalIgnoreCase(rightUrl) || rightUrl.EqualsOrdinalIgnoreCase(leftUrl);
     }
 }
