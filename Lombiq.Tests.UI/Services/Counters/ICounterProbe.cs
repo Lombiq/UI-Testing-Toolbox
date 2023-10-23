@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace Lombiq.Tests.UI.Services.Counters;
 
 /// <summary>
-/// Represents a probe for the counter infrastructure.
+/// Represents a probe for the counter infrastructure to collect data while it is attached to the component under
+/// monitoring.
 /// </summary>
 public interface ICounterProbe
 {
