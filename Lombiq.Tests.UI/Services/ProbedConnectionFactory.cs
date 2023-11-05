@@ -24,8 +24,8 @@ public class ProbedConnectionFactory : IConnectionFactory
     {
         var connection = _connectionFactory.CreateConnection();
 
-        // This consition and the ProbedSqliteConnection can be removed once
-        // https://github.com/OrchardCMS/OrchardCore/issues/14217 get fixed.
+        // This condition and the ProbedSqliteConnection can be removed once
+        // https://github.com/OrchardCMS/OrchardCore/issues/14217 gets fixed.
         return connection is SqliteConnection sqliteConnection
             ? new ProbedSqliteConnection(sqliteConnection, _counterDataCollector)
             : new ProbedDbConnection(connection, _counterDataCollector);

@@ -55,8 +55,8 @@ public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         await _session.DisposeAsync();
-        // Should be at the end because, the Session implementation calls CommitOrRollbackTransactionAsync in DisposeAsync
-        // and we should count the executed db commands in it.
+        // Should be at the end because the Session implementation calls CommitOrRollbackTransactionAsync in
+        // DisposeAsync and we should count the executed DB commands in it.
         Dispose();
     }
 

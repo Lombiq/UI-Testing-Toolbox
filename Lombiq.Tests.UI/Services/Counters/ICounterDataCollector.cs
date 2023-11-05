@@ -30,7 +30,7 @@ public interface ICounterDataCollector : ICounterProbe
     void AssertCounter();
 
     /// <summary>
-    /// Postpones exception thrown by a counter in case when the exception was thrown out of the test context.
+    /// Postpones exception thrown by a counter when the exception was thrown from the test context.
     /// </summary>
     void PostponeCounterException(Exception exception);
 }

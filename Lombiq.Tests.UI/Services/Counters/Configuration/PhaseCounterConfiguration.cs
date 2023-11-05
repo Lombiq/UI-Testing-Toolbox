@@ -3,7 +3,7 @@ namespace Lombiq.Tests.UI.Services.Counters.Configuration;
 public class PhaseCounterConfiguration : CounterConfiguration
 {
     /// <summary>
-    /// Gets or sets threshold configuration used under app phase(setup, running) lifetime.
+    /// Gets or sets threshold configuration used under the app phase (setup, running) lifetime.
     /// </summary>
     public CounterThresholdConfiguration PhaseThreshold { get; set; } = new CounterThresholdConfiguration
     {
