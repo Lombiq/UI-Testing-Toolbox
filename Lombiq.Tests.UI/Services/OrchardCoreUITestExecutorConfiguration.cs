@@ -64,7 +64,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public int MaxRetryCount { get; set; } =
         TestConfigurationManager.GetIntConfiguration(
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxRetryCount)}",
-            2);
+            0);
 
     public TimeSpan RetryInterval { get; set; } =
         TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration(
