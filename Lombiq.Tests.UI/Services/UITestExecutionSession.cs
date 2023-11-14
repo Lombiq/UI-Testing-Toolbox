@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -39,6 +40,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
+    private ZapManager _zapManager;
     private IWebApplicationInstance _applicationInstance;
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
@@ -178,6 +180,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
+        if (_zapManager != null) await _zapManager.DisposeAsync();
 
         _screenshotCount = 0;
 
@@ -584,6 +587,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
+        _zapManager = new ZapManager();
+
         Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
@@ -640,7 +645,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _configuration,
             _applicationInstance,
             atataScope,
-            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext));
+            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+            _zapManager);
     }
 
     private string GetSetupHashCode() =>

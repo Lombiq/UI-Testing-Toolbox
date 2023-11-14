@@ -1,5 +1,4 @@
 using Lombiq.Tests.UI.Attributes;
-using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,9 +19,8 @@ public class SecurityScanningTests : UITestBase
             async context =>
             {
                 //await context.SwitchToInteractiveAsync();
-                var zapManager = new ZapManager();
                 //await zapManager.StartInstanceAsync("https://localhost:44335/");
-                await zapManager.StartInstanceAsync(context.Scope.BaseUri);
+                await context.ZapManager.RunSecurityScanAsync(context.Scope.BaseUri);
             },
             browser);
 }

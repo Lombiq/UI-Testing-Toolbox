@@ -19,30 +19,9 @@ public sealed class ZapManager : IAsyncDisposable
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    public async Task StartInstanceAsync(Uri startUri)
+    public async Task RunSecurityScanAsync(Uri startUri)
     {
-        if (_cancellationTokenSource != null)
-        {
-            throw new InvalidOperationException("The ZAP instance was already started.");
-        }
-
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-
-        try
-        {
-            await _restoreSemaphore.WaitAsync(token);
-
-            if (!_wasPulled)
-            {
-                await _docker.ExecuteAsync(token, "pull", _zapImage);
-                _wasPulled = true;
-            }
-        }
-        finally
-        {
-            _restoreSemaphore.Release();
-        }
+        await EnsureInitializedAsync();
 
         // Explanation on the arguments used below:
         // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
@@ -76,7 +55,10 @@ public sealed class ZapManager : IAsyncDisposable
             startUri.ToString(),
         });
 
-        var result = await _docker.ExecuteAndGetOutputAsync(cliParameters, additionalExceptionText: null, token);
+        var result = await _docker.ExecuteAndGetOutputAsync(
+            cliParameters,
+            additionalExceptionText: null,
+            _cancellationTokenSource.Token);
     }
 
     public ValueTask DisposeAsync()
@@ -88,5 +70,28 @@ public sealed class ZapManager : IAsyncDisposable
         }
 
         return ValueTask.CompletedTask;
+    }
+
+    private async Task EnsureInitializedAsync()
+    {
+        if (_cancellationTokenSource != null) return;
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        try
+        {
+            await _restoreSemaphore.WaitAsync(token);
+
+            if (!_wasPulled)
+            {
+                await _docker.ExecuteAsync(token, "pull", _zapImage);
+                _wasPulled = true;
+            }
+        }
+        finally
+        {
+            _restoreSemaphore.Release();
+        }
     }
 }

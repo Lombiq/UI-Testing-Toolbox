@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -62,6 +63,12 @@ public class UITestContext
     public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
     /// <summary>
+    /// Gets the service to manage Zed Attack Proxy instances for security scanning. Usually, it's recommended to use
+    /// the ZAP <see cref="UITestContext"/> extension methods instead.
+    /// </summary>
+    public ZapManager ZapManager { get; }
+
+    /// <summary>
     /// Gets a cumulative log of browser console entries.
     /// </summary>
     public IReadOnlyList<LogEntry> HistoricBrowserLog => _historicBrowserLog;
@@ -105,7 +112,8 @@ public class UITestContext
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
-        RunningContextContainer runningContextContainer)
+        RunningContextContainer runningContextContainer,
+        ZapManager zapManager)
     {
         Id = id;
         TestManifest = testManifest;
@@ -115,6 +123,7 @@ public class UITestContext
         Scope = scope;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
+        ZapManager = zapManager;
     }
 
     /// <summary>
