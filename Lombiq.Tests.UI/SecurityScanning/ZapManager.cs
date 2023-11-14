@@ -17,7 +17,7 @@ public sealed class ZapManager : IAsyncDisposable
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    public async Task StartInstanceAsync()
+    public async Task StartInstanceAsync(Uri startUri)
     {
         if (_cancellationTokenSource != null)
         {
@@ -62,7 +62,7 @@ public sealed class ZapManager : IAsyncDisposable
                 _zapImage,
                 "zap-baseline.py",
                 "-t",
-                "https://localhost:44335/",
+                startUri.ToString(),
             },
             additionalExceptionText: null,
             token);
