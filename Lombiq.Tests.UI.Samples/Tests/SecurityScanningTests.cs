@@ -20,7 +20,7 @@ public class SecurityScanningTests : UITestBase
             async context =>
             {
                 var zapManager = new ZapManager();
-                await zapManager.StartAsync();
+                await zapManager.StartInstanceAsync();
             },
             browser);
 }
