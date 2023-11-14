@@ -587,7 +587,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
-        _zapManager = new ZapManager();
+        _zapManager = new ZapManager(_testOutputHelper);
 
         Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {

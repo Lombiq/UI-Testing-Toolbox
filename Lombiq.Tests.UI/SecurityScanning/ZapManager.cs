@@ -1,9 +1,13 @@
+using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
+using Lombiq.Tests.UI.Services;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -15,11 +19,15 @@ public sealed class ZapManager : IAsyncDisposable
     private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
 
+    private readonly ITestOutputHelper _testOutputHelper;
+
     private static bool _wasPulled;
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    public async Task RunSecurityScanAsync(Uri startUri)
+    internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+
+    public async Task RunSecurityScanAsync(UITestContext context, Uri startUri)
     {
         await EnsureInitializedAsync();
 
@@ -55,10 +63,15 @@ public sealed class ZapManager : IAsyncDisposable
             startUri.ToString(),
         });
 
-        var result = await _docker.ExecuteAndGetOutputAsync(
-            cliParameters,
-            additionalExceptionText: null,
-            _cancellationTokenSource.Token);
+        var stdErrBuffer = new StringBuilder();
+
+        var result = await _docker
+            .GetCommand(cliParameters)
+            .WithStandardOutputPipe(PipeTarget.ToDelegate(line => _testOutputHelper.WriteLineTimestampedAndDebug(line)))
+            .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+            // This is so no exception is thrown by CliWrap if the exit code is not 0.
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteAsync(_cancellationTokenSource.Token);
     }
 
     public ValueTask DisposeAsync()

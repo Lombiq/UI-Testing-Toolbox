@@ -20,7 +20,7 @@ public class SecurityScanningTests : UITestBase
             {
                 //await context.SwitchToInteractiveAsync();
                 //await zapManager.StartInstanceAsync("https://localhost:44335/");
-                await context.ZapManager.RunSecurityScanAsync(context.Scope.BaseUri);
+                await context.ZapManager.RunSecurityScanAsync(context, context.Scope.BaseUri);
             },
             browser);
 }
