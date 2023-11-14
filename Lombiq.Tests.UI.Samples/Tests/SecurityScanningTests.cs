@@ -24,3 +24,5 @@ public class SecurityScanningTests : UITestBase
             },
             browser);
 }
+
+// END OF TRAINING SECTION: Security scanning.
