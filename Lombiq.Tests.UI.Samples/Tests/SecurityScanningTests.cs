@@ -10,6 +10,8 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
+// Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
+// GitHub Actions, these tests won't work there.
 public class SecurityScanningTests : UITestBase
 {
     public SecurityScanningTests(ITestOutputHelper testOutputHelper)
