@@ -1,5 +1,7 @@
 using Lombiq.HelpfulLibraries.Cli;
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,10 +44,10 @@ public sealed class ZapManager : IAsyncDisposable
             _restoreSemaphore.Release();
         }
 
-        // Explanation on the arguments:
-        // - --add-host: Lets us connect to the host OS's localhost, where the OC app runs, with https://localhost. See
-        //   https://stackoverflow.com/a/24326540/220230. --network="host" serves the same, but only works under Linux.
-        //   See https://docs.docker.com/engine/reference/commandline/run/#network and
+        // Explanation on the arguments used below:
+        // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
+        //   https://localhost. See https://stackoverflow.com/a/24326540/220230. --network host serves the same, but
+        //   only works under Linux. See https://docs.docker.com/engine/reference/commandline/run/#network and
         //   https://docs.docker.com/network/drivers/host/.
 
         // Running a ZAP desktop in the browser with Webswing with the same config:
@@ -53,19 +55,28 @@ public sealed class ZapManager : IAsyncDisposable
         // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-weekly:20231113 zap-webswing.sh
 #pragma warning restore S103 // Lines should not be too long
 
-        var result = await _docker.ExecuteAndGetOutputAsync(
-            new object[]
-            {
-                "run",
-                "--add-host",
-                "localhost:host-gateway",
-                _zapImage,
-                "zap-baseline.py",
-                "-t",
-                startUri.ToString(),
-            },
-            additionalExceptionText: null,
-            token);
+        var cliParameters = new List<object> { "run" };
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            cliParameters.Add("--network");
+            cliParameters.Add("host");
+        }
+        else
+        {
+            cliParameters.Add("--add-host");
+            cliParameters.Add("localhost:host-gateway");
+        }
+
+        cliParameters.AddRange(new object[]
+        {
+            _zapImage,
+            "zap-baseline.py",
+            "-t",
+            startUri.ToString(),
+        });
+
+        var result = await _docker.ExecuteAndGetOutputAsync(cliParameters, additionalExceptionText: null, token);
     }
 
     public ValueTask DisposeAsync()
