@@ -65,10 +65,27 @@ jobs:
   name: "activeScan"
   type: "activeScan"
 - parameters:
-    template: "risk-confidence-html"
     reportDir: "/zap/wrk/reports"
+    template: "modern"
+    theme: "technology"
     reportTitle: "ZAP Scanning Report"
     reportDescription: ""
+  risks:
+  - "low"
+  - "medium"
+  - "high"
+  confidences:
+  - "low"
+  - "medium"
+  - "high"
+  - "confirmed"
+  sections:
+  - "passingrules"
+  - "instancecount"
+  - "alertdetails"
+  - "alertcount"
+  - "params"
+  - "chart"
+  - "statistics"
   name: "report"
   type: "report"
-
