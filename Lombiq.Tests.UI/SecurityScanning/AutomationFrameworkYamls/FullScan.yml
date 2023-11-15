@@ -67,7 +67,7 @@ jobs:
 - parameters:
     reportDir: "/zap/wrk/reports"
     template: "modern"
-    theme: "technology"
+    theme: "corporate"
     reportTitle: "ZAP Scanning Report"
     reportDescription: ""
   risks:
