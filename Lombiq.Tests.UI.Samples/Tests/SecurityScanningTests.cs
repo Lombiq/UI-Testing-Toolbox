@@ -43,12 +43,12 @@ public class SecurityScanningTests : UITestBase
                     new OrchardCoreSetupParameters(context)
                     {
                         SiteName = "Lombiq's OSOCE - UI Testing",
-                        RecipeId = "ComingSoon",
+                        RecipeId = "Blog",
                         TablePrefix = "OSOCE",
                         SiteTimeZoneValue = "Europe/Budapest",
                     });
 
-                context.Exists(By.ClassName("masthead-content"));
+                context.Exists(By.ClassName("site-heading"));
 
                 return homepageUri;
             },
