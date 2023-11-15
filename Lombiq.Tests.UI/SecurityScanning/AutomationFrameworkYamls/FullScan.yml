@@ -89,3 +89,25 @@ jobs:
   - "statistics"
   name: "report"
   type: "report"
+- parameters:
+    template: "sarif-json"
+    reportDir: "/zap/wrk/reports"
+    reportFile: ""
+    reportTitle: "ZAP Scanning Report"
+    reportDescription: ""
+    displayReport: false
+  risks:
+  - "info"
+  - "low"
+  - "medium"
+  - "high"
+  confidences:
+  - "falsepositive"
+  - "low"
+  - "medium"
+  - "high"
+  - "confirmed"
+  sites: []
+  name: "sarifReport"
+  type: "report"
+
