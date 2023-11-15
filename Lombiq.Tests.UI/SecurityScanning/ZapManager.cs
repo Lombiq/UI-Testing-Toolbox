@@ -190,6 +190,18 @@ public sealed class ZapManager : IAsyncDisposable
         // Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
         var configuration = deserializer.Deserialize<object>(originalYaml);
 
+        // Setting report directories to the conventional one.
+        List<object> jobs = ((dynamic)configuration)["jobs"];
+        foreach (var job in jobs)
+        {
+            var jobDictionary = (Dictionary<object, object>)job;
+
+            if (!jobDictionary.TryGetValue("type", out var typeValue) || (string)typeValue != "report") continue;
+
+            var parameters = (Dictionary<object, object>)jobDictionary["parameters"];
+            parameters["reportDir"] = "/zap/wrk/reports";
+        }
+
         if (modifyYaml != null) await modifyYaml(configuration);
 
         // Serializing the results.
