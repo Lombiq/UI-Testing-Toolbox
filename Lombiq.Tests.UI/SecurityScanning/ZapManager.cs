@@ -49,7 +49,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         if (string.IsNullOrEmpty(automationFrameworkYamlPath))
         {
-            automationFrameworkYamlPath = Path.Combine("SecurityScanning", "AutomationFrameworkYamls", "Baseline.yml");
+            automationFrameworkYamlPath = AutomationFrameworkYamlPaths.BaselineYamlPath;
         }
 
         // Explanation on the CLI arguments used below:
