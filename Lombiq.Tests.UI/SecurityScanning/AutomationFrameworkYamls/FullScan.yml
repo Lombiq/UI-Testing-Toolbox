@@ -46,6 +46,7 @@ jobs:
     maxCrawlDepth: 10
     numberOfBrowsers: 64
     inScopeOnly: true
+    runOnlyIfModern: true
   name: "spiderAjax"
   type: "spiderAjax"
   tests:
