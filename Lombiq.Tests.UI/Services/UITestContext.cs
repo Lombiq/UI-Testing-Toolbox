@@ -83,7 +83,7 @@ public class UITestContext
     public Dictionary<string, object> CustomContext { get; } = new();
 
     /// <summary>
-    /// Gets a dictionary storing some custom data for collecting in failure dump.
+    /// Gets a dictionary storing some custom data for collecting in the failure dump.
     /// </summary>
     public IDictionary<string, IFailureDumpItem> FailureDumpContainer { get; }
         = new Dictionary<string, IFailureDumpItem>();
