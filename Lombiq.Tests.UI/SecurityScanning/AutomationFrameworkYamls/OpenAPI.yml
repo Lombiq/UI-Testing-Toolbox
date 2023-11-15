@@ -3,9 +3,9 @@ env:
   contexts:
   - name: "Default Context"
     urls:
-    - "https://localhost:44335/"
+    - "<start URL>"
     includePaths:
-    - "https://localhost:44335/.*"
+    - "<start URL>.*"
     excludePaths: []
     authentication:
       parameters: {}

@@ -16,9 +16,11 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public sealed class ZapManager : IAsyncDisposable
 {
     // Need to use the weekly release because that's the one that has packaged scans migrated to Automation Framework.
+    // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
+    // changes to those.
     private const string _zapImage = "softwaresecurityproject/zap-weekly:20231113";
 
-    private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
+    private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
 
     private readonly ITestOutputHelper _testOutputHelper;
@@ -29,6 +31,15 @@ public sealed class ZapManager : IAsyncDisposable
 
     internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
+    /// <summary>
+    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against the app.
+    /// </summary>
+    /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
+    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
+    /// <param name="automationFrameworkYamlPath">
+    /// File system path to the YAML configuration file of ZAP's Automationat Framework. See
+    /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
+    /// </param>
     public async Task RunSecurityScanAsync(
         UITestContext context,
         Uri startUri,
@@ -62,11 +73,11 @@ public sealed class ZapManager : IAsyncDisposable
         Directory.CreateDirectory(mountedDirectoryPath);
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
+        var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
 
-        File.Copy(
-            automationFrameworkYamlPath,
-            Path.Combine(mountedDirectoryPath, yamlFileName),
-            overwrite: true);
+        File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
+
+        await PrepareYamlAsync(yamlFileCopyPath, startUri);
 
         var cliParameters = new List<object> { "run" };
 
@@ -124,7 +135,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         try
         {
-            await _restoreSemaphore.WaitAsync(token);
+            await _pullSemaphore.WaitAsync(token);
 
             if (!_wasPulled)
             {
@@ -134,7 +145,26 @@ public sealed class ZapManager : IAsyncDisposable
         }
         finally
         {
-            _restoreSemaphore.Release();
+            _pullSemaphore.Release();
         }
+    }
+
+    private async Task PrepareYamlAsync(string yamlFilePath, Uri startUri)
+    {
+        var yaml = await File.ReadAllTextAsync(yamlFilePath, _cancellationTokenSource.Token);
+
+        // Setting URLs:
+        yaml = yaml.Replace("<start URL>", startUri.ToString());
+
+        //var deserializer = new DeserializerBuilder().Build();
+
+        //// Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
+        //dynamic configuration = deserializer.Deserialize<object>(yaml);
+
+
+        //var contexts = configuration["env"]["contexts"];
+        //contexts["urls"]
+
+        await File.WriteAllTextAsync(yamlFilePath, yaml, _cancellationTokenSource.Token);
     }
 }
