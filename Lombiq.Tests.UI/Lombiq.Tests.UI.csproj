@@ -44,6 +44,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkYamls\Baseline.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkYamls\FullScan.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkYamls\GraphQL.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkYamls\OpenAPI.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
@@ -112,6 +124,12 @@
       <Link>Resources\gremlins.min.js</Link>
     </EmbeddedResource>
     <None Remove="node_modules\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="SecurityScanning\AutomationFrameworkYamls\Baseline.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkYamls\FullScan.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkYamls\GraphQL.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkYamls\OpenAPI.yml" />
   </ItemGroup>
 
 </Project>
