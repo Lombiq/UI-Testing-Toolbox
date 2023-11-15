@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using Shouldly;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -23,10 +24,8 @@ public class SecurityScanningTests : UITestBase
     [Theory, Chrome]
     public Task SecurityScanShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                await context.RunAndAssertBaselineSecurityScanAsync();
-            },
+            async context => await context.RunAndAssertBaselineSecurityScanAsync(
+                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(118)),
             browser);
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
