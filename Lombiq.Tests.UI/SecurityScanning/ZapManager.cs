@@ -5,11 +5,13 @@ using Lombiq.Tests.UI.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
+using YamlDotNet.Serialization;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -37,7 +39,7 @@ public sealed class ZapManager : IAsyncDisposable
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
     /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
     /// <param name="automationFrameworkYamlPath">
-    /// File system path to the YAML configuration file of ZAP's Automationat Framework. See
+    /// File system path to the YAML configuration file of ZAP's Automation Framework. See
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
     public async Task RunSecurityScanAsync(
@@ -51,6 +53,16 @@ public sealed class ZapManager : IAsyncDisposable
         {
             automationFrameworkYamlPath = AutomationFrameworkYamlPaths.BaselineYamlPath;
         }
+
+        var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
+        Directory.CreateDirectory(mountedDirectoryPath);
+
+        var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
+        var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
+
+        File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
+
+        await PrepareYamlAsync(yamlFileCopyPath, startUri);
 
         // Explanation on the CLI arguments used below:
         // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
@@ -68,16 +80,6 @@ public sealed class ZapManager : IAsyncDisposable
 #pragma warning disable S103 // Lines should not be too long
         // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-weekly:20231113 zap-webswing.sh
 #pragma warning restore S103 // Lines should not be too long
-
-        var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
-        Directory.CreateDirectory(mountedDirectoryPath);
-
-        var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
-        var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
-
-        File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
-
-        await PrepareYamlAsync(yamlFileCopyPath, startUri);
 
         var cliParameters = new List<object> { "run" };
 
@@ -151,20 +153,51 @@ public sealed class ZapManager : IAsyncDisposable
 
     private async Task PrepareYamlAsync(string yamlFilePath, Uri startUri)
     {
-        var yaml = await File.ReadAllTextAsync(yamlFilePath, _cancellationTokenSource.Token);
+        var originalYaml = await File.ReadAllTextAsync(yamlFilePath, _cancellationTokenSource.Token);
 
-        // Setting URLs:
-        yaml = yaml.Replace("<start URL>", startUri.ToString());
+        var deserializer = new DeserializerBuilder().Build();
+        // Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
+        dynamic configuration = deserializer.Deserialize<object>(originalYaml);
 
-        //var deserializer = new DeserializerBuilder().Build();
+        List<object> contexts = configuration["env"]["contexts"];
 
-        //// Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
-        //dynamic configuration = deserializer.Deserialize<object>(yaml);
+        if (!contexts.Any())
+        {
+            throw new ArgumentException("The supplied ZAP Automation Framework YAML file should contain at least one context.");
+        }
 
+        var context = (Dictionary<object, object>)contexts[0];
 
-        //var contexts = configuration["env"]["contexts"];
-        //contexts["urls"]
+        if (contexts.Count > 1)
+        {
+            context =
+                (Dictionary<object, object>)contexts
+                    .Find(context =>
+                        ((Dictionary<object, object>)context).TryGetValue("name", out var name) && (string)name == "Default Context") ??
+                context;
+        }
 
-        await File.WriteAllTextAsync(yamlFilePath, yaml, _cancellationTokenSource.Token);
+        // Setting URLs in the context.
+        // Setting includePaths in the context is not necessary because by default everything under urls will be scanned.
+
+        if (!context.ContainsKey("urls")) context["urls"] = new List<object>();
+
+        var urls = (List<object>)context["urls"];
+
+        if (urls.Count > 1)
+        {
+            throw new ArgumentException(
+                "The context in the ZAP Automation Framework YAML file should contain at most a single url in the urls section.");
+        }
+
+        if (urls.Count == 1) urls.Clear();
+
+        urls.Add(startUri.ToString());
+
+        // Serializing the results.
+        var serializer = new SerializerBuilder().WithQuotingNecessaryStrings().Build();
+        var updatedYaml = serializer.Serialize(configuration);
+
+        await File.WriteAllTextAsync(yamlFilePath, updatedYaml, _cancellationTokenSource.Token);
     }
 }

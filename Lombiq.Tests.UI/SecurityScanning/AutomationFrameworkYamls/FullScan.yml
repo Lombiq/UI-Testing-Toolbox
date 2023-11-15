@@ -4,7 +4,6 @@ env:
   - name: "Default Context"
     urls:
     - "<start URL>"
-    includePaths: []
     excludePaths: []
     authentication:
       parameters: {}
