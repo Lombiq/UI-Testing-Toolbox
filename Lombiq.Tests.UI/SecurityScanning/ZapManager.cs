@@ -1,7 +1,9 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,6 +26,8 @@ public sealed class ZapManager : IAsyncDisposable
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
     private const string _zapImage = "softwaresecurityproject/zap-weekly:20231113";
+    private const string _zapWorkingDirectoryPath = "/zap/wrk/";
+    private const string _zapReportsDirectoryName = "reports";
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
@@ -48,7 +52,8 @@ public sealed class ZapManager : IAsyncDisposable
     /// <param name="modifyYaml">
     /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public Task RunSecurityScanAsync(
+    /// <returns>The SARIF (<see href="https://sarifweb.azurewebsites.net/"/>) report of the scan.</returns>
+    public Task<SarifLog> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri,
@@ -73,7 +78,7 @@ public sealed class ZapManager : IAsyncDisposable
     /// <param name="modifyYaml">
     /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public async Task RunSecurityScanAsync(
+    public async Task<SarifLog> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
         Func<object, Task> modifyYaml = null)
@@ -128,24 +133,50 @@ public sealed class ZapManager : IAsyncDisposable
         cliParameters.AddRange(new object[]
         {
             "--volume",
-            mountedDirectoryPath + ":/zap/wrk/:rw",
+            $"{mountedDirectoryPath}:{_zapWorkingDirectoryPath}:rw",
             "--tty",
             _zapImage,
             "zap.sh",
             "-cmd",
             "-autorun",
-            "/zap/wrk/" + yamlFileName,
+            _zapWorkingDirectoryPath + yamlFileName,
         });
 
         var stdErrBuffer = new StringBuilder();
 
-        var result = await _docker
+        // The result of the call is not interesting, since we don't need the exit code: Assertions should check if the
+        // app failed security scanning, and if the scan itself fails then there won't be a report, what's checked below.
+        await _docker
             .GetCommand(cliParameters)
             .WithStandardOutputPipe(PipeTarget.ToDelegate(line => _testOutputHelper.WriteLineTimestampedAndDebug(line)))
             .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
             // This is so no exception is thrown by CliWrap if the exit code is not 0.
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
+
+        var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
+
+        var jsonReports = Directory.EnumerateFiles(reportsDirectoryPath, "*.json").ToList();
+
+        if (jsonReports.Count > 1)
+        {
+            throw new SecurityScanningException(
+                "There were more than one JSON reports generated for the ZAP scan. The supplied ZAP Automation " +
+                "Framework YAML file should contain exactly one JSON report job, generating a SARIF report.");
+        }
+
+        if (jsonReports.Count != 1)
+        {
+            throw new SecurityScanningException(
+                "No SARIF JSON report was generated for the ZAP scan. This indicates that the scan couldn't finish. " +
+                "Check the test output for details.");
+        }
+
+        context.AppendDirectoryToFailureDump(reportsDirectoryPath);
+
+        throw new Exception();
+        return SarifLog.Load(jsonReports[0]);
+        //log.Runs.First().Results.Any(result => result.Kind == ResultKind.Fail);
     }
 
     public ValueTask DisposeAsync()
@@ -190,8 +221,10 @@ public sealed class ZapManager : IAsyncDisposable
         // Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
         var configuration = deserializer.Deserialize<object>(originalYaml);
 
-        // Setting report directories to the conventional one.
+        // Setting report directories to the conventional one and verifying that there's exactly one SARIF report.
         List<object> jobs = ((dynamic)configuration)["jobs"];
+        var sarifReportCount = 0;
+
         foreach (var job in jobs)
         {
             var jobDictionary = (Dictionary<object, object>)job;
@@ -199,7 +232,15 @@ public sealed class ZapManager : IAsyncDisposable
             if (!jobDictionary.TryGetValue("type", out var typeValue) || (string)typeValue != "report") continue;
 
             var parameters = (Dictionary<object, object>)jobDictionary["parameters"];
-            parameters["reportDir"] = "/zap/wrk/reports";
+            parameters["reportDir"] = _zapWorkingDirectoryPath + _zapReportsDirectoryName;
+
+            if ((string)parameters["template"] == "sarif-json") sarifReportCount++;
+        }
+
+        if (sarifReportCount != 1)
+        {
+            throw new ArgumentException(
+                "The supplied ZAP Automation Framework YAML file should contain exactly one SARIF report job.");
         }
 
         if (modifyYaml != null) await modifyYaml(configuration);
@@ -217,7 +258,8 @@ public sealed class ZapManager : IAsyncDisposable
 
         if (!contexts.Any())
         {
-            throw new ArgumentException("The supplied ZAP Automation Framework YAML file should contain at least one context.");
+            throw new ArgumentException(
+                "The supplied ZAP Automation Framework YAML file should contain at least one context.");
         }
 
         var context = (Dictionary<object, object>)contexts[0];
@@ -227,8 +269,8 @@ public sealed class ZapManager : IAsyncDisposable
             context =
                 (Dictionary<object, object>)contexts
                     .Find(context =>
-                        ((Dictionary<object, object>)context).TryGetValue("name", out var name) && (string)name == "Default Context") ??
-                context;
+                        ((Dictionary<object, object>)context).TryGetValue("name", out var name) && (string)name == "Default Context")
+                ?? context;
         }
 
         // Setting URLs in the context.
