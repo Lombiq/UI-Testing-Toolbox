@@ -50,6 +50,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Executing tests](Lombiq.Tests.UI/Docs/ExecutingTests.md)
 - [Fake video capture source](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md)
+- [Security scanning](Lombiq.Tests.UI/Docs/SecurityScanning.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
