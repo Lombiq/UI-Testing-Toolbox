@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -24,7 +25,7 @@ public class SecurityScanningTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                await context.ZapManager.RunSecurityScanAsync(context, context.Scope.BaseUri);
+                await context.RunBaselineSecurityScanAsync();
             },
             browser);
 

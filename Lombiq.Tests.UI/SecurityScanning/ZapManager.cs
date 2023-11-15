@@ -15,6 +15,9 @@ using YamlDotNet.Serialization;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
+/// <summary>
+/// Service to manage Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) instances and security scans.
+/// </summary>
 public sealed class ZapManager : IAsyncDisposable
 {
     // Need to use the weekly release because that's the one that has packaged scans migrated to Automation Framework.
@@ -34,18 +37,46 @@ public sealed class ZapManager : IAsyncDisposable
     internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against the app.
+    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
-    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
     /// <param name="automationFrameworkYamlPath">
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
+    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
+    /// <param name="modifyYaml">
+    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// </param>
+    public Task RunSecurityScanAsync(
+        UITestContext context,
+        string automationFrameworkYamlPath,
+        Uri startUri,
+        Func<object, Task> modifyYaml = null) =>
+        RunSecurityScanAsync(
+            context,
+            automationFrameworkYamlPath,
+            async configuration =>
+            {
+                SetStartUrlInYaml(configuration, startUri);
+                if (modifyYaml != null) await modifyYaml(configuration);
+            });
+
+    /// <summary>
+    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
+    /// </summary>
+    /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
+    /// <param name="automationFrameworkYamlPath">
+    /// File system path to the YAML configuration file of ZAP's Automation Framework. See
+    /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
+    /// </param>
+    /// <param name="modifyYaml">
+    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// </param>
     public async Task RunSecurityScanAsync(
         UITestContext context,
-        Uri startUri,
-        string automationFrameworkYamlPath = null)
+        string automationFrameworkYamlPath,
+        Func<object, Task> modifyYaml = null)
     {
         await EnsureInitializedAsync();
 
@@ -62,7 +93,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
 
-        await PrepareYamlAsync(yamlFileCopyPath, startUri);
+        await PrepareYamlAsync(yamlFileCopyPath, modifyYaml);
 
         // Explanation on the CLI arguments used below:
         // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
@@ -151,15 +182,26 @@ public sealed class ZapManager : IAsyncDisposable
         }
     }
 
-    private async Task PrepareYamlAsync(string yamlFilePath, Uri startUri)
+    private async Task PrepareYamlAsync(string yamlFilePath, Func<object, Task> modifyYaml)
     {
         var originalYaml = await File.ReadAllTextAsync(yamlFilePath, _cancellationTokenSource.Token);
 
         var deserializer = new DeserializerBuilder().Build();
         // Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
-        dynamic configuration = deserializer.Deserialize<object>(originalYaml);
+        var configuration = deserializer.Deserialize<object>(originalYaml);
 
-        List<object> contexts = configuration["env"]["contexts"];
+        if (modifyYaml != null) await modifyYaml(configuration);
+
+        // Serializing the results.
+        var serializer = new SerializerBuilder().WithQuotingNecessaryStrings().Build();
+        var updatedYaml = serializer.Serialize(configuration);
+
+        await File.WriteAllTextAsync(yamlFilePath, updatedYaml, _cancellationTokenSource.Token);
+    }
+
+    private static void SetStartUrlInYaml(object configuration, Uri startUri)
+    {
+        List<object> contexts = ((dynamic)configuration)["env"]["contexts"];
 
         if (!contexts.Any())
         {
@@ -193,11 +235,5 @@ public sealed class ZapManager : IAsyncDisposable
         if (urls.Count == 1) urls.Clear();
 
         urls.Add(startUri.ToString());
-
-        // Serializing the results.
-        var serializer = new SerializerBuilder().WithQuotingNecessaryStrings().Build();
-        var updatedYaml = serializer.Serialize(configuration);
-
-        await File.WriteAllTextAsync(yamlFilePath, updatedYaml, _cancellationTokenSource.Token);
     }
 }
