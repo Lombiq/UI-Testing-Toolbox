@@ -1,7 +1,6 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
@@ -50,10 +49,13 @@ public sealed class ZapManager : IAsyncDisposable
     /// </param>
     /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    /// <returns>The SARIF (<see href="https://sarifweb.azurewebsites.net/"/>) report of the scan.</returns>
-    public Task<SarifLog> RunSecurityScanAsync(
+    /// <returns>
+    /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
+    /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
+    /// </returns>
+    public Task<SecurityScanResult> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri,
@@ -72,13 +74,17 @@ public sealed class ZapManager : IAsyncDisposable
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
     /// <param name="automationFrameworkYamlPath">
-    /// File system path to the YAML configuration file of ZAP's Automation Framework. See
-    /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
+    /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
+    /// href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public async Task<SarifLog> RunSecurityScanAsync(
+    /// <returns>
+    /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
+    /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
+    /// </returns>
+    public async Task<SecurityScanResult> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
         Func<object, Task> modifyYaml = null)
@@ -172,11 +178,7 @@ public sealed class ZapManager : IAsyncDisposable
                 "Check the test output for details.");
         }
 
-        context.AppendDirectoryToFailureDump(reportsDirectoryPath);
-
-        throw new Exception();
-        return SarifLog.Load(jsonReports[0]);
-        //log.Runs.First().Results.Any(result => result.Kind == ResultKind.Fail);
+        return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
     }
 
     public ValueTask DisposeAsync()

@@ -1,5 +1,7 @@
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
 
@@ -9,71 +11,162 @@ public static class SecurityScanningUITestContextExtensions
 {
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Baseline
-    /// Automation Framework profile (see <see href="https://www.zaproxy.org/docs/docker/baseline-scan/"/> for the
-    /// official docs on the legacy version of this scan).
+    /// Automation Framework profile and runs assertions on the result (see <see
+    /// href="https://www.zaproxy.org/docs/docker/baseline-scan/"/> for the official docs on the legacy version of this
+    /// scan).
     /// </summary>
     /// <param name="startUri">
     /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public static Task RunBaselineSecurityScanAsync(
+    /// <param name="assertSecurityScanResult">
+    /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
+    /// </param>
+    public static Task RunAndAssertBaselineSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null) =>
-        context.RunSecurityScanAsync(AutomationFrameworkYamlPaths.BaselineYamlPath, startUri, modifyYaml);
+        Func<object, Task> modifyYaml = null,
+        Action<SarifLog> assertSecurityScanResult = null) =>
+        context.RunAndAssertSecurityScanAsync(
+            AutomationFrameworkYamlPaths.BaselineYamlPath,
+            startUri,
+            modifyYaml,
+            assertSecurityScanResult);
 
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Full Scan
-    /// Automation Framework profile (see <see href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the
-    /// official docs on the legacy version of this scan).
+    /// Automation Framework profile and runs assertions on the result (see <see
+    /// href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the official docs on the legacy version of this
+    /// scan).
     /// </summary>
     /// <param name="startUri">
     /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public static Task RunFullSecurityScanAsync(
+    /// <param name="assertSecurityScanResult">
+    /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
+    /// </param>
+    public static Task RunAndAssertFullSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null) =>
-        context.RunSecurityScanAsync(AutomationFrameworkYamlPaths.FullScanYamlPath, startUri, modifyYaml);
+        Func<object, Task> modifyYaml = null,
+        Action<SarifLog> assertSecurityScanResult = null) =>
+        context.RunAndAssertSecurityScanAsync(
+            AutomationFrameworkYamlPaths.FullScanYamlPath,
+            startUri,
+            modifyYaml,
+            assertSecurityScanResult);
 
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the GraphQL
-    /// Automation Framework profile (see <see href="https://www.zaproxy.org/docs/desktop/addons/graphql-support/"/> for
-    /// the official docs on ZAP's GraphQL support).
+    /// Automation Framework profile and runs assertions on the result (see <see
+    /// href="https://www.zaproxy.org/docs/desktop/addons/graphql-support/"/> for the official docs on ZAP's GraphQL
+    /// support).
     /// </summary>
     /// <param name="startUri">
     /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public static Task RunGraphQLSecurityScanAsync(
+    /// <param name="assertSecurityScanResult">
+    /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
+    /// </param>
+    public static Task RunAndAssertGraphQLSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null) =>
-        context.RunSecurityScanAsync(AutomationFrameworkYamlPaths.GraphQLYamlPath, startUri, modifyYaml);
+        Func<object, Task> modifyYaml = null,
+        Action<SarifLog> assertSecurityScanResult = null) =>
+        context.RunAndAssertSecurityScanAsync(
+            AutomationFrameworkYamlPaths.GraphQLYamlPath,
+            startUri,
+            modifyYaml,
+            assertSecurityScanResult);
 
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the OpenAPI
-    /// Automation Framework profile (see <see href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for
-    /// the official docs on ZAP's GraphQL support).
+    /// Automation Framework profile and runs assertions on the result (see <see
+    /// href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for the official docs on ZAP's GraphQL
+    /// support).
     /// </summary>
     /// <param name="startUri">
     /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public static Task RunOpenApiSecurityScanAsync(
+    /// <param name="assertSecurityScanResult">
+    /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
+    /// </param>
+    public static Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null) =>
-        context.RunSecurityScanAsync(AutomationFrameworkYamlPaths.BaselineYamlPath, startUri, modifyYaml);
+        Func<object, Task> modifyYaml = null,
+        Action<SarifLog> assertSecurityScanResult = null) =>
+        context.RunAndAssertSecurityScanAsync(
+            AutomationFrameworkYamlPaths.OpenAPIYamlPath,
+            startUri,
+            modifyYaml,
+            assertSecurityScanResult);
+
+    /// <summary>
+    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app and runs assertions on
+    /// the result.
+    /// </summary>
+    /// <param name="automationFrameworkYamlPath">
+    /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
+    /// href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
+    /// </param>
+    /// <param name="startUri">
+    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
+    /// </param>
+    /// <param name="modifyYaml">
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// </param>
+    /// <param name="assertSecurityScanResult">
+    /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
+    /// </param>
+    /// <returns>
+    /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
+    /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
+    /// </returns>
+    public static async Task RunAndAssertSecurityScanAsync(
+        this UITestContext context,
+        string automationFrameworkYamlPath,
+        Uri startUri = null,
+        Func<object, Task> modifyYaml = null,
+        Action<SarifLog> assertSecurityScanResult = null)
+    {
+        var securityScanningConfiguration = context.Configuration.SecurityScanningConfiguration;
+
+        async Task CompositeModifyYaml(object configuration)
+        {
+            if (securityScanningConfiguration.ZapAutomationFrameworkYamlModifier != null)
+            {
+                await securityScanningConfiguration.ZapAutomationFrameworkYamlModifier(context, configuration);
+            }
+
+            if (modifyYaml != null) await modifyYaml(configuration);
+        }
+
+        SecurityScanResult result = null;
+        try
+        {
+            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, startUri, CompositeModifyYaml);
+
+            if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
+            else securityScanningConfiguration.AssertSecurityScanResult(context, result.SarifLog);
+        }
+        catch (Exception ex)
+        {
+            if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            throw new SecurityScanningAssertionException(ex);
+        }
+    }
 
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
@@ -86,9 +179,13 @@ public static class SecurityScanningUITestContextExtensions
     /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
     /// </param>
     /// <param name="modifyYaml">
-    /// A delegate that may optionally modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </param>
-    public static Task RunSecurityScanAsync(
+    /// <returns>
+    /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
+    /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
+    /// </returns>
+    public static Task<SecurityScanResult> RunSecurityScanAsync(
         this UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri = null,

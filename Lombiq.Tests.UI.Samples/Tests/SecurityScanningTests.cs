@@ -25,7 +25,7 @@ public class SecurityScanningTests : UITestBase
         ExecuteTestAfterSetupAsync(
             async context =>
             {
-                await context.RunBaselineSecurityScanAsync();
+                await context.RunAndAssertBaselineSecurityScanAsync();
             },
             browser);
 
