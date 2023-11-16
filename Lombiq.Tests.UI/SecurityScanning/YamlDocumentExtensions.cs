@@ -60,7 +60,7 @@ public static class YamlDocumentExtensions
     /// <exception cref="ArgumentException">
     /// Thrown if no job with the type "passiveScan-config" is found in the Automation Framework Plan.
     /// </exception>
-    public static YamlDocument DisableScanRule(this YamlDocument yamlDocument, string id, string name = "")
+    public static YamlDocument DisableScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
         var jobs = yamlDocument.GetJobs();
 
@@ -73,7 +73,7 @@ public static class YamlDocumentExtensions
 
         var newRule = new YamlMappingNode
         {
-            { "id", id },
+            { "id", id.ToTechnicalString() },
             { "name", name },
             { "threshold", "off" },
         };
