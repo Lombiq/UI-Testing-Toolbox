@@ -41,7 +41,7 @@ public class SecurityScanningTests : UITestBase
     public Task SecurityScanShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context => await context.RunAndAssertBaselineSecurityScanAsync(
-                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeGreaterThan(100)),
+                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)),
             browser);
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
