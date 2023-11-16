@@ -50,7 +50,7 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Disable a certain ZAP scan rule.
+    /// Disable a certain ZAP passive scan rule.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -60,7 +60,7 @@ public static class YamlDocumentExtensions
     /// <exception cref="ArgumentException">
     /// Thrown if no job with the type "passiveScan-config" is found in the Automation Framework Plan.
     /// </exception>
-    public static YamlDocument DisableScanRule(this YamlDocument yamlDocument, int id, string name = "")
+    public static YamlDocument DisablePassiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
         var jobs = yamlDocument.GetJobs();
 

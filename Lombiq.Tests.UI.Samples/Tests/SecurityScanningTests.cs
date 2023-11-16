@@ -62,7 +62,7 @@ public class SecurityScanningTests : UITestBase
                     plan
                     .AddSpiderAjaxAfterSpider()
                     .AddExcludePathsRegex(".*blog.*")
-                    .DisableScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
+                    .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
                     .CompletedTaskAsync()),
             browser);
 
