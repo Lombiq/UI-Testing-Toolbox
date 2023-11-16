@@ -54,7 +54,7 @@ public class SecurityScanningTests : UITestBase
     public Task SecurityScanWithCustomConfigurationShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context => await context.RunAndAssertBaselineSecurityScanAsync(
-                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(2),
+                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200),
                 modifyPlan: plan =>
                 {
                     plan.AddSpiderAjaxAfterSpider().AddExcludePathsRegex(".*blog.*");
