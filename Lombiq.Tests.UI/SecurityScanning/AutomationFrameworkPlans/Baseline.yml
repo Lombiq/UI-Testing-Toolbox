@@ -3,10 +3,8 @@ env:
   contexts:
   - name: "Default Context"
     urls:
-    - "https://localhost:44335/"
-    includePaths: []
-    excludePaths:
-    - ".*blog.*"
+    - "<start URL>"
+    excludePaths: []
     authentication:
       parameters: {}
       verification:
@@ -32,42 +30,41 @@ jobs:
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters: {}
+  name: "spider"
+  type: "spider"
   tests:
   - onFail: "INFO"
     statistic: "automation.spider.urls.added"
     site: ""
     operator: ">="
     value: 100
-    type: "stats"
     name: "At least 100 URLs found"
-  name: "spider"
-  type: "spider"
+    type: "stats"
 - parameters:
     maxDuration: 60
     maxCrawlDepth: 10
     numberOfBrowsers: 64
     inScopeOnly: true
+    runOnlyIfModern: true
+  name: "spiderAjax"
+  type: "spiderAjax"
   tests:
   - onFail: "INFO"
     statistic: "spiderAjax.urls.added"
     site: ""
     operator: ">="
     value: 100
-    type: "stats"
     name: "At least 100 URLs found"
-  name: "spiderAjax"
-  type: "spiderAjax"
+    type: "stats"
 - parameters: {}
   name: "passiveScan-wait"
   type: "passiveScan-wait"
 - parameters:
+    reportDir: "/zap/wrk/reports"
     template: "modern"
     theme: "corporate"
-    reportDir: "C:\\Users\\lehoc\\Downloads"
-    reportFile: ""
     reportTitle: "ZAP Scanning Report"
     reportDescription: ""
-    displayReport: false
   risks:
   - "low"
   - "medium"
@@ -86,5 +83,26 @@ jobs:
   - "chart"
   - "statistics"
   name: "report"
+  type: "report"
+- parameters:
+    template: "sarif-json"
+    reportDir: "/zap/wrk/reports"
+    reportFile: ""
+    reportTitle: "ZAP Scanning Report"
+    reportDescription: ""
+    displayReport: false
+  risks:
+  - "info"
+  - "low"
+  - "medium"
+  - "high"
+  confidences:
+  - "falsepositive"
+  - "low"
+  - "medium"
+  - "high"
+  - "confirmed"
+  sites: []
+  name: "sarifReport"
   type: "report"
 
