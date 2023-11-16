@@ -26,7 +26,10 @@ jobs:
     scanOnlyInScope: true
     enableTags: false
     disableAllRules: false
-  rules: []
+  rules:
+  - id: 10035
+    name: "Strict-Transport-Security Header"
+    threshold: "off"
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters: {}
