@@ -12,7 +12,7 @@ public static class SecurityScanningUITestContextExtensions
 {
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Baseline
-    /// Automation Framework profile and runs assertions on the result (see <see
+    /// Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see <see
     /// href="https://www.zaproxy.org/docs/docker/baseline-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>
@@ -38,7 +38,7 @@ public static class SecurityScanningUITestContextExtensions
 
     /// <summary>
     /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Full Scan
-    /// Automation Framework profile and runs assertions on the result (see <see
+    /// Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see <see
     /// href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>

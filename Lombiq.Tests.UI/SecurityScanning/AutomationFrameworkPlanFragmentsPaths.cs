@@ -1,0 +1,11 @@
+using System.IO;
+
+namespace Lombiq.Tests.UI.SecurityScanning;
+
+public static class AutomationFrameworkPlanFragmentsPaths
+{
+    private static readonly string AutomationFrameworkPlanFragmentsPath =
+        Path.Combine("SecurityScanning", "AutomationFrameworkPlanFragments");
+
+    public static readonly string SpiderAjaxPath = Path.Combine(AutomationFrameworkPlanFragmentsPath, "SpiderAjax.yml");
+}

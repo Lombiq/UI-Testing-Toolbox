@@ -44,19 +44,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlans\Baseline.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlanFragments\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlans\FullScan.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
@@ -132,6 +124,7 @@
     <None Remove="node_modules\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\SpiderAjax.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\Baseline.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\FullScan.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml" />

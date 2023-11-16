@@ -65,7 +65,7 @@ public sealed class ZapManager : IAsyncDisposable
             automationFrameworkYamlPath,
             async configuration =>
             {
-                SetStartUrlInYaml(configuration, startUri);
+                SetStartUrlInPlan(configuration, startUri);
                 if (modifyPlan != null) await modifyPlan(configuration);
             });
 
@@ -104,7 +104,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
 
-        await PrepareYamlAsync(yamlFileCopyPath, modifyPlan);
+        await PreparePlanAsync(yamlFileCopyPath, modifyPlan);
 
         // Explanation on the CLI arguments used below:
         // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
@@ -215,25 +215,9 @@ public sealed class ZapManager : IAsyncDisposable
         }
     }
 
-    private static void SetStartUrlInYaml(YamlDocument configuration, Uri startUri)
+    private static void SetStartUrlInPlan(YamlDocument yamlDocument, Uri startUri)
     {
-        var rootNode = (YamlMappingNode)configuration.RootNode;
-
-        var contexts = (YamlSequenceNode)rootNode["env"]["contexts"];
-
-        if (!contexts.Any())
-        {
-            throw new ArgumentException(
-                "The supplied ZAP Automation Framework YAML file should contain at least one context.");
-        }
-
-        var currentContext = (YamlMappingNode)contexts[0];
-
-        if (contexts.Count() > 1)
-        {
-            currentContext = (YamlMappingNode)contexts.FirstOrDefault(context => context["Name"].ToString() == "Default Context")
-                ?? currentContext;
-        }
+        var currentContext = YamlHelper.GetCurrentContext(yamlDocument);
 
         // Setting URLs in the context.
         // Setting includePaths in the context is not necessary because by default everything under urls will be scanned.
@@ -254,24 +238,13 @@ public sealed class ZapManager : IAsyncDisposable
         urls.Add(startUri.ToString());
     }
 
-    private static async Task PrepareYamlAsync(string yamlFilePath, Func<YamlDocument, Task> modifyPlan)
+    private static async Task PreparePlanAsync(string yamlFilePath, Func<YamlDocument, Task> modifyPlan)
     {
-        YamlDocument yamlDocument;
-
-        using (var streamReader = new StreamReader(yamlFilePath))
-        {
-            var yamlStream = new YamlStream();
-            yamlStream.Load(streamReader);
-            // Using a free-form object instead of deserializing into a statically defined object, not to potentially
-            // break unknown fields during reserialization.
-            yamlDocument = yamlStream.Documents[0];
-        }
-
-        var rootNode = (YamlMappingNode)yamlDocument.RootNode;
+        var yamlDocument = YamlHelper.LoadDocument(yamlFilePath);
 
         // Setting report directories to the conventional one and verifying that there's exactly one SARIF report.
 
-        var jobs = (IEnumerable<YamlNode>)rootNode["jobs"];
+        var jobs = (IEnumerable<YamlNode>)yamlDocument.GetRootNode()["jobs"];
 
         var sarifReportCount = 0;
 
@@ -293,10 +266,8 @@ public sealed class ZapManager : IAsyncDisposable
 
         if (modifyPlan != null) await modifyPlan(yamlDocument);
 
-        using (var streamWriter = new StreamWriter(yamlFilePath))
-        {
-            var yamlStream = new YamlStream(yamlDocument);
-            yamlStream.Save(streamWriter, assignAnchors: false);
-        }
+        using var streamWriter = new StreamWriter(yamlFilePath);
+        var yamlStream = new YamlStream(yamlDocument);
+        yamlStream.Save(streamWriter, assignAnchors: false);
     }
 }
