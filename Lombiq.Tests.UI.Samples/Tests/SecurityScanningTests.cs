@@ -12,6 +12,12 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
+// Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) is the world's most widely used web app security scanner, and a
+// fellow open-source project we can recommend. And you can use it right from UI tests, on the same app that's run for
+// the tests! This is useful to find all kinds of security issues with your app. In this sample we'll see how, but be
+// sure to also check out the corresponding documentation page:
+// https://github.com/Lombiq/UI-Testing-Toolbox/blob/dev/Lombiq.Tests.UI/Docs/SecurityScanning.md.
+
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
 // GitHub Actions, these tests won't work there. They'll work on a Windows desktop though.
 public class SecurityScanningTests : UITestBase
@@ -21,6 +27,16 @@ public class SecurityScanningTests : UITestBase
     {
     }
 
+    // Let's see simple use case first: Running a built-in ZAP scan.
+
+    // We're running one of ZAP's built-in scans, the Baseline scan. This, as the name suggests, provides some
+    // rudimentary security checks. While you can start with this, we recommend running the Full Scan, for which there
+    // similarly is an extension method as well.
+
+    // Note how we specify an assertion too. This is because ZAP actually notices a few security issues with vanilla
+    // Orchard Core. These, however, are more like artifacts of running the app locally and without any real
+    // configuration. So, to make the test pass, we need to substitute the default assertion that would fail the test if
+    // any issue is found.
     [Theory, Chrome]
     public Task SecurityScanShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
@@ -29,7 +45,8 @@ public class SecurityScanningTests : UITestBase
             browser);
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
-    // demo.
+    // demo. For a real app's security scan you needn't (shouldn't) do this though; always run the scan on the actual
+    // app with everything set up how you run it in production.
     protected override Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
