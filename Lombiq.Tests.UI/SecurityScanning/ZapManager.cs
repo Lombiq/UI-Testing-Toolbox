@@ -244,11 +244,9 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Setting report directories to the conventional one and verifying that there's exactly one SARIF report.
 
-        var jobs = (IEnumerable<YamlNode>)yamlDocument.GetRootNode()["jobs"];
-
         var sarifReportCount = 0;
 
-        foreach (var job in jobs)
+        foreach (var job in yamlDocument.GetJobs())
         {
             if ((string)job["type"] != "report") continue;
 

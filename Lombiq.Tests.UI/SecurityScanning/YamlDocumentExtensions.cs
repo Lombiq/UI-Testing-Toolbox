@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
@@ -15,7 +16,7 @@ public static class YamlDocumentExtensions
     /// </exception>
     public static YamlDocument AddSpiderAjaxAfterSpider(this YamlDocument yamlDocument)
     {
-        var jobs = (YamlSequenceNode)yamlDocument.GetRootNode()["jobs"];
+        var jobs = yamlDocument.GetJobs();
 
         var spiderJob =
             jobs.FirstOrDefault(job => (string)job["name"] == "spider") ??
@@ -48,5 +49,55 @@ public static class YamlDocumentExtensions
         return yamlDocument;
     }
 
+    /// <summary>
+    /// Disable a certain ZAP scan rule.
+    /// </summary>
+    /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="name">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown if no job with the type "passiveScan-config" is found in the Automation Framework Plan.
+    /// </exception>
+    public static YamlDocument DisableScanRule(this YamlDocument yamlDocument, string id, string name = "")
+    {
+        var jobs = yamlDocument.GetJobs();
+
+        var passiveScanConfigJob =
+            (YamlMappingNode)jobs.FirstOrDefault(job => (string)job["type"] == "passiveScan-config") ??
+            throw new ArgumentException(
+                "No job with the type \"passiveScan-config\" found in the Automation Framework Plan so the rule can't be added.");
+
+        if (!passiveScanConfigJob.Children.ContainsKey("rules")) passiveScanConfigJob.Add("rules", new YamlSequenceNode());
+
+        var newRule = new YamlMappingNode
+        {
+            { "id", id },
+            { "name", name },
+            { "threshold", "off" },
+        };
+
+        ((YamlSequenceNode)passiveScanConfigJob["rules"]).Add(newRule);
+
+        return yamlDocument;
+    }
+
+    /// <summary>
+    /// Gets <see cref="YamlDocument.RootNode"/> cast to <see cref="YamlMappingNode"/>.
+    /// </summary>
     public static YamlMappingNode GetRootNode(this YamlDocument yamlDocument) => (YamlMappingNode)yamlDocument.RootNode;
+
+    /// <summary>
+    /// Gets the "jobs" section of the <see cref="YamlDocument"/>.
+    /// </summary>
+    public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
+        (YamlSequenceNode)yamlDocument.GetRootNode()["jobs"];
+
+    /// <summary>
+    /// Shortcuts to <see cref="Task.CompletedTask"/> to be able to chain <see cref="YamlDocument"/> extensions in an
+    /// async method/delegate.
+    /// </summary>
+    /// <returns><see cref="Task.CompletedTask"/>.</returns>
+    public static Task CompletedTaskAsync(this YamlDocument yamlDocument) => Task.CompletedTask;
 }
