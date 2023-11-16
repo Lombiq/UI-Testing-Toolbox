@@ -89,6 +89,17 @@ public sealed class ZapManager : IAsyncDisposable
         string automationFrameworkYamlPath,
         Func<YamlDocument, Task> modifyPlan = null)
     {
+        // Being able to run more than one scan in a test would complicate report generation and processing the SARIF
+        // report so rather just preventing it here (really nobody should want it anyway).
+        const string customContextKey = "ZapManager.ScanWasRun";
+
+        if (context.CustomContext.ContainsKey(customContextKey))
+        {
+            throw new NotSupportedException("You may only run a single ZAP scan in a given test.");
+        }
+
+        context.CustomContext.Add(customContextKey, string.Empty);
+
         await EnsureInitializedAsync();
 
         if (string.IsNullOrEmpty(automationFrameworkYamlPath))
