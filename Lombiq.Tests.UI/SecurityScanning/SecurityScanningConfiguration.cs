@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.Sarif;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
+using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -11,7 +12,7 @@ public class SecurityScanningConfiguration
     /// <summary>
     /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework YAML.
     /// </summary>
-    public Func<UITestContext, object, Task> ZapAutomationFrameworkYamlModifier { get; set; }
+    public Func<UITestContext, YamlDocument, Task> ZapAutomationFrameworkYamlModifier { get; set; }
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="SarifLog"/> when security scanning happens.

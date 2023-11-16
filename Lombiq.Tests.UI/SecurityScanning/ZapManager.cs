@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using YamlDotNet.Serialization;
+using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -59,7 +59,7 @@ public sealed class ZapManager : IAsyncDisposable
         UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri,
-        Func<object, Task> modifyYaml = null) =>
+        Func<YamlDocument, Task> modifyYaml = null) =>
         RunSecurityScanAsync(
             context,
             automationFrameworkYamlPath,
@@ -87,7 +87,7 @@ public sealed class ZapManager : IAsyncDisposable
     public async Task<SecurityScanResult> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
-        Func<object, Task> modifyYaml = null)
+        Func<YamlDocument, Task> modifyYaml = null)
     {
         await EnsureInitializedAsync();
 
@@ -215,26 +215,72 @@ public sealed class ZapManager : IAsyncDisposable
         }
     }
 
-    private async Task PrepareYamlAsync(string yamlFilePath, Func<object, Task> modifyYaml)
+    private static void SetStartUrlInYaml(YamlDocument configuration, Uri startUri)
     {
-        var originalYaml = await File.ReadAllTextAsync(yamlFilePath, _cancellationTokenSource.Token);
+        var rootNode = (YamlMappingNode)configuration.RootNode;
 
-        var deserializer = new DeserializerBuilder().Build();
-        // Deseralizing into a free-form object, not to potentially break unknown fields during reserialization.
-        var configuration = deserializer.Deserialize<object>(originalYaml);
+        var contexts = (YamlSequenceNode)rootNode["env"]["contexts"];
+
+        if (!contexts.Any())
+        {
+            throw new ArgumentException(
+                "The supplied ZAP Automation Framework YAML file should contain at least one context.");
+        }
+
+        var currentContext = (YamlMappingNode)contexts[0];
+
+        if (contexts.Count() > 1)
+        {
+            currentContext = (YamlMappingNode)contexts.FirstOrDefault(context => context["Name"].ToString() == "Default Context")
+                ?? currentContext;
+        }
+
+        // Setting URLs in the context.
+        // Setting includePaths in the context is not necessary because by default everything under urls will be scanned.
+
+        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
+
+        var urls = (YamlSequenceNode)currentContext["urls"];
+        var urlsCount = urls.Count();
+
+        if (urlsCount > 1)
+        {
+            throw new ArgumentException(
+                "The context in the ZAP Automation Framework YAML file should contain at most a single url in the urls section.");
+        }
+
+        if (urlsCount == 1) urls.Children.Clear();
+
+        urls.Add(startUri.ToString());
+    }
+
+    private static async Task PrepareYamlAsync(string yamlFilePath, Func<YamlDocument, Task> modifyYaml)
+    {
+        YamlDocument yamlDocument;
+
+        using (var streamReader = new StreamReader(yamlFilePath))
+        {
+            var yamlStream = new YamlStream();
+            yamlStream.Load(streamReader);
+            // Using a free-form object instead of deserializing into a statically defined object, not to potentially
+            // break unknown fields during reserialization.
+            yamlDocument = yamlStream.Documents[0];
+        }
+
+        var rootNode = (YamlMappingNode)yamlDocument.RootNode;
 
         // Setting report directories to the conventional one and verifying that there's exactly one SARIF report.
-        List<object> jobs = ((dynamic)configuration)["jobs"];
+
+        var jobs = (IEnumerable<YamlNode>)rootNode["jobs"];
+
         var sarifReportCount = 0;
 
         foreach (var job in jobs)
         {
-            var jobDictionary = (Dictionary<object, object>)job;
+            if ((string)job["type"] != "report") continue;
 
-            if (!jobDictionary.TryGetValue("type", out var typeValue) || (string)typeValue != "report") continue;
-
-            var parameters = (Dictionary<object, object>)jobDictionary["parameters"];
-            parameters["reportDir"] = _zapWorkingDirectoryPath + _zapReportsDirectoryName;
+            var parameters = (YamlMappingNode)job["parameters"];
+            ((YamlScalarNode)parameters["reportDir"]).Value = _zapWorkingDirectoryPath + _zapReportsDirectoryName;
 
             if ((string)parameters["template"] == "sarif-json") sarifReportCount++;
         }
@@ -245,51 +291,12 @@ public sealed class ZapManager : IAsyncDisposable
                 "The supplied ZAP Automation Framework YAML file should contain exactly one SARIF report job.");
         }
 
-        if (modifyYaml != null) await modifyYaml(configuration);
+        if (modifyYaml != null) await modifyYaml(yamlDocument);
 
-        // Serializing the results.
-        var serializer = new SerializerBuilder().WithQuotingNecessaryStrings().Build();
-        var updatedYaml = serializer.Serialize(configuration);
-
-        await File.WriteAllTextAsync(yamlFilePath, updatedYaml, _cancellationTokenSource.Token);
-    }
-
-    private static void SetStartUrlInYaml(object configuration, Uri startUri)
-    {
-        List<object> contexts = ((dynamic)configuration)["env"]["contexts"];
-
-        if (!contexts.Any())
+        using (var streamWriter = new StreamWriter(yamlFilePath))
         {
-            throw new ArgumentException(
-                "The supplied ZAP Automation Framework YAML file should contain at least one context.");
+            var yamlStream = new YamlStream(yamlDocument);
+            yamlStream.Save(streamWriter, assignAnchors: false);
         }
-
-        var context = (Dictionary<object, object>)contexts[0];
-
-        if (contexts.Count > 1)
-        {
-            context =
-                (Dictionary<object, object>)contexts
-                    .Find(context =>
-                        ((Dictionary<object, object>)context).TryGetValue("name", out var name) && (string)name == "Default Context")
-                ?? context;
-        }
-
-        // Setting URLs in the context.
-        // Setting includePaths in the context is not necessary because by default everything under urls will be scanned.
-
-        if (!context.ContainsKey("urls")) context["urls"] = new List<object>();
-
-        var urls = (List<object>)context["urls"];
-
-        if (urls.Count > 1)
-        {
-            throw new ArgumentException(
-                "The context in the ZAP Automation Framework YAML file should contain at most a single url in the urls section.");
-        }
-
-        if (urls.Count == 1) urls.Clear();
-
-        urls.Add(startUri.ToString());
     }
 }

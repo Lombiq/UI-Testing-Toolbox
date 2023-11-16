@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
+using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -27,7 +28,7 @@ public static class SecurityScanningUITestContextExtensions
     public static Task RunAndAssertBaselineSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null,
+        Func<YamlDocument, Task> modifyYaml = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkYamlPaths.BaselineYamlPath,
@@ -53,7 +54,7 @@ public static class SecurityScanningUITestContextExtensions
     public static Task RunAndAssertFullSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null,
+        Func<YamlDocument, Task> modifyYaml = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkYamlPaths.FullScanYamlPath,
@@ -79,7 +80,7 @@ public static class SecurityScanningUITestContextExtensions
     public static Task RunAndAssertGraphQLSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null,
+        Func<YamlDocument, Task> modifyYaml = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkYamlPaths.GraphQLYamlPath,
@@ -105,7 +106,7 @@ public static class SecurityScanningUITestContextExtensions
     public static Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null,
+        Func<YamlDocument, Task> modifyYaml = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkYamlPaths.OpenAPIYamlPath,
@@ -138,12 +139,12 @@ public static class SecurityScanningUITestContextExtensions
         this UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null,
+        Func<YamlDocument, Task> modifyYaml = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
         var securityScanningConfiguration = context.Configuration.SecurityScanningConfiguration;
 
-        async Task CompositeModifyYaml(object configuration)
+        async Task CompositeModifyYaml(YamlDocument configuration)
         {
             if (securityScanningConfiguration.ZapAutomationFrameworkYamlModifier != null)
             {
@@ -189,6 +190,6 @@ public static class SecurityScanningUITestContextExtensions
         this UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri = null,
-        Func<object, Task> modifyYaml = null) =>
+        Func<YamlDocument, Task> modifyYaml = null) =>
         context.ZapManager.RunSecurityScanAsync(context, automationFrameworkYamlPath, startUri ?? context.GetCurrentUri(), modifyYaml);
 }
