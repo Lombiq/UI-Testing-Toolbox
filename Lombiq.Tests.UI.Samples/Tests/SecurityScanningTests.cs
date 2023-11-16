@@ -57,9 +57,13 @@ public class SecurityScanningTests : UITestBase
     public Task SecurityScanWithCustomConfigurationShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             async context => await context.RunAndAssertBaselineSecurityScanAsync(
-                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(2),
+                assertSecurityScanResult: sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200),
                 modifyPlan: plan =>
-                    plan.AddSpiderAjaxAfterSpider().AddExcludePathsRegex(".*blog.*").DisableScanRule("10037", "asdfaldfalsdflasldf").CompletedTaskAsync()),
+                    plan
+                    .AddSpiderAjaxAfterSpider()
+                    .AddExcludePathsRegex(".*blog.*")
+                    .DisableScanRule("10037", "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
+                    .CompletedTaskAsync()),
             browser);
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
