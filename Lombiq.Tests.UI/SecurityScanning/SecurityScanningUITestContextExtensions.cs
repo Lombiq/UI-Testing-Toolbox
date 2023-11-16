@@ -11,8 +11,8 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public static class SecurityScanningUITestContextExtensions
 {
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Baseline
-    /// Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see <see
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
+    /// Baseline Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see <see
     /// href="https://www.zaproxy.org/docs/docker/baseline-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>
@@ -37,9 +37,9 @@ public static class SecurityScanningUITestContextExtensions
             assertSecurityScanResult);
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the Full Scan
-    /// Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see <see
-    /// href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the official docs on the legacy version of this
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
+    /// Full Scan Automation Framework profile except for the spiderAjax job, and runs assertions on the result (see
+    /// <see href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>
     /// <param name="startUri">
@@ -63,8 +63,8 @@ public static class SecurityScanningUITestContextExtensions
             assertSecurityScanResult);
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the GraphQL
-    /// Automation Framework profile and runs assertions on the result (see <see
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
+    /// GraphQL Automation Framework profile and runs assertions on the result (see <see
     /// href="https://www.zaproxy.org/docs/desktop/addons/graphql-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
@@ -89,8 +89,8 @@ public static class SecurityScanningUITestContextExtensions
             assertSecurityScanResult);
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app with the OpenAPI
-    /// Automation Framework profile and runs assertions on the result (see <see
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
+    /// OpenAPI Automation Framework profile and runs assertions on the result (see <see
     /// href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
@@ -115,8 +115,8 @@ public static class SecurityScanningUITestContextExtensions
             assertSecurityScanResult);
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app and runs assertions on
-    /// the result.
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app and runs
+    /// assertions on the result.
     /// </summary>
     /// <param name="automationFrameworkYamlPath">
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
@@ -170,7 +170,7 @@ public static class SecurityScanningUITestContextExtensions
     }
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app.
     /// </summary>
     /// <param name="automationFrameworkYamlPath">
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See

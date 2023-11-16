@@ -17,7 +17,7 @@ using YamlDotNet.RepresentationModel;
 namespace Lombiq.Tests.UI.SecurityScanning;
 
 /// <summary>
-/// Service to manage Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) instances and security scans.
+/// Service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances and security scans.
 /// </summary>
 public sealed class ZapManager : IAsyncDisposable
 {
@@ -40,7 +40,7 @@ public sealed class ZapManager : IAsyncDisposable
     internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
     /// <param name="automationFrameworkYamlPath">
@@ -70,7 +70,7 @@ public sealed class ZapManager : IAsyncDisposable
             });
 
     /// <summary>
-    /// Run a Zed Attack Proxy (ZAP, see https://www.zaproxy.org/) security scan against an app.
+    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
     /// <param name="automationFrameworkYamlPath">
