@@ -104,6 +104,7 @@ public class SecurityScanningTests : UITestBase
 
                 // Don't do this at home! Fix the issues instead. This is only here to have a smoother demo.
                 configuration.SecurityScanningConfiguration.AssertSecurityScanResult = (_, _) => { };
+                // Check out the rest of SecurityScanningConfiguration too!
 
                 await changeConfigurationAsync(configuration);
             });

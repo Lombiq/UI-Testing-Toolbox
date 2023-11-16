@@ -142,16 +142,16 @@ public static class SecurityScanningUITestContextExtensions
         Func<YamlDocument, Task> modifyPlan = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
-        var securityScanningConfiguration = context.Configuration.SecurityScanningConfiguration;
+        var configuration = context.Configuration.SecurityScanningConfiguration;
 
-        async Task CompositemodifyPlan(YamlDocument configuration)
+        async Task CompositemodifyPlan(YamlDocument plan)
         {
-            if (securityScanningConfiguration.ZapAutomationFrameworkYamlModifier != null)
+            if (configuration.ZapAutomationFrameworkYamlModifier != null)
             {
-                await securityScanningConfiguration.ZapAutomationFrameworkYamlModifier(context, configuration);
+                await configuration.ZapAutomationFrameworkYamlModifier(context, plan);
             }
 
-            if (modifyPlan != null) await modifyPlan(configuration);
+            if (modifyPlan != null) await modifyPlan(plan);
         }
 
         SecurityScanResult result = null;
@@ -160,7 +160,9 @@ public static class SecurityScanningUITestContextExtensions
             result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, startUri, CompositemodifyPlan);
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
-            else securityScanningConfiguration.AssertSecurityScanResult(context, result.SarifLog);
+            else configuration.AssertSecurityScanResult(context, result.SarifLog);
+
+            if (configuration.CreateReportAlways) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
         }
         catch (Exception ex)
         {

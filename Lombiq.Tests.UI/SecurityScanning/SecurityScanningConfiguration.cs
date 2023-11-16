@@ -10,6 +10,16 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public class SecurityScanningConfiguration
 {
     /// <summary>
+    /// Gets or sets a value indicating whether to save a report to the failure dump for every scan, even passing ones.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Won't work until https://github.com/Lombiq/UI-Testing-Toolbox/issues/323 is implemented, hence it's internal.
+    /// </para>
+    /// </remarks>
+    internal bool CreateReportAlways { get; set; }
+
+    /// <summary>
     /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework plan in YAML.
     /// </summary>
     public Func<UITestContext, YamlDocument, Task> ZapAutomationFrameworkYamlModifier { get; set; }
