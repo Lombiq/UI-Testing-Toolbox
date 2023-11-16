@@ -44,16 +44,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkYamls\Baseline.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\Baseline.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkYamls\FullScan.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\FullScan.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkYamls\GraphQL.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkYamls\OpenAPI.yml">
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="xunit.runner.json">
@@ -128,10 +128,10 @@
     <None Remove="node_modules\**" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="SecurityScanning\AutomationFrameworkYamls\Baseline.yml" />
-    <None Remove="SecurityScanning\AutomationFrameworkYamls\FullScan.yml" />
-    <None Remove="SecurityScanning\AutomationFrameworkYamls\GraphQL.yml" />
-    <None Remove="SecurityScanning\AutomationFrameworkYamls\OpenAPI.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\Baseline.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\FullScan.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml" />
   </ItemGroup>
 
 </Project>

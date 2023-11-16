@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public class SecurityScanningConfiguration
 {
     /// <summary>
-    /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework plan in YAML.
     /// </summary>
     public Func<UITestContext, YamlDocument, Task> ZapAutomationFrameworkYamlModifier { get; set; }
 

@@ -48,8 +48,8 @@ public sealed class ZapManager : IAsyncDisposable
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
     /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
-    /// <param name="modifyYaml">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// <param name="modifyPlan">
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
     /// </param>
     /// <returns>
     /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
@@ -59,14 +59,14 @@ public sealed class ZapManager : IAsyncDisposable
         UITestContext context,
         string automationFrameworkYamlPath,
         Uri startUri,
-        Func<YamlDocument, Task> modifyYaml = null) =>
+        Func<YamlDocument, Task> modifyPlan = null) =>
         RunSecurityScanAsync(
             context,
             automationFrameworkYamlPath,
             async configuration =>
             {
                 SetStartUrlInYaml(configuration, startUri);
-                if (modifyYaml != null) await modifyYaml(configuration);
+                if (modifyPlan != null) await modifyPlan(configuration);
             });
 
     /// <summary>
@@ -77,8 +77,8 @@ public sealed class ZapManager : IAsyncDisposable
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
     /// href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
-    /// <param name="modifyYaml">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework YAML.
+    /// <param name="modifyPlan">
+    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
     /// </param>
     /// <returns>
     /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
@@ -87,13 +87,13 @@ public sealed class ZapManager : IAsyncDisposable
     public async Task<SecurityScanResult> RunSecurityScanAsync(
         UITestContext context,
         string automationFrameworkYamlPath,
-        Func<YamlDocument, Task> modifyYaml = null)
+        Func<YamlDocument, Task> modifyPlan = null)
     {
         await EnsureInitializedAsync();
 
         if (string.IsNullOrEmpty(automationFrameworkYamlPath))
         {
-            automationFrameworkYamlPath = AutomationFrameworkYamlPaths.BaselineYamlPath;
+            automationFrameworkYamlPath = AutomationFrameworkPlanPaths.BaselinePlanPath;
         }
 
         var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
@@ -104,7 +104,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         File.Copy(automationFrameworkYamlPath, yamlFileCopyPath, overwrite: true);
 
-        await PrepareYamlAsync(yamlFileCopyPath, modifyYaml);
+        await PrepareYamlAsync(yamlFileCopyPath, modifyPlan);
 
         // Explanation on the CLI arguments used below:
         // - --add-host and --network host: Lets us connect to the host OS's localhost, where the OC app runs, with
@@ -254,7 +254,7 @@ public sealed class ZapManager : IAsyncDisposable
         urls.Add(startUri.ToString());
     }
 
-    private static async Task PrepareYamlAsync(string yamlFilePath, Func<YamlDocument, Task> modifyYaml)
+    private static async Task PrepareYamlAsync(string yamlFilePath, Func<YamlDocument, Task> modifyPlan)
     {
         YamlDocument yamlDocument;
 
@@ -291,7 +291,7 @@ public sealed class ZapManager : IAsyncDisposable
                 "The supplied ZAP Automation Framework YAML file should contain exactly one SARIF report job.");
         }
 
-        if (modifyYaml != null) await modifyYaml(yamlDocument);
+        if (modifyPlan != null) await modifyPlan(yamlDocument);
 
         using (var streamWriter = new StreamWriter(yamlFilePath))
         {
