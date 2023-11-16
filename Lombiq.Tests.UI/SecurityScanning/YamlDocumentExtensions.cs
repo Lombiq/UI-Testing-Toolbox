@@ -100,4 +100,33 @@ public static class YamlDocumentExtensions
     /// </summary>
     /// <returns><see cref="Task.CompletedTask"/>.</returns>
     public static Task CompletedTaskAsync(this YamlDocument yamlDocument) => Task.CompletedTask;
+
+    /// <summary>
+    /// Merge the given <see cref="YamlDocument"/> into the current one.
+    /// </summary>
+    /// <param name="overrideDocument">
+    /// The <see cref="YamlDocument"/> to merge from, which overrides the current one.
+    /// </param>
+    /// <returns>The merged <see cref="YamlDocument"/>.</returns>
+    public static YamlDocument MergeFrom(this YamlDocument baseDocument, YamlDocument overrideDocument)
+    {
+        var baseMapping = baseDocument.GetRootNode();
+        var overrideMapping = overrideDocument.GetRootNode();
+
+        foreach (var entry in overrideMapping.Children)
+        {
+            if (baseMapping.Children.ContainsKey(entry.Key))
+            {
+                // Override existing property.
+                baseMapping.Children[entry.Key] = entry.Value;
+            }
+            else
+            {
+                // Add new property.
+                baseMapping.Children.Add(entry.Key, entry.Value);
+            }
+        }
+
+        return baseDocument;
+    }
 }

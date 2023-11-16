@@ -5,7 +5,7 @@ using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
-internal static class YamlHelper
+public static class YamlHelper
 {
     public static YamlDocument LoadDocument(string yamlFilePath)
     {
