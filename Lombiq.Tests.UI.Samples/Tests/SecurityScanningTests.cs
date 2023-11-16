@@ -50,9 +50,9 @@ public class SecurityScanningTests : UITestBase
     //   a website that's not an SPA, but also slows the scan down by a lot.
     // - The plan is also modified with an exclusion regex pattern. You can use this to exclude certain URLs from the
     //   scan.
-    // - We disable the "Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)" alert of ZAP. This
-    //   is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header. If you want airtight security,
-    //   you might want to turn this off, but for the sake of example we just ignore the alert here.
+    // - We disable the "Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)" alert of ZAP's
+    //   passive scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header. If you want
+    //   airtight security, you might want to turn this off, but for the sake of example we just ignore the alert here.
     [Theory, Chrome]
     public Task SecurityScanWithCustomConfigurationShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
