@@ -20,4 +20,11 @@ public class SecurityScanningConfiguration
 
     public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoFails =
         (_, sarifLog) => sarifLog.Runs[0].Results.ShouldNotContain(result => result.Kind == ResultKind.Fail);
+
+    // When running the app locally, HSTS is never set, so we'd get a "Strict-Transport-Security Header Not Set" fail.
+    // The rule is disabled in the default configs though.
+    public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoFailsExceptHsts =
+        (_, sarifLog) =>
+            sarifLog.Runs[0].Results.ShouldNotContain(result =>
+                result.Kind == ResultKind.Fail && result.RuleId != "10035");
 }
