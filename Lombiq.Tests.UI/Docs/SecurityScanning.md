@@ -14,11 +14,11 @@ You an create detailed security scans of your app with [Zed Attack Proxy (ZAP)](
 ## Working with ZAP in the Lombiq UI Testing Toolbox
 
 - We recommend you first check out the related samples in the [`Lombiq.Tests.UI.Samples` project](../../Lombiq.Tests.UI.Samples).
-- If you're new to ZAP, you can start learning by checking out [ZAP's getting started guide](https://www.zaproxy.org/getting-started/), as well as the [ZAP Chat Videos](https://www.zaproxy.org/zap-chat/).
-- ZAP scans run with an internally managed browser instance, not in the browser launched by the test.
+- If you're new to ZAP, you can start learning by checking out [ZAP's getting started guide](https://www.zaproxy.org/getting-started/), as well as the [ZAP Chat Videos](https://www.zaproxy.org/zap-chat/) (especially [ZAP Chat 06 Automation Introduction](https://www.youtube.com/watch?v=PnCbIAnauD8)).
+- Be aware that ZAP scans run with an internally managed browser instance, not in the browser launched by the test.
 - While ZAP is fully managed for you, Docker needs to be available and running to host the ZAP instance. On your development machine you can install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 - The scan of a website with even just 1-200 pages can take 15-30 minutes. So, be careful to fine-tune the ZAP configuration to make it suitable for your app.
 
 ## Troubleshooting
 
-
+- If you're unsure what happens in a scan, run the [ZAP desktop app](https://www.zaproxy.org/download/) and load the Automation Framework plan's YAML file into it. If you use the default scans, then these will be available under the build output directory (like _bin/Debug_) under _SecurityScanning/AutomationFrameworkPlans_. Then, you can open and run them as demonstrated [in this video](https://youtu.be/PnCbIAnauD8?si=u0vi63Uvv9wZINzb&t=1173).
