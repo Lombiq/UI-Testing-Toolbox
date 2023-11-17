@@ -84,6 +84,48 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
+    /// Disable a certain ZAP active scan rule.
+    /// </summary>
+    /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="name">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown if no job with the type "activeScan" is found in the Automation Framework Plan, or if it doesn't have a
+    /// policyDefinition property.
+    /// </exception>
+    public static YamlDocument DisableActiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
+    {
+        var jobs = yamlDocument.GetJobs();
+
+        var activeScanConfigJob =
+            (YamlMappingNode)jobs.FirstOrDefault(job => (string)job["type"] == "activeScan") ??
+            throw new ArgumentException(
+                "No job with the type \"activeScan\" found in the Automation Framework Plan so the rule can't be added.");
+
+        if (!activeScanConfigJob.Children.ContainsKey("policyDefinition"))
+        {
+            throw new ArgumentException("The \"activeScan\" job should contain a policyDefinition.");
+        }
+
+        var policyDefinition = (YamlMappingNode)activeScanConfigJob["policyDefinition"];
+
+        if (!policyDefinition.Children.ContainsKey("rules")) policyDefinition.Add("rules", new YamlSequenceNode());
+
+        var newRule = new YamlMappingNode
+        {
+            { "id", id.ToTechnicalString() },
+            { "name", name },
+            { "threshold", "off" },
+        };
+
+        ((YamlSequenceNode)policyDefinition["rules"]).Add(newRule);
+
+        return yamlDocument;
+    }
+
+    /// <summary>
     /// Gets <see cref="YamlDocument.RootNode"/> cast to <see cref="YamlMappingNode"/>.
     /// </summary>
     public static YamlMappingNode GetRootNode(this YamlDocument yamlDocument) => (YamlMappingNode)yamlDocument.RootNode;
