@@ -22,3 +22,4 @@ You an create detailed security scans of your app with [Zed Attack Proxy (ZAP)](
 ## Troubleshooting
 
 - If you're unsure what happens in a scan, run the [ZAP desktop app](https://www.zaproxy.org/download/) and load the Automation Framework plan's YAML file into it. If you use the default scans, then these will be available under the build output directory (like _bin/Debug_) under _SecurityScanning/AutomationFrameworkPlans_. Then, you can open and run them as demonstrated [in this video](https://youtu.be/PnCbIAnauD8?si=u0vi63Uvv9wZINzb&t=1173).
+- If an alert is a false positive, follow [the official docs](https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/). You can use the [`alertFilter` job](https://www.zaproxy.org/docs/desktop/addons/alert-filters/automation/) to ignore alerts in very specific conditions.

@@ -47,12 +47,15 @@ public class SecurityScanningTests : UITestBase
     //   differently from the default "no scanning alert is allowed" assertion.
     // - The plan is modified to also run ZAP's Ajax Spider
     //   (https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/). This is usually not just unnecessary for
-    //   a website that's not an SPA, but also slows the scan down by a lot.
+    //   a website that's not an SPA, but also slows the scan down by a lot. However, if you have an SPA, you need to
+    //   use it.
     // - The plan is also modified with an exclusion regex pattern. You can use this to exclude certain URLs from the
     //   scan.
     // - We disable the "Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)" alert of ZAP's
-    //   passive scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header. If you want
-    //   airtight security, you might want to turn this off, but for the sake of example we just ignore the alert here.
+    //   passive scan for the whole scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore"
+    //   header. If you want airtight security, you might want to turn this off, but for the sake of example we just
+    //   ignore the alert here.
+    // - We also disable the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page.
     [Theory, Chrome]
     public Task SecurityScanWithCustomConfigurationShouldPass(Browser browser) =>
         ExecuteTestAfterSetupAsync(
@@ -63,6 +66,7 @@ public class SecurityScanningTests : UITestBase
                     .AddSpiderAjaxAfterSpider()
                     .AddExcludePathsRegex(".*blog.*")
                     .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
+                    .DisableRuleForUrl(10038, ".*/about", "Content Security Policy (CSP) Header Not Set")
                     .CompletedTaskAsync()),
             browser);
 
