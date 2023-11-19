@@ -160,15 +160,18 @@ public sealed class ZapManager : IAsyncDisposable
 
         var stdErrBuffer = new StringBuilder();
 
-        // The result of the call is not interesting, since we don't need the exit code: Assertions should check if the
-        // app failed security scanning, and if the scan itself fails then there won't be a report, what's checked below.
-        await _docker
+        var result = await _docker
             .GetCommand(cliParameters)
             .WithStandardOutputPipe(PipeTarget.ToDelegate(line => _testOutputHelper.WriteLineTimestampedAndDebug(line)))
             .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
             // This is so no exception is thrown by CliWrap if the exit code is not 0.
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
+
+        if (result.ExitCode == 1)
+        {
+            throw new SecurityScanningException("Security scanning failed to complete. Check the test's output log for details.");
+        }
 
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
 
