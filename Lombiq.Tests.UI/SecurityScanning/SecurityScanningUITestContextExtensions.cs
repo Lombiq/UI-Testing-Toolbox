@@ -144,7 +144,7 @@ public static class SecurityScanningUITestContextExtensions
     {
         var configuration = context.Configuration.SecurityScanningConfiguration;
 
-        async Task CompositemodifyPlan(YamlDocument plan)
+        async Task CompositeModifyPlan(YamlDocument plan)
         {
             if (configuration.ZapAutomationFrameworkYamlModifier != null)
             {
@@ -157,7 +157,7 @@ public static class SecurityScanningUITestContextExtensions
         SecurityScanResult result = null;
         try
         {
-            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, startUri, CompositemodifyPlan);
+            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, startUri, CompositeModifyPlan);
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
             else configuration.AssertSecurityScanResult(context, result.SarifLog);
