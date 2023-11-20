@@ -8,7 +8,7 @@ You an create detailed security scans of your app with [Zed Attack Proxy (ZAP)](
 
 - The most important default ZAP scans, Baseline, Full, GraphQL, and OpenAPI scans are included and readily usable. Note that these are modified to be more applicable to Orchard Core apps run on localhost during a UI testing scenario (notably, [`ajaxSpider`](https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/) is removed, since most Orchard Core apps don't need it but it takes a lot of time). If you want to scan remote (and especially production) apps, then you'll need to create your own scans based on ZAP's default ones. These can then be run from inside UI tests too.
 - You can assert on scan results and thus fail the test if there are security warnings.
-- Since we use [ZAP's Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) for configuration, you have complete and detailed control over how the scans are configured.
+- Since we use [ZAP's Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) for configuration, you have complete and detailed control over how the scans are configured, but you can also start with a simple configuration available in the .NET API.
 - [SARIF](https://sarifweb.azurewebsites.net/) reports are available to integrate with other InfoSec tools.
 
 ## Working with ZAP in the Lombiq UI Testing Toolbox

@@ -45,36 +45,6 @@ public sealed class ZapManager : IAsyncDisposable
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
     /// <param name="automationFrameworkYamlPath">
-    /// File system path to the YAML configuration file of ZAP's Automation Framework. See
-    /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
-    /// </param>
-    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
-    /// <returns>
-    /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
-    /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
-    /// </returns>
-    public Task<SecurityScanResult> RunSecurityScanAsync(
-        UITestContext context,
-        string automationFrameworkYamlPath,
-        Uri startUri,
-        Func<YamlDocument, Task> modifyPlan = null) =>
-        RunSecurityScanAsync(
-            context,
-            automationFrameworkYamlPath,
-            async configuration =>
-            {
-                SetStartUrlInPlan(configuration, startUri);
-                if (modifyPlan != null) await modifyPlan(configuration);
-            });
-
-    /// <summary>
-    /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app.
-    /// </summary>
-    /// <param name="context">The <see cref="UITestContext"/> of the currently executing test.</param>
-    /// <param name="automationFrameworkYamlPath">
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
     /// href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
@@ -226,29 +196,6 @@ public sealed class ZapManager : IAsyncDisposable
         {
             _pullSemaphore.Release();
         }
-    }
-
-    private static void SetStartUrlInPlan(YamlDocument yamlDocument, Uri startUri)
-    {
-        var currentContext = YamlHelper.GetCurrentContext(yamlDocument);
-
-        // Setting URLs in the context.
-        // Setting includePaths in the context is not necessary because by default everything under urls will be scanned.
-
-        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
-
-        var urls = (YamlSequenceNode)currentContext["urls"];
-        var urlsCount = urls.Count();
-
-        if (urlsCount > 1)
-        {
-            throw new ArgumentException(
-                "The context in the ZAP Automation Framework YAML file should contain at most a single url in the urls section.");
-        }
-
-        if (urlsCount == 1) urls.Children.Clear();
-
-        urls.Add(startUri.ToString());
     }
 
     private static async Task PreparePlanAsync(string yamlFilePath, Func<YamlDocument, Task> modifyPlan)

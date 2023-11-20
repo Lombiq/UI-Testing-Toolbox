@@ -20,9 +20,10 @@ public class SecurityScanningConfiguration
     internal bool CreateReportAlways { get; set; }
 
     /// <summary>
-    /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework plan in YAML.
+    /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework plan in
+    /// YAML.
     /// </summary>
-    public Func<UITestContext, YamlDocument, Task> ZapAutomationFrameworkYamlModifier { get; set; }
+    public Func<UITestContext, YamlDocument, Task> ZapAutomationFrameworkPlanModifier { get; set; }
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="SarifLog"/> when security scanning happens.

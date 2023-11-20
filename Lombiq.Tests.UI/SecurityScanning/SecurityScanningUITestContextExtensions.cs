@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
-using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -16,24 +15,17 @@ public static class SecurityScanningUITestContextExtensions
     /// href="https://www.zaproxy.org/docs/docker/baseline-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
     public static Task RunAndAssertBaselineSecurityScanAsync(
         this UITestContext context,
-        Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null,
+        Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.BaselinePlanPath,
-            startUri,
-            modifyPlan,
+            configure,
             assertSecurityScanResult);
 
     /// <summary>
@@ -42,24 +34,18 @@ public static class SecurityScanningUITestContextExtensions
     /// <see href="https://www.zaproxy.org/docs/docker/full-scan/"/> for the official docs on the legacy version of this
     /// scan).
     /// </summary>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
     public static Task RunAndAssertFullSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null,
+        Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.FullScanPlanPath,
-            startUri,
-            modifyPlan,
+            configure,
             assertSecurityScanResult);
 
     /// <summary>
@@ -68,24 +54,18 @@ public static class SecurityScanningUITestContextExtensions
     /// href="https://www.zaproxy.org/docs/desktop/addons/graphql-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
     public static Task RunAndAssertGraphQLSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null,
+        Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.GraphQLPlanPath,
-            startUri,
-            modifyPlan,
+            configure,
             assertSecurityScanResult);
 
     /// <summary>
@@ -94,24 +74,18 @@ public static class SecurityScanningUITestContextExtensions
     /// href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
     public static Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
         Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null,
+        Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.OpenAPIPlanPath,
-            startUri,
-            modifyPlan,
+            configure,
             assertSecurityScanResult);
 
     /// <summary>
@@ -122,12 +96,7 @@ public static class SecurityScanningUITestContextExtensions
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See <see
     /// href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
@@ -138,29 +107,18 @@ public static class SecurityScanningUITestContextExtensions
     public static async Task RunAndAssertSecurityScanAsync(
         this UITestContext context,
         string automationFrameworkYamlPath,
-        Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null,
+        Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
         var configuration = context.Configuration.SecurityScanningConfiguration;
 
-        async Task CompositeModifyPlan(YamlDocument plan)
-        {
-            if (configuration.ZapAutomationFrameworkYamlModifier != null)
-            {
-                await configuration.ZapAutomationFrameworkYamlModifier(context, plan);
-            }
-
-            if (modifyPlan != null) await modifyPlan(plan);
-        }
-
         SecurityScanResult result = null;
         try
         {
-            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, startUri, CompositeModifyPlan);
+            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure);
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
-            else configuration.AssertSecurityScanResult(context, result.SarifLog);
+            else configuration?.AssertSecurityScanResult(context, result.SarifLog);
 
             if (configuration.CreateReportAlways) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
         }
@@ -178,12 +136,7 @@ public static class SecurityScanningUITestContextExtensions
     /// File system path to the YAML configuration file of ZAP's Automation Framework. See
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
-    /// <param name="startUri">
-    /// The <see cref="Uri"/> under the app where to start the scan from. If not provided, defaults to the current URL.
-    /// </param>
-    /// <param name="modifyPlan">
-    /// A delegate to modify the deserialized representation of the ZAP Automation Framework plan in YAML.
-    /// </param>
+    /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <returns>
     /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
     /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
@@ -191,7 +144,20 @@ public static class SecurityScanningUITestContextExtensions
     public static Task<SecurityScanResult> RunSecurityScanAsync(
         this UITestContext context,
         string automationFrameworkYamlPath,
-        Uri startUri = null,
-        Func<YamlDocument, Task> modifyPlan = null) =>
-        context.ZapManager.RunSecurityScanAsync(context, automationFrameworkYamlPath, startUri ?? context.GetCurrentUri(), modifyPlan);
+        Action<SecurityScanConfiguration> configure = null)
+    {
+        var configuration = new SecurityScanConfiguration();
+
+        configuration.StartAtUri(context.GetCurrentUri());
+
+        if (context.Configuration.SecurityScanningConfiguration.ZapAutomationFrameworkPlanModifier != null)
+        {
+            configuration.ModifyZapPlan(async plan =>
+                await context.Configuration.SecurityScanningConfiguration.ZapAutomationFrameworkPlanModifier(context, plan));
+        }
+
+        configure?.Invoke(configuration);
+
+        return context.ZapManager.RunSecurityScanAsync(context, automationFrameworkYamlPath, configuration.ApplyToPlanAsync);
+    }
 }

@@ -8,6 +8,36 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public static class YamlDocumentExtensions
 {
     /// <summary>
+    /// Sets the start URL under the app where to start the scan from.
+    /// </summary>
+    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the ZAP Automation Framework plan contains more than a single URL in the "urls" section.
+    /// </exception>
+    public static void SetStartUrl(this YamlDocument yamlDocument, Uri startUri)
+    {
+        var currentContext = YamlHelper.GetCurrentContext(yamlDocument);
+
+        // Setting includePaths in the context is not necessary because by default everything under "urls" will be
+        // scanned.
+
+        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
+
+        var urls = (YamlSequenceNode)currentContext["urls"];
+        var urlsCount = urls.Count();
+
+        if (urlsCount > 1)
+        {
+            throw new ArgumentException(
+                "The context in the ZAP Automation Framework YAML file should contain at most a single URL in the \"urls\" section.");
+        }
+
+        if (urlsCount == 1) urls.Children.Clear();
+
+        urls.Add(startUri.ToString());
+    }
+
+    /// <summary>
     /// Adds the <see href="https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/">ZAP Ajax Spider</see>
     /// to the ZAP Automation Framework plan, just after the "spider" job.
     /// </summary>
@@ -55,8 +85,9 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Disable a certain ZAP passive scan rule for the whole scan. If you only want to disable a rule for a given page,
-    /// use <see cref="DisableRuleForUrl(YamlDocument, int, string, string, bool)"/> instead.
+    /// Disable a certain ZAP passive scan rule for the whole scan in the ZAP Automation Framework plan. If you only
+    /// want to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
+    /// instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -85,8 +116,9 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Disable a certain ZAP active scan rule for the whole scan. If you only want to disable a rule for a given page,
-    /// use <see cref="DisableRuleForUrl(YamlDocument, int, string, string, bool)"/> instead.
+    /// Disable a certain ZAP active scan rule for the whole scan in the ZAP Automation Framework plan. If you only want
+    /// to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
+    /// instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -128,8 +160,8 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Disables a rule (can be any rule, including e.g. both active or passive scan rules) for just URLs matching the
-    /// given regular expression pattern.
+    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the
+    /// ZAP Automation Framework plan.
     /// </summary>
     /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="urlMatchingRegexPattern">
@@ -145,10 +177,10 @@ public static class YamlDocumentExtensions
     /// development of ZAP by collecting which rules have the highest false positive rate (see <see
     /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
     /// </param>
-    public static YamlDocument DisableRuleForUrl(
+    public static YamlDocument AddAlertFilter(
         this YamlDocument yamlDocument,
-        int ruleId,
         string urlMatchingRegexPattern,
+        int ruleId,
         string ruleName = "",
         bool isFalsePositive = false)
     {
