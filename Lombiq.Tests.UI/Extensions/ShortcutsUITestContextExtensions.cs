@@ -108,6 +108,7 @@ public static class ShortcutsUITestContextExtensions
     {
         await context.GoToAsync<CurrentUserController>(controller => controller.Index());
         var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+        if (userNameContainer == "Unauthenticated") return string.Empty;
         return userNameContainer["UserName: ".Length..];
     }
 
