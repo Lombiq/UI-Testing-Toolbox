@@ -7,5 +7,7 @@ public static class AutomationFrameworkPlanFragmentsPaths
     private static readonly string AutomationFrameworkPlanFragmentsPath =
         Path.Combine("SecurityScanning", "AutomationFrameworkPlanFragments");
 
-    public static readonly string SpiderAjaxPath = Path.Combine(AutomationFrameworkPlanFragmentsPath, "SpiderAjax.yml");
+    public static readonly string SpiderAjaxJobPath = Path.Combine(AutomationFrameworkPlanFragmentsPath, "SpiderAjaxJob.yml");
+    public static readonly string RequestorJobPath =
+        Path.Combine(AutomationFrameworkPlanFragmentsPath, "RequestorJob.yml");
 }

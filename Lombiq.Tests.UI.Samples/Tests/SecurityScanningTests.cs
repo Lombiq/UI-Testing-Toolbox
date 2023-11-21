@@ -53,6 +53,10 @@ public class SecurityScanningTests : UITestBase
     //   alert here.
     // - Also disables the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page. Use this to
     //   disable rules more specifically instead of the whole scan.
+    // - Configures sign in with a user account. This is what the scan will start with. With the Blog recipe it doesn't
+    //   matter too much, since nothing on the frontend will change, but you can use this to scan authenticated features
+    //   too. Note that since ZAP uses its own spider, not the browser accessed by the test, user sessions are not
+    //   shared, so such an explicit sign in is necessary.
     // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
     //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
     //   default there is "no scanning alert is allowed".
@@ -64,7 +68,8 @@ public class SecurityScanningTests : UITestBase
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
                     .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
-                    .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set"),
+                    .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
+                    .SignIn(),
                 sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)),
             browser);
 

@@ -1,3 +1,8 @@
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +25,7 @@ public class SecurityScanConfiguration
 {
     public Uri StartUri { get; private set; }
     public bool AjaxSpiderIsUsed { get; private set; }
+    public string SignInUserName { get; private set; }
     public IList<string> ExcludedUrlRegexPatterns { get; } = new List<string>();
     public IList<ScanRule> DisabledActiveScanRules { get; } = new List<ScanRule>();
     public IList<ScanRule> DisabledPassiveScanRules { get; } = new List<ScanRule>();
@@ -47,6 +53,17 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration UseAjaxSpider()
     {
         AjaxSpiderIsUsed = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Signs in directly (see <see cref="AccountController.SignInDirectly(string)"/>) with the given user at the start
+    /// of the scan.
+    /// </summary>
+    /// <param name="userName">The name of the user to sign in with directly.</param>
+    public SecurityScanConfiguration SignIn(string userName = DefaultUser.UserName)
+    {
+        SignInUserName = userName;
         return this;
     }
 
@@ -147,26 +164,47 @@ public class SecurityScanConfiguration
         return this;
     }
 
-    internal async Task ApplyToPlanAsync(YamlDocument yamlDocument)
+    internal async Task ApplyToPlanAsync(YamlDocument yamlDocument, UITestContext context)
     {
         yamlDocument.SetStartUrl(StartUri);
         if (AjaxSpiderIsUsed) yamlDocument.AddSpiderAjaxAfterSpider();
+
+        if (!string.IsNullOrEmpty(SignInUserName))
+        {
+            yamlDocument.AddRequestor(
+                context.GetAbsoluteUri(
+                    context.GetRelativeUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName)))
+                .ToString());
+
+            // It might be that later such a verification for the login state will need to be needed, but this seems
+            // unnecessary now.
+            // verification:
+            //   method: "response"
+            //   method: "poll"
+            //   loggedInRegex: "Unauthenticated"
+            //   loggedOutRegex: "UserName: .*"
+            //   pollFrequency: 60
+            //   pollUnits: "requests"
+            //   pollUrl: "https://localhost:44335/Lombiq.Tests.UI.Shortcuts/CurrentUser/Index"
+            //   pollPostData: ""
+        }
+
         yamlDocument.AddExcludePathsRegex(ExcludedUrlRegexPatterns.ToArray());
         foreach (var rule in DisabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
         foreach (var rule in DisabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
         foreach (var kvp in DisabledRulesForUrls) yamlDocument.AddAlertFilter(kvp.Key, kvp.Value.Id, kvp.Value.Name);
         foreach (var modifier in ZapPlanModifiers) await modifier(yamlDocument);
     }
-}
 
-public class ScanRule
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-
-    public ScanRule(int id, string name)
+    public class ScanRule
     {
-        Id = id;
-        Name = name;
+        public int Id { get; }
+        public string Name { get; }
+
+        public ScanRule(int id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
     }
 }

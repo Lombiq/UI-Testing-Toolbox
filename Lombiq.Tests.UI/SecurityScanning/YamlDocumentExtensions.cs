@@ -8,22 +8,19 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public static class YamlDocumentExtensions
 {
     /// <summary>
-    /// Sets the start URL under the app where to start the scan from.
+    /// Sets the start URL under the app where to start the scan from in the current context of the ZAP Automation
+    /// Framework plan.
     /// </summary>
-    /// <param name="startUri">The <see cref="Uri"/> under the app where to start the scan from.</param>
+    /// <param name="startUri">The absolute <see cref="Uri"/> to start the scan from.</param>
     /// <exception cref="ArgumentException">
     /// Thrown when the ZAP Automation Framework plan contains more than a single URL in the "urls" section.
     /// </exception>
-    public static void SetStartUrl(this YamlDocument yamlDocument, Uri startUri)
+    public static YamlDocument SetStartUrl(this YamlDocument yamlDocument, Uri startUri)
     {
-        var currentContext = YamlHelper.GetCurrentContext(yamlDocument);
-
         // Setting includePaths in the context is not necessary because by default everything under "urls" will be
         // scanned.
 
-        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
-
-        var urls = (YamlSequenceNode)currentContext["urls"];
+        var urls = yamlDocument.GetUrls();
         var urlsCount = urls.Count();
 
         if (urlsCount > 1)
@@ -35,6 +32,22 @@ public static class YamlDocumentExtensions
         if (urlsCount == 1) urls.Children.Clear();
 
         urls.Add(startUri.ToString());
+
+        return yamlDocument;
+    }
+
+    /// <summary>
+    /// Adds a URL to the "urls" section of the current context of the ZAP Automation Framework plan.
+    /// </summary>
+    /// <param name="uri">
+    /// The <see cref="Uri"/> to add to the "urls" section of the current context of the ZAP Automation Framework
+    /// plan.
+    /// </param>
+    public static YamlDocument AddUrl(this YamlDocument yamlDocument, Uri uri)
+    {
+        var urls = yamlDocument.GetUrls();
+        urls.Add(uri.ToString());
+        return yamlDocument;
     }
 
     /// <summary>
@@ -51,11 +64,12 @@ public static class YamlDocumentExtensions
         var spiderJob =
             jobs.FirstOrDefault(job => (string)job["name"] == "spider") ??
             throw new ArgumentException(
-                "No job named \"spider\" found in the Automation Framework Plan. We can only add ajaxSpider immediately after it.");
+                "No job named \"spider\" found in the Automation Framework Plan. We can only add the ajaxSpider job " +
+                "immediately after it.");
 
         var spiderIndex = jobs.Children.IndexOf(spiderJob);
-        var spiderAjax = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.SpiderAjaxPath);
-        jobs.Children.Insert(spiderIndex + 1, spiderAjax.GetRootNode());
+        var spiderAjaxJob = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.SpiderAjaxJobPath);
+        jobs.Children.Insert(spiderIndex + 1, spiderAjaxJob.GetRootNode());
 
         return yamlDocument;
     }
@@ -71,7 +85,7 @@ public static class YamlDocumentExtensions
     /// </param>
     public static YamlDocument AddExcludePathsRegex(this YamlDocument yamlDocument, params string[] excludePathsRegexPatterns)
     {
-        var currentContext = YamlHelper.GetCurrentContext(yamlDocument);
+        var currentContext = yamlDocument.GetCurrentContext();
 
         if (!currentContext.Children.ContainsKey("excludePaths")) currentContext.Add("excludePaths", new YamlSequenceNode());
 
@@ -160,8 +174,8 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the
-    /// ZAP Automation Framework plan.
+    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
+    /// Automation Framework plan.
     /// </summary>
     /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="urlMatchingRegexPattern">
@@ -216,15 +230,81 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
+    /// Adds a "requestor" job to the ZAP Automation Framework plan.
+    /// </summary>
+    /// <param name="url">The URL the requestor job will access.</param>
+    /// <exception cref="ArgumentException">
+    /// If no job named "spider" is found in the ZAP Automation Framework plan.
+    /// </exception>
+    public static YamlDocument AddRequestor(this YamlDocument yamlDocument, string url)
+    {
+        var jobs = yamlDocument.GetJobs();
+
+        var spiderJob =
+            jobs.FirstOrDefault(job => (string)job["name"] == "spider") ??
+            throw new ArgumentException(
+                "No job named \"spider\" found in the Automation Framework Plan. We can only add the requestor job " +
+                "immediately before it.");
+
+        var requestorJob = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.RequestorJobPath).GetRootNode();
+
+        ((YamlScalarNode)((YamlSequenceNode)requestorJob["requests"]).Children[0]["url"]).Value = url;
+
+        var spiderIndex = jobs.Children.IndexOf(spiderJob);
+        jobs.Children.Insert(spiderIndex, requestorJob);
+
+        return yamlDocument;
+    }
+
+    /// <summary>
     /// Gets <see cref="YamlDocument.RootNode"/> cast to <see cref="YamlMappingNode"/>.
     /// </summary>
     public static YamlMappingNode GetRootNode(this YamlDocument yamlDocument) => (YamlMappingNode)yamlDocument.RootNode;
 
     /// <summary>
-    /// Gets the "jobs" section of the <see cref="YamlDocument"/>.
+    /// Gets the "jobs" section of the ZAP Automation Framework plan.
     /// </summary>
     public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
         (YamlSequenceNode)yamlDocument.GetRootNode()["jobs"];
+
+    /// <summary>
+    /// Gets the "urls" section of the current context in the ZAP Automation Framework plan.
+    /// </summary>
+    public static YamlSequenceNode GetUrls(this YamlDocument yamlDocument)
+    {
+        var currentContext = yamlDocument.GetCurrentContext();
+
+        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
+
+        return (YamlSequenceNode)currentContext["urls"];
+    }
+
+    /// <summary>
+    /// Gets the first context or the one named "Default Context" from the ZAP Automation Framework plan.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown if the ZAP Automation Framework plan doesn't contain a context.
+    /// </exception>
+    public static YamlMappingNode GetCurrentContext(this YamlDocument yamlDocument)
+    {
+        var contexts = (YamlSequenceNode)yamlDocument.GetRootNode()["env"]["contexts"];
+
+        if (!contexts.Any())
+        {
+            throw new ArgumentException(
+                "The supplied ZAP Automation Framework plan YAML file should contain at least one context.");
+        }
+
+        var currentContext = (YamlMappingNode)contexts[0];
+
+        if (contexts.Count() > 1)
+        {
+            currentContext = (YamlMappingNode)contexts.FirstOrDefault(context => context["Name"].ToString() == "Default Context")
+                ?? currentContext;
+        }
+
+        return currentContext;
+    }
 
     /// <summary>
     /// Shortcuts to <see cref="Task.CompletedTask"/> to be able to chain <see cref="YamlDocument"/> extensions in an

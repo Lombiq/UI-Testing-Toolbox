@@ -158,6 +158,9 @@ public static class SecurityScanningUITestContextExtensions
 
         configure?.Invoke(configuration);
 
-        return context.ZapManager.RunSecurityScanAsync(context, automationFrameworkYamlPath, configuration.ApplyToPlanAsync);
+        return context.ZapManager.RunSecurityScanAsync(
+            context,
+            automationFrameworkYamlPath,
+            async plan => await configuration.ApplyToPlanAsync(plan, context));
     }
 }
