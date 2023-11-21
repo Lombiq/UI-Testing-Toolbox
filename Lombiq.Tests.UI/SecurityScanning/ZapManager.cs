@@ -184,7 +184,9 @@ public sealed class ZapManager : IAsyncDisposable
 
             if (_wasPulled) return;
 
-            await _docker.ExecuteAsync(token, "pull", _zapImage);
+            // Without --quiet, "What's Next?" hints will be written to stderr by Docker. See
+            // https://github.com/docker/for-mac/issues/6904.
+            await _docker.ExecuteAsync(token, "pull", _zapImage, "--quiet");
             _wasPulled = true;
         }
         finally
