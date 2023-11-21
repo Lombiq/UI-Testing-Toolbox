@@ -176,8 +176,12 @@ public class SecurityScanConfiguration
                     context.GetRelativeUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName)))
                 .ToString());
 
-            // It might be that later such a verification for the login state will need to be needed, but this seems
-            // unnecessary now.
+            // With such direct sign in we don't need to utilize ZAP's authentication and user managements mechanisms
+            // (see https://www.zaproxy.org/docs/desktop/start/features/authmethods/ and
+            // https://www.zaproxy.org/docs/desktop/addons/automation-framework/authentication/).
+
+            // Also, it might be that later such a verification for the login state will need to be needed, but this
+            // seems unnecessary now.
             // verification:
             //   method: "response"
             //   method: "poll"
