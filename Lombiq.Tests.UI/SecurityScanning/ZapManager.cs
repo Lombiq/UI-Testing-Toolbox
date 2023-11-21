@@ -33,10 +33,9 @@ public sealed class ZapManager : IAsyncDisposable
     private static readonly CliProgram _docker = new("docker");
 
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private static bool _wasPulled;
-
-    private CancellationTokenSource _cancellationTokenSource;
 
     internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
@@ -177,20 +176,16 @@ public sealed class ZapManager : IAsyncDisposable
 
     private async Task EnsureInitializedAsync()
     {
-        if (_cancellationTokenSource != null) return;
-
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-
         try
         {
+            var token = _cancellationTokenSource.Token;
+
             await _pullSemaphore.WaitAsync(token);
 
-            if (!_wasPulled)
-            {
-                await _docker.ExecuteAsync(token, "pull", _zapImage);
-                _wasPulled = true;
-            }
+            if (_wasPulled) return;
+
+            await _docker.ExecuteAsync(token, "pull", _zapImage);
+            _wasPulled = true;
         }
         finally
         {
