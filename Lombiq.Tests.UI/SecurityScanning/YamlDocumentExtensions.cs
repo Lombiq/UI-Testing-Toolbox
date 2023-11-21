@@ -328,14 +328,10 @@ public static class YamlDocumentExtensions
     /// <exception cref="ArgumentException">
     /// Thrown if the ZAP Automation Framework plan doesn't contain a job with the type "passiveScan-config".
     /// </exception>
-    public static YamlMappingNode GetPassiveScanConfigJobOrThrow(this YamlDocument yamlDocument)
-    {
-        var jobs = yamlDocument.GetJobs();
-
-        return (YamlMappingNode)yamlDocument.GetJobByType("passiveScan-config") ??
+    public static YamlMappingNode GetPassiveScanConfigJobOrThrow(this YamlDocument yamlDocument) =>
+        (YamlMappingNode)yamlDocument.GetJobByType("passiveScan-config") ??
             throw new ArgumentException(
                 "No job with the type \"passiveScan-config\" found in the Automation Framework Plan.");
-    }
 
     /// <summary>
     /// Shortcuts to <see cref="Task.CompletedTask"/> to be able to chain <see cref="YamlDocument"/> extensions in an
