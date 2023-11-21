@@ -208,7 +208,7 @@ public sealed class ZapManager : IAsyncDisposable
             if ((string)job["type"] != "report") continue;
 
             var parameters = (YamlMappingNode)job["parameters"];
-            ((YamlScalarNode)parameters["reportDir"]).Value = _zapWorkingDirectoryPath + _zapReportsDirectoryName;
+            parameters["reportDir"].SetValue(_zapWorkingDirectoryPath + _zapReportsDirectoryName);
 
             if ((string)parameters["template"] == "sarif-json") sarifReportCount++;
         }

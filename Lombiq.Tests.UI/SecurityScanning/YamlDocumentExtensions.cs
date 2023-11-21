@@ -60,9 +60,8 @@ public static class YamlDocumentExtensions
     public static YamlDocument AddSpiderAjaxAfterSpider(this YamlDocument yamlDocument)
     {
         var jobs = yamlDocument.GetJobs();
-
         var spiderJob =
-            jobs.FirstOrDefault(job => (string)job["name"] == "spider") ??
+            yamlDocument.GetSpiderJob() ??
             throw new ArgumentException(
                 "No job named \"spider\" found in the Automation Framework Plan. We can only add the ajaxSpider job " +
                 "immediately after it.");
@@ -113,7 +112,7 @@ public static class YamlDocumentExtensions
     /// </exception>
     public static YamlDocument DisablePassiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
-        var passiveScanConfigJob = GetPassiveScanConfigJobOrThrow(yamlDocument);
+        var passiveScanConfigJob = yamlDocument.GetPassiveScanConfigJobOrThrow();
 
         if (!passiveScanConfigJob.Children.ContainsKey("rules")) passiveScanConfigJob.Add("rules", new YamlSequenceNode());
 
@@ -145,10 +144,8 @@ public static class YamlDocumentExtensions
     /// </exception>
     public static YamlDocument DisableActiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
-        var jobs = yamlDocument.GetJobs();
-
         var activeScanConfigJob =
-            (YamlMappingNode)jobs.FirstOrDefault(job => (string)job["type"] == "activeScan") ??
+            (YamlMappingNode)yamlDocument.GetJobByType("activeScan") ??
             throw new ArgumentException(
                 "No job with the type \"activeScan\" found in the Automation Framework Plan so the rule can't be added.");
 
@@ -200,7 +197,7 @@ public static class YamlDocumentExtensions
     {
         var jobs = yamlDocument.GetJobs();
 
-        if (jobs.FirstOrDefault(job => (string)job["type"] == "alertFilter") is not YamlMappingNode alertFilterJob)
+        if (yamlDocument.GetJobByType("alertFilter") is not YamlMappingNode alertFilterJob)
         {
             alertFilterJob = new YamlMappingNode
             {
@@ -208,7 +205,7 @@ public static class YamlDocumentExtensions
                 { "name", "alertFilter" },
             };
 
-            var passiveScanConfigJob = GetPassiveScanConfigJobOrThrow(yamlDocument);
+            var passiveScanConfigJob = yamlDocument.GetPassiveScanConfigJobOrThrow();
             var passiveScanConfigIndex = jobs.Children.IndexOf(passiveScanConfigJob);
             jobs.Children.Insert(passiveScanConfigIndex + 1, alertFilterJob);
         }
@@ -241,14 +238,14 @@ public static class YamlDocumentExtensions
         var jobs = yamlDocument.GetJobs();
 
         var spiderJob =
-            jobs.FirstOrDefault(job => (string)job["name"] == "spider") ??
+            yamlDocument.GetSpiderJob() ??
             throw new ArgumentException(
                 "No job named \"spider\" found in the Automation Framework Plan. We can only add the requestor job " +
                 "immediately before it.");
 
         var requestorJob = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.RequestorJobPath).GetRootNode();
 
-        ((YamlScalarNode)((YamlSequenceNode)requestorJob["requests"]).Children[0]["url"]).Value = url;
+        ((YamlSequenceNode)requestorJob["requests"]).Children[0]["url"].SetValue(url);
 
         var spiderIndex = jobs.Children.IndexOf(spiderJob);
         jobs.Children.Insert(spiderIndex, requestorJob);
@@ -266,6 +263,25 @@ public static class YamlDocumentExtensions
     /// </summary>
     public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
         (YamlSequenceNode)yamlDocument.GetRootNode()["jobs"];
+
+    /// <summary>
+    /// Gets the job from the "jobs" section of the ZAP Automation Framework with the name "spider".
+    /// </summary>
+    public static YamlNode GetSpiderJob(this YamlDocument yamlDocument) => yamlDocument.GetJobByName("spider");
+
+    /// <summary>
+    /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its name.
+    /// </summary>
+    /// <param name="jobName">The "name" field of the job to search for.</param>
+    public static YamlNode GetJobByName(this YamlDocument yamlDocument, string jobName) =>
+        yamlDocument.GetJobs().FirstOrDefault(job => (string)job["name"] == jobName);
+
+    /// <summary>
+    /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its type.
+    /// </summary>
+    /// <param name="jobType">The "type" field of the job to search for.</param>
+    public static YamlNode GetJobByType(this YamlDocument yamlDocument, string jobType) =>
+        yamlDocument.GetJobs().FirstOrDefault(job => (string)job["type"] == jobType);
 
     /// <summary>
     /// Gets the "urls" section of the current context in the ZAP Automation Framework plan.
@@ -307,6 +323,21 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
+    /// Gets the job with the type "passiveScan-config" from the ZAP Automation Framework plan.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown if the ZAP Automation Framework plan doesn't contain a job with the type "passiveScan-config".
+    /// </exception>
+    public static YamlMappingNode GetPassiveScanConfigJobOrThrow(this YamlDocument yamlDocument)
+    {
+        var jobs = yamlDocument.GetJobs();
+
+        return (YamlMappingNode)yamlDocument.GetJobByType("passiveScan-config") ??
+            throw new ArgumentException(
+                "No job with the type \"passiveScan-config\" found in the Automation Framework Plan.");
+    }
+
+    /// <summary>
     /// Shortcuts to <see cref="Task.CompletedTask"/> to be able to chain <see cref="YamlDocument"/> extensions in an
     /// async method/delegate.
     /// </summary>
@@ -340,14 +371,5 @@ public static class YamlDocumentExtensions
         }
 
         return baseDocument;
-    }
-
-    private static YamlMappingNode GetPassiveScanConfigJobOrThrow(YamlDocument yamlDocument)
-    {
-        var jobs = yamlDocument.GetJobs();
-
-        return (YamlMappingNode)jobs.FirstOrDefault(job => (string)job["type"] == "passiveScan-config") ??
-            throw new ArgumentException(
-                "No job with the type \"passiveScan-config\" found in the Automation Framework Plan so the rule can't be added.");
     }
 }

@@ -1,0 +1,99 @@
+---
+env:
+  contexts:
+  - name: "Default Context"
+    urls:
+    - "<start URL>"
+    excludePaths: []
+    authentication:
+      parameters: {}
+      verification:
+        method: "response"
+        pollFrequency: 60
+        pollUnits: "requests"
+    sessionManagement:
+      method: "cookie"
+      parameters: {}
+    technology:
+      exclude: []
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+  vars: {}
+jobs:
+- parameters:
+    scanOnlyInScope: true
+    enableTags: false
+    disableAllRules: false
+  rules:
+  - id: 10035
+    name: "Strict-Transport-Security Header"
+    threshold: "off"
+  - id: 10038
+    name: "Content Security Policy (CSP) Header Not Set"
+    threshold: "off"
+  - id: 10020
+    name: "Anti-clickjacking Header"
+    threshold: "off"
+  - id: 10037
+    name: "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)"
+    threshold: "off"
+  - id: 10021
+    name: "X-Content-Type-Options Header Missing"
+    threshold: "off"
+  name: "passiveScan-config"
+  type: "passiveScan-config"
+- parameters: {}
+  name: "spider"
+  type: "spider"
+- parameters: {}
+  name: "passiveScan-wait"
+  type: "passiveScan-wait"
+- parameters:
+    reportDir: "/zap/wrk/reports"
+    template: "modern"
+    theme: "corporate"
+    reportTitle: "ZAP Scanning Report"
+    reportDescription: ""
+  risks:
+  - "low"
+  - "medium"
+  - "high"
+  confidences:
+  - "low"
+  - "medium"
+  - "high"
+  - "confirmed"
+  sections:
+  - "passingrules"
+  - "instancecount"
+  - "alertdetails"
+  - "alertcount"
+  - "params"
+  - "chart"
+  - "statistics"
+  name: "report"
+  type: "report"
+- parameters:
+    template: "sarif-json"
+    reportDir: "/zap/wrk/reports"
+    reportFile: ""
+    reportTitle: "ZAP Scanning Report"
+    reportDescription: ""
+    displayReport: false
+  risks:
+  - "info"
+  - "low"
+  - "medium"
+  - "high"
+  confidences:
+  - "falsepositive"
+  - "low"
+  - "medium"
+  - "high"
+  - "confirmed"
+  sites: []
+  name: "sarifReport"
+  type: "report"
+

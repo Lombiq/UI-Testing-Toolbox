@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -71,6 +72,49 @@ public class SecurityScanningTests : UITestBase
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
                 sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)),
+            browser);
+
+    // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
+    // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
+    // control over ZAP's configuration via its Automation Framework (see
+    // https://www.zaproxy.org/docs/automate/automation-framework/ and https://www.youtube.com/watch?v=PnCbIAnauD8 for
+    // an introduction), what all the packaged scans and .NET configuration uses under the hood too. This way, if you
+    // know what you want to do in ZAP, you can just directly run in as a UI test!
+
+    // We run a completely custom Automation Framework plan here. It's almost the same as the plan used by the Baseline
+    // scan, but has some rules disabled by default, so we can assert on no alerts. Note that it has the Content build
+    // action to copy it to the build output folder.
+
+    // You can also create and configure such plans from the ZAP desktop app, following the guides linked above. The
+    // plan doesn't need anything special, apart from having at least one context defined, as well as having a
+    // "sarif-json" report job so assertions can work with it. If something is missing in it, you'll get exceptions
+    // telling you what the problem is anyway.
+
+    // Then, you can see an example of modifying the ZAP plan from code. You can also do this with the built-in plans to
+    // customize them if something you need is not surfaced as configuration.
+    [Theory, Chrome]
+    public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass(Browser browser) =>
+        ExecuteTestAfterSetupAsync(
+            async context => await context.RunAndAssertSecurityScanAsync(
+                "Tests/CustomZapAutomationFrameworkPlan.yml",
+                configuration => configuration
+                    .ModifyZapPlan(plan =>
+                    {
+                        // "plan" here is a representation of the YAML document containing the plan. It's a low-level
+                        // representation, but you can do anything with it.
+
+                        // We'll change a parameter for ZAP's spider. This of course could be done right in our custom
+                        // plan, but we wanted to demo this too; furthermore, from code, you can change the plan even
+                        // based on the context dynamically, so it's more flexible than trying to configure everything
+                        // in the plan's YAML file.
+
+                        var spiderJob = plan.GetSpiderJob();
+                        var spiderParameters = (YamlMappingNode)spiderJob["parameters"];
+                        // The default maxDepth is 5. 8 will let the spider run for a bit more, potentially discovering
+                        // more pages to be scanned.
+                        spiderParameters.Add("maxDepth", "8");
+                    }),
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
             browser);
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
