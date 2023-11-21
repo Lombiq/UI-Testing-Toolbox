@@ -40,7 +40,6 @@ public static class SecurityScanningUITestContextExtensions
     /// </param>
     public static Task RunAndAssertFullSecurityScanAsync(
         this UITestContext context,
-        Uri startUri = null,
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
@@ -60,7 +59,6 @@ public static class SecurityScanningUITestContextExtensions
     /// </param>
     public static Task RunAndAssertGraphQLSecurityScanAsync(
         this UITestContext context,
-        Uri startUri = null,
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
@@ -80,7 +78,6 @@ public static class SecurityScanningUITestContextExtensions
     /// </param>
     public static Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
-        Uri startUri = null,
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
