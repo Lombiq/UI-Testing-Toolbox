@@ -20,6 +20,8 @@ Note that since the tests are xUnit tests you can configure general parameters o
 </ItemGroup>
 ```
 
+Note also that some projects' _xunit.runner.json_ files may include the flag [stopOnFail](https://xunit.net/docs/configuration-files#stopOnFail) set to `true`, which makes further tests stop once a failing test is encountered.
+
 Certain test execution parameters can be configured externally too, the ones retrieved via the `TestConfigurationManager` class. All configuration options are basic key-value pairs and can be provided in one of the two ways:
 
 - Key-value pairs in a _TestConfiguration.json_ file. Note that this file needs to be in the folder where the UI tests execute. By default this is the build output folder of the given test project, i.e. where the projects's DLL is generated (e.g. _bin/Debug/net6.0_).
