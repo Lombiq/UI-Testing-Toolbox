@@ -66,6 +66,6 @@
 - If you want to test the failed page granularly, you can write a test that navigates to that page and executes `context.TestCurrentPageAsMonkey(_monkeyTestingOptions, 12345);`, where `12345` is the random seed number that can be found in a failed test log.
 - It is also possible to set a larger time value to the `MonkeyTestingOptions.GremlinsAttackDelay` property in order to make gremlin interaction slower, thus allowing you to watch what's happening.
 
-## Security scanning
+## Security scanning with ZAP
 
 Check out the [security scanning docs](SecurityScanning.md).

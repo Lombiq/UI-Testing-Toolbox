@@ -178,7 +178,9 @@ public class SecurityScanConfiguration
 
             // With such direct sign in we don't need to utilize ZAP's authentication and user managements mechanisms
             // (see https://www.zaproxy.org/docs/desktop/start/features/authmethods/ and
-            // https://www.zaproxy.org/docs/desktop/addons/automation-framework/authentication/).
+            // https://www.zaproxy.org/docs/desktop/addons/automation-framework/authentication/). If using the standard
+            // Orchard Core login screen, that would also require using a (headless) browser, bringing all kinds of
+            // WebDriver compatibility issues we've already solved here.
 
             // Also, it might be that later such a verification for the login state will need to be needed, but this
             // seems unnecessary now.
