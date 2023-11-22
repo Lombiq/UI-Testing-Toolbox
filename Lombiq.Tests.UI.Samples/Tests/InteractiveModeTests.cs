@@ -74,3 +74,4 @@ public class InteractiveModeTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Interactive mode.
+// NEXT STATION: Head over to MultiBrowserTests.cs.
