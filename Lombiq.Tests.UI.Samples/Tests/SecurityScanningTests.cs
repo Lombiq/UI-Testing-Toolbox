@@ -133,8 +133,6 @@ public class SecurityScanningTests : UITestBase
                     new OrchardCoreSetupParameters(context)
                     {
                         SiteName = "Lombiq's OSOCE - UI Testing",
-                        // We can't use the even simpler Coming Soon recipe due to this ZAP bug:
-                        // https://github.com/zaproxy/zaproxy/issues/8191.
                         RecipeId = "Blog",
                         TablePrefix = "OSOCE",
                         SiteTimeZoneValue = "Europe/Budapest",
