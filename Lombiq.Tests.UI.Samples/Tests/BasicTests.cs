@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
@@ -19,12 +18,11 @@ public class BasicTests : UITestBase
     {
     }
 
-    // Checking that everything is OK with the homepage as an anonymous user. Note the attributes: [Theory] is necessary
-    // for xUnit, while [Chrome] is an input parameter of the test. The latter is an important concept: You can create
-    // so-called data-driven tests. See here for more info:
-    // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
-    [Theory, Chrome]
-    public Task AnonymousHomePageShouldExist(Browser browser) =>
+    // Checking that everything is OK with the homepage as an anonymous user. Note the [Fact] attribute: it's necessary
+    // for xUnit.
+    // Note that by default, tests are run via Chrome. Check out MultiBrowserTests for samples on using other browsers.
+    [Fact]
+    public Task AnonymousHomePageShouldExist() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -36,13 +34,12 @@ public class BasicTests : UITestBase
 
                 // Are we logged out?
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
-            },
-            browser);
+            });
 
     // Let's click around now. The login page is quite important, so let's make sure it works. While it's an Orchard
     // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
-    [Theory, Chrome]
-    public Task LoginShouldWork(Browser browser) =>
+    [Fact]
+    public Task LoginShouldWork() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -67,16 +64,14 @@ public class BasicTests : UITestBase
                 // itself), you don't need to log in via the login form every time: That would be slow and you'd test
                 // the login process multiple times. Use context.SignInDirectly() instead. Check out the
                 // ShortcutsShouldWork test below.
-            },
-            browser);
+            });
 
     // Let's see if turning features on and off breaks something. Keep in mind that the Orchard logs are checked
     // automatically so if there's an exception or anything, the test will fail.
-    [Theory, Chrome]
-    public Task TogglingFeaturesShouldWork(Browser browser) =>
+    [Fact]
+    public Task TogglingFeaturesShouldWork() =>
         ExecuteTestAfterSetupAsync(
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
-            browser,
             // You can change the configuration even for each test.
             configuration =>
                 // By default, apart from some commonly known exceptions, the browser log should be empty. However,
@@ -90,8 +85,8 @@ public class BasicTests : UITestBase
                         });
 
     // Let's see a couple more useful shortcuts in action.
-    [Theory, Chrome]
-    public Task ShortcutsShouldWork(Browser browser) =>
+    [Fact]
+    public Task ShortcutsShouldWork() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -113,8 +108,7 @@ public class BasicTests : UITestBase
 
                 // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
                 await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
-            },
-            browser);
+            });
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.

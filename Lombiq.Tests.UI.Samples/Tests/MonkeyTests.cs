@@ -1,5 +1,4 @@
 using Atata;
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
@@ -27,8 +26,8 @@ public class MonkeyTests : UITestBase
 
     // The basic idea is that you unleash monkey testing on specific pages or sections of the site, like a contact form
     // or the content management UI. First, we test a single page.
-    [Theory, Chrome]
-    public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed(Browser browser) =>
+    [Fact]
+    public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -37,13 +36,12 @@ public class MonkeyTests : UITestBase
                 // The specified random see gives you the option to reproduce the random interactions. Otherwise it
                 // would be calculated from MonkeyTestingOptions.BaseRandomSeed.
                 await context.TestCurrentPageAsMonkeyAsync(CreateMonkeyTestingOptions(), 12345);
-            },
-            browser);
+            });
 
     // Recursive testing will just continue testing following the configured rules until it runs out of time or new
     // pages.
-    [Theory, Chrome]
-    public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser(Browser browser) =>
+    [Fact]
+    public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -53,25 +51,23 @@ public class MonkeyTests : UITestBase
                 // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions) does
                 // the same thing but we wanted to demonstrate the contrast with
                 // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
-            },
-            browser);
+            });
 
     // Let's test with an authenticated user too.
-    [Theory, Chrome]
-    public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+    [Fact]
+    public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
         ExecuteTestAfterSetupAsync(
             context =>
                 // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
                 context.TestAdminAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions()),
-            browser,
             configuration =>
                 configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(
                     logEntry => IsValidAdminBrowserLogEntry(logEntry),
                     logEntries.Where(IsValidAdminBrowserLogEntry).ToFormattedString()));
 
     // Let's just test the background tasks management admin area.
-    [Theory, Chrome]
-    public Task TestAdminBackgroundTasksAsMonkeyRecursivelyShouldWorkWithAdminUser(Browser browser) =>
+    [Fact]
+    public Task TestAdminBackgroundTasksAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -88,7 +84,6 @@ public class MonkeyTests : UITestBase
                 await context.SignInDirectlyAndGoToRelativeUrlAsync("/Admin/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            browser,
             configuration => configuration.AssertBrowserLog = (logEntries) => logEntries
                 .Where(logEntry =>
                     !logEntry

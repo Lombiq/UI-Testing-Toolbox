@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
@@ -17,14 +16,13 @@ public class AccessibilityTest : UITestBase
     {
     }
 
-    [Theory, Chrome]
-    public Task FrontendPagesShouldBeAccessible(Browser browser) =>
+    [Fact]
+    public Task FrontendPagesShouldBeAccessible() =>
         ExecuteTestAfterSetupAsync(
             context =>
                 // This is just a simple test that visits two pages: The homepage, where the test will start by default,
                 // and another one.
                 context.GoToRelativeUrlAsync("/categories/travel"),
-            browser,
             configuration =>
             {
                 // We adjust the configuration just for this test but you could do the same globally in UITestBase.

@@ -17,7 +17,7 @@ public static class SecurityShortcutsTestCases
     private const string FakePermission = "Fake";
 
     public static Task AddUserToRoleShouldWorkAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser) =>
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
             async context =>
             {
@@ -39,7 +39,7 @@ public static class SecurityShortcutsTestCases
             ConfigurationHelper.DisableHtmlValidation);
 
     public static Task AddUserToFakeRoleShouldThrowAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser) =>
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
             async context =>
             {
@@ -54,7 +54,7 @@ public static class SecurityShortcutsTestCases
             ConfigurationHelper.DisableHtmlValidation);
 
     public static Task AllowFakePermissionToRoleShouldThrowAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser) =>
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
             async context =>
             {

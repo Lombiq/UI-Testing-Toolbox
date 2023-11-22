@@ -44,3 +44,4 @@ public class MultiBrowserTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Multi-browser tests.
+// NEXT STATION: Head over to Tests/BasicVisualVerificationTests.cs.

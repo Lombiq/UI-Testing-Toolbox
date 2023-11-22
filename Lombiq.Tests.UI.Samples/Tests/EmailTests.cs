@@ -1,8 +1,6 @@
 using Atata;
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,8 +17,8 @@ public class EmailTests : UITestBase
     {
     }
 
-    [Theory, Chrome]
-    public Task SendingTestEmailShouldWork(Browser browser) =>
+    [Fact]
+    public Task SendingTestEmailShouldWork() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -61,7 +59,6 @@ public class EmailTests : UITestBase
                 // If the e-mail we've sent exists then it's all good.
                 context.Exists(ByHelper.SmtpInboxRow("Test message"));
             },
-            browser,
             // UseSmtpService = true automatically enables the Email module too so you don't have to enable it in a
             // recipe.
             configuration => configuration.UseSmtpService = true);
