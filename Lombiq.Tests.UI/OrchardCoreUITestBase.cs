@@ -53,6 +53,11 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteMultiSizeTestAfterSetupAsync(standardAndMobileBrowserSizeTest, default(Browser), changeConfiguration);
+
+    protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
+        MultiSizeTest standardAndMobileBrowserSizeTest,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(
@@ -64,6 +69,11 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteMultiSizeTestAfterSetupAsync(
             standardAndMobileBrowserSizeTest.AsCompletedTask(), browser, changeConfigurationAsync);
+
+    protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
+        MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteMultiSizeTestAfterSetupAsync(standardAndMobileBrowserSizeTestAsync, default(Browser), changeConfiguration);
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
@@ -85,6 +95,12 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardBrowserSizeTest,
         MultiSizeTest mobileBrowserSizeTest,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteMultiSizeTestAfterSetupAsync(standardBrowserSizeTest, mobileBrowserSizeTest, default, changeConfiguration);
+
+    protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
+        MultiSizeTest standardBrowserSizeTest,
+        MultiSizeTest mobileBrowserSizeTest,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(
@@ -100,6 +116,12 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
             mobileBrowserSizeTest.AsCompletedTask(),
             browser,
             changeConfigurationAsync);
+
+    protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
+        MultiSizeTestAsync standardBrowserSizeTestAsync,
+        MultiSizeTestAsync mobileBrowserSizeTestAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteMultiSizeTestAfterSetupAsync(standardBrowserSizeTestAsync, mobileBrowserSizeTestAsync, default, changeConfiguration);
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardBrowserSizeTestAsync,
@@ -130,15 +152,38 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(test, default, changeConfiguration);
+
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Action<UITestContext> test,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration);
+
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
+
+    protected Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, default, changeConfigurationAsync);
+
+    /// <summary>
+    /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.
+    /// </summary>
+    protected virtual Task ExecuteTestFromExistingDBAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
+        ExecuteTestFromExistingDBAsync(testAsync, default(Browser), changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data folder.
@@ -148,6 +193,16 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
         ExecuteTestFromExistingDBAsync(testAsync, browser, customSnapshotFolderPath: null, changeConfigurationAsync);
+
+    /// <summary>
+    /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data or in
+    /// the given folder.
+    /// </summary>
+    protected virtual Task ExecuteTestFromExistingDBAsync(
+        Func<UITestContext, Task> testAsync,
+        string customSnapshotFolderPath = null,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
+        ExecuteTestFromExistingDBAsync(testAsync, default, customSnapshotFolderPath, changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data or in
@@ -190,6 +245,15 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     /// </summary>
     protected virtual Task ExecuteTestAsync(
         Action<UITestContext> test,
+        Func<UITestContext, Task<Uri>> setupOperation = null,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAsync(test, default, setupOperation, changeConfiguration);
+
+    /// <summary>
+    /// Executes the given UI test, optionally after setting up the site.
+    /// </summary>
+    protected virtual Task ExecuteTestAsync(
+        Action<UITestContext> test,
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation = null,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
@@ -210,6 +274,15 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     /// </summary>
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
+        Func<UITestContext, Task<Uri>> setupOperation = null,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAsync(testAsync, default, setupOperation, changeConfiguration);
+
+    /// <summary>
+    /// Executes the given UI test, optionally after setting up the site.
+    /// </summary>
+    protected virtual Task ExecuteTestAsync(
+        Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation = null,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
@@ -220,9 +293,26 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
     /// </summary>
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAsync(testAsync, default(Browser), changeConfigurationAsync);
+
+    /// <summary>
+    /// Executes the given UI test.
+    /// </summary>
+    protected virtual Task ExecuteTestAsync(
+        Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteTestAsync(testAsync, browser, setupOperation: null, changeConfigurationAsync);
+
+    /// <summary>
+    /// Executes the given UI test, optionally after setting up the site.
+    /// </summary>
+    protected virtual Task ExecuteTestAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<UITestContext, Task<Uri>> setupOperation,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAsync(testAsync, default, setupOperation, changeConfigurationAsync);
 
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.

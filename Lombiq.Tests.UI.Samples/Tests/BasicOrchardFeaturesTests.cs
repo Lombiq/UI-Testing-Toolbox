@@ -1,7 +1,5 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Constants;
-using Lombiq.Tests.UI.Services;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,11 +19,9 @@ public class BasicOrchardFeaturesTests : UITestBase
 
     // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
     // this test.
-    [Theory, Chrome]
-    public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
-        ExecuteTestAsync(
-            context => context.TestBasicOrchardFeaturesAsync(RecipeIds.BasicOrchardFeaturesTests),
-            browser);
+    [Fact]
+    public Task BasicOrchardFeaturesShouldWork() =>
+        ExecuteTestAsync(context => context.TestBasicOrchardFeaturesAsync(RecipeIds.BasicOrchardFeaturesTests));
 }
 
 // END OF TRAINING SECTION: Basic Orchard features tests.

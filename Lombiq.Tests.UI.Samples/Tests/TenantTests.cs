@@ -1,8 +1,6 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
-using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System.Threading.Tasks;
@@ -24,8 +22,8 @@ public class TenantTests : UITestBase
     {
     }
 
-    [Theory, Chrome]
-    public Task CreatingTenantShouldWork(Browser browser) =>
+    [Fact]
+    public Task CreatingTenantShouldWork() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -58,8 +56,7 @@ public class TenantTests : UITestBase
                 context.SwitchCurrentTenantToDefault();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
                 context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{TestTenantUrlPrefix}");
-            },
-            browser);
+            });
 }
 
 // END OF TRAINING SECTION: Testing in tenants.

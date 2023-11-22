@@ -1,7 +1,5 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Constants;
-using Lombiq.Tests.UI.Services;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -23,8 +21,8 @@ public class DatabaseSnapshotTests : UITestBase
     // Here, we set up the application, then we take a snapshot of it, then we use the
     // "ExecuteTestFromExistingDBAsync()" to run the test on that. Finally, we test the basic Orchard features to check
     // that the application was set up correctly.
-    [Theory, Chrome]
-    public Task BasicOrchardFeaturesShouldWorkWithExistingDatabase(Browser browser) =>
+    [Fact]
+    public Task BasicOrchardFeaturesShouldWorkWithExistingDatabase() =>
          ExecuteTestAsync(
                 async context =>
                 {
@@ -35,11 +33,9 @@ public class DatabaseSnapshotTests : UITestBase
 
                     await ExecuteTestFromExistingDBAsync(
                          async context => await context.TestBasicOrchardFeaturesExceptSetupAsync(),
-                         browser,
                          appForDatabaseTestFolder);
-                },
-                browser);
+                });
 }
 
 // END OF TRAINING SECTION: Database snapshot tests.
-// NEXT STATION: Head over to Tests/BasicVisualVerificationTests.cs.
+// NEXT STATION: Head over to Tests/MultiBrowserTests.cs.

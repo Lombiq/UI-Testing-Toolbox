@@ -14,6 +14,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public enum Browser
 {
+    // Chrome will be the default. Either don't change it being the first here, or assign 0 to it if you do.
     Chrome,
     Edge,
     Firefox,
