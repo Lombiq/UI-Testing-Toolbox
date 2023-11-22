@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.SecurityScanning;
@@ -36,11 +35,10 @@ public class SecurityScanningTests : UITestBase
 
     // If you're new to security scanning, starting with exactly this is probably a good idea. Most possibly your app
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
-    [Theory, Chrome]
-    public Task BasicSecurityScanShouldPass(Browser browser) =>
+    [Fact]
+    public Task BasicSecurityScanShouldPass() =>
         ExecuteTestAfterSetupAsync(
-            async context => await context.RunAndAssertBaselineSecurityScanAsync(),
-            browser);
+            async context => await context.RunAndAssertBaselineSecurityScanAsync());
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -61,8 +59,8 @@ public class SecurityScanningTests : UITestBase
     // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
     //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
     //   default there is "no scanning alert is allowed".
-    [Theory, Chrome]
-    public Task SecurityScanWithCustomConfigurationShouldPass(Browser browser) =>
+    [Fact]
+    public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
             async context => await context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
@@ -71,8 +69,7 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)),
-            browser);
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -92,8 +89,8 @@ public class SecurityScanningTests : UITestBase
 
     // Then, you can see an example of modifying the ZAP plan from code. You can also do this with the built-in plans to
     // customize them if something you need is not surfaced as configuration.
-    [Theory, Chrome]
-    public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass(Browser browser) =>
+    [Fact]
+    public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
         ExecuteTestAfterSetupAsync(
             async context => await context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
@@ -114,8 +111,7 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
-            browser);
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)));
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
     // demo. For a real app's security scan you needn't (shouldn't) do this though; always run the scan on the actual
