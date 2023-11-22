@@ -129,6 +129,10 @@ public sealed class ZapManager : IAsyncDisposable
 
         var stdErrBuffer = new StringBuilder();
 
+        // Here we use a new container instance for every scan. This is viable and is not an overhead big enough to
+        // worry about, but an optimization would be to run multiple scans (also possible simultaneously with background
+        // commands) with the same instance. This needs the -dir option to configure a different home directory per
+        // scan, see https://www.zaproxy.org/docs/desktop/cmdline/#options.
         var result = await _docker
             .GetCommand(cliParameters)
             .WithStandardOutputPipe(PipeTarget.ToDelegate(line => _testOutputHelper.WriteLineTimestampedAndDebug(line)))
