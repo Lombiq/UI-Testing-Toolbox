@@ -90,6 +90,8 @@ public sealed class ZapManager : IAsyncDisposable
             await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
         }
 
+        throw new Exception("Debug exception.");
+
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
         var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
 
