@@ -94,6 +94,9 @@ public sealed class ZapManager : IAsyncDisposable
             _testOutputHelper.WriteLineTimestampedAndDebug("Original permissions: {0}", originalReportsFolderPermissions);
 
             await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
+            // If we don't change permissions for the parent too, then the clean-up after the test wouldn't be able to
+            // delete the temp folder.
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", mountedDirectoryPath);
         }
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
