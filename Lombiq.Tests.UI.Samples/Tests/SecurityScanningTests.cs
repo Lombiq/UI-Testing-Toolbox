@@ -38,7 +38,7 @@ public class SecurityScanningTests : UITestBase
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
         ExecuteTestAfterSetupAsync(
-            async context => await context.RunAndAssertBaselineSecurityScanAsync());
+            context => context.RunAndAssertBaselineSecurityScanAsync());
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -62,7 +62,7 @@ public class SecurityScanningTests : UITestBase
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
-            async context => await context.RunAndAssertBaselineSecurityScanAsync(
+            context => context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
@@ -92,7 +92,7 @@ public class SecurityScanningTests : UITestBase
     [Fact]
     public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
         ExecuteTestAfterSetupAsync(
-            async context => await context.RunAndAssertSecurityScanAsync(
+            context => context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
                     .ModifyZapPlan(plan =>
