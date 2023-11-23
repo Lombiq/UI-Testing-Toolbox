@@ -25,7 +25,7 @@ public sealed class ZapManager : IAsyncDisposable
     // https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "softwaresecurityproject/zap-stable:2.14.0";
+    private const string _zapImage = "softwaresecurityproject/zap-stable:2.14.0"; // #spell-check-ignore-line
     private const string _zapWorkingDirectoryPath = "/zap/wrk/";
     private const string _zapReportsDirectoryName = "reports";
 
@@ -99,8 +99,10 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Also see https://www.zaproxy.org/docs/docker/about/#automation-framework.
 
-        // Running a ZAP desktop in the browser with Webswing with the same config under Windows:
-        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh
+        // Running a ZAP desktop in the browser with Webswing with the same config under Windows: #spell-check-ignore-line
+#pragma warning disable S103 // Lines should not be too long
+        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh  #spell-check-ignore-line
+#pragma warning restore S103 // Lines should not be too long
 
         var cliParameters = new List<object> { "run" };
 

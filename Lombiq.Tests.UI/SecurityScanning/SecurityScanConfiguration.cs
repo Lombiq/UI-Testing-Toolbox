@@ -198,7 +198,7 @@ public class SecurityScanConfiguration
         yamlDocument.AddExcludePathsRegex(ExcludedUrlRegexPatterns.ToArray());
         foreach (var rule in DisabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
         foreach (var rule in DisabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
-        foreach (var kvp in DisabledRulesForUrls) yamlDocument.AddAlertFilter(kvp.Key, kvp.Value.Id, kvp.Value.Name);
+        foreach (var urlToRule in DisabledRulesForUrls) yamlDocument.AddAlertFilter(urlToRule.Key, urlToRule.Value.Id, urlToRule.Value.Name);
         foreach (var modifier in ZapPlanModifiers) await modifier(yamlDocument);
     }
 
