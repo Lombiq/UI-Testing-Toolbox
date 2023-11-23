@@ -90,6 +90,7 @@ public sealed class ZapManager : IAsyncDisposable
         {
             originalReportsFolderPermissions = await new CliProgram("stat").ExecuteAndGetOutputAsync(
                 _cancellationTokenSource.Token, "-c", "%a", reportsDirectoryPath);
+            originalReportsFolderPermissions = originalReportsFolderPermissions.Trim();
 
             _testOutputHelper.WriteLineTimestampedAndDebug("Original permissions: {0}", originalReportsFolderPermissions);
 
