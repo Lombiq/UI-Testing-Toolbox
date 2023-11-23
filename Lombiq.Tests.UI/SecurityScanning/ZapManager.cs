@@ -2,7 +2,6 @@ using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Collections.Generic;
@@ -85,10 +84,7 @@ public sealed class ZapManager : IAsyncDisposable
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
         // runners in GitHub Actions (BuildJet ones work without this too).
         // Pre-creating the report's folder would just prompt ZAP to try another folder name suffixed with "2".
-        if (GitHubHelper.IsGitHubEnvironment)
-        {
-            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
-        }
+
 
         throw new Exception("Debug exception.");
 
