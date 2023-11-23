@@ -269,7 +269,7 @@ public sealed class SqlServerManager : IAsyncDisposable
             CancellationToken.None);
 
     private Task<string> DockerExecuteAndGetOutputAsync(string containerName, params object[] command) =>
-        _docker.ExecuteAndGetOutputAsync(CancellationToken.None, CreateArguments(containerName, command));
+        _docker.ExecuteAndGetOutputAsync(CancellationToken.None, CreateArguments(containerName, command).ToArray());
 
     private static List<object> CreateArguments(string containerName, params object[] command)
     {
