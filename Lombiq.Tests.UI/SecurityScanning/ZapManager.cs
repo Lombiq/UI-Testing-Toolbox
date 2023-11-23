@@ -85,19 +85,9 @@ public sealed class ZapManager : IAsyncDisposable
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
         // runners in GitHub Actions (BuildJet ones work without this too).
         // Pre-creating the report's folder would just prompt ZAP to try another folder name suffixed with "2".
-        string originalReportsFolderPermissions = null;
         if (GitHubHelper.IsGitHubEnvironment)
         {
-            originalReportsFolderPermissions = await new CliProgram("stat").ExecuteAndGetOutputAsync(
-                _cancellationTokenSource.Token, "-c", "%a", reportsDirectoryPath);
-            originalReportsFolderPermissions = originalReportsFolderPermissions.Trim();
-
-            _testOutputHelper.WriteLineTimestampedAndDebug("Original permissions: {0}", originalReportsFolderPermissions);
-
             await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
-            // If we don't change permissions for the parent too, then the clean-up after the test wouldn't be able to
-            // delete the temp folder.
-            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", mountedDirectoryPath);
         }
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
@@ -165,9 +155,6 @@ public sealed class ZapManager : IAsyncDisposable
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
-        var psOutput = await _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, "ps");
-        _testOutputHelper.WriteLineTimestampedAndDebug("Are there any Docker processes running? {0}", psOutput);
-
         if (result.ExitCode == 1)
         {
             throw new SecurityScanningException("Security scanning didn't successfully finish. Check the test's output log for details.");
@@ -187,12 +174,6 @@ public sealed class ZapManager : IAsyncDisposable
             throw new SecurityScanningException(
                 "No SARIF JSON report was generated for the ZAP scan. This indicates that the scan couldn't finish. " +
                 "Check the test output for details.");
-        }
-
-        // Restoring original permissions, otherwise the post-test clean-up wouldn't be able to delete the folder.
-        if (!string.IsNullOrEmpty(originalReportsFolderPermissions))
-        {
-            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, originalReportsFolderPermissions, reportsDirectoryPath);
         }
 
         return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
