@@ -26,7 +26,7 @@ public sealed class ZapManager : IAsyncDisposable
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
     private const string _zapImage = "softwaresecurityproject/zap-stable:2.14.0"; // #spell-check-ignore-line
-    private const string _zapWorkingDirectoryPath = "/zap/wrk/";
+    private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
     private const string _zapReportsDirectoryName = "reports";
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
