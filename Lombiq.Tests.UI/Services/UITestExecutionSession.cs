@@ -163,8 +163,11 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
+        string contextId = null;
+
         if (_context != null)
         {
+            contextId = _context.Id;
             _context.Scope?.Dispose();
 
             DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
@@ -181,6 +184,13 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
         if (_zapManager != null) await _zapManager.DisposeAsync();
+
+        // First the context needs to be disposed before anything else, and then, once the other services free up any
+        // handles to the temp folder, that can be cleaned up too.
+        if (!string.IsNullOrEmpty(contextId))
+        {
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+        }
 
         _screenshotCount = 0;
 
