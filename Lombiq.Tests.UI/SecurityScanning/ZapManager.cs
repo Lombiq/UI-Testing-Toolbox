@@ -88,7 +88,7 @@ public sealed class ZapManager : IAsyncDisposable
         if (GitHubHelper.IsGitHubEnvironment)
         {
             await new CliProgram("chmod").ExecuteAndGetOutputAsync(
-                new[] { "a+w", reportsDirectoryPath }, additionalExceptionText: null, _cancellationTokenSource.Token);
+                new[] { "a+x", reportsDirectoryPath }, additionalExceptionText: null, _cancellationTokenSource.Token);
         }
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
