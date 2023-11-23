@@ -263,20 +263,17 @@ public sealed class SqlServerManager : IAsyncDisposable
     }
 
     private Task DockerExecuteAsync(string containerName, params object[] command) =>
-        _docker.ExecuteAsync(
-            CreateArguments(containerName, command),
-            additionalExceptionText: null,
-            CancellationToken.None);
+        _docker.ExecuteAsync(CancellationToken.None, CreateArguments(containerName, command));
 
     private Task<string> DockerExecuteAndGetOutputAsync(string containerName, params object[] command) =>
-        _docker.ExecuteAndGetOutputAsync(CancellationToken.None, CreateArguments(containerName, command).ToArray());
+        _docker.ExecuteAndGetOutputAsync(CancellationToken.None, CreateArguments(containerName, command));
 
-    private static List<object> CreateArguments(string containerName, params object[] command)
+    private static object[] CreateArguments(string containerName, params object[] command)
     {
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
 
-        return arguments;
+        return arguments.ToArray();
     }
 
     public async ValueTask DisposeAsync()
