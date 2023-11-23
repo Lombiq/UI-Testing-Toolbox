@@ -42,8 +42,6 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
             setupOperation,
             async configuration =>
             {
-                configuration.MaxRetryCount = 0;
-
                 // You should always set the window size of the browser, otherwise the size will be random based on the
                 // settings of the given machine. However this is already handled as long as the
                 // context.Configuration.BrowserConfiguration.DefaultBrowserSize option is properly set. You can change
