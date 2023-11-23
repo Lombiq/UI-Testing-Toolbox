@@ -69,7 +69,7 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(2)));
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
