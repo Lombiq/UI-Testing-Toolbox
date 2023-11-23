@@ -170,8 +170,6 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             contextId = _context.Id;
             _context.Scope?.Dispose();
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
-
             _context.FailureDumpContainer.Values.ForEach(value => value.Dispose());
             _context.FailureDumpContainer.Clear();
         }
