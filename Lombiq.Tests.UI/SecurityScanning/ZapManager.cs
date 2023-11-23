@@ -79,6 +79,9 @@ public sealed class ZapManager : IAsyncDisposable
 
         var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
         Directory.CreateDirectory(mountedDirectoryPath);
+        // Pre-creating the reports folder to avoid write permission issues under GitHub-hosted runners in GitHub
+        // Actions (BuildJet ones work without this too).
+        Directory.CreateDirectory(Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName));
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
         var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
