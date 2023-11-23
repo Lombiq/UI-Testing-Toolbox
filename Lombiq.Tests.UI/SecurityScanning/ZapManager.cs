@@ -83,7 +83,7 @@ public sealed class ZapManager : IAsyncDisposable
         Directory.CreateDirectory(reportsDirectoryPath);
 
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
-        // runners in GitHub Actions (BuildJet ones work without this too).
+        // runners in GitHub Actions (BuildJet ones work without this too) at ZAP not being able to create the report.
         // Pre-creating the report's folder would just prompt ZAP to try another folder name suffixed with "2".
         if (GitHubHelper.IsGitHubEnvironment)
         {

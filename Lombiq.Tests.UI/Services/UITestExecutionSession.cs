@@ -193,6 +193,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
+                // This can be caused by running a security scan via ZapManager.
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     "Cleaning up the temporary directory failed with the following exception. Due to using ephemeral " +
                         "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
