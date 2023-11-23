@@ -2,10 +2,10 @@ using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -79,11 +79,17 @@ public sealed class ZapManager : IAsyncDisposable
         }
 
         var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
-        Directory.CreateDirectory(mountedDirectoryPath);
-        // Pre-creating the report's folder to avoid write permission issues under GitHub-hosted runners in GitHub
-        // Actions (BuildJet ones work without this too).
-        var reportSubFolder = $"{DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}-ZAP-Report-localhost";
-        Directory.CreateDirectory(Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName, reportSubFolder));
+        var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
+        Directory.CreateDirectory(reportsDirectoryPath);
+
+        // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
+        // runners in GitHub Actions (BuildJet ones work without this too).
+        // Pre-creating the report's folder would just prompt ZAP to try another folder name suffixed with "2".
+        if (GitHubHelper.IsGitHubEnvironment)
+        {
+            await new CliProgram("chmod").ExecuteAndGetOutputAsync(
+                new[] { "a+w", reportsDirectoryPath }, additionalExceptionText: null, _cancellationTokenSource.Token);
+        }
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
         var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
@@ -152,8 +158,6 @@ public sealed class ZapManager : IAsyncDisposable
         {
             throw new SecurityScanningException("Security scanning failed to complete. Check the test's output log for details.");
         }
-
-        var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
 
         var jsonReports = Directory.EnumerateFiles(reportsDirectoryPath, "*.json").ToList();
 
