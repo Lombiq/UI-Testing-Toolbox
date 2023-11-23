@@ -85,10 +85,13 @@ public sealed class ZapManager : IAsyncDisposable
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
         // runners in GitHub Actions (BuildJet ones work without this too).
         // Pre-creating the report's folder would just prompt ZAP to try another folder name suffixed with "2".
+        string originalReportsFolderPermissions = null;
         if (GitHubHelper.IsGitHubEnvironment)
         {
-            await new CliProgram("chmod").ExecuteAndGetOutputAsync(
-                new[] { "a+x", reportsDirectoryPath }, additionalExceptionText: null, _cancellationTokenSource.Token);
+            originalReportsFolderPermissions = await new CliProgram("stat").ExecuteAndGetOutputAsync(
+                _cancellationTokenSource.Token, "-c", "%a", reportsDirectoryPath);
+
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
         }
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
@@ -154,9 +157,11 @@ public sealed class ZapManager : IAsyncDisposable
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
 
+        _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
+
         if (result.ExitCode == 1)
         {
-            throw new SecurityScanningException("Security scanning failed to complete. Check the test's output log for details.");
+            throw new SecurityScanningException("Security scanning didn't successfully finish. Check the test's output log for details.");
         }
 
         var jsonReports = Directory.EnumerateFiles(reportsDirectoryPath, "*.json").ToList();
@@ -173,6 +178,12 @@ public sealed class ZapManager : IAsyncDisposable
             throw new SecurityScanningException(
                 "No SARIF JSON report was generated for the ZAP scan. This indicates that the scan couldn't finish. " +
                 "Check the test output for details.");
+        }
+
+        // Restoring original permissions, otherwise the post-test clean-up wouldn't be able to delete the folder.
+        if (!string.IsNullOrEmpty(originalReportsFolderPermissions))
+        {
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, originalReportsFolderPermissions, reportsDirectoryPath);
         }
 
         return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
