@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -79,9 +80,10 @@ public sealed class ZapManager : IAsyncDisposable
 
         var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
         Directory.CreateDirectory(mountedDirectoryPath);
-        // Pre-creating the reports folder to avoid write permission issues under GitHub-hosted runners in GitHub
+        // Pre-creating the report's folder to avoid write permission issues under GitHub-hosted runners in GitHub
         // Actions (BuildJet ones work without this too).
-        Directory.CreateDirectory(Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName));
+        var reportSubFolder = $"{DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}-ZAP-Report-localhost";
+        Directory.CreateDirectory(Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName, reportSubFolder));
 
         var yamlFileName = Path.GetFileName(automationFrameworkYamlPath);
         var yamlFileCopyPath = Path.Combine(mountedDirectoryPath, yamlFileName);
