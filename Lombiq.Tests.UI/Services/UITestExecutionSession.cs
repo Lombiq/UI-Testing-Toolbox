@@ -189,7 +189,17 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         // handles to the temp folder, that can be cleaned up too.
         if (!string.IsNullOrEmpty(contextId))
         {
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+            try
+            {
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+            }
+            catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Cleaning up the temporary directory failed with the following exception. Due to using ephemeral " +
+                        "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
+                    ex);
+            }
         }
 
         _screenshotCount = 0;
