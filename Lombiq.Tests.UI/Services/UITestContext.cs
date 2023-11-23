@@ -63,8 +63,9 @@ public class UITestContext
     public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
     /// <summary>
-    /// Gets the service to manage Zed Attack Proxy instances for security scanning. Usually, it's recommended to use
-    /// the ZAP <see cref="UITestContext"/> extension methods instead.
+    /// Gets the service to manage  <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances for
+    /// security scanning. Usually, it's recommended to use the hihger-level ZAP <see
+    /// cref="SecurityScanningUITestContextExtensions"/> extension methods instead.
     /// </summary>
     public ZapManager ZapManager { get; }
 

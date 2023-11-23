@@ -594,7 +594,7 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Switches to an interactive mode where control from the test is handed over and you can use the web app as an
     /// ordinary user from the browser or access its web APIs. To switch back to the test, click the button
-    /// that'll be displayed in the browser, or call open <see cref="InteractiveModeController.Continue"/>.
+    /// that'll be displayed in the browser, or open <see cref="InteractiveModeController.Continue"/>.
     /// </summary>
     public static async Task SwitchToInteractiveAsync(this UITestContext context)
     {

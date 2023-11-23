@@ -2,7 +2,7 @@
 
 ## Overview
 
-You an create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend.
+You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend.
 
 ![Sample ZAP security scan report](Attachments/ZapReportScreenshot.png)
 
@@ -14,9 +14,9 @@ You an create detailed security scans of your app with [Zed Attack Proxy (ZAP)](
 ## Working with ZAP in the Lombiq UI Testing Toolbox
 
 - We recommend you first check out the [related samples in the `Lombiq.Tests.UI.Samples` project](../../Lombiq.Tests.UI.Samples/Tests/SecurityScanningTests.cs).
-- If you're new to ZAP, you can start learning by checking out [ZAP's getting started guide](https://www.zaproxy.org/getting-started/), as well as the [ZAP Chat Videos](https://www.zaproxy.org/zap-chat/). The [documentation on ZAP's Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) and the [ZAP Chat 06 Automation Introduction vide](https://www.youtube.com/watch?v=PnCbIAnauD8) will help you understand what we use under the hood to instruct ZAP, and will allow you to use your completely custom Automation Framework plans too.
+- If you're new to ZAP, you can start learning by checking out [ZAP's getting started guide](https://www.zaproxy.org/getting-started/), as well as the [ZAP Chat Videos](https://www.zaproxy.org/zap-chat/). The [documentation on ZAP's Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) and the [ZAP Chat 06 Automation Introduction video](https://www.youtube.com/watch?v=PnCbIAnauD8) will help you understand what we use under the hood to instruct ZAP, and will allow you to use your completely custom Automation Framework plans too.
 - Be aware that ZAP scans run its own spider or with an internally managed browser instance, not in the browser launched by the test.
-- While ZAP is fully managed for you, Docker needs to be available and running to host the ZAP instance. On your development machine you can install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- While ZAP is fully managed for you, Docker needs to be available and running to host the ZAP instance. On your development machine, you can install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 - The full scan of a website with even just 1-200 pages can take 5-10 minutes. So, be careful to fine-tune the ZAP configuration to make it suitable for your app.
 
 ## Troubleshooting
