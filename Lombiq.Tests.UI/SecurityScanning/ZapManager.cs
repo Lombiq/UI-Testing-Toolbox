@@ -159,7 +159,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
-        var psOutput = _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, "ps");
+        var psOutput = await _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, "ps");
         _testOutputHelper.WriteLineTimestampedAndDebug("Are there any Docker processes running? {0}", psOutput);
 
         if (result.ExitCode == 1)
