@@ -124,6 +124,7 @@
     <None Remove="node_modules\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\DisplayActiveScanRuleRuntimesScript.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\RequestorJob.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\SpiderAjaxJob.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\Baseline.yml" />

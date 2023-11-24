@@ -52,10 +52,10 @@ public static class YamlDocumentExtensions
 
     /// <summary>
     /// Adds the <see href="https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/">ZAP Ajax Spider</see>
-    /// to the ZAP Automation Framework plan, just after the "spider" job.
+    /// to the ZAP Automation Framework plan, just after the job named "spider".
     /// </summary>
     /// <exception cref="ArgumentException">
-    /// If no job named "spider" is found in the ZAP Automation Framework plan.
+    /// Thrown if no job named "spider" is found in the ZAP Automation Framework plan.
     /// </exception>
     public static YamlDocument AddSpiderAjaxAfterSpider(this YamlDocument yamlDocument)
     {
@@ -68,7 +68,41 @@ public static class YamlDocumentExtensions
 
         var spiderIndex = jobs.Children.IndexOf(spiderJob);
         var spiderAjaxJob = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.SpiderAjaxJobPath);
-        jobs.Children.Insert(spiderIndex + 1, spiderAjaxJob.GetRootNode());
+        jobs.Children.Insert(spiderIndex + 1, spiderAjaxJob.RootNode);
+
+        return yamlDocument;
+    }
+
+    /// <summary>
+    /// Adds a script to the ZAP Automation Framework plan that displays the runtime of each active scan rule, in milliseconds,
+    /// just after the first job with the type "activeScan".
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown if no job with the type "activeScan" is found in the ZAP Automation Framework plan.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Script code taken from <see href="https://groups.google.com/g/zaproxy-users/c/TxHqhnarpuU"/>.
+    /// </para>
+    /// </remarks>
+    public static YamlDocument AddDisplayActiveScanRuleRuntimesScriptAfterActiveScan(this YamlDocument yamlDocument)
+    {
+        var jobs = yamlDocument.GetJobs();
+        var activeScanJob =
+            yamlDocument.GetJobByType("activeScan") ??
+            throw new ArgumentException(
+                "No job with the type \"activeScan\" found in the Automation Framework Plan. We can only add the " +
+                "active scan rule runtime-displaying script immediately after it.");
+
+        var activeScanIndex = jobs.Children.IndexOf(activeScanJob);
+        var scriptJobs = ((YamlSequenceNode)YamlHelper
+            .LoadDocument(AutomationFrameworkPlanFragmentsPaths.DisplayActiveScanRuleRuntimesScriptPath).RootNode)
+            .Children;
+
+        for (int i = scriptJobs.Count - 1; i >= 0; i--)
+        {
+            jobs.Children.Insert(activeScanIndex + 1, scriptJobs[i]);
+        }
 
         return yamlDocument;
     }
