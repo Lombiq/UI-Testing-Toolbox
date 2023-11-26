@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Tests.UI.TestCases;
 public static class WorkflowShortcutsTestCases
 {
     public static Task GenerateHttpEventUrlShouldWorkAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser) =>
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
             async context =>
             {

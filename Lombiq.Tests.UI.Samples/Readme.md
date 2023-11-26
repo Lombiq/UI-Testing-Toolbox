@@ -24,6 +24,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Error handling](Tests/ErrorHandlingTests.cs)
 - [Monkey tests](Tests/MonkeyTests.cs)
 - [Database snapshot tests](Tests/DatabaseSnapshotTests.cs)
+- [Multi-browser tests](Tests/MultiBrowserTests.cs)
 - [Basic visual verification tests](Tests/BasicVisualVerificationTests.cs)
 - [Testing in tenants](Tests/TenantTests.cs)
 - [Interactive mode](Tests/InteractiveModeTests.cs)
