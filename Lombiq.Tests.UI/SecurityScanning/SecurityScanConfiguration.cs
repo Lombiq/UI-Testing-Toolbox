@@ -71,8 +71,8 @@ public class SecurityScanConfiguration
     /// Excludes URLs from the scan that are matched by the supplied regex.
     /// </summary>
     /// <param name="excludedUrlRegex">
-    /// The regex pattern to match URLs against to exclude them. These should be patterns that match the whole absolute
-    /// URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
+    /// The regex pattern to match URLs against. It will be matched against the whole absolute URL, e.g., ".*blog.*"
+    /// will match https://example.com/blog, https://example.com/blog/my-post, etc.
     /// </param>
     public SecurityScanConfiguration ExcludeUrlWithRegex(string excludedUrlRegex)
     {
@@ -115,8 +115,8 @@ public class SecurityScanConfiguration
     /// given regular expression pattern.
     /// </summary>
     /// <param name="urlRegex">
-    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
-    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
+    /// The regex pattern to match URLs against. It will be matched against the whole absolute URL, e.g., ".*blog.*"
+    /// will match https://example.com/blog, https://example.com/blog/my-post, etc.
     /// </param>
     /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="ruleName">
