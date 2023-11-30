@@ -21,16 +21,7 @@ public static class YamlDocumentExtensions
         // scanned.
 
         var urls = yamlDocument.GetUrls();
-        var urlsCount = urls.Count();
-
-        if (urlsCount > 1)
-        {
-            throw new ArgumentException(
-                "The context in the ZAP Automation Framework YAML file should contain at most a single URL in the \"urls\" section.");
-        }
-
-        if (urlsCount == 1) urls.Children.Clear();
-
+        urls.Children.Clear();
         urls.Add(startUri.ToString());
 
         return yamlDocument;
