@@ -183,7 +183,7 @@ public sealed class ZapManager : IAsyncDisposable
         return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
         {
@@ -191,23 +191,7 @@ public sealed class ZapManager : IAsyncDisposable
             _cancellationTokenSource.Dispose();
         }
 
-        try
-        {
-            using var cleanupCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var cleanupCancellationToken = cleanupCancellationTokenSource.Token;
-            var imagesOutput = await _docker.ExecuteAndGetOutputAsync(
-                cleanupCancellationToken, "images", _zapImage, "--format", "{{.ID}}");
-
-            if (!string.IsNullOrEmpty(imagesOutput))
-            {
-                await _docker.ExecuteAsync(cleanupCancellationToken, "image", "rm", _zapImage);
-            }
-        }
-        catch (Exception ex)
-        {
-            _testOutputHelper.WriteLineTimestampedAndDebug(
-                "Removing the Docker image {0} for ZAP failed with the following exception: {1}", _zapImage, ex);
-        }
+        return ValueTask.CompletedTask;
     }
 
     private async Task EnsureInitializedAsync()
