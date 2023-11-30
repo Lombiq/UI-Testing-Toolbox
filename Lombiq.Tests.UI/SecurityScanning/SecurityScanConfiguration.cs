@@ -68,7 +68,7 @@ public class SecurityScanConfiguration
     }
 
     /// <summary>
-    /// Excludes a given URL from the scan completely.
+    /// Excludes URLs from the scan that are matched by the supplied regex.
     /// </summary>
     /// <param name="excludedUrlRegex">
     /// The regex pattern to match URLs against to exclude them. These should be patterns that match the whole absolute
