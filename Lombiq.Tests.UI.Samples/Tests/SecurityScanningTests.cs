@@ -58,7 +58,7 @@ public class SecurityScanningTests : UITestBase
     //   shared, so such an explicit sign in is necessary.
     // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
     //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
-    //   default there is "no scanning alert is allowed".
+    //   default there is "no scanning alert is allowed"; we expect some alerts here.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
@@ -69,7 +69,7 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(200)));
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(34)));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete

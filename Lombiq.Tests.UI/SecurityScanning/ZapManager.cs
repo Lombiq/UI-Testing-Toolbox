@@ -18,7 +18,8 @@ using YamlDotNet.RepresentationModel;
 namespace Lombiq.Tests.UI.SecurityScanning;
 
 /// <summary>
-/// Service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances and security scans.
+/// Service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances and security scans
+/// for a given test.
 /// </summary>
 public sealed class ZapManager : IAsyncDisposable
 {
@@ -102,6 +103,8 @@ public sealed class ZapManager : IAsyncDisposable
         //   https://localhost. See https://stackoverflow.com/a/24326540/220230. --network host serves the same, but
         //   only works under Linux. See https://docs.docker.com/engine/reference/commandline/run/#network and
         //   https://docs.docker.com/network/drivers/host/.
+        // - --rm: Removes the container after completion. Otherwise, unused containers would pile up in Docker. See
+        //   https://docs.docker.com/engine/reference/run/#clean-up---rm for the official docs.
         // - --volume: Mounts the given host folder as a volume under the given container path. This is to pass files
         //   back and forth between the host and the container.
         // - --tty: Allocates a pseudo-teletypewriter, i.e. redirects the output of ZAP to the CLI's output.
@@ -129,6 +132,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         cliParameters.AddRange(new object[]
         {
+            "--rm",
             "--volume",
             $"{mountedDirectoryPath}:{_zapWorkingDirectoryPath}:rw",
             "--tty",
