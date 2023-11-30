@@ -82,7 +82,7 @@ public class SecurityScanConfiguration
 
     /// <summary>
     /// Disable a certain active scan rule for the whole scan. If you only want to disable a rule for specific pages
-    /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int)"/> instead.
+    /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int, string)"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -97,7 +97,7 @@ public class SecurityScanConfiguration
 
     /// <summary>
     /// Disable a certain passive scan rule for the whole scan. If you only want to disable a rule for specific pages
-    /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int)"/> instead.
+    /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int, string)"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
