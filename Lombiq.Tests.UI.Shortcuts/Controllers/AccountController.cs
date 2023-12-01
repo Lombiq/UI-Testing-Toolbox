@@ -27,7 +27,7 @@ public class AccountController : Controller
     {
         var user = await _userManager.FindByNameAsync(userName);
 
-        _logger.LogInformation($"UserName to be found: {0} User found: {1}", userName, user);
+        _logger.LogWarning("UserName to be found: {userName} User found: {user}", userName, user);
 
         if (user == null) return NotFound();
 
