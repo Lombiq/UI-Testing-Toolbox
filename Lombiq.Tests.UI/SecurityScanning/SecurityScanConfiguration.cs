@@ -203,6 +203,9 @@ public class SecurityScanConfiguration
     internal async Task ApplyToPlanAsync(YamlDocument yamlDocument, UITestContext context)
     {
         yamlDocument.SetStartUrl(StartUri);
+
+        foreach (var uri in AdditionalUris) yamlDocument.AddUrl(uri);
+
         if (AjaxSpiderIsUsed) yamlDocument.AddSpiderAjaxAfterSpider();
 
         if (!string.IsNullOrEmpty(SignInUserName))
