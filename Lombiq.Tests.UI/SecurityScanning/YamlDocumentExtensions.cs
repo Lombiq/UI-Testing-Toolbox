@@ -167,7 +167,35 @@ public static class YamlDocumentExtensions
     /// Thrown if no job with the type "activeScan" is found in the Automation Framework Plan, or if it doesn't have a
     /// policyDefinition property.
     /// </exception>
-    public static YamlDocument DisableActiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
+    public static YamlDocument DisableActiveScanRule(this YamlDocument yamlDocument, int id, string name = "") =>
+        yamlDocument.ConfigureActiveScanRule(id, ScanRuleThreshold.Off, ScanRuleStrength.Default, name);
+
+    /// <summary>
+    /// Configures a certain ZAP active scan rule for the whole scan in the ZAP Automation Framework plan.
+    /// </summary>
+    /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="threshold">
+    /// Controls how likely ZAP is to report potential vulnerabilities. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#threshold">the official docs</see>.
+    /// </param>
+    /// <param name="strength">
+    /// Controls the number of attacks that ZAP will perform. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
+    /// </param>
+    /// <param name="name">
+    /// The human-readable name of the rule. Not required to configure the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown if no job with the type "activeScan" is found in the Automation Framework Plan, or if it doesn't have a
+    /// policyDefinition property.
+    /// </exception>
+    public static YamlDocument ConfigureActiveScanRule(
+        this YamlDocument yamlDocument,
+        int id,
+        ScanRuleThreshold threshold,
+        ScanRuleStrength strength,
+        string name = "")
     {
         var activeScanConfigJob =
             (YamlMappingNode)yamlDocument.GetJobByType("activeScan") ??
@@ -187,7 +215,8 @@ public static class YamlDocumentExtensions
         {
             { "id", id.ToTechnicalString() },
             { "name", name },
-            { "threshold", "off" },
+            { "threshold", threshold.ToString() },
+            { "strength", strength.ToString() },
         };
 
         ((YamlSequenceNode)policyDefinition["rules"]).Add(newRule);

@@ -28,6 +28,8 @@ public class SecurityScanConfiguration
     public string SignInUserName { get; private set; }
     public IList<string> ExcludedUrlRegexPatterns { get; } = new List<string>();
     public IList<ScanRule> DisabledActiveScanRules { get; } = new List<ScanRule>();
+    public IDictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> ConfiguredActiveScanRules { get; } =
+        new Dictionary<ScanRule, (ScanRuleThreshold, ScanRuleStrength)>();
     public IList<ScanRule> DisabledPassiveScanRules { get; } = new List<ScanRule>();
     public IDictionary<string, ScanRule> DisabledRulesForUrls { get; } = new Dictionary<string, ScanRule>();
     public IList<Func<YamlDocument, Task>> ZapPlanModifiers { get; } = new List<Func<YamlDocument, Task>>();
@@ -92,6 +94,28 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration DisableActiveScanRule(int id, string name = "")
     {
         DisabledActiveScanRules.Add(new ScanRule(id, name));
+        return this;
+    }
+
+    /// <summary>
+    /// Configures a certain active scan rule for the whole scan.
+    /// </summary>
+    /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="threshold">
+    /// Controls how likely ZAP is to report potential vulnerabilities. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#threshold">the official docs</see>.
+    /// </param>
+    /// <param name="strength">
+    /// Controls the number of attacks that ZAP will perform. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
+    /// </param>
+    /// <param name="name">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    public SecurityScanConfiguration ConfigureActiveScanRule(int id, ScanRuleThreshold threshold, ScanRuleStrength strength, string name = "")
+    {
+        ConfiguredActiveScanRules.Add(new ScanRule(id, name), (threshold, strength));
         return this;
     }
 
@@ -197,6 +221,16 @@ public class SecurityScanConfiguration
 
         yamlDocument.AddExcludePathsRegex(ExcludedUrlRegexPatterns.ToArray());
         foreach (var rule in DisabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
+
+        foreach (var ruleConfiguration in ConfiguredActiveScanRules)
+        {
+            yamlDocument.ConfigureActiveScanRule(
+                ruleConfiguration.Key.Id,
+                ruleConfiguration.Value.Threshold,
+                ruleConfiguration.Value.Strength,
+                ruleConfiguration.Key.Name);
+        }
+
         foreach (var rule in DisabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
         foreach (var urlToRule in DisabledRulesForUrls) yamlDocument.AddAlertFilter(urlToRule.Key, urlToRule.Value.Id, urlToRule.Value.Name);
         foreach (var modifier in ZapPlanModifiers) await modifier(yamlDocument);
