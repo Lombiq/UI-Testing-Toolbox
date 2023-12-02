@@ -281,7 +281,7 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Adds a "requestor" job to the ZAP Automation Framework plan.
+    /// Adds a "requestor" job to the ZAP Automation Framework plan just before the job named "spider".
     /// </summary>
     /// <param name="url">The URL the requestor job will access.</param>
     /// <exception cref="ArgumentException">
