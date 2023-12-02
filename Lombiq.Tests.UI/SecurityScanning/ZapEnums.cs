@@ -15,7 +15,7 @@ public enum ScanRuleThreshold
 
 /// <summary>
 /// Controls the number of attacks that ZAP will perform. See <see
-/// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>. 
+/// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
 /// </summary>
 public enum ScanRuleStrength
 {
