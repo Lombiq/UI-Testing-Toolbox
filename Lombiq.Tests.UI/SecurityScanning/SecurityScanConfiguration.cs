@@ -24,6 +24,7 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public class SecurityScanConfiguration
 {
     public Uri StartUri { get; private set; }
+    public IList<Uri> AdditionalUris { get; } = new List<Uri>();
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
     public IList<string> ExcludedUrlRegexPatterns { get; } = new List<string>();
@@ -45,6 +46,17 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration StartAtUri(Uri startUri)
     {
         StartUri = startUri;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds an additional URL to visit during the scan. This is useful if you want to scan URLs that are otherwise
+    /// unreachable from <see cref="StartUri"/>.
+    /// </summary>
+    /// <param name="additionalUri">The <see cref="Uri"/> under the app to also cover during the scan.</param>
+    public SecurityScanConfiguration AddAdditionalUri(Uri additionalUri)
+    {
+        AdditionalUris.Add(additionalUri);
         return this;
     }
 
