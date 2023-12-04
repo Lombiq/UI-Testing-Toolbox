@@ -1,5 +1,4 @@
 using Atata.HtmlValidation;
-using Lombiq.Tests.UI.Helpers;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
