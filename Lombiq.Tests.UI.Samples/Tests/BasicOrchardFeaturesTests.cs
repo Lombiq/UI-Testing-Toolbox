@@ -18,7 +18,7 @@ public class BasicOrchardFeaturesTests : UITestBase
     }
 
     // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
-    // this test.
+    // this test. So, this fails, right?
     [Fact]
     public Task BasicOrchardFeaturesShouldWork() =>
         ExecuteTestAsync(context => context.TestBasicOrchardFeaturesAsync(RecipeIds.BasicOrchardFeaturesTests));
