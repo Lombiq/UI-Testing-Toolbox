@@ -1,4 +1,5 @@
 using Atata.HtmlValidation;
+using Lombiq.Tests.UI.Helpers;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -32,7 +33,6 @@ public class HtmlValidationConfiguration
         // This is necessary so no long folder names will be generated, see:
         // https://github.com/atata-framework/atata-htmlvalidation/issues/5
         WorkingDirectory = "HtmlValidationTemp",
-        HtmlValidatePackageVersion = "8.7.3",
     };
 
     /// <summary>
@@ -69,5 +69,5 @@ public class HtmlValidationConfiguration
         };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
-        _ => false;
+        context => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == null && UrlCheckHelper.IsValidatablePage(context);
 }
