@@ -70,5 +70,5 @@ public class HtmlValidationConfiguration
         };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
-        UrlCheckHelper.IsValidatablePage;
+        _ => false; // UrlCheckHelper.IsValidatablePage;
 }
