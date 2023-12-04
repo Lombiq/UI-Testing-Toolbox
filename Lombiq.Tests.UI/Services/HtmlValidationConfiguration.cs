@@ -33,6 +33,7 @@ public class HtmlValidationConfiguration
         // This is necessary so no long folder names will be generated, see:
         // https://github.com/atata-framework/atata-htmlvalidation/issues/5
         WorkingDirectory = "HtmlValidationTemp",
+        HtmlValidatePackageVersion = "8.7.3",
     };
 
     /// <summary>
