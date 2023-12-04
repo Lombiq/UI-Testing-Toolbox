@@ -12,9 +12,6 @@ public static class YamlDocumentExtensions
     /// Framework plan.
     /// </summary>
     /// <param name="startUri">The absolute <see cref="Uri"/> to start the scan from.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the ZAP Automation Framework plan contains more than a single URL in the "urls" section.
-    /// </exception>
     public static YamlDocument SetStartUrl(this YamlDocument yamlDocument, Uri startUri)
     {
         // Setting includePaths in the context is not necessary because by default everything under "urls" will be
