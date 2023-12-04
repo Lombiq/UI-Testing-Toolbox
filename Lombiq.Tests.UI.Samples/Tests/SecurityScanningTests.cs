@@ -37,8 +37,7 @@ public class SecurityScanningTests : UITestBase
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync());
+        ExecuteTestAfterSetupAsync(context => context.RunAndAssertBaselineSecurityScanAsync());
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
