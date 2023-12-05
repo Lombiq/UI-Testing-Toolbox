@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium;
 using Shouldly;
@@ -140,6 +141,8 @@ public class OrchardCoreUITestExecutorConfiguration
     public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new();
 
     public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
+
+    public SecurityScanningConfiguration SecurityScanningConfiguration { get; set; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether the test should verify the Orchard Core logs and the browser logs for
