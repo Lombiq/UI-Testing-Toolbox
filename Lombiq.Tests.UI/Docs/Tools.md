@@ -14,3 +14,4 @@
 - Monkey testing is implemented using [Gremlins.js](https://github.com/marmelab/gremlins.js/) library.
 - Visual verification is implemented using [ImageSharpCompare](https://github.com/Codeuctivity/ImageSharp.Compare).
 - [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier) is used to simplify stack traces, mainly around async methods.
+- Security scans are done with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/).

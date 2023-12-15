@@ -108,6 +108,7 @@ public static class ShortcutsUITestContextExtensions
     {
         await context.GoToAsync<CurrentUserController>(controller => controller.Index());
         var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+        if (userNameContainer == "Unauthenticated") return string.Empty;
         return userNameContainer["UserName: ".Length..];
     }
 
@@ -591,11 +592,25 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
+    /// Switches to an interactive mode where control from the test is handed over and you can use the web app as an
+    /// ordinary user from the browser or access its web APIs. To switch back to the test, click the button
+    /// that'll be displayed in the browser, or open <see cref="InteractiveModeController.Continue"/>.
+    /// </summary>
+    public static async Task SwitchToInteractiveAsync(this UITestContext context)
+    {
+        await context.EnterInteractiveModeAsync();
+        await context.WaitInteractiveModeAsync();
+
+        context.Driver.Close();
+        context.SwitchToLastWindow();
+    }
+
+    /// <summary>
     /// Opens a new tab with the <see cref="InteractiveModeController"/> <see cref="InteractiveModeController.Index"/>
     /// page. Visiting this page enables the interactive mode flag so it can be awaited with the <see
     /// cref="WaitInteractiveModeAsync"/> extension method.
     /// </summary>
-    public static Task EnterInteractiveModeAsync(this UITestContext context)
+    internal static Task EnterInteractiveModeAsync(this UITestContext context)
     {
         context.Driver.SwitchTo().NewWindow(WindowType.Tab);
         context.Driver.SwitchTo().Window(context.Driver.WindowHandles[^1]);
@@ -607,22 +622,13 @@ public static class ShortcutsUITestContextExtensions
     /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
     /// <see langword="true"/>.
     /// </summary>
-    public static async Task WaitInteractiveModeAsync(this UITestContext context)
+    internal static async Task WaitInteractiveModeAsync(this UITestContext context)
     {
         var client = context.GetApi();
         while (await client.IsInteractiveModeEnabledAsync())
         {
             await Task.Delay(TimeSpan.FromMilliseconds(500));
         }
-    }
-
-    public static async Task SwitchToInteractiveAsync(this UITestContext context)
-    {
-        await context.EnterInteractiveModeAsync();
-        await context.WaitInteractiveModeAsync();
-
-        context.Driver.Close();
-        context.SwitchToLastWindow();
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>

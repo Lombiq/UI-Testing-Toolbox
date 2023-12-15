@@ -18,7 +18,7 @@
     <Authors>Lombiq Technologies</Authors>
     <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
     <Description>Lombiq UI Testing Toolbox for Orchard Core: Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here. See the project website for detailed documentation.</Description>
-    <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
+    <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation;ZAP;Zed Attack Proxy;Security;Scanning;OWASP</PackageTags>
     <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox</PackageProjectUrl>
@@ -41,6 +41,14 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
     <Content Include=".htmlvalidate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkPlanFragments\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
@@ -69,11 +77,13 @@
     <PackageReference Include="OrchardCore.Abstractions" Version="1.7.0" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="1.7.0" />
     <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
+    <PackageReference Include="Sarif.Sdk" Version="4.3.7" />
     <PackageReference Include="Selenium.Axe" Version="4.0.14" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="WebDriverManager" Version="2.16.2" />
     <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,9 +103,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.5" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="8.0.3-alpha.0.lmbq-249" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="8.0.3-alpha.0.lmbq-249" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="8.0.3-alpha.0.lmbq-249" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="8.1.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="8.1.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="8.1.0" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 
@@ -112,6 +122,15 @@
       <Link>Resources\gremlins.min.js</Link>
     </EmbeddedResource>
     <None Remove="node_modules\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\DisplayActiveScanRuleRuntimesScript.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\RequestorJob.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlanFragments\SpiderAjaxJob.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\Baseline.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\FullScan.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml" />
+    <None Remove="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml" />
   </ItemGroup>
 
 </Project>

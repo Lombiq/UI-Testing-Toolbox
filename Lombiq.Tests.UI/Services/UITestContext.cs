@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -62,6 +63,13 @@ public class UITestContext
     public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
     /// <summary>
+    /// Gets the service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances for
+    /// security scanning. Usually, it's recommended to use the higher-level ZAP <see
+    /// cref="SecurityScanningUITestContextExtensions"/> extension methods instead.
+    /// </summary>
+    public ZapManager ZapManager { get; }
+
+    /// <summary>
     /// Gets a cumulative log of browser console entries.
     /// </summary>
     public IReadOnlyList<LogEntry> HistoricBrowserLog => _historicBrowserLog;
@@ -76,7 +84,7 @@ public class UITestContext
     public Dictionary<string, object> CustomContext { get; } = new();
 
     /// <summary>
-    /// Gets a dictionary storing some custom data for collecting in failure dump.
+    /// Gets a dictionary storing some custom data for collecting in the failure dump.
     /// </summary>
     public IDictionary<string, IFailureDumpItem> FailureDumpContainer { get; }
         = new Dictionary<string, IFailureDumpItem>();
@@ -105,7 +113,8 @@ public class UITestContext
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
-        RunningContextContainer runningContextContainer)
+        RunningContextContainer runningContextContainer,
+        ZapManager zapManager)
     {
         Id = id;
         TestManifest = testManifest;
@@ -115,6 +124,7 @@ public class UITestContext
         Scope = scope;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
+        ZapManager = zapManager;
     }
 
     /// <summary>
