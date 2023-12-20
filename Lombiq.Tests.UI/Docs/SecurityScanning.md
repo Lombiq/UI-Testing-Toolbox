@@ -2,7 +2,7 @@
 
 ## Overview
 
-You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend.
+You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend. See a demo video of this feature [here](https://www.youtube.com/watch?v=iUYivLkFbY4).
 
 ![Sample ZAP security scan report](Attachments/ZapReportScreenshot.png)
 
