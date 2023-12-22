@@ -1,4 +1,4 @@
-using Lombiq.HelpfulLibraries.OrchardCore.DependencyInjection;
+using Lombiq.HelpfulLibraries.AspNetCore.Extensions;
 using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
