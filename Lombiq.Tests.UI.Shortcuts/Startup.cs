@@ -1,5 +1,5 @@
+using Lombiq.HelpfulLibraries.AspNetCore.Extensions;
 using Lombiq.Tests.UI.Shortcuts.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
 
@@ -10,7 +10,6 @@ public class Startup : StartupBase
     public override void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<IInteractiveModeStatusAccessor, InteractiveModeStatusAccessor>();
-
-        services.Configure<MvcOptions>((options) => options.Filters.Add(typeof(ApplicationInfoInjectingFilter)));
+        services.AddAsyncResultFilter<ApplicationInfoInjectingFilter>();
     }
 }
