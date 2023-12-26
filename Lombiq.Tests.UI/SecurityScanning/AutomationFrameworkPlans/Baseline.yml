@@ -50,6 +50,9 @@ jobs:
   - id: 10055
     name: "script-src includes unsafe-inline"
     threshold: "off"
+  - id: 90022
+    name: "Application Error Disclosure"
+    threshold: "low"
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters: {}
