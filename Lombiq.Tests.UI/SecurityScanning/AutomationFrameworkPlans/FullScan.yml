@@ -50,6 +50,10 @@ jobs:
   - id: 10055
     name: "script-src includes unsafe-inline"
     threshold: "off"
+  # This is a low-risk alert, enforcing it is undesirable for branding.
+  - id: 10037
+    name: "Server Leaks Information via 'X-Powered-By' HTTP Response Header Field(s)"
+    threshold: "off"
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters: {}
