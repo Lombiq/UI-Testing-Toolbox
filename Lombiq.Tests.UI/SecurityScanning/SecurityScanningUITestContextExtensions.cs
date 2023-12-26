@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
+using Shouldly;
 using System;
 using System.Threading.Tasks;
 
@@ -116,6 +117,11 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
+        // Verify that the app logs are fine right now, then disable app log assertion for the duration of this scan.
+        await context.Configuration.AssertAppLogsAsync(context.Application);
+        var assertAppLogsAsync = context.Configuration.AssertAppLogsAsync;
+        context.Configuration.AssertAppLogsAsync = _ => Task.CompletedTask;
+
         var configuration = context.Configuration.SecurityScanningConfiguration;
 
         SecurityScanResult result = null;
@@ -133,6 +139,10 @@ public static class SecurityScanningUITestContextExtensions
             if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
             throw new SecurityScanningAssertionException(ex);
         }
+
+        // Clear app logs before app log assertion is restored.
+        context.ClearLogs();
+        context.Configuration.AssertAppLogsAsync = assertAppLogsAsync;
     }
 
     /// <summary>
