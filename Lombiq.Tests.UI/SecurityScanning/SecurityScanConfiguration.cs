@@ -32,7 +32,8 @@ public class SecurityScanConfiguration
     public IDictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> ConfiguredActiveScanRules { get; } =
         new Dictionary<ScanRule, (ScanRuleThreshold, ScanRuleStrength)>();
     public IList<ScanRule> DisabledPassiveScanRules { get; } = new List<ScanRule>();
-    public IDictionary<string, ScanRule> DisabledRulesForUrls { get; } = new Dictionary<string, ScanRule>();
+    public IList<(string Url, int Id, string RuleName)> DisabledRulesForUrls { get; } = new List<(string Url, int Id, string RuleName)>();
+    public IList<(string Url, int Id, string Justification)> FalsePositives { get; } = new List<(string Url, int Id, string Justification)>();
     public IList<Func<YamlDocument, Task>> ZapPlanModifiers { get; } = new List<Func<YamlDocument, Task>>();
 
     internal SecurityScanConfiguration()
@@ -161,7 +162,30 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration DisableScanRuleForUrlWithRegex(string urlRegex, int ruleId, string ruleName = "")
     {
-        DisabledRulesForUrls[urlRegex] = new ScanRule(ruleId, ruleName);
+        DisabledRulesForUrls.Add((urlRegex, ruleId, ruleName));
+        return this;
+    }
+
+    /// <summary>
+    /// Marks a rule (can be any rule, including e.g. both active or passive scan rules) for just URLs matching the
+    /// given regular expression pattern.
+    /// </summary>
+    /// <param name="urlRegex">
+    /// The regex pattern to match URLs against. It will be matched against the whole absolute URL, e.g., ".*blog.*"
+    /// will match https://example.com/blog, https://example.com/blog/my-post, etc.
+    /// </param>
+    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="justification">
+    /// A human-readable explanation of why the alert is false positive.
+    /// </param>
+    public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(string urlRegex, int ruleId, string justification)
+    {
+        if (string.IsNullOrWhiteSpace(justification))
+        {
+            throw new InvalidOperationException("Please provide a justification for disabling this alert!");
+        }
+
+        FalsePositives.Add((urlRegex, ruleId, justification));
         return this;
     }
 
@@ -247,7 +271,8 @@ public class SecurityScanConfiguration
         }
 
         foreach (var rule in DisabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
-        foreach (var urlToRule in DisabledRulesForUrls) yamlDocument.AddAlertFilter(urlToRule.Key, urlToRule.Value.Id, urlToRule.Value.Name);
+        foreach (var (url, id, name) in DisabledRulesForUrls) yamlDocument.AddAlertFilter(url, id, name);
+        foreach (var (url, id, justification) in FalsePositives) yamlDocument.AddAlertFilter(url, id, justification, isFalsePositive: true);
         foreach (var modifier in ZapPlanModifiers) await modifier(yamlDocument);
     }
 
