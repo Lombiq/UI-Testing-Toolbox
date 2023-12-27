@@ -208,6 +208,15 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
+    /// Adds a regular expression used to exclude paths in the current context.
+    /// </summary>
+    public static YamlDocument AddGlobalExcludePath(this YamlDocument yamlDocument, string pathRegex)
+    {
+        yamlDocument.GetCurrentContext().GetOrAddNode<YamlSequenceNode>("excludePaths").Add(pathRegex);
+        return yamlDocument;
+    }
+
+    /// <summary>
     /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
     /// Automation Framework plan.
     /// </summary>
