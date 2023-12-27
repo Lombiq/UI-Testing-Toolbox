@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
