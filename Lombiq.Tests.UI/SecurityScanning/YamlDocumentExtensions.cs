@@ -108,9 +108,7 @@ public static class YamlDocumentExtensions
     {
         var currentContext = yamlDocument.GetCurrentContext();
 
-        if (!currentContext.Children.ContainsKey("excludePaths")) currentContext.Add("excludePaths", new YamlSequenceNode());
-
-        var excludePaths = (YamlSequenceNode)currentContext["excludePaths"];
+        var excludePaths = currentContext.GetOrAddNode<YamlSequenceNode>("excludePaths");
         foreach (var pattern in excludePathsRegexPatterns)
         {
             excludePaths.Add(pattern);
@@ -134,18 +132,12 @@ public static class YamlDocumentExtensions
     /// </exception>
     public static YamlDocument DisablePassiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
-        var passiveScanConfigJob = yamlDocument.GetPassiveScanConfigJobOrThrow();
-
-        if (!passiveScanConfigJob.Children.ContainsKey("rules")) passiveScanConfigJob.Add("rules", new YamlSequenceNode());
-
-        var newRule = new YamlMappingNode
+        yamlDocument.GetPassiveScanConfigJobOrThrow().AddRuleToRulesNode(new YamlMappingNode
         {
             { "id", id.ToTechnicalString() },
             { "name", name },
             { "threshold", "off" },
-        };
-
-        ((YamlSequenceNode)passiveScanConfigJob["rules"]).Add(newRule);
+        });
 
         return yamlDocument;
     }
@@ -204,19 +196,13 @@ public static class YamlDocumentExtensions
             throw new ArgumentException("The \"activeScan\" job should contain a policyDefinition.");
         }
 
-        var policyDefinition = (YamlMappingNode)activeScanConfigJob["policyDefinition"];
-
-        if (!policyDefinition.Children.ContainsKey("rules")) policyDefinition.Add("rules", new YamlSequenceNode());
-
-        var newRule = new YamlMappingNode
+        activeScanConfigJob["policyDefinition"].AddRuleToRulesNode(new YamlMappingNode
         {
             { "id", id.ToTechnicalString() },
             { "name", name },
             { "threshold", threshold.ToString() },
             { "strength", strength.ToString() },
-        };
-
-        ((YamlSequenceNode)policyDefinition["rules"]).Add(newRule);
+        });
 
         return yamlDocument;
     }
@@ -261,18 +247,14 @@ public static class YamlDocumentExtensions
             jobs.Children.Insert(passiveScanConfigIndex + 1, alertFilterJob);
         }
 
-        if (!alertFilterJob.Children.ContainsKey("alertFilters")) alertFilterJob.Add("alertFilters", new YamlSequenceNode());
-
-        var newRule = new YamlMappingNode
+        alertFilterJob.GetOrAddNode<YamlSequenceNode>("alertFilters").Add(new YamlMappingNode
         {
             { "ruleId", ruleId.ToTechnicalString() },
             { "ruleName", ruleName },
             { "url", urlMatchingRegexPattern },
             { "urlRegex", "true" },
             { "newRisk", isFalsePositive ? "False Positive" : "Info" },
-        };
-
-        ((YamlSequenceNode)alertFilterJob["alertFilters"]).Add(newRule);
+        });
 
         return yamlDocument;
     }
@@ -310,6 +292,20 @@ public static class YamlDocumentExtensions
     public static YamlMappingNode GetRootNode(this YamlDocument yamlDocument) => (YamlMappingNode)yamlDocument.RootNode;
 
     /// <summary>
+    /// Tries to access the child node by the name of <paramref name="key"/>. If it doesn't exists, it's created.
+    /// </summary>
+    public static T GetOrAddNode<T>(this YamlNode yamlNode, string key)
+        where T : YamlNode, new()
+    {
+        if (yamlNode is YamlMappingNode mappingNode && !mappingNode.Children.ContainsKey(key))
+        {
+            mappingNode.Children.Add(key, new T());
+        }
+
+        return (T)yamlNode[key];
+    }
+
+    /// <summary>
     /// Gets the "jobs" section of the ZAP Automation Framework plan.
     /// </summary>
     public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
@@ -341,9 +337,7 @@ public static class YamlDocumentExtensions
     {
         var currentContext = yamlDocument.GetCurrentContext();
 
-        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
-
-        return (YamlSequenceNode)currentContext["urls"];
+        return currentContext.GetOrAddNode<YamlSequenceNode>("urls");
     }
 
     /// <summary>
@@ -419,4 +413,11 @@ public static class YamlDocumentExtensions
 
         return baseDocument;
     }
+
+    /// <summary>
+    /// Ensures that the <paramref name="parentOfRules"/> has a <c>rules</c> child and then adds the <paramref
+    /// name="newRule"/> to it.
+    /// </summary>
+    public static void AddRuleToRulesNode(this YamlNode parentOfRules, YamlNode newRule) =>
+        parentOfRules.GetOrAddNode<YamlSequenceNode>("rules").Add(newRule);
 }
