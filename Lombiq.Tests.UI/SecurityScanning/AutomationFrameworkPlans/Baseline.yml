@@ -42,6 +42,11 @@ jobs:
     enableTags: false
     disableAllRules: false
   rules:
+  # This needs to be disabled during UI testing, because a local app needn't use HSTS. It's also something commonly
+  # configured outside the app, like in Cloudflare.
+  - id: 10035
+    name: "Strict-Transport-Security Header"
+    threshold: "off"
   # Some stock Orchard Core shapes and pages (including the setup page) contain inline script blocks, so this directive
   # must be permitted for OC to work at all.
   - id: 10055
