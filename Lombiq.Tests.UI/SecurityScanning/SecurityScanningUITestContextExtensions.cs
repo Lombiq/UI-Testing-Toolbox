@@ -108,6 +108,8 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null)
     {
         // Verify that the app logs are fine right now, then disable app log assertion for the duration of this scan.
+        // This way we see if security holes open when something goes wrong. It would be a problem if the site was only
+        // safe when everything worked well.
         await context.Configuration.AssertAppLogsAsync(context.Application);
         var assertAppLogsAsync = context.Configuration.AssertAppLogsAsync;
         context.Configuration.AssertAppLogsAsync = _ => Task.CompletedTask;
@@ -130,9 +132,10 @@ public static class SecurityScanningUITestContextExtensions
             throw new SecurityScanningAssertionException(ex);
         }
 
-        // Clear app logs before app log assertion is restored.
-        context.ClearLogs();
+        // Now that the security scan has concluded, we can turn back app log assertion and verify if any errors have
+        // been accumulated during the security scan.
         context.Configuration.AssertAppLogsAsync = assertAppLogsAsync;
+        await context.Configuration.AssertAppLogsAsync(context.Application);
     }
 
     /// <summary>
