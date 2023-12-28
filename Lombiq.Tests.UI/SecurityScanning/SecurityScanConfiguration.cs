@@ -166,8 +166,8 @@ public class SecurityScanConfiguration
     }
 
     /// <summary>
-    /// Marks a rule (can be any rule, including e.g. both active or passive scan rules) for just URLs matching the
-    /// given regular expression pattern.
+    /// Marks a rule (can be any rule, including e.g. both active or passive scan rules) as false positivefor just URLs
+    /// matching the given regular expression pattern.
     /// </summary>
     /// <param name="urlRegex">
     /// The regex pattern to match URLs against. It will be matched against the whole absolute URL, e.g., ".*blog.*"
