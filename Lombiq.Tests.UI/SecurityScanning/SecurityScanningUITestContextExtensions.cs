@@ -1,8 +1,6 @@
-using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
@@ -27,15 +25,7 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.BaselinePlanPath,
-            configuration =>
-            {
-                // Make sure to visit at least one page that throws an exception. This is to ensure that error handling
-                // is tested for security as well.
-                var errorPageRelativeUrl = context.GetRelativeUrlOfAction<ErrorController>(error => error.Index());
-                configuration.ModifyZapPlan(plan => plan.AddUrl(context.GetAbsoluteUri(errorPageRelativeUrl)));
-
-                configure?.Invoke(configuration);
-            },
+            configure,
             assertSecurityScanResult);
 
     /// <summary>
