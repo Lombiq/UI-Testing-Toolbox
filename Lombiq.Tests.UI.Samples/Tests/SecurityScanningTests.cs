@@ -45,8 +45,8 @@ public class SecurityScanningTests : UITestBase
     //   usually not just unnecessary for a website that's not an SPA, but also slows the scan down by a lot. However,
     //   if you have an SPA, you need to use it.
     // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process certain URLs at all.
-    // - Disables the "Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)" alert of ZAP's passive
-    //   scan for the whole scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header.
+    // - Disables the The response does not include either Content-Security-Policy with 'frame-ancestors' directive."
+    //   alert of ZAP's passive scan for the whole scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header.
     //   If you want airtight security, you might want to turn this off, but for the sake of example we just ignore the
     //   alert here.
     // - Also disables the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page. Use this to

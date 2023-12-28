@@ -29,7 +29,8 @@ public static class SecurityScanningUITestContextExtensions
             AutomationFrameworkPlanPaths.BaselinePlanPath,
             configuration =>
             {
-                // Make sure to visit at least one page that throws an exception.
+                // Make sure to visit at least one page that throws an exception. This is to ensure that error handling
+                // is tested for security as well.
                 var errorPageRelativeUrl = context.GetRelativeUrlOfAction<ErrorController>(error => error.Index());
                 configuration.ModifyZapPlan(plan => plan.AddUrl(context.GetAbsoluteUri(errorPageRelativeUrl)));
 
