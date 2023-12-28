@@ -218,7 +218,8 @@ public static class YamlDocumentExtensions
     /// </param>
     /// <param name="ruleName">
     /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
-    /// useful for the readability of the method call.
+    /// useful for the readability of the method call. If <paramref name="isFalsePositive"/> is <see langword="true"/>,
+    /// write the justification here as well.
     /// </param>
     /// <param name="isFalsePositive">
     /// If you disable the rule because it's a false positive, then set this to <see langword="true"/>. This helps the

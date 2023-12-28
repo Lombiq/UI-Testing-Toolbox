@@ -177,6 +177,10 @@ public class SecurityScanConfiguration
     /// <param name="justification">
     /// A human-readable explanation of why the alert is false positive.
     /// </param>
+    /// <remarks><para>
+    /// Marking a rule as false positive helps the development of ZAP by collecting which rules have the highest false
+    /// positive rate (see <a href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/">the FAQ</a>).
+    /// </para></remarks>
     public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(string urlRegex, int ruleId, string justification)
     {
         if (string.IsNullOrWhiteSpace(justification))
