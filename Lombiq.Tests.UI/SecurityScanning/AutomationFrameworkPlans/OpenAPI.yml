@@ -56,6 +56,10 @@ jobs:
   - id: 10037
     name: "Server Leaks Information via 'X-Powered-By' HTTP Response Header Field(s)"
     threshold: "off"
+  # This rule generates false positives on UUIDs or random numeric sequences.
+  - id: 10062
+    name: "The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data."
+    threshold: "off"
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters: {}
