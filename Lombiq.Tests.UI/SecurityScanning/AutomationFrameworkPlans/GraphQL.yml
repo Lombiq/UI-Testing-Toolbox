@@ -47,8 +47,8 @@ jobs:
   - id: 10035
     name: "Strict-Transport-Security Header"
     threshold: "off"
-  # Some stock Orchard Core shapes and pages (including the setup page) contain inline script blocks, so this directive
-  # must be permitted for OC to work at all.
+  # This is required for <script> blocks which OC uses extensively. The rule may be removed when OC starts to provide
+  # cryptographic nonce for these script blocks (see https://github.com/OrchardCMS/OrchardCore/issues/13389).
   - id: 10055
     name: "script-src includes unsafe-inline"
     threshold: "off"
