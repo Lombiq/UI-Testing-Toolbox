@@ -59,7 +59,7 @@ jobs:
   # This rule generates false positives on UUIDs or random numeric sequences.
   - id: 10062
     name: "The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data."
-    threshold: "off"
+    threshold: "high"
   name: "passiveScan-config"
   type: "passiveScan-config"
 - parameters:
