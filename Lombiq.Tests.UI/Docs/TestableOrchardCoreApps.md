@@ -24,7 +24,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
     [SuppressMessage(
         "Design",
         "CA1050: Declare types in namespaces",
-        Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0.")]
+        Justification = "As described here: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests.")]
     public partial class Program
     {
         protected Program()

@@ -22,5 +22,5 @@ public class VisualVerificationBaselineImageNotFoundException : Exception
             + " file will be asserted against and the assertion will pass (unless the display of the app changed in the"
             + " meantime)."
         : $"Baseline image file was not found under the path {path} and maxRetryCount is set to "
-            + $"{maxRetryCount.ToTechnicalString()}, so it won't be generated.";
+            + $"{maxRetryCount.ToTechnicalString()}, so it won't be generated. Set maxRetryCount to 0 to generate images.";
 }
