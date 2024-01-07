@@ -62,4 +62,35 @@ public static class BrowserUITestContextExtensions
 
         return await processResponseAsync(response);
     }
+
+    /// <summary>
+    /// Performs a <paramref name="task"/> with app log assertion temporarily disabled. But first <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.AssertAppLogsAsync"/> is used to ensure no unrelated errors are
+    /// masked by this activity. Afterwards it's used again to verify the results, and if it fails then the logs are
+    /// cleared out.
+    /// </summary>
+    /// <returns>A task indicating whether there were anything in the app logs that would've failed the assertion.</returns>
+    public static async Task<bool> DoWithoutAppLogAssertionAsync(this UITestContext context, Func<Task> task)
+    {
+        // Verify that the app logs are fine right now, then suppress logs for the duration of the task.
+        await context.Configuration.AssertAppLogsAsync(context.Application);
+        var assertAppLogsAsync = context.Configuration.AssertAppLogsAsync;
+        context.Configuration.AssertAppLogsAsync = _ => Task.CompletedTask;
+
+        await task();
+
+        // Restore the app log assertion and determine if it would've failed. Clear the logs if failure occurred.
+        context.Configuration.AssertAppLogsAsync = assertAppLogsAsync;
+        try
+        {
+            await context.Configuration.AssertAppLogsAsync(context.Application);
+        }
+        catch
+        {
+            context.ClearLogs();
+            return true;
+        }
+
+        return false;
+    }
 }
