@@ -29,6 +29,21 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
+    /// <summary>
+    /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
+    /// entries which represent correct reaction to incorrect or malicious user behavior during a security scan.
+    /// </summary>
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsForSecurityScan =
+        app => app.LogsShouldBeEmptyAsync(
+            canContainWarnings: true,
+            permittedStringFragmentsInErrorLines: new[]
+            {
+                // The model binding will throw FormatException exception with this text during ZAP active scan, when
+                // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
+                // model. This is correct, safe behavior and should be logged in production.
+                "is not a valid value for Boolean",
+            });
+
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
             logEntry => IsValidBrowserLogEntry(logEntry),
