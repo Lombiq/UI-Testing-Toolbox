@@ -1,9 +1,13 @@
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
+using System.Net;
 using System.Threading.Tasks;
+using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -107,35 +111,56 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
-        // Verify that the app logs are fine right now, then disable app log assertion for the duration of this scan.
-        // This way we see if security holes open when something goes wrong. It would be a problem if the site was only
-        // safe when everything worked well.
-        await context.Configuration.AssertAppLogsAsync(context.Application);
-        var assertAppLogsAsync = context.Configuration.AssertAppLogsAsync;
-        context.Configuration.AssertAppLogsAsync = _ => Task.CompletedTask;
-
-        var configuration = context.Configuration.SecurityScanningConfiguration;
-
-        SecurityScanResult result = null;
-        try
+        var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
+        async Task RunAndAssertSecurityScanInnerAsync(Uri startUri, Action<SecurityScanConfiguration> configure)
         {
-            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure);
+            SecurityScanResult result = null;
+            try
+            {
+                result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure, startUri);
 
-            if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
-            else configuration?.AssertSecurityScanResult(context, result.SarifLog);
+                if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
+                else configuration.AssertSecurityScanResult(context, result.SarifLog);
 
-            if (configuration.CreateReportAlways) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
-        }
-        catch (Exception ex)
-        {
-            if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
-            throw new SecurityScanningAssertionException(ex);
+                if (configuration.CreateReportAlways)
+                {
+                    context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+                throw new SecurityScanningAssertionException(ex);
+            }
         }
 
-        // Now that the security scan has concluded, we can turn back app log assertion and verify if any errors have
-        // been accumulated during the security scan.
-        context.Configuration.AssertAppLogsAsync = assertAppLogsAsync;
-        await context.Configuration.AssertAppLogsAsync(context.Application);
+        await RunAndAssertSecurityScanInnerAsync(startUri: null, configure);
+
+        // Verify that error page handling also works by visiting a known error page with no logging.
+        var errorUrl = context.GetAbsoluteUri(context.GetRelativeUrlOfAction<ErrorController>(controller => controller.Index()));
+        await context.DoWithoutAppLogAssertionAsync(() => RunAndAssertSecurityScanInnerAsync(
+            startUri: errorUrl,
+            scanConfiguration =>
+            {
+                configure?.Invoke(scanConfiguration);
+
+                // Configure this scan to only visit the target page.
+                scanConfiguration.ModifyZapPlan(plan =>
+                {
+                    if (plan.GetSpiderJob() is { } spiderJob)
+                    {
+                        var parameters = spiderJob.GetOrAddNode<YamlMappingNode>("parameters");
+                        parameters.Add("maxDepth", "1");
+                        parameters.Add("maxChildren", "0");
+                    }
+
+                    if (plan.GetJobByType("activeScan") is { } activeScanJob)
+                    {
+                        var parameters = activeScanJob.GetOrAddNode<YamlMappingNode>("parameters");
+                        parameters.Add("recurse", "false");
+                    }
+                });
+            }));
     }
 
     /// <summary>
@@ -146,6 +171,10 @@ public static class SecurityScanningUITestContextExtensions
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
     /// <param name="configure">A delegate to configure the security scan in detail.</param>
+    /// <param name="startUri">
+    /// The address where the scan should start. If <see langword="null"/> is used then the current browser location
+    /// will be used via <see cref="NavigationUITestContextExtensions.GetCurrentUri"/>.
+    /// </param>
     /// <returns>
     /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
     /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
@@ -153,11 +182,12 @@ public static class SecurityScanningUITestContextExtensions
     public static Task<SecurityScanResult> RunSecurityScanAsync(
         this UITestContext context,
         string automationFrameworkYamlPath,
-        Action<SecurityScanConfiguration> configure = null)
+        Action<SecurityScanConfiguration> configure = null,
+        Uri startUri = null)
     {
         var configuration = new SecurityScanConfiguration();
 
-        configuration.StartAtUri(context.GetCurrentUri());
+        configuration.StartAtUri(startUri ?? context.GetCurrentUri());
 
         // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
         // they may contain several false positives (e.g. in font-awesome)..
