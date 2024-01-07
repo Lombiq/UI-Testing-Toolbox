@@ -213,7 +213,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
     /// entries which represent correct reaction to incorrect or malicious user behavior during a security scan.
     /// </summary>
-    public static Func<IWebApplicationInstance, Task> UseAssertAppLogsForSecurityScan(params string[] AdditionalPermittedErrorLines)
+    public static Func<IWebApplicationInstance, Task> UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
     {
         var permittedErrorLines = new List<string>
         {
@@ -228,7 +228,7 @@ public class OrchardCoreUITestExecutorConfiguration
             "System.IO.IOException: Not a directory",
         };
 
-        permittedErrorLines.AddRange(AdditionalPermittedErrorLines);
+        permittedErrorLines.AddRange(additionalPermittedErrorLines);
 
         return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
     }
