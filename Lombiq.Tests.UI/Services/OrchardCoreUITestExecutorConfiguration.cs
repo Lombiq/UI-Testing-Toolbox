@@ -29,22 +29,6 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
-    /// <summary>
-    /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
-    /// entries which represent correct reaction to incorrect or malicious user behavior during a security scan.
-    /// </summary>
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsForSecurityScan =
-        app => app.LogsShouldBeEmptyAsync(
-            canContainWarnings: true,
-            permittedErrorLines: new[]
-            {
-                // The model binding will throw FormatException exception with this text during ZAP active scan, when
-                // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
-                // model. This is correct, safe behavior and should be logged in production.
-                "is not a valid value for Boolean",
-                "An unhandled exception has occurred while executing the request. System.FormatException: any",
-            });
-
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
             logEntry => IsValidBrowserLogEntry(logEntry),
@@ -223,5 +207,29 @@ public class OrchardCoreUITestExecutorConfiguration
 
             throw;
         }
+    }
+
+    /// <summary>
+    /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
+    /// entries which represent correct reaction to incorrect or malicious user behavior during a security scan.
+    /// </summary>
+    public static Func<IWebApplicationInstance, Task> UseAssertAppLogsForSecurityScan(params string[] AdditionalPermittedErrorLines)
+    {
+        var permittedErrorLines = new List<string>
+        {
+            // The model binding will throw FormatException exception with this text during ZAP active scan, when
+            // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
+            // model. This is correct, safe behavior and should be logged in production.
+            "is not a valid value for Boolean",
+            "An unhandled exception has occurred while executing the request. System.FormatException: any",
+            // Happens when the static file middleware tries to access a path that doesn't exist or access a file as
+            // a directory. Presumably this is an attempt to access protected files using source path manipulation.
+            // This is handled by ASP.NET Core and there is nothing for us to worry about.
+            "System.IO.IOException: Not a directory",
+        };
+
+        permittedErrorLines.AddRange(AdditionalPermittedErrorLines);
+
+        return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
     }
 }
