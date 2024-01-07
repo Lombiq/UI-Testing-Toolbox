@@ -36,7 +36,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsForSecurityScan =
         app => app.LogsShouldBeEmptyAsync(
             canContainWarnings: true,
-            permittedStringFragmentsInErrorLines: new[]
+            permittedErrorLines: new[]
             {
                 // The model binding will throw FormatException exception with this text during ZAP active scan, when
                 // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the

@@ -14,18 +14,18 @@ public static class WebApplicationInstanceExtensions
     /// Asserting that the logs should be empty. When they aren't the Shouldly exception will contain the logs'
     /// contents.
     /// </summary>
-    /// <param name="permittedStringFragmentsInErrorLines">
+    /// <param name="permittedErrorLines">
     /// If not <see langword="null"/> or empty, each line is split and any lines containing <c>|ERROR|</c> will be
-    /// ignored if they don't contain any string from this collection (case-insensitive).
+    /// ignored if they contain any string from this collection (case-insensitive).
     /// </param>
     public static async Task LogsShouldBeEmptyAsync(
         this IWebApplicationInstance webApplicationInstance,
         bool canContainWarnings = false,
-        ICollection<string> permittedStringFragmentsInErrorLines = null,
+        ICollection<string> permittedErrorLines = null,
         CancellationToken cancellationToken = default)
     {
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
-        permittedStringFragmentsInErrorLines ??= Array.Empty<string>();
+        permittedErrorLines ??= Array.Empty<string>();
 
         var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
 
@@ -33,18 +33,16 @@ public static class WebApplicationInstanceExtensions
         {
             logOutput.ShouldNotContain("|FATAL|");
 
-            if (permittedStringFragmentsInErrorLines.Any())
+            var errorLines = logOutput
+                .SplitByNewLines()
+                .Where(line => line.Contains("|ERROR|"));
+
+            if (permittedErrorLines.Any())
             {
-                logOutput
-                    .SplitByNewLines()
-                    .Where(line => line.Contains("|ERROR|"))
-                    .Where(line => !permittedStringFragmentsInErrorLines.Any(line.ContainsOrdinalIgnoreCase))
-                    .ShouldBeEmpty();
+                errorLines = errorLines.Where(line => !permittedErrorLines.Any(line.ContainsOrdinalIgnoreCase));
             }
-            else
-            {
-                logOutput.ShouldNotContain("|ERROR|");
-            }
+
+            errorLines.ShouldBeEmpty();
         }
         else
         {
