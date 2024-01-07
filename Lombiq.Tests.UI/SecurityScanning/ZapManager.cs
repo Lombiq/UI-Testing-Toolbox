@@ -1,6 +1,7 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.CodeAnalysis.Sarif;
@@ -74,7 +75,7 @@ public sealed class ZapManager : IAsyncDisposable
         // If there is already a Zap directory, delete it before recreating the necessary directory structure. This is
         // only needed if a scan has already been executed once for the current context. Deleting the existing "Zap"
         // directory ensures a clean slate.
-        if (Directory.Exists(mountedDirectoryPath)) Directory.Delete(mountedDirectoryPath, recursive: true);
+        DirectoryHelper.SafelyDeleteDirectoryIfExists(mountedDirectoryPath);
         Directory.CreateDirectory(reportsDirectoryPath);
 
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
