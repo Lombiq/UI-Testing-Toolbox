@@ -42,6 +42,7 @@ public class OrchardCoreUITestExecutorConfiguration
                 // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
                 // model. This is correct, safe behavior and should be logged in production.
                 "is not a valid value for Boolean",
+                "An unhandled exception has occurred while executing the request. System.FormatException: any",
             });
 
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
