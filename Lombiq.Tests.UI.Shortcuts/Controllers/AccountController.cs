@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Users;
+using System;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -20,8 +21,9 @@ public class AccountController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> SignInDirectly(string userName = "admin")
+    public async Task<IActionResult> SignInDirectly(string userName)
     {
+        if (string.IsNullOrWhiteSpace(userName)) userName = "admin";
         if (await _userManager.FindByNameAsync(userName) is not { } user) return NotFound();
 
         await _userSignInManager.SignInAsync(user, isPersistent: false);
