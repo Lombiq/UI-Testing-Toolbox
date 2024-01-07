@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
