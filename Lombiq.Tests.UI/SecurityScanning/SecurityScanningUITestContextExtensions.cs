@@ -147,18 +147,9 @@ public static class SecurityScanningUITestContextExtensions
                 // Configure this scan to only visit the target page.
                 scanConfiguration.ModifyZapPlan(plan =>
                 {
-                    if (plan.GetSpiderJob() is { } spiderJob)
-                    {
-                        var parameters = spiderJob.GetOrAddNode<YamlMappingNode>("parameters");
-                        parameters.Add("maxDepth", "1");
-                        parameters.Add("maxChildren", "0");
-                    }
-
-                    if (plan.GetJobByType("activeScan") is { } activeScanJob)
-                    {
-                        var parameters = activeScanJob.GetOrAddNode<YamlMappingNode>("parameters");
-                        parameters.Add("recurse", "false");
-                    }
+                    plan.SetSpiderParameter("maxDepth", 1.ToTechnicalString());
+                    plan.SetSpiderParameter("maxChildren", 2.ToTechnicalString());
+                    plan.SetActiveScanParameter("recurse", "false");
                 });
             }));
     }

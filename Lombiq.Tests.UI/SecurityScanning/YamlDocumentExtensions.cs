@@ -307,6 +307,20 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
+    /// Adds the specified mapping to the <see cref="YamlMappingNode.Children" /> collection. If the given <paramref
+    /// name="key"/> already exists, it's removed first.
+    /// </summary>
+    public static void SetMappingChild(this YamlMappingNode node, YamlNode key, YamlNode value)
+    {
+        if (node.Children.ContainsKey(key))
+        {
+            node.Children.Remove(key);
+        }
+
+        node.Add(key, value);
+    }
+
+    /// <summary>
     /// Gets the "jobs" section of the ZAP Automation Framework plan.
     /// </summary>
     public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
@@ -316,6 +330,29 @@ public static class YamlDocumentExtensions
     /// Gets the job from the "jobs" section of the ZAP Automation Framework with the name "spider".
     /// </summary>
     public static YamlNode GetSpiderJob(this YamlDocument yamlDocument) => yamlDocument.GetJobByName("spider");
+
+    /// <summary>
+    /// Gets the job from the "jobs" section of the ZAP Automation Framework with the name "activeScan".
+    /// </summary>
+    public static YamlNode GetActiveScanJob(this YamlDocument yamlDocument) => yamlDocument.GetJobByName("activeScan");
+
+    /// <summary>
+    /// Gets or creates the "parameters" node under the specified <paramref name="jobNode"/>.
+    /// </summary>
+    public static YamlMappingNode GetOrCreateParameters(this YamlNode jobNode) =>
+        jobNode.GetOrAddNode<YamlMappingNode>("parameters");
+
+    /// <summary>
+    /// Updates the provided configuration parameters for the "spider" job it it exists.
+    /// </summary>
+    public static void SetSpiderParameter(this YamlDocument yamlDocument, YamlNode parameter, YamlNode value) =>
+        yamlDocument.GetSpiderJob()?.GetOrCreateParameters().SetMappingChild(parameter, value);
+
+    /// <summary>
+    /// Updates the provided configuration parameters for the "activeScan" job it it exists.
+    /// </summary>
+    public static void SetActiveScanParameter(this YamlDocument yamlDocument, YamlNode parameter, YamlNode value) =>
+        yamlDocument.GetActiveScanJob()?.GetOrCreateParameters().SetMappingChild(parameter, value);
 
     /// <summary>
     /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its name.
