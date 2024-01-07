@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Users;
-using System;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
