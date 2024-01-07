@@ -355,6 +355,20 @@ public static class YamlDocumentExtensions
         yamlDocument.GetActiveScanJob()?.GetOrCreateParameters().SetMappingChild(parameter, value);
 
     /// <summary>
+    /// Sets time limits on the "activeScan" job. Both are in minutes. If set to 0 it means unlimited.
+    /// </summary>
+    /// <param name="maxScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxRuleDurationInMinutes">Time limit for the individual rule scans in minutes.</param>
+    public static void SetActiveScanMaxDuration(
+        this YamlDocument yamlDocument,
+        int maxScanDurationInMinutes,
+        int maxRuleDurationInMinutes = 0)
+    {
+        yamlDocument.SetActiveScanParameter("maxScanDurationInMins", maxScanDurationInMinutes.ToTechnicalString());
+        yamlDocument.SetActiveScanParameter("maxRuleDurationInMins", maxRuleDurationInMinutes.ToTechnicalString());
+    }
+
+    /// <summary>
     /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its name.
     /// </summary>
     /// <param name="jobName">The "name" field of the job to search for.</param>
