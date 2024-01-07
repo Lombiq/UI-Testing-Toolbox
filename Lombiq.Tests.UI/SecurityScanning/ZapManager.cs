@@ -61,17 +61,6 @@ public sealed class ZapManager : IAsyncDisposable
         string automationFrameworkYamlPath,
         Func<YamlDocument, Task> modifyPlan = null)
     {
-        // Being able to run more than one scan in a test would complicate report generation and processing the SARIF
-        // report so rather just preventing it here (really nobody should want it anyway).
-        const string customContextKey = "ZapManager.ScanWasRun";
-
-        if (context.CustomContext.ContainsKey(customContextKey))
-        {
-            throw new NotSupportedException("You may only run a single ZAP scan in a given test.");
-        }
-
-        context.CustomContext.Add(customContextKey, string.Empty);
-
         await EnsureInitializedAsync();
 
         if (string.IsNullOrEmpty(automationFrameworkYamlPath))
@@ -81,6 +70,11 @@ public sealed class ZapManager : IAsyncDisposable
 
         var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
+
+        // If there is already a Zap directory, delete it before recreating the necessary directory structure. This is
+        // only needed if a scan has already been executed once for the current context. Deleting the existing "Zap"
+        // directory ensures a clean slate.
+        if (Directory.Exists(mountedDirectoryPath)) Directory.Delete(mountedDirectoryPath, recursive: true);
         Directory.CreateDirectory(reportsDirectoryPath);
 
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
