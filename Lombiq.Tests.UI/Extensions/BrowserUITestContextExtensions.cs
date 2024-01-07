@@ -69,7 +69,7 @@ public static class BrowserUITestContextExtensions
     /// masked by this activity. Afterwards it's used again to verify the results, and if it fails then the logs are
     /// cleared out.
     /// </summary>
-    /// <returns>A task indicating whether there were anything in the app logs that would've failed the assertion.</returns>
+    /// <returns>A task indicating whether there were anything in the app logs that failed the assertion.</returns>
     public static async Task<bool> DoWithoutAppLogAssertionAsync(this UITestContext context, Func<Task> task)
     {
         // Verify that the app logs are fine right now, then suppress logs for the duration of the task.
@@ -79,7 +79,7 @@ public static class BrowserUITestContextExtensions
 
         await task();
 
-        // Restore the app log assertion and determine if it would've failed. Clear the logs if failure occurred.
+        // Restore the app log assertion and determine if it failed. Clear the logs if failure occurred.
         context.Configuration.AssertAppLogsAsync = assertAppLogsAsync;
         try
         {
