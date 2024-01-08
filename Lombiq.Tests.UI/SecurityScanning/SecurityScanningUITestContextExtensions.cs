@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using static Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -49,6 +50,49 @@ public static class SecurityScanningUITestContextExtensions
             AutomationFrameworkPlanPaths.FullScanPlanPath,
             configure,
             assertSecurityScanResult);
+
+    /// <inheritdoc cref="RunAndAssertFullSecurityScanAsync"/>
+    /// <param name="doSignIn">If <see langword="true"/> the bot is configured to sign in as <c>admin</c> first.</param>
+    /// <param name="maxScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxRuleDurationInMinutes">Time limit for the individual rules in the active scan.</param>
+    /// <remarks><para>
+    /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
+    /// It changes the <see cref="UITestContext.Configuration"/> to not do any retries because this is a long running
+    /// test. It also replaces the app log assertion logic with the specialized version for security scans, <see
+    /// cref="UseAssertAppLogsForSecurityScan"/>. The scan is configured to ignore the admin dashboard, optionally log
+    /// in as admin, and use the provided time limits for the "active scan" portion of the security scan.
+    /// </para></remarks>
+    public static Task RunAndConfigureAndAssertFullSecurityScanForAutomationAsync(
+        this UITestContext context,
+        Action<SecurityScanConfiguration> additionalConfiguration = null,
+        Action<SarifLog> assertSecurityScanResult = null,
+        bool doSignIn = true,
+        int maxScanDurationInMinutes = 10,
+        int maxRuleDurationInMinutes = 2)
+    {
+        // Ignore some validation errors that only happen during security tests.
+        context.Configuration.AssertAppLogsAsync = UseAssertAppLogsForSecurityScan();
+
+        // This takes over 10 minutes and the session will certainly time out with retries.
+        context.Configuration.MaxRetryCount = 0;
+
+        return context.RunAndAssertFullSecurityScanAsync(
+            configuration =>
+            {
+                // Signing in ensures full access and that the bot won't have to interact with the login screen.
+                if (doSignIn) configuration.SignIn();
+
+                // There is no need to security scan the admin dashboard.
+                configuration.ExcludeUrlWithRegex(@".*/Admin/.*");
+
+                // Active scan takes a very long time, this is not practical in CI.
+                configuration.ModifyZapPlan(plan => plan
+                    .SetActiveScanMaxDuration(maxScanDurationInMinutes, maxRuleDurationInMinutes));
+
+                additionalConfiguration?.Invoke(configuration);
+            },
+            assertSecurityScanResult);
+    }
 
     /// <summary>
     /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
