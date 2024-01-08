@@ -103,9 +103,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="2.2.5" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="8.1.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="8.1.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="8.1.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="8.1.1-alpha.0.tdeal-16" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="8.1.1-alpha.0.tdeal-16" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="8.1.1-alpha.0.tdeal-16" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 
