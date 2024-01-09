@@ -1,7 +1,9 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
+using Newtonsoft.Json;
 using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
@@ -30,7 +32,23 @@ public class SecurityScanningConfiguration
     /// </summary>
     public Action<UITestContext, SarifLog> AssertSecurityScanResult { get; set; } = AssertSecurityScanHasNoAlerts;
 
-    public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts =
-        (_, sarifLog) => sarifLog.Runs[0].Results.ShouldNotContain(result =>
-            result.Kind == ResultKind.Fail && result.Level != FailureLevel.None && result.Level != FailureLevel.Note);
+    public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts = (_, sarifLog) =>
+    {
+        var errors = sarifLog
+            .Runs[0]
+            .Results
+            .Where(result =>
+                result.Kind == ResultKind.Fail &&
+                result.Level != FailureLevel.None &&
+                result.Level != FailureLevel.Note)
+            .Select(result => new
+            {
+                Kind = result.Kind.ToString(),
+                Level = result.Level.ToString(),
+                Details = result,
+            })
+            .ToList();
+
+        errors.ShouldBeEmpty(JsonConvert.SerializeObject(errors));
+    };
 }
