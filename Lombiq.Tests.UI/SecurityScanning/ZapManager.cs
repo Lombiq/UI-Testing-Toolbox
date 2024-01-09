@@ -75,7 +75,26 @@ public sealed class ZapManager : IAsyncDisposable
         // If there is already a Zap directory, delete it before recreating the necessary directory structure. This is
         // only needed if a scan has already been executed once for the current context. Deleting the existing "Zap"
         // directory ensures a clean slate.
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(mountedDirectoryPath);
+        if (Directory.Exists(mountedDirectoryPath))
+        {
+            var temporaryPath = $"{mountedDirectoryPath}-{Guid.NewGuid():N}";
+
+            // The directory is first renamed with a random suffix. This way even if the deletion is failed, the test
+            // should continue without problems. If this rename fails, that's fatal and should throw.
+            Directory.Move(mountedDirectoryPath, temporaryPath);
+
+            try
+            {
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(temporaryPath);
+            }
+            catch (IOException exception)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"Failed to delete existing Zap directory ({exception.Message}). This is not a fatal error " +
+                    $"because the directory has already been renamed.");
+            }
+        }
+
         Directory.CreateDirectory(reportsDirectoryPath);
 
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
