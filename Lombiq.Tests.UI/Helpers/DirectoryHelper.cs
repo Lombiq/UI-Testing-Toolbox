@@ -59,5 +59,7 @@ public static class DirectoryHelper
             Directory.CreateDirectory(newPath);
             return newPath;
         }
+
+        throw new InvalidOperationException("Couldn't create a new directory within the integer space.");
     }
 }
