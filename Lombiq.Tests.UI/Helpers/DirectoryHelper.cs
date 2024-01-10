@@ -41,4 +41,23 @@ public static class DirectoryHelper
             }
         }
     }
+
+    /// <summary>
+    /// Creates a directory with the given path and a numeric suffix from 1 to <see cref="int.MaxValue"/>. This means if
+    /// the <paramref name="path"/> is <c>c:\MyDirectory</c> then it will first attempt to create <c>c:\MyDirectory1</c>
+    /// but if that already exists it will try to create <c>c:\MyDirectory2</c> instead, and so on.
+    /// </summary>
+    /// <param name="path">The base path to use when constructing the final path.</param>
+    /// <returns>The final path created.</returns>
+    public static string CreateEnumeratedDirectory(string path)
+    {
+        for (var i = 1; i < int.MaxValue; i++)
+        {
+            var newPath = path + i.ToTechnicalString();
+            if (Directory.Exists(newPath)) continue;
+
+            Directory.CreateDirectory(newPath);
+            return newPath;
+        }
+    }
 }

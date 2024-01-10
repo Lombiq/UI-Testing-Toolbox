@@ -69,31 +69,10 @@ public sealed class ZapManager : IAsyncDisposable
             automationFrameworkYamlPath = AutomationFrameworkPlanPaths.BaselinePlanPath;
         }
 
-        var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
+        // Each attempt will have it's own "ZapN" directory inside the temp, starting with "Zap1".
+        var mountedDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
+            DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap"));
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
-
-        // If there is already a Zap directory, delete it before recreating the necessary directory structure. This is
-        // only needed if a scan has already been executed once for the current context. Deleting the existing "Zap"
-        // directory ensures a clean slate.
-        if (Directory.Exists(mountedDirectoryPath))
-        {
-            var temporaryPath = $"{mountedDirectoryPath}-{Guid.NewGuid():N}";
-
-            // The directory is first renamed with a random suffix. This way even if the deletion is failed, the test
-            // should continue without problems. If this rename fails, that's fatal and should throw.
-            Directory.Move(mountedDirectoryPath, temporaryPath);
-
-            try
-            {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(temporaryPath);
-            }
-            catch (IOException exception)
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    $"Failed to delete existing Zap directory ({exception.Message}). This is not a fatal error " +
-                    $"because the directory has already been renamed.");
-            }
-        }
 
         Directory.CreateDirectory(reportsDirectoryPath);
 
