@@ -28,7 +28,7 @@ On Windows-based GitHub runners the security tests always fail with the followin
 
 This is because the Docker installation is configured to use Windows images, while the [ZAP docker image](https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags) is only available for Linux. If you rely on our [Lombiq GitHub Actions](https://github.com/Lombiq/GitHub-Actions) then you can configure it like this to disable a test, in this case `SecurityScanningTests`:
 ```
-  call-build-and-test-workflow-windows:
+  build-and-test:
     name: Build and Test
     # See https://github.com/Lombiq/GitHub-Actions/blob/dev/.github/workflows/build-and-test-orchard-core.yml.
     uses: Lombiq/GitHub-Actions/.github/workflows/build-and-test-orchard-core.yml@dev
