@@ -155,12 +155,12 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null)
     {
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
-        async Task RunAndAssertSecurityScanInnerAsync(Uri startUri, Action<SecurityScanConfiguration> configure)
+        async Task RunAndAssertSecurityScanInnerAsync(Action<SecurityScanConfiguration> configure)
         {
             SecurityScanResult result = null;
             try
             {
-                result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure, startUri);
+                result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure);
 
                 if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
                 else configuration.AssertSecurityScanResult(context, result.SarifLog);
@@ -177,26 +177,26 @@ public static class SecurityScanningUITestContextExtensions
             }
         }
 
-        await RunAndAssertSecurityScanInnerAsync(startUri: null, configure);
+        await RunAndAssertSecurityScanInnerAsync(configure);
 
         if (configuration.DontScanErrorPage) return;
 
         // Verify that error page handling also works by visiting a known error page with no logging.
         var errorUrl = context.GetAbsoluteUri(context.GetRelativeUrlOfAction<ErrorController>(controller => controller.Index()));
-        await context.DoWithoutAppLogAssertionAsync(() => RunAndAssertSecurityScanInnerAsync(
-            startUri: errorUrl,
-            scanConfiguration =>
-            {
-                configure?.Invoke(scanConfiguration);
+        await context.DoWithoutAppLogAssertionAsync(() => RunAndAssertSecurityScanInnerAsync(scanConfiguration =>
+        {
+            configure?.Invoke(scanConfiguration);
 
-                // Configure this scan to only visit the target page.
-                scanConfiguration.ModifyZapPlan(plan =>
+            // Configure this scan to only visit the target page.
+            scanConfiguration
+                .StartAtUri(errorUrl)
+                .ModifyZapPlan(plan =>
                 {
                     plan.SetSpiderParameter("maxDepth", 1.ToTechnicalString());
                     plan.SetSpiderParameter("maxChildren", 2.ToTechnicalString());
                     plan.SetActiveScanParameter("recurse", "false");
                 });
-            }));
+        }));
     }
 
     /// <summary>
@@ -207,10 +207,6 @@ public static class SecurityScanningUITestContextExtensions
     /// <see href="https://www.zaproxy.org/docs/automate/automation-framework/"/> for details.
     /// </param>
     /// <param name="configure">A delegate to configure the security scan in detail.</param>
-    /// <param name="startUri">
-    /// The address where the scan should start. If <see langword="null"/> is used then the current browser location
-    /// will be used via <see cref="NavigationUITestContextExtensions.GetCurrentUri"/>.
-    /// </param>
     /// <returns>
     /// A <see cref="SecurityScanResult"/> instance containing the SARIF (<see
     /// href="https://sarifweb.azurewebsites.net/"/>) report of the scan.
@@ -218,12 +214,10 @@ public static class SecurityScanningUITestContextExtensions
     public static Task<SecurityScanResult> RunSecurityScanAsync(
         this UITestContext context,
         string automationFrameworkYamlPath,
-        Action<SecurityScanConfiguration> configure = null,
-        Uri startUri = null)
+        Action<SecurityScanConfiguration> configure = null)
     {
-        var configuration = new SecurityScanConfiguration();
-
-        configuration.StartAtUri(startUri ?? context.GetCurrentUri());
+        var configuration = new SecurityScanConfiguration()
+            .StartAtUri(context.GetCurrentUri());
 
         // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
         // they may contain several false positives (e.g. in font-awesome)..
