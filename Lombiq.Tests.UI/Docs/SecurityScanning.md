@@ -19,6 +19,23 @@ You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)]
 - While ZAP is fully managed for you, Docker needs to be available and running to host the ZAP instance. On your development machine, you can install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 - The full scan of a website with even just 1-200 pages can take 5-10 minutes. So, be careful to fine-tune the ZAP configuration to make it suitable for your app.
 
+## Limitations
+
+On Windows-based GitHub runners the security tests always fail with the following error:
+
+> The `docker.exe pull softwaresecurityproject/zap-stable:2.14.0 --quiet` command failed with the output below.
+> no matching manifest for windows/amd64 10.0.20348 in the manifest list entries.
+
+This is because the Docker installation is configured to use Windows images, while the [ZAP docker image](https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags) is only available for Linux. If you rely on our [Lombiq GitHub Actions](https://github.com/Lombiq/GitHub-Actions) then you can configure it like this to disable a test, in this case `SecurityScanningTests`:
+```
+  call-build-and-test-workflow-windows:
+    name: Build and Test
+    uses: Lombiq/GitHub-Actions/.github/workflows/build-and-test-orchard-core.yml@dev
+    with:
+      machine-types: '["windows-latest"]'
+      test-filter: "FullyQualifiedName!~SecurityScanningTests"
+```
+
 ## Troubleshooting
 
 - If you're unsure what happens in a scan, run the [ZAP desktop app](https://www.zaproxy.org/download/) and load the Automation Framework plan's YAML file into it. If you use the default scans, then these will be available under the build output directory (like _bin/Debug_) under _SecurityScanning/AutomationFrameworkPlans_. Then, you can open and run them as demonstrated [in this video](https://youtu.be/PnCbIAnauD8?si=u0vi63Uvv9wZINzb&t=1173).
