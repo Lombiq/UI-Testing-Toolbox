@@ -32,6 +32,12 @@ public class SecurityScanningConfiguration
     /// </summary>
     public Action<UITestContext, SarifLog> AssertSecurityScanResult { get; set; } = AssertSecurityScanHasNoAlerts;
 
+    /// <summary>
+    /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
+    /// for correct error handling. This is achieved by running the scan a second time without leaving that page.
+    /// </summary>
+    public bool DontScanErrorPage { get; private set; }
+
     public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts = (_, sarifLog) =>
     {
         var errors = sarifLog

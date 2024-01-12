@@ -179,6 +179,8 @@ public static class SecurityScanningUITestContextExtensions
 
         await RunAndAssertSecurityScanInnerAsync(startUri: null, configure);
 
+        if (configuration.DontScanErrorPage) return;
+
         // Verify that error page handling also works by visiting a known error page with no logging.
         var errorUrl = context.GetAbsoluteUri(context.GetRelativeUrlOfAction<ErrorController>(controller => controller.Index()));
         await context.DoWithoutAppLogAssertionAsync(() => RunAndAssertSecurityScanInnerAsync(
