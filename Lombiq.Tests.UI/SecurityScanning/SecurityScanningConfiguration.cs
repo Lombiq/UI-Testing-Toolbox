@@ -1,9 +1,9 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.CodeAnalysis.Sarif;
-using Newtonsoft.Json;
 using Shouldly;
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
@@ -55,6 +55,6 @@ public class SecurityScanningConfiguration
             })
             .ToList();
 
-        errors.ShouldBeEmpty(JsonConvert.SerializeObject(errors));
+        errors.ShouldBeEmpty(JsonSerializer.Serialize(errors));
     };
 }
