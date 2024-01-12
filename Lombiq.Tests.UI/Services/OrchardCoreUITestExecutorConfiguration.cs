@@ -211,7 +211,7 @@ public class OrchardCoreUITestExecutorConfiguration
 
     /// <summary>
     /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
-    /// entries which represent correct reaction to incorrect or malicious user behavior during a security scan.
+    /// entries which represent correct reactions to incorrect or malicious user behavior during a security scan.
     /// </summary>
     public static Func<IWebApplicationInstance, Task> UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
     {
