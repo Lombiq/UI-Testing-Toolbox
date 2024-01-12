@@ -53,7 +53,7 @@ public static class SecurityScanningUITestContextExtensions
 
     /// <inheritdoc cref="RunAndAssertFullSecurityScanAsync"/>
     /// <param name="doSignIn">If <see langword="true"/> the bot is configured to sign in as <c>admin</c> first.</param>
-    /// <param name="maxScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxActiveScanDurationInMinutes">Time limit for the active scan altogether.</param>
     /// <param name="maxRuleDurationInMinutes">Time limit for the individual rules in the active scan.</param>
     /// <remarks><para>
     /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
@@ -67,7 +67,7 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> additionalConfiguration = null,
         Action<SarifLog> assertSecurityScanResult = null,
         bool doSignIn = true,
-        int maxScanDurationInMinutes = 10,
+        int maxActiveScanDurationInMinutes = 10,
         int maxRuleDurationInMinutes = 2)
     {
         // Ignore some validation errors that only happen during security tests.
@@ -87,7 +87,7 @@ public static class SecurityScanningUITestContextExtensions
 
                 // Active scan takes a very long time, this is not practical in CI.
                 configuration.ModifyZapPlan(plan => plan
-                    .SetActiveScanMaxDuration(maxScanDurationInMinutes, maxRuleDurationInMinutes));
+                    .SetActiveScanMaxDuration(maxActiveScanDurationInMinutes, maxRuleDurationInMinutes));
 
                 additionalConfiguration?.Invoke(configuration);
             },

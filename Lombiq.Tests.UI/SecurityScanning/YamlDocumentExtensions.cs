@@ -357,14 +357,14 @@ public static class YamlDocumentExtensions
     /// <summary>
     /// Sets time limits on the "activeScan" job. Both are in minutes. If set to 0 it means unlimited.
     /// </summary>
-    /// <param name="maxScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxActiveScanDurationInMinutes">Time limit for the active scan altogether.</param>
     /// <param name="maxRuleDurationInMinutes">Time limit for the individual rule scans.</param>
     public static void SetActiveScanMaxDuration(
         this YamlDocument yamlDocument,
-        int maxScanDurationInMinutes,
+        int maxActiveScanDurationInMinutes,
         int maxRuleDurationInMinutes = 0)
     {
-        yamlDocument.SetActiveScanParameter("maxScanDurationInMins", maxScanDurationInMinutes.ToTechnicalString());
+        yamlDocument.SetActiveScanParameter("maxScanDurationInMins", maxActiveScanDurationInMinutes.ToTechnicalString());
         yamlDocument.SetActiveScanParameter("maxRuleDurationInMins", maxRuleDurationInMinutes.ToTechnicalString());
     }
 
