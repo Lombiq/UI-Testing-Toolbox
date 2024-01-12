@@ -179,7 +179,7 @@ public class SecurityScanConfiguration
     /// </param>
     /// <remarks><para>
     /// Marking a rule as false positive helps the development of ZAP by collecting which rules have the highest false
-    /// positive rate (see <a href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/">the FAQ</a>).
+    /// positive rate (see <see href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/">the FAQ</see>).
     /// </para></remarks>
     public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(string urlRegex, int ruleId, string justification)
     {
