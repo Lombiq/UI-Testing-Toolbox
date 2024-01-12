@@ -31,7 +31,10 @@ public class SecurityScanningTests : UITestBase
 
     // We're running one of ZAP's built-in scans, the Baseline scan. This, as the name suggests, provides some
     // rudimentary security checks. While you can start with this, we recommend running the Full Scan, for which there
-    // similarly is an extension method as well.
+    // similarly is an extension method as well. This can take a very long time. If you want to have a broader scan in
+    // your CI test runs, use the RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method
+    // instead. It applies some limitations to the full scan, including time limits to the active scan portion that
+    // normally takes the longest.
 
     // If you're new to security scanning, starting with exactly this is probably a good idea. Most possibly your app
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
@@ -45,10 +48,8 @@ public class SecurityScanningTests : UITestBase
     //   usually not just unnecessary for a website that's not an SPA, but also slows the scan down by a lot. However,
     //   if you have an SPA, you need to use it.
     // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process certain URLs at all.
-    // - Disables the The response does not include either Content-Security-Policy with 'frame-ancestors' directive."
-    //   alert of ZAP's passive scan for the whole scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header.
-    //   If you want airtight security, you might want to turn this off, but for the sake of example we just ignore the
-    //   alert here.
+    // - Disables the "The response does not include either Content-Security-Policy with 'frame-ancestors' directive."
+    //   alert of ZAP's passive scan for the whole scan.
     // - Also disables the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page. Use this to
     //   disable rules more specifically instead of the whole scan.
     // - Configures sign in with a user account. This is what the scan will start with. With the Blog recipe it doesn't

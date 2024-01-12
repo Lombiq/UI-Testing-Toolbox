@@ -62,7 +62,7 @@ public static class SecurityScanningUITestContextExtensions
     /// cref="UseAssertAppLogsForSecurityScan"/>. The scan is configured to ignore the admin dashboard, optionally log
     /// in as admin, and use the provided time limits for the "active scan" portion of the security scan.
     /// </para></remarks>
-    public static Task RunAndConfigureAndAssertFullSecurityScanForAutomationAsync(
+    public static Task RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync(
         this UITestContext context,
         Action<SecurityScanConfiguration> additionalConfiguration = null,
         Action<SarifLog> assertSecurityScanResult = null,
