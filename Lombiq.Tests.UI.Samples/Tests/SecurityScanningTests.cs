@@ -40,7 +40,12 @@ public class SecurityScanningTests : UITestBase
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        ExecuteTestAfterSetupAsync(context => context.RunAndAssertBaselineSecurityScanAsync());
+        ExecuteTestAfterSetupAsync(
+            context => context.RunAndAssertBaselineSecurityScanAsync(),
+            // You should configure the assertion that checks the app logs to accept some common cases that only should
+            // appear during security scanning. If you launch a full scan, this is automatically configured by the
+            // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -66,7 +71,8 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(22)));
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(22)),
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -108,7 +114,8 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)));
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
     // demo. For a real app's security scan you needn't (shouldn't) do this though; always run the scan on the actual
