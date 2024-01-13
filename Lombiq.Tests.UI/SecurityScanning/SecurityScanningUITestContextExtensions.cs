@@ -154,48 +154,35 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null)
     {
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
-        async Task RunAndAssertSecurityScanInnerAsync(Action<SecurityScanConfiguration> configure)
+
+        SecurityScanResult result = null;
+        try
         {
-            SecurityScanResult result = null;
-            try
+            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, scanConfiguration =>
             {
-                result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure);
-
-                if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
-                else configuration.AssertSecurityScanResult(context, result.SarifLog);
-
-                if (configuration.CreateReportAlways)
+                // Verify that error page handling also works by visiting a known error page with no logging.
+                if (!configuration.DontScanErrorPage)
                 {
-                    context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+                    var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
+                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));
                 }
-            }
-            catch (Exception ex)
+
+                configure?.Invoke(scanConfiguration);
+            });
+
+            if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
+            else configuration.AssertSecurityScanResult(context, result.SarifLog);
+
+            if (configuration.CreateReportAlways)
             {
-                if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
-                throw new SecurityScanningAssertionException(ex);
+                context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
             }
         }
-
-        await RunAndAssertSecurityScanInnerAsync(configure);
-
-        if (configuration.DontScanErrorPage) return;
-
-        // Verify that error page handling also works by visiting a known error page with no logging.
-        var errorUrl = context.GetAbsoluteUri(context.GetRelativeUrlOfAction<ErrorController>(controller => controller.Index()));
-        await RunAndAssertSecurityScanInnerAsync(scanConfiguration =>
+        catch (Exception ex)
         {
-            configure?.Invoke(scanConfiguration);
-
-            // Configure this scan to only visit the target page.
-            scanConfiguration
-                .StartAtUri(errorUrl)
-                .ModifyZapPlan(plan =>
-                {
-                    plan.SetSpiderParameter("maxDepth", 1.ToTechnicalString());
-                    plan.SetSpiderParameter("maxChildren", 2.ToTechnicalString());
-                    plan.SetActiveScanParameter("recurse", "false");
-                });
-        });
+            if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            throw new SecurityScanningAssertionException(ex);
+        }
     }
 
     /// <summary>
