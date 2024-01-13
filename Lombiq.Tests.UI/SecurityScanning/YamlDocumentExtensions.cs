@@ -119,8 +119,7 @@ public static class YamlDocumentExtensions
 
     /// <summary>
     /// Disable a certain ZAP passive scan rule for the whole scan in the ZAP Automation Framework plan. If you only
-    /// want to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
-    /// instead.
+    /// want to disable a rule for a given page, use <see cref="AddDisableRuleFilter"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -144,8 +143,7 @@ public static class YamlDocumentExtensions
 
     /// <summary>
     /// Disable a certain ZAP active scan rule for the whole scan in the ZAP Automation Framework plan. If you only want
-    /// to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
-    /// instead.
+    /// to disable a rule for a given page, use <see cref="AddDisableRuleFilter"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
