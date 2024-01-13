@@ -28,7 +28,7 @@ public class SecurityScanConfiguration
     private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = new();
     private readonly List<ScanRule> _disabledPassiveScanRules = new();
     private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = new();
-    private readonly List<(string Url, int Id, string Justification)> _falsePositives = new();
+    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = new();
     private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = new();
 
     public Uri StartUri { get; private set; }
@@ -174,6 +174,10 @@ public class SecurityScanConfiguration
     /// will match https://example.com/blog, https://example.com/blog/my-post, etc.
     /// </param>
     /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="ruleName">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
     /// <param name="justification">
     /// A human-readable explanation of why the alert is false positive.
     /// </param>
@@ -181,14 +185,18 @@ public class SecurityScanConfiguration
     /// Marking a rule as false positive helps the development of ZAP by collecting which rules have the highest false
     /// positive rate (see <see href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/">the FAQ</see>).
     /// </para></remarks>
-    public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(string urlRegex, int ruleId, string justification)
+    public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(
+        string urlRegex,
+        int ruleId,
+        string ruleName,
+        string justification)
     {
         if (string.IsNullOrWhiteSpace(justification))
         {
             throw new InvalidOperationException("Please provide a justification for disabling this alert!");
         }
 
-        _falsePositives.Add((urlRegex, ruleId, justification));
+        _falsePositives.Add((urlRegex, ruleId, ruleName, justification));
         return this;
     }
 
@@ -274,8 +282,8 @@ public class SecurityScanConfiguration
         }
 
         foreach (var rule in _disabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
-        foreach (var (url, id, name) in _disabledRulesForUrls) yamlDocument.AddAlertFilter(url, id, name);
-        foreach (var (url, id, justification) in _falsePositives) yamlDocument.AddAlertFilter(url, id, justification, isFalsePositive: true);
+        foreach (var (url, id, name) in _disabledRulesForUrls) yamlDocument.AddDisableRuleFilter(url, id, name);
+        foreach (var (url, id, name, justification) in _falsePositives) yamlDocument.AddFalsePositiveRuleFilter(url, id, name, justification);
         foreach (var modifier in _zapPlanModifiers) await modifier(yamlDocument);
     }
 
