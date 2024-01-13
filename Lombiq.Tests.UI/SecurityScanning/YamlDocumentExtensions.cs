@@ -211,27 +211,7 @@ public static class YamlDocumentExtensions
     /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
     /// Automation Framework plan.
     /// </summary>
-    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
-    /// <param name="urlMatchingRegexPattern">
-    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
-    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
-    /// </param>
-    /// <param name="ruleName">
-    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
-    /// useful for the readability of the method call. If <paramref name="isFalsePositive"/> is <see langword="true"/>,
-    /// write the justification here as well.
-    /// </param>
-    /// <param name="isFalsePositive">
-    /// If you disable the rule because it's a false positive, then set this to <see langword="true"/>. This helps the
-    /// development of ZAP by collecting which rules have the highest false positive rate (see <see
-    /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
-    /// </param>
-    public static YamlDocument AddAlertFilter(
-        this YamlDocument yamlDocument,
-        string urlMatchingRegexPattern,
-        int ruleId,
-        string ruleName = "",
-        bool isFalsePositive = false)
+    public static YamlDocument AddAlertFilter(this YamlDocument yamlDocument, YamlMappingNode filter)
     {
         var jobs = yamlDocument.GetJobs();
 
@@ -248,17 +228,65 @@ public static class YamlDocumentExtensions
             jobs.Children.Insert(passiveScanConfigIndex + 1, alertFilterJob);
         }
 
-        alertFilterJob.GetOrAddNode<YamlSequenceNode>("alertFilters").Add(new YamlMappingNode
+        alertFilterJob.GetOrAddNode<YamlSequenceNode>("alertFilters").Add(filter);
+        return yamlDocument;
+    }
+
+    /// <summary>
+    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
+    /// Automation Framework plan.
+    /// </summary>
+    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="urlMatchingRegexPattern">
+    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
+    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
+    /// </param>
+    /// <param name="ruleName">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    public static YamlDocument AddDisableRuleFilter(
+        this YamlDocument yamlDocument,
+        string urlMatchingRegexPattern,
+        int ruleId,
+        string ruleName,
+        Action<YamlMappingNode> configureFilter = null)
+    {
+        var alertFilter = new YamlMappingNode
         {
             { "ruleId", ruleId.ToTechnicalString() },
             { "ruleName", ruleName },
             { "url", urlMatchingRegexPattern },
             { "urlRegex", "true" },
-            { "newRisk", isFalsePositive ? "False Positive" : "Info" },
-        });
+            { "newRisk", "Info" },
+        };
 
-        return yamlDocument;
+        configureFilter?.Invoke(alertFilter);
+
+        return yamlDocument.AddAlertFilter(alertFilter);
     }
+
+    /// <inheritdoc cref="AddDisableRuleFilter"/>
+    /// <param name="justification">
+    /// An informational text explaining why the alert in question is false positive. This helps the development of ZAP
+    /// by collecting which rules have the highest false positive rate (see <see
+    /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
+    /// </param>
+    public static YamlDocument AddFalsePositiveRuleFilter(
+        this YamlDocument yamlDocument,
+        string urlMatchingRegexPattern,
+        int ruleId,
+        string ruleName,
+        string justification,
+        Action<YamlMappingNode> configureFilter = null) =>
+        yamlDocument.AddDisableRuleFilter(
+            urlMatchingRegexPattern,
+            ruleId, $"{ruleName}: {justification}",
+            node =>
+            {
+                configureFilter?.Invoke(node);
+                node.Children["newRisk"] = "False Positive";
+            });
 
     /// <summary>
     /// Adds a "requestor" job to the ZAP Automation Framework plan just before the job named "spider".
