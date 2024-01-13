@@ -48,7 +48,7 @@ public static class ShouldlyExtensions
         this IEnumerable<TItem> enumerable,
         Func<TItem, bool> condition,
         Func<TItem, TMessage> messageTransform,
-        JsonSerializerOptions jsonSerializerOptions)
+        JsonSerializerOptions jsonSerializerOptions = null)
     {
         var results = enumerable.Where(condition).ToList();
         if (!results.Any()) return;

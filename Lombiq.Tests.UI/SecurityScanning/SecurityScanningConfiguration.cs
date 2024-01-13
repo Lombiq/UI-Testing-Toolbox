@@ -3,8 +3,6 @@ using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using Shouldly;
 using System;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
