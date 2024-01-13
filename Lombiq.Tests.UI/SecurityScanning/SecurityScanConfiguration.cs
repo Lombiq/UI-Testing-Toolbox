@@ -191,7 +191,7 @@ public class SecurityScanConfiguration
         string ruleName,
         string justification)
     {
-        if (string.IsNullOrWhiteSpace(justification))
+        if (string.IsNullOrWhiteSpace(justification?.Trim()))
         {
             throw new InvalidOperationException("Please provide a justification for disabling this alert!");
         }
