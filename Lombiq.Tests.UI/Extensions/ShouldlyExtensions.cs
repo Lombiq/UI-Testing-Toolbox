@@ -35,8 +35,9 @@ public static class ShouldlyExtensions
     /// </para></remarks>
     public static void ShouldBeEmptyWhen<TItem>(
         this IEnumerable<TItem> enumerable,
-        Func<TItem, bool> condition) =>
-        enumerable.ShouldBeEmptyWhen<TItem, TItem>(condition, messageTransform: null);
+        Func<TItem, bool> condition,
+        JsonSerializerOptions jsonSerializerOptions = null) =>
+        enumerable.ShouldBeEmptyWhen<TItem, TItem>(condition, messageTransform: null, jsonSerializerOptions);
 
     /// <inheritdoc cref="ShouldBeEmptyWhen{TItem}"/>
     /// <param name="messageTransform">
@@ -46,14 +47,15 @@ public static class ShouldlyExtensions
     public static void ShouldBeEmptyWhen<TItem, TMessage>(
         this IEnumerable<TItem> enumerable,
         Func<TItem, bool> condition,
-        Func<TItem, TMessage> messageTransform)
+        Func<TItem, TMessage> messageTransform,
+        JsonSerializerOptions jsonSerializerOptions)
     {
         var results = enumerable.Where(condition).ToList();
         if (!results.Any()) return;
 
         var message = messageTransform == null
-            ? JsonSerializer.Serialize(results)
-            : JsonSerializer.Serialize(results.Select(messageTransform));
+            ? JsonSerializer.Serialize(results, jsonSerializerOptions)
+            : JsonSerializer.Serialize(results.Select(messageTransform), jsonSerializerOptions);
         results.ShouldBeEmpty(message); // This will always throw at this point.
     }
 }
