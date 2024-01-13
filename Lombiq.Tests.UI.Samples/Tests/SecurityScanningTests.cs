@@ -44,21 +44,19 @@ public class SecurityScanningTests : UITestBase
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
-    // - Also runs ZAP's Ajax Spider (https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/). This is
-    //   usually not just unnecessary for a website that's not an SPA, but also slows the scan down by a lot. However,
-    //   if you have an SPA, you need to use it.
-    // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process certain URLs at all.
-    // - Disables the "The response does not include either Content-Security-Policy with 'frame-ancestors' directive."
-    //   alert of ZAP's passive scan for the whole scan.
-    // - Also disables the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page. Use this to
-    //   disable rules more specifically instead of the whole scan.
-    // - Configures sign in with a user account. This is what the scan will start with. With the Blog recipe it doesn't
-    //   matter too much, since nothing on the frontend will change, but you can use this to scan authenticated features
-    //   too. Note that since ZAP uses its own spider, not the browser accessed by the test, user sessions are not
-    //   shared, so such an explicit sign in is necessary.
-    // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
-    //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
-    //   default there is "no scanning alert is allowed"; we expect some alerts here.
+    // - Also runs ZAP's Ajax Spider (https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/). Usually this
+    //   is only necessary for sites that are single page applications (SPA).
+    // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process those pages at all.
+    // - Disables one of ZAP's passive scan rules for the whole scan.
+    // - Also disables a rule but only for the /about page. Use this to disable rules more specifically instead of the
+    //   whole scan.
+    // - Configures sign in with a user account. This is what the scan will start with. This doesn't matter much with
+    //   the Blog recipe, because nothing on the frontend will change. You can use this to scan authenticated features
+    //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
+    // The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
+    // are only present to illustrate the type of adjustments you may want for your own site.
+    // After the configuration, you can also configure the assertion that verifies test success. You can see an example
+    // of this in the other test.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
@@ -68,8 +66,7 @@ public class SecurityScanningTests : UITestBase
                     .ExcludeUrlWithRegex(".*blog.*")
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
-                    .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(34)));
+                    .SignIn()));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
