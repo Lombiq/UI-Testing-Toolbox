@@ -245,10 +245,8 @@ public class SecurityScanConfiguration
 
         if (!string.IsNullOrEmpty(SignInUserName))
         {
-            yamlDocument.AddRequestor(
-                context.GetAbsoluteUri(
-                    context.GetRelativeUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName)))
-                .ToString());
+            var url = context.GetAbsoluteUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName));
+            yamlDocument.AddRequestor(url.AbsoluteUri);
 
             // With such direct sign in we don't need to utilize ZAP's authentication and user managements mechanisms
             // (see https://www.zaproxy.org/docs/desktop/start/features/authmethods/ and
