@@ -84,7 +84,6 @@ public static class TypedRouteUITestContextExtensions
         where TController : ControllerBase =>
         context.GetAbsoluteUri(context.GetRelativeUrlOfAction(actionExpressionAsync, additionalArguments));
 
-
     private static IServiceProvider CreateServiceProvider(UITestContext context)
     {
         var services = new ServiceCollection();

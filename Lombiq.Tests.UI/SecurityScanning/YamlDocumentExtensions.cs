@@ -279,7 +279,8 @@ public static class YamlDocumentExtensions
         Action<YamlMappingNode> configureFilter = null) =>
         yamlDocument.AddDisableRuleFilter(
             urlMatchingRegexPattern,
-            ruleId, $"{ruleName}: {justification}",
+            ruleId,
+            $"{ruleName}: {justification}",
             node =>
             {
                 configureFilter?.Invoke(node);

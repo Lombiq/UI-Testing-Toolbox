@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
-using static Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -58,8 +57,9 @@ public static class SecurityScanningUITestContextExtensions
     /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
     /// It changes the <see cref="UITestContext.Configuration"/> to not do any retries because this is a long running
     /// test. It also replaces the app log assertion logic with the specialized version for security scans, <see
-    /// cref="UseAssertAppLogsForSecurityScan"/>. The scan is configured to ignore the admin dashboard, optionally log
-    /// in as admin, and use the provided time limits for the "active scan" portion of the security scan.
+    /// cref="OrchardCoreUITestExecutorConfiguration.UseAssertAppLogsForSecurityScan"/>. The scan is configured t
+    /// ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the "active scan"
+    /// portion of the security scan.
     /// </para></remarks>
     public static Task RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync(
         this UITestContext context,
@@ -70,7 +70,7 @@ public static class SecurityScanningUITestContextExtensions
         int maxRuleDurationInMinutes = 2)
     {
         // Ignore some validation errors that only happen during security tests.
-        context.Configuration.AssertAppLogsAsync = UseAssertAppLogsForSecurityScan();
+        context.Configuration.UseAssertAppLogsForSecurityScan();
 
         // This takes over 10 minutes and the session will certainly time out with retries.
         context.Configuration.MaxRetryCount = 0;

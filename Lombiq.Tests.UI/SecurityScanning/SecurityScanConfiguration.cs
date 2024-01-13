@@ -1,6 +1,5 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
@@ -193,7 +192,9 @@ public class SecurityScanConfiguration
     {
         if (string.IsNullOrWhiteSpace(justification?.Trim()))
         {
-            throw new InvalidOperationException("Please provide a detailed justification for marking this alert as a false positive, including context and reasoning.");
+            throw new InvalidOperationException(
+                "Please provide a detailed justification for marking this alert as a false positive, including " +
+                "context and reasoning.");
         }
 
         _falsePositives.Add((urlRegex, ruleId, ruleName, justification));

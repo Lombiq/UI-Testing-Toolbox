@@ -211,10 +211,21 @@ public class OrchardCoreUITestExecutorConfiguration
     }
 
     /// <summary>
+    /// Sets the <see cref="AssertAppLogsAsync"/> to the output of <see cref="CreateAppLogAssertionForSecurityScan"/> so
+    /// it accepts errors in the log caused by the security scanning.
+    /// </summary>
+    public OrchardCoreUITestExecutorConfiguration UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
+    {
+        AssertAppLogsAsync = CreateAppLogAssertionForSecurityScan(additionalPermittedErrorLines);
+
+        return this;
+    }
+
+    /// <summary>
     /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
     /// entries which represent correct reactions to incorrect or malicious user behavior during a security scan.
     /// </summary>
-    public static Func<IWebApplicationInstance, Task> UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
+    public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLines)
     {
         var permittedErrorLines = new List<string>
         {
