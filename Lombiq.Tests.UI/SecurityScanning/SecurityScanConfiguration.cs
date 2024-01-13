@@ -193,7 +193,7 @@ public class SecurityScanConfiguration
     {
         if (string.IsNullOrWhiteSpace(justification?.Trim()))
         {
-            throw new InvalidOperationException("Please provide a justification for disabling this alert!");
+            throw new InvalidOperationException("Please provide a detailed justification for marking this alert as a false positive, including context and reasoning.");
         }
 
         _falsePositives.Add((urlRegex, ruleId, ruleName, justification));
