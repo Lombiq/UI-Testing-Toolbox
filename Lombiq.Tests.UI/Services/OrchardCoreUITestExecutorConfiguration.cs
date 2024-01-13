@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -230,6 +231,9 @@ public class OrchardCoreUITestExecutorConfiguration
             // legitimate application error, during a security scan it's more likely the result of an incomplete
             // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
             "An unhandled exception has occurred while executing the request. System.ArgumentNullException: Value cannot be null. (Parameter 'key')",
+            // One way to verify correct error handling is to navigate to ~/Lombiq.Tests.UI.Shortcuts/Error/Index, which
+            // always throws an exception. This also gets logged but it's expected, so it should be ignored.
+            ErrorController.ExceptionMessage,
         };
 
         permittedErrorLines.AddRange(additionalPermittedErrorLines);

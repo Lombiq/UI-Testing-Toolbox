@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using static Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration;
 
@@ -183,7 +182,7 @@ public static class SecurityScanningUITestContextExtensions
 
         // Verify that error page handling also works by visiting a known error page with no logging.
         var errorUrl = context.GetAbsoluteUri(context.GetRelativeUrlOfAction<ErrorController>(controller => controller.Index()));
-        await context.DoWithoutAppLogAssertionAsync(() => RunAndAssertSecurityScanInnerAsync(scanConfiguration =>
+        await RunAndAssertSecurityScanInnerAsync(scanConfiguration =>
         {
             configure?.Invoke(scanConfiguration);
 
@@ -196,7 +195,7 @@ public static class SecurityScanningUITestContextExtensions
                     plan.SetSpiderParameter("maxChildren", 2.ToTechnicalString());
                     plan.SetActiveScanParameter("recurse", "false");
                 });
-        }));
+        });
     }
 
     /// <summary>
