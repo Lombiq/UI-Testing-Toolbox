@@ -40,22 +40,15 @@ public class SecurityScanningConfiguration
     public bool DontScanErrorPage { get; private set; }
 
     public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts = (_, sarifLog) =>
-    {
-        var errors = sarifLog
-            .Runs[0]
-            .Results
-            .Where(result =>
+        sarifLog.Runs[0].Results.ShouldBeEmptyWhen(
+            result =>
                 result.Kind == ResultKind.Fail &&
                 result.Level != FailureLevel.None &&
-                result.Level != FailureLevel.Note)
-            .Select(result => new
+                result.Level != FailureLevel.Note,
+            result => new
             {
                 Kind = result.Kind.ToString(),
                 Level = result.Level.ToString(),
                 Details = result,
-            })
-            .ToList();
-
-        errors.ShouldBeEmpty(JsonSerializer.Serialize(errors));
-    };
+            });
 }
