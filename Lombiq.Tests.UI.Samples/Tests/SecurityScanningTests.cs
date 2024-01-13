@@ -55,8 +55,7 @@ public class SecurityScanningTests : UITestBase
     //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
     // The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
     // are only present to illustrate the type of adjustments you may want for your own site.
-    // After the configuration, you can also configure the assertion that verifies test success. You can see an example
-    // of this in the other test.
+    // After the configuration, you can also configure the assertion that verifies test success.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
@@ -66,7 +65,8 @@ public class SecurityScanningTests : UITestBase
                     .ExcludeUrlWithRegex(".*blog.*")
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
-                    .SignIn()));
+                    .SignIn(),
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(22)));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
