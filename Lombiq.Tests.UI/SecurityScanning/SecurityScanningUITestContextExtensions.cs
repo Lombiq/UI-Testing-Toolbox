@@ -206,7 +206,7 @@ public static class SecurityScanningUITestContextExtensions
             .StartAtUri(context.GetCurrentUri());
 
         // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
-        // they may contain several false positives (e.g. in font-awesome)..
+        // they may contain several false positives (e.g. in font-awesome).
         configuration.ExcludeUrlWithRegex(@".*/vendors?/.*");
 
         if (context.Configuration.SecurityScanningConfiguration.ZapAutomationFrameworkPlanModifier != null)
