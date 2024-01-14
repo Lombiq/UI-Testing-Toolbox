@@ -1,5 +1,4 @@
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using Shouldly;
 using System;
