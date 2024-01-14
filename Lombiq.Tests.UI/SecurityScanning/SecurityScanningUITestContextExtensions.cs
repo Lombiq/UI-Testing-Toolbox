@@ -161,7 +161,7 @@ public static class SecurityScanningUITestContextExtensions
             result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, scanConfiguration =>
             {
                 // Verify that error page handling also works by visiting a known error page with no logging.
-                if (!configuration.DontScanErrorPage)
+                if (!scanConfiguration.DontScanErrorPage)
                 {
                     var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
                     scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));

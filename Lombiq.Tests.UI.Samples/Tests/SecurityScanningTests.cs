@@ -58,9 +58,11 @@ public class SecurityScanningTests : UITestBase
     // - Configures sign in with a user account. This is what the scan will start with. This doesn't matter much with
     //   the Blog recipe, because nothing on the frontend will change. You can use this to scan authenticated features
     //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
-    // The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
-    // are only present to illustrate the type of adjustments you may want for your own site.
-    // After the configuration, you can also configure the assertion that verifies test success.
+    // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
+    //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
+    //   default there is "no scanning alert is allowed"; we expect some alerts here.
+    // - The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
+    //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(

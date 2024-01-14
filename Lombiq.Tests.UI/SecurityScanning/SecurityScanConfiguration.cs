@@ -34,6 +34,13 @@ public class SecurityScanConfiguration
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
 
+    /// <summary>
+    /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
+    /// for correct error handling. This is achieved by adding the error page URL to the configuration with <see
+    /// cref="YamlDocumentExtensions.AddRequestor"/>.
+    /// </summary>
+    public bool DontScanErrorPage { get; private set; }
+
     internal SecurityScanConfiguration()
     {
     }
