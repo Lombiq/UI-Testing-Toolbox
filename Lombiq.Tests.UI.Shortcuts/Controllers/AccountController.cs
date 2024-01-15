@@ -22,9 +22,8 @@ public class AccountController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> SignInDirectly(string userName)
     {
-        var user = await _userManager.FindByNameAsync(userName);
-
-        if (user == null) return NotFound();
+        if (string.IsNullOrWhiteSpace(userName)) userName = "admin";
+        if (await _userManager.FindByNameAsync(userName) is not { } user) return NotFound();
 
         await _userSignInManager.SignInAsync(user, isPersistent: false);
 

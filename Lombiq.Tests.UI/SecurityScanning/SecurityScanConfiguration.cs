@@ -1,11 +1,9 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
@@ -23,17 +21,25 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 /// </remarks>
 public class SecurityScanConfiguration
 {
+    private readonly List<Uri> _additionalUris = new();
+    private readonly List<string> _excludedUrlRegexPatterns = new();
+    private readonly List<ScanRule> _disabledActiveScanRules = new();
+    private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = new();
+    private readonly List<ScanRule> _disabledPassiveScanRules = new();
+    private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = new();
+    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = new();
+    private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = new();
+
     public Uri StartUri { get; private set; }
-    public IList<Uri> AdditionalUris { get; } = new List<Uri>();
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
-    public IList<string> ExcludedUrlRegexPatterns { get; } = new List<string>();
-    public IList<ScanRule> DisabledActiveScanRules { get; } = new List<ScanRule>();
-    public IDictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> ConfiguredActiveScanRules { get; } =
-        new Dictionary<ScanRule, (ScanRuleThreshold, ScanRuleStrength)>();
-    public IList<ScanRule> DisabledPassiveScanRules { get; } = new List<ScanRule>();
-    public IDictionary<string, ScanRule> DisabledRulesForUrls { get; } = new Dictionary<string, ScanRule>();
-    public IList<Func<YamlDocument, Task>> ZapPlanModifiers { get; } = new List<Func<YamlDocument, Task>>();
+
+    /// <summary>
+    /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
+    /// for correct error handling. This is achieved by adding the error page URL to the configuration with <see
+    /// cref="YamlDocumentExtensions.AddRequestor"/>.
+    /// </summary>
+    public bool DontScanErrorPage { get; private set; }
 
     internal SecurityScanConfiguration()
     {
@@ -56,7 +62,7 @@ public class SecurityScanConfiguration
     /// <param name="additionalUri">The <see cref="Uri"/> under the app to also cover during the scan.</param>
     public SecurityScanConfiguration AddAdditionalUri(Uri additionalUri)
     {
-        AdditionalUris.Add(additionalUri);
+        _additionalUris.Add(additionalUri);
         return this;
     }
 
@@ -90,7 +96,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration ExcludeUrlWithRegex(string excludedUrlRegex)
     {
-        ExcludedUrlRegexPatterns.Add(excludedUrlRegex);
+        _excludedUrlRegexPatterns.Add(excludedUrlRegex);
         return this;
     }
 
@@ -105,7 +111,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration DisableActiveScanRule(int id, string name = "")
     {
-        DisabledActiveScanRules.Add(new ScanRule(id, name));
+        _disabledActiveScanRules.Add(new ScanRule(id, name));
         return this;
     }
 
@@ -127,7 +133,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration ConfigureActiveScanRule(int id, ScanRuleThreshold threshold, ScanRuleStrength strength, string name = "")
     {
-        ConfiguredActiveScanRules.Add(new ScanRule(id, name), (threshold, strength));
+        _configuredActiveScanRules.Add(new ScanRule(id, name), (threshold, strength));
         return this;
     }
 
@@ -142,7 +148,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration DisablePassiveScanRule(int id, string name = "")
     {
-        DisabledPassiveScanRules.Add(new ScanRule(id, name));
+        _disabledPassiveScanRules.Add(new ScanRule(id, name));
         return this;
     }
 
@@ -161,7 +167,44 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration DisableScanRuleForUrlWithRegex(string urlRegex, int ruleId, string ruleName = "")
     {
-        DisabledRulesForUrls[urlRegex] = new ScanRule(ruleId, ruleName);
+        _disabledRulesForUrls.Add((urlRegex, ruleId, ruleName));
+        return this;
+    }
+
+    /// <summary>
+    /// Marks a rule (can be any rule, including e.g. both active or passive scan rules) as false positive for just URLs
+    /// matching the given regular expression pattern.
+    /// </summary>
+    /// <param name="urlRegex">
+    /// The regex pattern to match URLs against. It will be matched against the whole absolute URL, e.g., ".*blog.*"
+    /// will match https://example.com/blog, https://example.com/blog/my-post, etc.
+    /// </param>
+    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="ruleName">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    /// <param name="justification">
+    /// A human-readable explanation of why the alert is false positive.
+    /// </param>
+    /// <remarks><para>
+    /// Marking a rule as false positive helps the development of ZAP by collecting which rules have the highest false
+    /// positive rate (see <see href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/">the FAQ</see>).
+    /// </para></remarks>
+    public SecurityScanConfiguration MarkScanRuleAsFalsePositiveForUrlWithRegex(
+        string urlRegex,
+        int ruleId,
+        string ruleName,
+        string justification)
+    {
+        if (string.IsNullOrWhiteSpace(justification?.Trim()))
+        {
+            throw new InvalidOperationException(
+                "Please provide a detailed justification for marking this alert as a false positive, including " +
+                "context and reasoning.");
+        }
+
+        _falsePositives.Add((urlRegex, ruleId, ruleName, justification));
         return this;
     }
 
@@ -176,7 +219,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration ModifyZapPlan(Func<YamlDocument, Task> modifyPlan)
     {
-        ZapPlanModifiers.Add(modifyPlan);
+        _zapPlanModifiers.Add(modifyPlan);
         return this;
     }
 
@@ -191,7 +234,7 @@ public class SecurityScanConfiguration
     /// </param>
     public SecurityScanConfiguration ModifyZapPlan(Action<YamlDocument> modifyPlan)
     {
-        ZapPlanModifiers.Add(yamlDocument =>
+        _zapPlanModifiers.Add(yamlDocument =>
         {
             modifyPlan(yamlDocument);
             return Task.CompletedTask;
@@ -204,16 +247,14 @@ public class SecurityScanConfiguration
     {
         yamlDocument.SetStartUrl(StartUri);
 
-        foreach (var uri in AdditionalUris) yamlDocument.AddUrl(uri);
+        foreach (var uri in _additionalUris) yamlDocument.AddUrl(uri);
 
         if (AjaxSpiderIsUsed) yamlDocument.AddSpiderAjaxAfterSpider();
 
         if (!string.IsNullOrEmpty(SignInUserName))
         {
-            yamlDocument.AddRequestor(
-                context.GetAbsoluteUri(
-                    context.GetRelativeUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName)))
-                .ToString());
+            var url = context.GetAbsoluteUrlOfAction<AccountController>(controller => controller.SignInDirectly(SignInUserName));
+            yamlDocument.AddRequestor(url.AbsoluteUri);
 
             // With such direct sign in we don't need to utilize ZAP's authentication and user managements mechanisms
             // (see https://www.zaproxy.org/docs/desktop/start/features/authmethods/ and
@@ -234,10 +275,10 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        yamlDocument.AddExcludePathsRegex(ExcludedUrlRegexPatterns.ToArray());
-        foreach (var rule in DisabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
+        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
+        foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
-        foreach (var ruleConfiguration in ConfiguredActiveScanRules)
+        foreach (var ruleConfiguration in _configuredActiveScanRules)
         {
             yamlDocument.ConfigureActiveScanRule(
                 ruleConfiguration.Key.Id,
@@ -246,9 +287,10 @@ public class SecurityScanConfiguration
                 ruleConfiguration.Key.Name);
         }
 
-        foreach (var rule in DisabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
-        foreach (var urlToRule in DisabledRulesForUrls) yamlDocument.AddAlertFilter(urlToRule.Key, urlToRule.Value.Id, urlToRule.Value.Name);
-        foreach (var modifier in ZapPlanModifiers) await modifier(yamlDocument);
+        foreach (var rule in _disabledPassiveScanRules) yamlDocument.DisablePassiveScanRule(rule.Id, rule.Name);
+        foreach (var (url, id, name) in _disabledRulesForUrls) yamlDocument.AddDisableRuleFilter(url, id, name);
+        foreach (var (url, id, name, justification) in _falsePositives) yamlDocument.AddFalsePositiveRuleFilter(url, id, name, justification);
+        foreach (var modifier in _zapPlanModifiers) await modifier(yamlDocument);
     }
 
     public class ScanRule

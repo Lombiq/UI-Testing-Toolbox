@@ -1,6 +1,8 @@
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Threading.Tasks;
@@ -46,6 +48,50 @@ public static class SecurityScanningUITestContextExtensions
             AutomationFrameworkPlanPaths.FullScanPlanPath,
             configure,
             assertSecurityScanResult);
+
+    /// <inheritdoc cref="RunAndAssertFullSecurityScanAsync"/>
+    /// <param name="doSignIn">If <see langword="true"/> the bot is configured to sign in as <c>admin</c> first.</param>
+    /// <param name="maxActiveScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxRuleDurationInMinutes">Time limit for the individual rules in the active scan.</param>
+    /// <remarks><para>
+    /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
+    /// It changes the <see cref="UITestContext.Configuration"/> to not do any retries because this is a long running
+    /// test. It also replaces the app log assertion logic with the specialized version for security scans, <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.UseAssertAppLogsForSecurityScan"/>. The scan is configured t
+    /// ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the "active scan"
+    /// portion of the security scan.
+    /// </para></remarks>
+    public static Task RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync(
+        this UITestContext context,
+        Action<SecurityScanConfiguration> additionalConfiguration = null,
+        Action<SarifLog> assertSecurityScanResult = null,
+        bool doSignIn = true,
+        int maxActiveScanDurationInMinutes = 10,
+        int maxRuleDurationInMinutes = 2)
+    {
+        // Ignore some validation errors that only happen during security tests.
+        context.Configuration.UseAssertAppLogsForSecurityScan();
+
+        // This takes over 10 minutes and the session will certainly time out with retries.
+        context.Configuration.MaxRetryCount = 0;
+
+        return context.RunAndAssertFullSecurityScanAsync(
+            configuration =>
+            {
+                // Signing in ensures full access and that the bot won't have to interact with the login screen.
+                if (doSignIn) configuration.SignIn();
+
+                // There is no need to security scan the admin dashboard.
+                configuration.ExcludeUrlWithRegex(@".*/Admin/.*");
+
+                // Active scan takes a very long time, this is not practical in CI.
+                configuration.ModifyZapPlan(plan => plan
+                    .SetActiveScanMaxDuration(maxActiveScanDurationInMinutes, maxRuleDurationInMinutes));
+
+                additionalConfiguration?.Invoke(configuration);
+            },
+            assertSecurityScanResult);
+    }
 
     /// <summary>
     /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app with the
@@ -107,17 +153,30 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> configure = null,
         Action<SarifLog> assertSecurityScanResult = null)
     {
-        var configuration = context.Configuration.SecurityScanningConfiguration;
+        var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
 
         SecurityScanResult result = null;
         try
         {
-            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, configure);
+            result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, scanConfiguration =>
+            {
+                // Verify that error page handling also works by visiting a known error page with no logging.
+                if (!scanConfiguration.DontScanErrorPage)
+                {
+                    var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
+                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));
+                }
+
+                configure?.Invoke(scanConfiguration);
+            });
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
-            else configuration?.AssertSecurityScanResult(context, result.SarifLog);
+            else configuration.AssertSecurityScanResult(context, result.SarifLog);
 
-            if (configuration.CreateReportAlways) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            if (configuration.CreateReportAlways)
+            {
+                context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            }
         }
         catch (Exception ex)
         {
@@ -143,9 +202,12 @@ public static class SecurityScanningUITestContextExtensions
         string automationFrameworkYamlPath,
         Action<SecurityScanConfiguration> configure = null)
     {
-        var configuration = new SecurityScanConfiguration();
+        var configuration = new SecurityScanConfiguration()
+            .StartAtUri(context.GetCurrentUri());
 
-        configuration.StartAtUri(context.GetCurrentUri());
+        // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
+        // they may contain several false positives (e.g. in font-awesome).
+        configuration.ExcludeUrlWithRegex(@".*/vendors?/.*");
 
         if (context.Configuration.SecurityScanningConfiguration.ZapAutomationFrameworkPlanModifier != null)
         {
