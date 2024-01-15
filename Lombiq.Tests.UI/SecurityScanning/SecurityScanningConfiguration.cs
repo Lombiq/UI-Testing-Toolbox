@@ -30,7 +30,16 @@ public class SecurityScanningConfiguration
     /// </summary>
     public Action<UITestContext, SarifLog> AssertSecurityScanResult { get; set; } = AssertSecurityScanHasNoAlerts;
 
-    public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts =
-        (_, sarifLog) => sarifLog.Runs[0].Results.ShouldNotContain(result =>
-            result.Kind == ResultKind.Fail && result.Level != FailureLevel.None && result.Level != FailureLevel.Note);
+    public static readonly Action<UITestContext, SarifLog> AssertSecurityScanHasNoAlerts = (_, sarifLog) =>
+        sarifLog.Runs[0].Results.ShouldBeEmptyWhen(
+            result =>
+                result.Kind == ResultKind.Fail &&
+                result.Level != FailureLevel.None &&
+                result.Level != FailureLevel.Note,
+            result => new
+            {
+                Kind = result.Kind.ToString(),
+                Level = result.Level.ToString(),
+                Details = result,
+            });
 }

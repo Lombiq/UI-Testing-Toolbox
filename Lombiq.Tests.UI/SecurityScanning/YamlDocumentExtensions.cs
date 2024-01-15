@@ -108,9 +108,7 @@ public static class YamlDocumentExtensions
     {
         var currentContext = yamlDocument.GetCurrentContext();
 
-        if (!currentContext.Children.ContainsKey("excludePaths")) currentContext.Add("excludePaths", new YamlSequenceNode());
-
-        var excludePaths = (YamlSequenceNode)currentContext["excludePaths"];
+        var excludePaths = currentContext.GetOrAddNode<YamlSequenceNode>("excludePaths");
         foreach (var pattern in excludePathsRegexPatterns)
         {
             excludePaths.Add(pattern);
@@ -121,8 +119,7 @@ public static class YamlDocumentExtensions
 
     /// <summary>
     /// Disable a certain ZAP passive scan rule for the whole scan in the ZAP Automation Framework plan. If you only
-    /// want to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
-    /// instead.
+    /// want to disable a rule for a given page, use <see cref="AddDisableRuleFilter"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -134,26 +131,19 @@ public static class YamlDocumentExtensions
     /// </exception>
     public static YamlDocument DisablePassiveScanRule(this YamlDocument yamlDocument, int id, string name = "")
     {
-        var passiveScanConfigJob = yamlDocument.GetPassiveScanConfigJobOrThrow();
-
-        if (!passiveScanConfigJob.Children.ContainsKey("rules")) passiveScanConfigJob.Add("rules", new YamlSequenceNode());
-
-        var newRule = new YamlMappingNode
+        yamlDocument.GetPassiveScanConfigJobOrThrow().AddRuleToRulesNode(new YamlMappingNode
         {
             { "id", id.ToTechnicalString() },
             { "name", name },
             { "threshold", "off" },
-        };
-
-        ((YamlSequenceNode)passiveScanConfigJob["rules"]).Add(newRule);
+        });
 
         return yamlDocument;
     }
 
     /// <summary>
     /// Disable a certain ZAP active scan rule for the whole scan in the ZAP Automation Framework plan. If you only want
-    /// to disable a rule for a given page, use <see cref="AddAlertFilter(YamlDocument, string, int, string, bool)"/>
-    /// instead.
+    /// to disable a rule for a given page, use <see cref="AddDisableRuleFilter"/> instead.
     /// </summary>
     /// <param name="id">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
     /// <param name="name">
@@ -204,19 +194,13 @@ public static class YamlDocumentExtensions
             throw new ArgumentException("The \"activeScan\" job should contain a policyDefinition.");
         }
 
-        var policyDefinition = (YamlMappingNode)activeScanConfigJob["policyDefinition"];
-
-        if (!policyDefinition.Children.ContainsKey("rules")) policyDefinition.Add("rules", new YamlSequenceNode());
-
-        var newRule = new YamlMappingNode
+        activeScanConfigJob["policyDefinition"].AddRuleToRulesNode(new YamlMappingNode
         {
             { "id", id.ToTechnicalString() },
             { "name", name },
             { "threshold", threshold.ToString() },
             { "strength", strength.ToString() },
-        };
-
-        ((YamlSequenceNode)policyDefinition["rules"]).Add(newRule);
+        });
 
         return yamlDocument;
     }
@@ -225,26 +209,7 @@ public static class YamlDocumentExtensions
     /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
     /// Automation Framework plan.
     /// </summary>
-    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
-    /// <param name="urlMatchingRegexPattern">
-    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
-    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
-    /// </param>
-    /// <param name="ruleName">
-    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
-    /// useful for the readability of the method call.
-    /// </param>
-    /// <param name="isFalsePositive">
-    /// If you disable the rule because it's a false positive, then set this to <see langword="true"/>. This helps the
-    /// development of ZAP by collecting which rules have the highest false positive rate (see <see
-    /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
-    /// </param>
-    public static YamlDocument AddAlertFilter(
-        this YamlDocument yamlDocument,
-        string urlMatchingRegexPattern,
-        int ruleId,
-        string ruleName = "",
-        bool isFalsePositive = false)
+    public static YamlDocument AddAlertFilter(this YamlDocument yamlDocument, YamlMappingNode filter)
     {
         var jobs = yamlDocument.GetJobs();
 
@@ -261,21 +226,66 @@ public static class YamlDocumentExtensions
             jobs.Children.Insert(passiveScanConfigIndex + 1, alertFilterJob);
         }
 
-        if (!alertFilterJob.Children.ContainsKey("alertFilters")) alertFilterJob.Add("alertFilters", new YamlSequenceNode());
+        alertFilterJob.GetOrAddNode<YamlSequenceNode>("alertFilters").Add(filter);
+        return yamlDocument;
+    }
 
-        var newRule = new YamlMappingNode
+    /// <summary>
+    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
+    /// Automation Framework plan.
+    /// </summary>
+    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="urlMatchingRegexPattern">
+    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
+    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
+    /// </param>
+    /// <param name="ruleName">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    public static YamlDocument AddDisableRuleFilter(
+        this YamlDocument yamlDocument,
+        string urlMatchingRegexPattern,
+        int ruleId,
+        string ruleName,
+        Action<YamlMappingNode> configureFilter = null)
+    {
+        var alertFilter = new YamlMappingNode
         {
             { "ruleId", ruleId.ToTechnicalString() },
             { "ruleName", ruleName },
             { "url", urlMatchingRegexPattern },
             { "urlRegex", "true" },
-            { "newRisk", isFalsePositive ? "False Positive" : "Info" },
+            { "newRisk", "Info" },
         };
 
-        ((YamlSequenceNode)alertFilterJob["alertFilters"]).Add(newRule);
+        configureFilter?.Invoke(alertFilter);
 
-        return yamlDocument;
+        return yamlDocument.AddAlertFilter(alertFilter);
     }
+
+    /// <inheritdoc cref="AddDisableRuleFilter"/>
+    /// <param name="justification">
+    /// An informational text explaining why the alert in question is false positive. This helps the development of ZAP
+    /// by collecting which rules have the highest false positive rate (see <see
+    /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
+    /// </param>
+    public static YamlDocument AddFalsePositiveRuleFilter(
+        this YamlDocument yamlDocument,
+        string urlMatchingRegexPattern,
+        int ruleId,
+        string ruleName,
+        string justification,
+        Action<YamlMappingNode> configureFilter = null) =>
+        yamlDocument.AddDisableRuleFilter(
+            urlMatchingRegexPattern,
+            ruleId,
+            $"{ruleName}: {justification}",
+            node =>
+            {
+                configureFilter?.Invoke(node);
+                node.Children["newRisk"] = "False Positive";
+            });
 
     /// <summary>
     /// Adds a "requestor" job to the ZAP Automation Framework plan just before the job named "spider".
@@ -310,6 +320,34 @@ public static class YamlDocumentExtensions
     public static YamlMappingNode GetRootNode(this YamlDocument yamlDocument) => (YamlMappingNode)yamlDocument.RootNode;
 
     /// <summary>
+    /// Tries to access the child node by the name of <paramref name="key"/>. If it doesn't exists, it's created.
+    /// </summary>
+    public static T GetOrAddNode<T>(this YamlNode yamlNode, string key)
+        where T : YamlNode, new()
+    {
+        if (yamlNode is YamlMappingNode mappingNode && !mappingNode.Children.ContainsKey(key))
+        {
+            mappingNode.Children.Add(key, new T());
+        }
+
+        return (T)yamlNode[key];
+    }
+
+    /// <summary>
+    /// Adds the specified mapping to the <see cref="YamlMappingNode.Children" /> collection. If the given <paramref
+    /// name="key"/> already exists, it's removed first.
+    /// </summary>
+    public static void SetMappingChild(this YamlMappingNode node, YamlNode key, YamlNode value)
+    {
+        if (node.Children.ContainsKey(key))
+        {
+            node.Children.Remove(key);
+        }
+
+        node.Add(key, value);
+    }
+
+    /// <summary>
     /// Gets the "jobs" section of the ZAP Automation Framework plan.
     /// </summary>
     public static YamlSequenceNode GetJobs(this YamlDocument yamlDocument) =>
@@ -319,6 +357,43 @@ public static class YamlDocumentExtensions
     /// Gets the job from the "jobs" section of the ZAP Automation Framework with the name "spider".
     /// </summary>
     public static YamlNode GetSpiderJob(this YamlDocument yamlDocument) => yamlDocument.GetJobByName("spider");
+
+    /// <summary>
+    /// Gets the job from the "jobs" section of the ZAP Automation Framework with the name "activeScan".
+    /// </summary>
+    public static YamlNode GetActiveScanJob(this YamlDocument yamlDocument) => yamlDocument.GetJobByName("activeScan");
+
+    /// <summary>
+    /// Gets or creates the "parameters" node under the specified <paramref name="jobNode"/>.
+    /// </summary>
+    public static YamlMappingNode GetOrCreateParameters(this YamlNode jobNode) =>
+        jobNode.GetOrAddNode<YamlMappingNode>("parameters");
+
+    /// <summary>
+    /// Updates the provided configuration parameters for the "spider" job it it exists.
+    /// </summary>
+    public static void SetSpiderParameter(this YamlDocument yamlDocument, YamlNode parameter, YamlNode value) =>
+        yamlDocument.GetSpiderJob()?.GetOrCreateParameters().SetMappingChild(parameter, value);
+
+    /// <summary>
+    /// Updates the provided configuration parameters for the "activeScan" job it it exists.
+    /// </summary>
+    public static void SetActiveScanParameter(this YamlDocument yamlDocument, YamlNode parameter, YamlNode value) =>
+        yamlDocument.GetActiveScanJob()?.GetOrCreateParameters().SetMappingChild(parameter, value);
+
+    /// <summary>
+    /// Sets time limits on the "activeScan" job. Both are in minutes. If set to 0 it means unlimited.
+    /// </summary>
+    /// <param name="maxActiveScanDurationInMinutes">Time limit for the active scan altogether.</param>
+    /// <param name="maxRuleDurationInMinutes">Time limit for the individual rule scans.</param>
+    public static void SetActiveScanMaxDuration(
+        this YamlDocument yamlDocument,
+        int maxActiveScanDurationInMinutes,
+        int maxRuleDurationInMinutes = 0)
+    {
+        yamlDocument.SetActiveScanParameter("maxScanDurationInMins", maxActiveScanDurationInMinutes.ToTechnicalString());
+        yamlDocument.SetActiveScanParameter("maxRuleDurationInMins", maxRuleDurationInMinutes.ToTechnicalString());
+    }
 
     /// <summary>
     /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its name.
@@ -341,9 +416,7 @@ public static class YamlDocumentExtensions
     {
         var currentContext = yamlDocument.GetCurrentContext();
 
-        if (!currentContext.Children.ContainsKey("urls")) currentContext.Add("urls", new YamlSequenceNode());
-
-        return (YamlSequenceNode)currentContext["urls"];
+        return currentContext.GetOrAddNode<YamlSequenceNode>("urls");
     }
 
     /// <summary>
@@ -419,4 +492,11 @@ public static class YamlDocumentExtensions
 
         return baseDocument;
     }
+
+    /// <summary>
+    /// Ensures that the <paramref name="parentOfRules"/> has a <c>rules</c> child and then adds the <paramref
+    /// name="newRule"/> to it.
+    /// </summary>
+    public static void AddRuleToRulesNode(this YamlNode parentOfRules, YamlNode newRule) =>
+        parentOfRules.GetOrAddNode<YamlSequenceNode>("rules").Add(newRule);
 }

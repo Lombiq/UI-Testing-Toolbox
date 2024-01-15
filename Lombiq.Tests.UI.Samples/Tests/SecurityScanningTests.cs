@@ -18,6 +18,12 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // sure to also check out the corresponding documentation page:
 // https://github.com/Lombiq/UI-Testing-Toolbox/blob/dev/Lombiq.Tests.UI/Docs/SecurityScanning.md.
 
+// Most common alerts can be resolved by using the OrchardCoreBuilder.ConfigureSecurityDefaultsWithStaticFiles()
+// extension method from Lombiq.HelpfulLibraries.OrchardCore. It's worth enabling in in your Program and then verifying
+// that everything still works on the site before really getting into security scanning. If you experience any problems
+// related to Content-Security-Policy, take a look at the documentation of IContentSecurityPolicyProvider and
+// ContentSecurityPolicyAttribute to adjust the permissions, because these defaults are rather strict out of the box.
+
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
 // GitHub Actions, these tests won't work there. They'll work on a Windows desktop though.
 public class SecurityScanningTests : UITestBase
@@ -31,33 +37,38 @@ public class SecurityScanningTests : UITestBase
 
     // We're running one of ZAP's built-in scans, the Baseline scan. This, as the name suggests, provides some
     // rudimentary security checks. While you can start with this, we recommend running the Full Scan, for which there
-    // similarly is an extension method as well.
+    // similarly is an extension method as well. This can take a very long time. If you want to have a broader scan in
+    // your CI test runs, use the RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method
+    // instead. It applies some limitations to the full scan, including time limits to the active scan portion that
+    // normally takes the longest.
 
     // If you're new to security scanning, starting with exactly this is probably a good idea. Most possibly your app
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        ExecuteTestAfterSetupAsync(context => context.RunAndAssertBaselineSecurityScanAsync());
+        ExecuteTestAfterSetupAsync(
+            context => context.RunAndAssertBaselineSecurityScanAsync(),
+            // You should configure the assertion that checks the app logs to accept some common cases that only should
+            // appear during security scanning. If you launch a full scan, this is automatically configured by the
+            // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
-    // - Also runs ZAP's Ajax Spider (https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/). This is
-    //   usually not just unnecessary for a website that's not an SPA, but also slows the scan down by a lot. However,
-    //   if you have an SPA, you need to use it.
-    // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process certain URLs at all.
-    // - Disables the "Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)" alert of ZAP's passive
-    //   scan for the whole scan. This is because by default, Orchard Core sends an "X-Powered-By: OrchardCore" header.
-    //   If you want airtight security, you might want to turn this off, but for the sake of example we just ignore the
-    //   alert here.
-    // - Also disables the "Content Security Policy (CSP) Header Not Set" rule but only for the /about page. Use this to
-    //   disable rules more specifically instead of the whole scan.
-    // - Configures sign in with a user account. This is what the scan will start with. With the Blog recipe it doesn't
-    //   matter too much, since nothing on the frontend will change, but you can use this to scan authenticated features
-    //   too. Note that since ZAP uses its own spider, not the browser accessed by the test, user sessions are not
-    //   shared, so such an explicit sign in is necessary.
+    // - Also runs ZAP's Ajax Spider (https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/). Usually this
+    //   is only necessary for sites that are single page applications (SPA).
+    // - Excludes certain URLs from the scan completely. Use this if you don't want ZAP to process those pages at all.
+    // - Disables one of ZAP's passive scan rules for the whole scan.
+    // - Also disables a rule but only for the /about page. Use this to disable rules more specifically instead of the
+    //   whole scan.
+    // - Configures sign in with a user account. This is what the scan will start with. This doesn't matter much with
+    //   the Blog recipe, because nothing on the frontend will change. You can use this to scan authenticated features
+    //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
     // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
     //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
     //   default there is "no scanning alert is allowed"; we expect some alerts here.
+    // - The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
+    //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterSetupAsync(
@@ -65,10 +76,11 @@ public class SecurityScanningTests : UITestBase
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
-                    .DisablePassiveScanRule(10037, "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)")
+                    .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(34)));
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeInRange(17, 22)),
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -110,7 +122,8 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)));
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
+            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
     // demo. For a real app's security scan you needn't (shouldn't) do this though; always run the scan on the actual
@@ -141,13 +154,6 @@ public class SecurityScanningTests : UITestBase
             {
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
-                // Note how we specify an assertion too. This is because ZAP actually notices a few security issues with
-                // vanilla Orchard Core. These, however, are more like artifacts of running the app locally and out of
-                // the box without any real configuration. So, to make the tests pass, we need to override the default
-                // assertion that would fail the test if any issue is found.
-
-                // Don't do this at home! Fix the issues instead. This is only here to have a smoother demo.
-                configuration.SecurityScanningConfiguration.AssertSecurityScanResult = (_, _) => { };
                 // Check out the rest of SecurityScanningConfiguration too!
 
                 await changeConfigurationAsync(configuration);

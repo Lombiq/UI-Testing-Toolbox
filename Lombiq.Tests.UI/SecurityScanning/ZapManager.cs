@@ -1,6 +1,7 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.CodeAnalysis.Sarif;
@@ -61,17 +62,6 @@ public sealed class ZapManager : IAsyncDisposable
         string automationFrameworkYamlPath,
         Func<YamlDocument, Task> modifyPlan = null)
     {
-        // Being able to run more than one scan in a test would complicate report generation and processing the SARIF
-        // report so rather just preventing it here (really nobody should want it anyway).
-        const string customContextKey = "ZapManager.ScanWasRun";
-
-        if (context.CustomContext.ContainsKey(customContextKey))
-        {
-            throw new NotSupportedException("You may only run a single ZAP scan in a given test.");
-        }
-
-        context.CustomContext.Add(customContextKey, string.Empty);
-
         await EnsureInitializedAsync();
 
         if (string.IsNullOrEmpty(automationFrameworkYamlPath))
@@ -79,8 +69,11 @@ public sealed class ZapManager : IAsyncDisposable
             automationFrameworkYamlPath = AutomationFrameworkPlanPaths.BaselinePlanPath;
         }
 
-        var mountedDirectoryPath = DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap");
+        // Each attempt will have it's own "ZapN" directory inside the temp, starting with "Zap1".
+        var mountedDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
+            DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap"));
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
+
         Directory.CreateDirectory(reportsDirectoryPath);
 
         // Giving write permission to all users to the reports folder. This is to avoid issues under GitHub-hosted
