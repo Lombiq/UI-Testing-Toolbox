@@ -18,6 +18,12 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // sure to also check out the corresponding documentation page:
 // https://github.com/Lombiq/UI-Testing-Toolbox/blob/dev/Lombiq.Tests.UI/Docs/SecurityScanning.md.
 
+// Most common alerts can be resolved by using the OrchardCoreBuilder.ConfigureSecurityDefaultsWithStaticFiles()
+// extension method from Lombiq.HelpfulLibraries.OrchardCore. It's worth enabling in in your Program and then verifying
+// that everything still works on the site before really getting into security scanning. If you experience any problems
+// related to Content-Security-Policy, take a look at the documentation of IContentSecurityPolicyProvider and
+// ContentSecurityPolicyAttribute to adjust the permissions, because these defaults are rather strict out of the box.
+
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
 // GitHub Actions, these tests won't work there. They'll work on a Windows desktop though.
 public class SecurityScanningTests : UITestBase
