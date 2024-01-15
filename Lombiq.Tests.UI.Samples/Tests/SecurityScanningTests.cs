@@ -79,7 +79,7 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeLessThan(22)),
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeInRange(17, 22)),
             changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
