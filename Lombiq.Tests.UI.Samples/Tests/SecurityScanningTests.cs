@@ -154,13 +154,6 @@ public class SecurityScanningTests : UITestBase
             {
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
-                // Note how we specify an assertion too. This is because ZAP actually notices a few security issues with
-                // vanilla Orchard Core. These, however, are more like artifacts of running the app locally and out of
-                // the box without any real configuration. So, to make the tests pass, we need to override the default
-                // assertion that would fail the test if any issue is found.
-
-                // Don't do this at home! Fix the issues instead. This is only here to have a smoother demo.
-                configuration.SecurityScanningConfiguration.AssertSecurityScanResult = (_, _) => { };
                 // Check out the rest of SecurityScanningConfiguration too!
 
                 await changeConfigurationAsync(configuration);
