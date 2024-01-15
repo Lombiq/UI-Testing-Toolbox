@@ -23,8 +23,7 @@ You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)]
 
 On Windows-based GitHub runners the security tests always fail with the following error:
 
-> The `docker.exe pull softwaresecurityproject/zap-stable:2.14.0 --quiet` command failed with the output below.
-> no matching manifest for windows/amd64 10.0.20348 in the manifest list entries.
+> The `docker.exe pull softwaresecurityproject/zap-stable:2.14.0 --quiet` command failed with the output below. no matching manifest for windows/amd64 10.0.20348 in the manifest list entries.
 
 This is because the Docker installation is configured to use Windows images, while the [ZAP docker image](https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags) is only available for Linux. If you rely on our [Lombiq GitHub Actions](https://github.com/Lombiq/GitHub-Actions) then you can configure it like this to disable a test, in this case `SecurityScanningTests`:
 
