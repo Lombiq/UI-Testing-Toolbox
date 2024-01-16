@@ -59,7 +59,7 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom `.htmlvalidate.json` file (e.g. `TestName.htmlvalidate.json`). For example:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). For example:
 
 ```json
 {
@@ -94,7 +94,7 @@ Then you can change the configuration to use that:
                         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
 ```
 
-Make sure to also include the `root` attribute and set it to `true` inside the custom `.htmlvalidate.json` file and include it in the test project like this:
+Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
 
 ```xml
   <ItemGroup>
