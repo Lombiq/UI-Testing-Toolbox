@@ -59,7 +59,33 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom `.htmlvalidate.json` file (e.g. `TestName.htmlvalidate.json`), then you can change the configuration to use that:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom `.htmlvalidate.json` file (e.g. `TestName.htmlvalidate.json`). For example:
+
+```json
+{
+  "extends": [
+    "html-validate:recommended"
+  ],
+
+  "rules": {
+    "attribute-boolean-style": "off",
+    "element-required-attributes": "off",
+    "no-trailing-whitespace": "off",
+    "no-inline-style": "off",
+    "no-implicit-button-type": "off",
+    "wcag/h30": "off",
+    "wcag/h32": "off",
+    "wcag/h36": "off",
+    "wcag/h37": "off",
+    "wcag/h67": "off",
+    "wcag/h71": "off"
+  },
+
+  "root":  true
+}
+```
+
+Then you can change the configuration to use that:
 
 ```cs
  changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
