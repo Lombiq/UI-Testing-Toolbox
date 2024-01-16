@@ -68,7 +68,7 @@ If you want to change some HTML validation rules from only a few specific tests,
                         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
 ```
 
-Make sure to also include the `root` attribute and set it to `true` inside the custom `.htmlvalidate.json` and include it in the test project like this:
+Make sure to also include the `root` attribute and set it to `true` inside the custom `.htmlvalidate.json` file and include it in the test project like this:
 
 ```xml
   <ItemGroup>
