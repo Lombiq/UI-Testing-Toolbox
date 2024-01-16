@@ -57,6 +57,54 @@ Recommendations and notes for such configuration:
 - If you have several UI test projects it can be cumbersome to maintain a _TestConfiguration.json_ file for each. Instead you can set the value of the `LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION` environment variable to the absolute path of a central configuration file and then each project will look it up. If you place an individual _TestConfiguration.json_ into a test directory it will still take precedence in case you need special configuration for just that one.
 - `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
+### HTML validation configuration
+
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). For example:
+
+```json
+{
+  "extends": [
+    "html-validate:recommended"
+  ],
+
+  "rules": {
+    "attribute-boolean-style": "off",
+    "element-required-attributes": "off",
+    "no-trailing-whitespace": "off",
+    "no-inline-style": "off",
+    "no-implicit-button-type": "off",
+    "wcag/h30": "off",
+    "wcag/h32": "off",
+    "wcag/h36": "off",
+    "wcag/h37": "off",
+    "wcag/h67": "off",
+    "wcag/h71": "off"
+  },
+
+  "root":  true
+}
+```
+
+Then you can change the configuration to use that:
+
+```cs
+ changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
+                configuration.HtmlValidationConfiguration.HtmlValidationOptions
+                    .CloneWith(validationOptions => validationOptions.ConfigPath =
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
+```
+
+Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
+
+```xml
+  <ItemGroup>
+    <Content Include="TestName.htmlvalidate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+ ```
+
 ## Multi-process test execution
 
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
