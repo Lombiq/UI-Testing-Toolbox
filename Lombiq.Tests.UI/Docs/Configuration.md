@@ -59,7 +59,7 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom `.htmlvalidate.json` (e.g. `TestName.htmlvalidate.json`), then you can change the configuration to use that:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom `.htmlvalidate.json` file (e.g. `TestName.htmlvalidate.json`), then you can change the configuration to use that:
 
 ```cs
  changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
