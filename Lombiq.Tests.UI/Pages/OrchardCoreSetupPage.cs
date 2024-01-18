@@ -3,6 +3,7 @@ using Atata.Bootstrap;
 using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using OrchardCore.Modules;
 using System;
 using System.Threading.Tasks;
 
