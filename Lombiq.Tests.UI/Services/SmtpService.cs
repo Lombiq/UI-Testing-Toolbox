@@ -2,7 +2,6 @@ using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +9,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Services;
 
 // Here for future use.
-#pragma warning disable S2094 // Classes should not be empty
 public class SmtpServiceConfiguration
-#pragma warning restore S2094 // Classes should not be empty
 {
 }
 
@@ -43,10 +40,6 @@ public sealed class SmtpService : IAsyncDisposable
     private int _webUIPort;
     private CancellationTokenSource _cancellationTokenSource;
 
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
     static SmtpService()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -128,7 +121,7 @@ public sealed class SmtpService : IAsyncDisposable
 
         if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
         {
-            _cancellationTokenSource.Cancel();
+            await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource.Dispose();
         }
     }

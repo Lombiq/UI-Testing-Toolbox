@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class VisualVerificationMatchApprovedContext
+public partial class VisualVerificationMatchApprovedContext
 {
     public string ModuleName { get; }
     public string MethodName { get; }
@@ -55,7 +55,7 @@ public class VisualVerificationMatchApprovedContext
         }
         while (currentMethod is not null);
 
-        var depthMark = new Regex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture);
+        var depthMark = DepthMark();
         if (depthMark.IsMatch(moduleName))
         {
             moduleName = depthMark.Match(moduleName).Groups["module"].Value;
@@ -69,7 +69,7 @@ public class VisualVerificationMatchApprovedContext
     private static string GetMethodName(EnhancedStackFrame frame)
     {
         var methodName = frame.MethodInfo.Name!;
-        var inheritedMethod = new Regex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture);
+        var inheritedMethod = InheritedMethod();
         if (inheritedMethod.IsMatch(methodName))
         {
             methodName = inheritedMethod.Match(methodName).Groups["method"].Value;
@@ -77,4 +77,9 @@ public class VisualVerificationMatchApprovedContext
 
         return methodName;
     }
+
+    [GeneratedRegex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture)]
+    private static partial Regex DepthMark();
+    [GeneratedRegex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture)]
+    private static partial Regex InheritedMethod();
 }

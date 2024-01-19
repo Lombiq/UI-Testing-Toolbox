@@ -176,15 +176,13 @@ public sealed class ZapManager : IAsyncDisposable
         return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
         {
-            _cancellationTokenSource.Cancel();
+            await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource.Dispose();
         }
-
-        return ValueTask.CompletedTask;
     }
 
     private async Task EnsureInitializedAsync()
