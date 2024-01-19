@@ -2,7 +2,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -42,10 +41,6 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     private BlobContainerClient _blobContainer;
     private bool _isDisposed;
 
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
     static AzureBlobStorageManager()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;

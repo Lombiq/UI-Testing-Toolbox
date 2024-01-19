@@ -275,7 +275,7 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
+        yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
         foreach (var ruleConfiguration in _configuredActiveScanRules)

@@ -343,9 +343,7 @@ public static class ShortcutsUITestContextExtensions
         context.GetApi().GetApplicationInfoFromApiAsync();
 
     // This is required to instantiate ILogger<>.
-#pragma warning disable S2094 // Classes should not be empty
     private sealed class ExecuteRecipeShortcut { }
-#pragma warning restore S2094 // Classes should not be empty
 
     /// <summary>
     /// Executes a recipe identified by its name directly.

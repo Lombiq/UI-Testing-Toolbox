@@ -9,7 +9,6 @@ using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,10 +55,6 @@ public sealed class SqlServerManager : IAsyncDisposable
     private string _password;
     private bool _isDisposed;
 
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
     static SqlServerManager()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -273,7 +268,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
 
-        return arguments.ToArray();
+        return [.. arguments];
     }
 
     public async ValueTask DisposeAsync()

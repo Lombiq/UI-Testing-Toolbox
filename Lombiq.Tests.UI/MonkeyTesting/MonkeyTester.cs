@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
@@ -97,10 +98,12 @@ internal sealed class MonkeyTester
 
         if (!canTest)
         {
+            var culture = CultureInfo.InvariantCulture;
+
             Log.Info(
                 !pageTestInfo.HasTimeToTest
-                ? $"Available monkey testing time for \"{pageTestInfo.SanitizedUrl}\" is up and thus testing is complete."
-                : $"Navigated to \"{pageTestInfo.Url}\" that should not be tested.");
+                ? string.Create(culture, $"Available monkey testing time for \"{pageTestInfo.SanitizedUrl}\" is up and thus testing is complete.")
+                : string.Create(culture, $"Navigated to \"{pageTestInfo.Url}\" that should not be tested."));
         }
 
         return canTest;
@@ -124,7 +127,7 @@ internal sealed class MonkeyTester
         var pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
             ?? new PageMonkeyTestInfo(url, sanitizedUrl, _options.PageTestTime);
 
-        Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
+        Log.Info(string.Create(CultureInfo.InvariantCulture, $"Current page is \"{pageTestInfo.SanitizedUrl}\"."));
 
         return pageTestInfo;
     }
@@ -147,8 +150,10 @@ internal sealed class MonkeyTester
     {
         Log.ExecuteSection(
             new LogSection(
-                $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
-                $"with {randomSeed.ToTechnicalString()} random seed."),
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
+                    $"with {randomSeed.ToTechnicalString()} random seed.")),
             () =>
             {
                 var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);
@@ -200,8 +205,8 @@ internal sealed class MonkeyTester
     private string BuildGremlinsRunScript(TimeSpan testTime, int randomSeed) =>
         new GremlinsScripts.RunScriptBuilder
         {
-            Species = _options.GremlinsSpecies.ToArray(),
-            Mogwais = _options.GremlinsMogwais.ToArray(),
+            Species = [.. _options.GremlinsSpecies],
+            Mogwais = [.. _options.GremlinsMogwais],
             NumberOfAttacks = (int)(testTime.TotalMilliseconds / _options.GremlinsAttackDelay.TotalMilliseconds),
             AttackDelay = (int)_options.GremlinsAttackDelay.TotalMilliseconds,
             RandomSeed = randomSeed,
