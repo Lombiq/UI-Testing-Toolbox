@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.Models;
 
 public class InstanceCommandLineArgumentsBuilder
 {
-    private readonly List<string> _arguments = new();
+    private readonly List<string> _arguments = [];
 
     public IEnumerable<string> Arguments => _arguments;
 
