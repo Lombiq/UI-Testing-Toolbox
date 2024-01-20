@@ -11,41 +11,48 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-public class UITestContext
+public class UITestContext(
+    string id,
+    UITestManifest testManifest,
+    OrchardCoreUITestExecutorConfiguration configuration,
+    IWebApplicationInstance application,
+    AtataScope scope,
+    RunningContextContainer runningContextContainer,
+    ZapManager zapManager)
 {
-    private readonly List<LogEntry> _historicBrowserLog = new();
+    private readonly List<LogEntry> _historicBrowserLog = [];
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
     /// external systems, or in file names.
     /// </summary>
-    public string Id { get; }
+    public string Id { get; } = id;
 
     /// <summary>
     /// Gets data about the currently executing test.
     /// </summary>
-    public UITestManifest TestManifest { get; }
+    public UITestManifest TestManifest { get; } = testManifest;
 
     /// <summary>
     /// Gets the configuration of the test execution.
     /// </summary>
-    public OrchardCoreUITestExecutorConfiguration Configuration { get; }
+    public OrchardCoreUITestExecutorConfiguration Configuration { get; } = configuration;
 
     /// <summary>
     /// Gets the context for the currently used SQL Server instance and database, if SQL Server is the DB used for the
     /// test.
     /// </summary>
-    public SqlServerRunningContext SqlServerRunningContext { get; }
+    public SqlServerRunningContext SqlServerRunningContext { get; } = runningContextContainer.SqlServerRunningContext;
 
     /// <summary>
     /// Gets the web application instance, e.g. an Orchard Core app currently running.
     /// </summary>
-    public IWebApplicationInstance Application { get; }
+    public IWebApplicationInstance Application { get; } = application;
 
     /// <summary>
     /// Gets a representation of a scope wrapping an Atata-driven UI test.
     /// </summary>
-    public AtataScope Scope { get; }
+    public AtataScope Scope { get; } = scope;
 
     /// <summary>
     /// Gets the Selenium web driver driving the app via a browser.
@@ -55,19 +62,19 @@ public class UITestContext
     /// <summary>
     /// Gets the context for the SMTP service running for the test, if it was requested.
     /// </summary>
-    public SmtpServiceRunningContext SmtpServiceRunningContext { get; }
+    public SmtpServiceRunningContext SmtpServiceRunningContext { get; } = runningContextContainer.SmtpServiceRunningContext;
 
     /// <summary>
     /// Gets the context for the currently used Azure Blob Storage folder, if Blob Storage is used for the test.
     /// </summary>
-    public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
+    public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; } = runningContextContainer.AzureBlobStorageRunningContext;
 
     /// <summary>
     /// Gets the service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances for
     /// security scanning. Usually, it's recommended to use the higher-level ZAP <see
     /// cref="SecurityScanningUITestContextExtensions"/> extension methods instead.
     /// </summary>
-    public ZapManager ZapManager { get; }
+    public ZapManager ZapManager { get; } = zapManager;
 
     /// <summary>
     /// Gets a cumulative log of browser console entries.
@@ -81,7 +88,7 @@ public class UITestContext
         "Design",
         "MA0016:Prefer return collection abstraction instead of implementation",
         Justification = "Deliberately modifiable by consumer code.")]
-    public Dictionary<string, object> CustomContext { get; } = new();
+    public Dictionary<string, object> CustomContext { get; } = [];
 
     /// <summary>
     /// Gets a dictionary storing some custom data for collecting in the failure dump.
@@ -106,26 +113,6 @@ public class UITestContext
     /// prefix.
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
-
-    public UITestContext(
-        string id,
-        UITestManifest testManifest,
-        OrchardCoreUITestExecutorConfiguration configuration,
-        IWebApplicationInstance application,
-        AtataScope scope,
-        RunningContextContainer runningContextContainer,
-        ZapManager zapManager)
-    {
-        Id = id;
-        TestManifest = testManifest;
-        Configuration = configuration;
-        SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
-        Application = application;
-        Scope = scope;
-        SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
-        AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
-        ZapManager = zapManager;
-    }
 
     /// <summary>
     /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.

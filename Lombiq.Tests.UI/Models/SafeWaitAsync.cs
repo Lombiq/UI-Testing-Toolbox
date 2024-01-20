@@ -13,13 +13,18 @@ namespace Atata;
 /// Represents the retriable operation to wait for async condition safely (without throwing exception on timeout).
 /// </summary>
 /// <typeparam name="T">The type of object used to detect the condition.</typeparam>
-public class SafeWaitAsync<T> : IWait<T>
+/// <remarks>
+/// <para>Initializes a new instance of the <see cref="SafeWaitAsync{T}"/> class.</para>
+/// </remarks>
+/// <param name="input">The input value to pass to the evaluated conditions.</param>
+/// <param name="clock">The clock to use when measuring the timeout.</param>
+public class SafeWaitAsync<T>(T input, IClock clock) : IWait<T>
 {
-    private readonly T _input;
+    private readonly T _input = input.CheckNotNull(nameof(input));
 
-    private readonly IClock _clock;
+    private readonly IClock _clock = clock.CheckNotNull(nameof(clock));
 
-    private readonly List<Type> _ignoredExceptions = new();
+    private readonly List<Type> _ignoredExceptions = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SafeWaitAsync{T}"/> class.
@@ -28,17 +33,6 @@ public class SafeWaitAsync<T> : IWait<T>
     public SafeWaitAsync(T input)
         : this(input, new SystemClock())
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SafeWaitAsync{T}"/> class.
-    /// </summary>
-    /// <param name="input">The input value to pass to the evaluated conditions.</param>
-    /// <param name="clock">The clock to use when measuring the timeout.</param>
-    public SafeWaitAsync(T input, IClock clock)
-    {
-        _input = input.CheckNotNull(nameof(input));
-        _clock = clock.CheckNotNull(nameof(clock));
     }
 
     /// <summary>

@@ -40,7 +40,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
     private ZapManager _zapManager;
-    private IWebApplicationInstance _applicationInstance;
+    private OrchardCoreInstance<TEntryPoint> _applicationInstance;
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
 
@@ -647,16 +647,15 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
-
+        using var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
         return new UITestContext(
-            contextId,
-            testManifest,
-            configuration,
-            _applicationInstance,
-            atataScope,
-            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
-            _zapManager);
+        contextId,
+        testManifest,
+        configuration,
+        _applicationInstance,
+        atataScope,
+        new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+        _zapManager);
     }
 
     private string GetSetupHashCode() =>
@@ -753,7 +752,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
     private async Task<SmtpServiceRunningContext> StartSmtpServiceAsync()
     {
-        _smtpService = new SmtpService(configuration.SmtpServiceConfiguration);
+        _smtpService = new SmtpService();
         var smtpContext = await _smtpService.StartAsync();
 
         Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)

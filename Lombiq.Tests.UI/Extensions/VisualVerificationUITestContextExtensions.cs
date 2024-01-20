@@ -82,7 +82,7 @@ to customize the name of the dump item.";
 
         if (exceptions.Count == 1) throw exceptions.Single();
 
-        if (exceptions.Any())
+        if (exceptions.Count != 0)
         {
             // The UITestExecutionSession doesn't support AggregateException with multiple inner exceptions, so we just
             // concatenate the exceptions if there are multiple.

@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Lombiq.HelpfulLibraries.Common.Utilities;
@@ -24,18 +25,14 @@ public class AzureBlobStorageConfiguration
     public string ContainerName { get; set; } = "lombiquitestingtoolbox"; // #spell-check-ignore-line
 }
 
-public class AzureBlobStorageRunningContext
+public class AzureBlobStorageRunningContext(string basePath)
 {
-    public string BasePath { get; }
-
-    public AzureBlobStorageRunningContext(string basePath) => BasePath = basePath;
+    public string BasePath { get; } = basePath;
 }
 
-public sealed class AzureBlobStorageManager : IAsyncDisposable
+public sealed class AzureBlobStorageManager(AzureBlobStorageConfiguration configuration) : IAsyncDisposable
 {
     private static readonly PortLeaseManager _portLeaseManager;
-
-    private readonly AzureBlobStorageConfiguration _configuration;
     private int _folderId;
     private string _basePath;
     private BlobContainerClient _blobContainer;
@@ -47,11 +44,9 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         _portLeaseManager = new PortLeaseManager(14000 + agentIndexTimesHundred, 14099 + agentIndexTimesHundred);
     }
 
-    public AzureBlobStorageManager(AzureBlobStorageConfiguration configuration) => _configuration = configuration;
-
     public async Task<AzureBlobStorageRunningContext> SetupBlobStorageAsync()
     {
-        _blobContainer = new BlobContainerClient(_configuration.ConnectionString, _configuration.ContainerName);
+        _blobContainer = new BlobContainerClient(configuration.ConnectionString, configuration.ContainerName);
         await CreateContainerIfNotExistsAsync();
 
         _folderId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
@@ -73,7 +68,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                 var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
 
                 var blobDirectoryPath = Path.GetDirectoryName(blobUrl);
-                var tenantDirectoryName = blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar) != -1
+                var tenantDirectoryName = blobDirectoryPath.Contains(Path.DirectorySeparatorChar)
                     ? blobDirectoryPath[..blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar)]
                     : blobDirectoryPath;
                 var tenantMediaDirectoryPath = Path.Combine(sitesDirectoryPath, tenantDirectoryName, "Media");
@@ -125,7 +120,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         await _portLeaseManager.StopLeaseAsync(_folderId);
     }
 
-    private Task CreateContainerIfNotExistsAsync() => _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);
+    private Task<Response<BlobContainerInfo>> CreateContainerIfNotExistsAsync() => _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);
 
     private Task DropFolderIfExistsAsync() =>
         IterateThroughBlobsAsync(blobClient => blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots));

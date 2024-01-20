@@ -16,7 +16,7 @@ internal sealed class MonkeyTester
     private readonly UITestContext _context;
     private readonly MonkeyTestingOptions _options;
     private readonly NonSecurityRandomizer _randomizer;
-    private readonly List<PageMonkeyTestInfo> _visitedPages = new();
+    private readonly List<PageMonkeyTestInfo> _visitedPages = [];
 
     private ILogManager Log => _context.Scope.AtataContext.Log;
 

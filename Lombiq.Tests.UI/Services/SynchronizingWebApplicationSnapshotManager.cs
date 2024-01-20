@@ -20,19 +20,15 @@ public delegate Task<(UITestContext Context, Uri ResultUri)> AppInitializer();
     Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
         "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
         "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
-public class SynchronizingWebApplicationSnapshotManager
+public class SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath)
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly string _snapshotDirectoryPath;
-
     private Uri _resultUri;
     private bool _snapshotCreated;
 
-    public SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath) => _snapshotDirectoryPath = snapshotDirectoryPath;
-
     public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
     {
-        DebugHelper.WriteLineTimestamped($"Entering SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
+        DebugHelper.WriteLineTimestamped($"Entering SynchronizingWebApplicationSnapshotManager semaphore for {snapshotDirectoryPath}.");
 
         await _semaphore.WaitAsync();
         try
@@ -42,10 +38,10 @@ public class SynchronizingWebApplicationSnapshotManager
             DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
             // Always start the current test run with a fresh snapshot.
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(_snapshotDirectoryPath);
+            DirectoryHelper.SafelyDeleteDirectoryIfExists(snapshotDirectoryPath);
 
             var result = await appInitializer();
-            await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);
+            await result.Context.Application.TakeSnapshotAsync(snapshotDirectoryPath);
             await result.Context.Application.ResumeAsync();
 
             DebugHelper.WriteLineTimestamped("Finished snapshot.");
@@ -57,7 +53,7 @@ public class SynchronizingWebApplicationSnapshotManager
         }
         finally
         {
-            DebugHelper.WriteLineTimestamped($"Exiting SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
+            DebugHelper.WriteLineTimestamped($"Exiting SynchronizingWebApplicationSnapshotManager semaphore for {snapshotDirectoryPath}.");
             _semaphore.Release();
         }
     }

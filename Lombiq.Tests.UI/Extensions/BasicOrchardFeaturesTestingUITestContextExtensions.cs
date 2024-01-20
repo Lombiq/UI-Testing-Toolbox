@@ -659,9 +659,9 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
     public static Task ExecuteTestAsync(
         this UITestContext context, string testName, Func<Task> testFunctionAsync)
     {
-        if (context is null) throw new ArgumentNullException(nameof(context));
-        if (testName is null) throw new ArgumentNullException(nameof(testName));
-        if (testFunctionAsync is null) throw new ArgumentNullException(nameof(testFunctionAsync));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(testName);
+        ArgumentNullException.ThrowIfNull(testFunctionAsync);
 
         return ExecuteTestInnerAsync(context, testName, testFunctionAsync);
     }

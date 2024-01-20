@@ -9,17 +9,14 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 /// URL filter that matches the URL against the configured regex pattern.
 /// </summary>
 [DebuggerDisplay("Regex: \"{_regex}\"")]
-public class MatchesRegexMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
+public class MatchesRegexMonkeyTestingUrlFilter(Regex regex) : IMonkeyTestingUrlFilter
 {
-    private readonly Regex _regex;
+    private readonly Regex _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
     public MatchesRegexMonkeyTestingUrlFilter(string regexPattern)
         : this(new Regex(regexPattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture))
     {
     }
-
-    public MatchesRegexMonkeyTestingUrlFilter(Regex regex) =>
-        _regex = regex ?? throw new ArgumentNullException(nameof(regex));
 
     public bool AllowUrl(UITestContext context, Uri url) => _regex.IsMatch(url.AbsoluteUri);
 }

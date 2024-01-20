@@ -31,14 +31,12 @@ public class SqlServerConfiguration
             "TrustServerCertificate=true;Encrypt=false");
 }
 
-public class SqlServerRunningContext
+public class SqlServerRunningContext(string connectionString)
 {
-    public string ConnectionString { get; }
-
-    public SqlServerRunningContext(string connectionString) => ConnectionString = connectionString;
+    public string ConnectionString { get; } = connectionString;
 }
 
-public sealed class SqlServerManager : IAsyncDisposable
+public sealed class SqlServerManager(SqlServerConfiguration configuration) : IAsyncDisposable
 {
     private const string DbSnapshotName = "Database.bak"; // #spell-check-ignore-line
 
@@ -46,8 +44,6 @@ public sealed class SqlServerManager : IAsyncDisposable
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private readonly CliProgram _docker = new("docker");
-    private readonly SqlServerConfiguration _configuration;
-
     private int _databaseId;
     private string _serverName;
     private string _databaseName;
@@ -61,13 +57,11 @@ public sealed class SqlServerManager : IAsyncDisposable
         _portLeaseManager = new PortLeaseManager(13000 + agentIndexTimesHundred, 13099 + agentIndexTimesHundred);
     }
 
-    public SqlServerManager(SqlServerConfiguration configuration) => _configuration = configuration;
-
     public async Task<SqlServerRunningContext> CreateDatabaseAsync()
     {
         _databaseId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
 
-        var connectionString = _configuration.ConnectionStringTemplate
+        var connectionString = configuration.ConnectionStringTemplate
             .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
 
         var connection = new SqlConnectionStringBuilder(connectionString);

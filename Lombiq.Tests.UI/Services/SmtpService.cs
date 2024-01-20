@@ -13,17 +13,11 @@ public class SmtpServiceConfiguration
 {
 }
 
-public class SmtpServiceRunningContext
+public class SmtpServiceRunningContext(int port, Uri webUIUri)
 {
-    public int Port { get; }
+    public int Port { get; } = port;
     public string Host => "localhost:" + Port.ToTechnicalString();
-    public Uri WebUIUri { get; }
-
-    public SmtpServiceRunningContext(int port, Uri webUIUri)
-    {
-        Port = port;
-        WebUIUri = webUIUri;
-    }
+    public Uri WebUIUri { get; } = webUIUri;
 }
 
 public sealed class SmtpService : IAsyncDisposable
@@ -31,8 +25,6 @@ public sealed class SmtpService : IAsyncDisposable
     private static readonly PortLeaseManager _smtpPortLeaseManager;
     private static readonly PortLeaseManager _webUIPortLeaseManager;
     private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
-
-    private readonly SmtpServiceConfiguration _configuration;
 
     private static bool _wasRestored;
 
@@ -46,8 +38,6 @@ public sealed class SmtpService : IAsyncDisposable
         _smtpPortLeaseManager = new PortLeaseManager(11000 + agentIndexTimesHundred, 11099 + agentIndexTimesHundred);
         _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
     }
-
-    public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
 
     public async Task<SmtpServiceRunningContext> StartAsync()
     {

@@ -57,7 +57,7 @@ public class OrchardCoreUITestExecutorConfiguration
         "Design",
         "MA0016:Prefer return collection abstraction instead of implementation",
         Justification = "Deliberately modifiable by consumer code.")]
-    public Dictionary<string, object> CustomConfiguration { get; } = new();
+    public Dictionary<string, object> CustomConfiguration { get; } = [];
 
     public BrowserConfiguration BrowserConfiguration { get; set; } = new();
     public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;

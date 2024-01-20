@@ -5,6 +5,8 @@ namespace Lombiq.Tests.UI.Helpers;
 
 public static class WebAppConfigHelper
 {
+    private static readonly string[] Separator = ["src", "test"];
+
     /// <summary>
     /// Retrieves the absolute path to the assembly (DLL) of the application being tested.
     /// </summary>
@@ -24,7 +26,7 @@ public static class WebAppConfigHelper
         else
         {
             var outputFolderContainingPath = Path.Combine(
-                AppContext.BaseDirectory.Split(new[] { "src", "test" }, StringSplitOptions.RemoveEmptyEntries)[0],
+                AppContext.BaseDirectory.Split(Separator, StringSplitOptions.RemoveEmptyEntries)[0],
                 "src",
                 webAppName,
                 "bin");

@@ -7,27 +7,24 @@ using YesSql.Indexes;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public sealed class FakeStore : IStore
+public sealed class FakeStore(IStore store) : IStore
 {
-    private readonly ConcurrentBag<ISession> _createdSessions = new();
-    private readonly IStore _store;
+    private readonly ConcurrentBag<ISession> _createdSessions = [];
 
-    public FakeStore(IStore store) => _store = store;
+    public IConfiguration Configuration => store.Configuration;
 
-    public IConfiguration Configuration => _store.Configuration;
-
-    public ITypeService TypeNames => _store.TypeNames;
+    public ITypeService TypeNames => store.TypeNames;
 
     public ISession CreateSession()
     {
-        var session = _store.CreateSession();
+        var session = store.CreateSession();
         _createdSessions.Add(session);
 
         return session;
     }
 
     public IEnumerable<IndexDescriptor> Describe(Type target, string collection = null) =>
-        _store.Describe(target, collection);
+        store.Describe(target, collection);
 
     public void Dispose()
     {
@@ -46,13 +43,13 @@ public sealed class FakeStore : IStore
 
         _createdSessions.Clear();
 
-        _store?.Dispose();
+        store?.Dispose();
     }
 
-    public Task InitializeAsync() => _store.InitializeAsync();
+    public Task InitializeAsync() => store.InitializeAsync();
 
-    public Task InitializeCollectionAsync(string collection) => _store.InitializeCollectionAsync(collection);
+    public Task InitializeCollectionAsync(string collection) => store.InitializeCollectionAsync(collection);
 
     public IStore RegisterIndexes(IEnumerable<IIndexProvider> indexProviders, string collection = null) =>
-        _store.RegisterIndexes(indexProviders, collection);
+        store.RegisterIndexes(indexProviders, collection);
 }

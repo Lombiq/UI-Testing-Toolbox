@@ -28,10 +28,7 @@ public class FailureDumpItemGeneric<TContent> : IFailureDumpItem
 
     public Task<Stream> GetStreamAsync()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(FailureDumpItemGeneric<TContent>));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(FailureDumpItemGeneric<TContent>));
 
         if (_content is Stream stream && _getStream == null)
         {
