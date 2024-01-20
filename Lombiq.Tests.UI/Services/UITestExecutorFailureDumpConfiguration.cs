@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace Lombiq.Tests.UI.Services;
@@ -9,7 +10,7 @@ public class UITestExecutorFailureDumpConfiguration
     /// containing the name of the test method, without the name of the test class and its namespace. This is to
     /// overcome the 260 character path length limitations on Windows. Defaults to <see langword="true"/> on Windows.
     /// </summary>
-    public bool UseShortNames { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    public bool UseShortNames { get; set; } = OperatingSystem.IsOSPlatform(nameof(OSPlatform.Windows));
 
     public string DumpsDirectoryPath { get; set; } = "FailureDumps";
     public bool CreateFailureDump { get; set; } = true;

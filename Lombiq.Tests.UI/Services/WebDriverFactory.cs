@@ -73,7 +73,7 @@ public static class WebDriverFactory
             // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
             // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
             // sets the full path as the browser's binary location.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+            if (!OperatingSystem.IsOSPlatform(nameof(OSPlatform.Windows)) &&
                 (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
             {
                 options.BinaryLocation = binaryLocation.FullName;

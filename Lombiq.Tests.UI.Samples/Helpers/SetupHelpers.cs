@@ -78,7 +78,7 @@ public static class SetupHelpers
         {
             var validationErrors = context.GetAll(By.ClassName("field-validation-error"));
 
-            if (!validationErrors.Any()) throw;
+            if (validationErrors.Count == 0) throw;
 
             var errors = "\n- " + validationErrors.Select(element => element.Text.Trim()).Join("\n- ");
             throw new AssertionException($"Setup has failed with the following validation errors:{errors}");

@@ -112,7 +112,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         var cliParameters = new List<object> { "run" };
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (OperatingSystem.IsOSPlatform(nameof(OSPlatform.Linux)))
         {
             cliParameters.Add("--network");
             cliParameters.Add("host");
