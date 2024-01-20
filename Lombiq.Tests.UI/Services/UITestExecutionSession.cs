@@ -647,15 +647,18 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        using var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
         return new UITestContext(
-        contextId,
-        testManifest,
-        configuration,
-        _applicationInstance,
-        atataScope,
-        new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
-        _zapManager);
+            contextId,
+            testManifest,
+            configuration,
+            _applicationInstance,
+            atataScope,
+            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+            _zapManager);
     }
 
     private string GetSetupHashCode() =>
