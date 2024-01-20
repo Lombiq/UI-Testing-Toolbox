@@ -45,12 +45,10 @@ internal static class OrchardCoreInstanceCounter
 /// <summary>
 /// A locally executing Orchard Core application.
 /// </summary>
-public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
+public sealed class OrchardCoreInstance<TEntryPoint>(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
+    : IWebApplicationInstance
     where TEntryPoint : class
 {
-    private readonly OrchardCoreConfiguration _configuration;
-    private readonly string _contextId;
-    private readonly ITestOutputHelper _testOutputHelper;
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
@@ -59,24 +57,17 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public IServiceProvider Services => _orchardApplication?.Services;
 
-    public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
-    {
-        _configuration = configuration;
-        _contextId = contextId;
-        _testOutputHelper = testOutputHelper;
-    }
-
     public async Task<Uri> StartUpAsync()
     {
         var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
         _url = OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString();
-        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
+        testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
 
         CreateContentRootFolder();
 
-        if (!string.IsNullOrEmpty(_configuration.SnapshotDirectoryPath) && Directory.Exists(_configuration.SnapshotDirectoryPath))
+        if (!string.IsNullOrEmpty(configuration.SnapshotDirectoryPath) && Directory.Exists(configuration.SnapshotDirectoryPath))
         {
-            FileSystem.CopyDirectory(_configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
+            FileSystem.CopyDirectory(configuration.SnapshotDirectoryPath, _contentRootPath, overwrite: true);
         }
         else
         {
@@ -143,18 +134,18 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = DirectoryPaths.GetTempSubDirectoryPath(_contextId, "App");
+        _contentRootPath = DirectoryPaths.GetTempSubDirectoryPath(contextId, "App");
         Directory.CreateDirectory(_contentRootPath);
-        _testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
+        testOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }
 
     private async Task StartOrchardAppAsync()
     {
-        _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
+        testOutputHelper.WriteLineTimestampedAndDebug("Attempting to start the Orchard Core instance.");
 
         var arguments = new InstanceCommandLineArgumentsBuilder();
 
-        await _configuration.BeforeAppStart
+        await configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
 
         // This is to avoid adding Razor runtime view compilation.
@@ -175,7 +166,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _orchardApplication.ClientOptions.BaseAddress = new Uri(_reverseProxy.RootUrl);
         _reverseProxy.AttachConnectionProvider(_orchardApplication);
 
-        _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
+        testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was started.");
     }
 
     private async Task StopOrchardAppAsync()
@@ -183,12 +174,12 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _reverseProxy.DetachConnectionProvider();
         if (_orchardApplication == null) return;
 
-        _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");
+        testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");
 
         await _orchardApplication.DisposeAsync();
         _orchardApplication = null;
 
-        _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
+        testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
         return;
     }
@@ -210,7 +201,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         Directory.CreateDirectory(snapshotDirectoryPath);
 
-        await _configuration.BeforeTakeSnapshot
+        await configuration.BeforeTakeSnapshot
             .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);

@@ -11,13 +11,8 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // and use that, because we don't have a pre-beaked database. Normally this feature is used to run tests when there is
 // an already existing database, so you don't need to take a snapshot before using the
 // "ExecuteTestFromExistingDBAsync()" method.
-public class DatabaseSnapshotTests : UITestBase
+public class DatabaseSnapshotTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public DatabaseSnapshotTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // Here, we set up the application, then we take a snapshot of it, then we use the
     // "ExecuteTestFromExistingDBAsync()" to run the test on that. Finally, we test the basic Orchard features to check
     // that the application was set up correctly.

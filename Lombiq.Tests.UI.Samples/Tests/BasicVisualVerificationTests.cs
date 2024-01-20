@@ -10,13 +10,8 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // In this basic test we will check visually the rendered content.
-public class BasicVisualVerificationTests : UITestBase
+public class BasicVisualVerificationTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public BasicVisualVerificationTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // This is a very basic sample to check that the header image is what we expect and looks as we expect. For this
     // magic we are using the ImageSharp.Compare package. You can find more info about it here:
     // https://github.com/Codeuctivity/ImageSharp.Compare. This looks really simple, but there is some trap to comparing

@@ -19,29 +19,19 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
+public sealed class OrchardApplicationFactory<TStartup>(
+    Action<IConfigurationBuilder> configureHost = null,
+    Action<IWebHostBuilder> configuration = null,
+    Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null) : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
-    private readonly Action<IConfigurationBuilder> _configureHost;
-    private readonly Action<IWebHostBuilder> _configuration;
-    private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
-    private readonly List<IStore> _createdStores = new();
-
-    public OrchardApplicationFactory(
-        Action<IConfigurationBuilder> configureHost = null,
-        Action<IWebHostBuilder> configuration = null,
-        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
-    {
-        _configureHost = configureHost;
-        _configuration = configuration;
-        _configureOrchard = configureOrchard;
-    }
+    private readonly List<IStore> _createdStores = [];
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
-        builder.ConfigureHostConfiguration(configurationBuilder => _configureHost?.Invoke(configurationBuilder));
+        builder.ConfigureHostConfiguration(configurationBuilder => configureHost?.Invoke(configurationBuilder));
         // This lock is to avoid parallel start of the application.
         // Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.CreateHost() starts a new thread for the web
         // application instance which can cause issues in e.g.:
@@ -86,7 +76,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
             });
 
-        _configuration?.Invoke(builder);
+        configuration?.Invoke(builder);
     }
 
     private void ConfigureTestServices(IServiceCollection services)
@@ -96,13 +86,13 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 .ImplementationInstance as OrchardCoreBuilder
                 ?? throw new InvalidOperationException(
                     "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
-        var configuration = services
+        var config = services
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
                 .ImplementationInstance as ConfigurationManager
                 ?? throw new InvalidOperationException(
                     $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
 
-        _configureOrchard?.Invoke(configuration, builder);
+        configureOrchard?.Invoke(config, builder);
 
         builder.ConfigureServices(
             builderServices =>

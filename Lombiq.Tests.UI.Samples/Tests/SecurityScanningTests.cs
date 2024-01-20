@@ -26,13 +26,8 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
 // GitHub Actions, these tests won't work there. They'll work on a Windows desktop though.
-public class SecurityScanningTests : UITestBase
+public class SecurityScanningTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public SecurityScanningTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // Let's see simple use case first: Running a built-in ZAP scan.
 
     // We're running one of ZAP's built-in scans, the Baseline scan. This, as the name suggests, provides some

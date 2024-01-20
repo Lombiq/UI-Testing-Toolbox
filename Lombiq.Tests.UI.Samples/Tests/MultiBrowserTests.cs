@@ -11,13 +11,8 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Up until now, all of our tests were run via Chrome. However, it's important that you can run tests with any of the
 // other supported browsers too, even running a test with all of them at once! This class shows you how.
-public class MultiBrowserTests : UITestBase
+public class MultiBrowserTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public MultiBrowserTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // Remember that back in BasicTests we had AnonymousHomePageShouldExist()? We have similar super-simple tests here,
     // just demonstrating how to drive different browsers.
 

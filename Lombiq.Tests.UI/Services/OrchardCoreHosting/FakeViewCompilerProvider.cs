@@ -5,14 +5,10 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
-public class FakeViewCompilerProvider : IViewCompilerProvider
+public class FakeViewCompilerProvider(IServiceProvider services) : IViewCompilerProvider
 {
-    private readonly IServiceProvider _services;
-
-    public FakeViewCompilerProvider(IServiceProvider services) => _services = services;
-
     public IViewCompiler GetCompiler() =>
-        _services
+        services
             .GetServices<IViewCompilerProvider>()
             .FirstOrDefault()
             .GetCompiler();

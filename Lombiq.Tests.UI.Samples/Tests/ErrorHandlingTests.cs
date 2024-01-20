@@ -12,13 +12,8 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Sometimes errors are expected. Let's check out what can be done with them!
-public class ErrorHandlingTests : UITestBase
+public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public ErrorHandlingTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // It's easier to diagnose a test failure if you know whether an element is missing because there something is
     // actually missing or there was a server-side error. The below test visits a page where the action method throws an
     // exception.

@@ -11,16 +11,11 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // You can also test multi-tenant web apps. Creating tenants on the fly is supported as well with a shortcut. If you'd
 // like to test the tenant creation-setup process itself, then look into using CreateNewTenantManuallyAsync() instead.
-public class TenantTests : UITestBase
+public class TenantTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
     private const string TestTenantName = "Test";
     private const string TestTenantUrlPrefix = "test";
     private const string TestTenantDisplayName = "Lombiq's OSOCE - Test Tenant";
-
-    public TenantTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
 
     [Fact]
     public Task CreatingTenantShouldWork() =>

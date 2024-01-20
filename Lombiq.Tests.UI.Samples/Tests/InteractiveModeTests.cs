@@ -14,13 +14,8 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // causes the test thread to wait until you've clicked on the "Continue Test" button in this tab. During that time you
 // can interact with OC as if it was a normal execution.
 // Note: this extension depends on Lombiq.Tests.UI.Shortcuts being enabled in your OC app.
-public class InteractiveModeTests : UITestBase
+public class InteractiveModeTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
 {
-    public InteractiveModeTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
     // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
     [Fact(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI.")]
     [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
