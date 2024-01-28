@@ -110,8 +110,7 @@ public static class FormUITestContextExtensions
     {
         var script = $@"
             monaco.editor.getEditors().find((element) =>
-                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
-            .getModel().setValue({JsonConvert.SerializeObject(text)});";
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).setValue({JsonConvert.SerializeObject(text)});";
 
         context.ExecuteScript(script);
     }
@@ -125,8 +124,7 @@ public static class FormUITestContextExtensions
     {
         var script = $@"
             return monaco.editor.getEditors().find((element) =>
-                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)})
-            .getModel().getValue();";
+                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).getValue();";
 
         return context.ExecuteScript(script) as string;
     }
