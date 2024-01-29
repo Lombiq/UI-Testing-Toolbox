@@ -10,7 +10,6 @@ using OpenQA.Selenium.IE;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
