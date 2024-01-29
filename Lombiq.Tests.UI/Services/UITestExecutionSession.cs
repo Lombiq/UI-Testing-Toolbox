@@ -548,7 +548,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                 // user without access to freshly created directories by the current user. Since this is a subdirectory
                 // that third parties can't list without prior knowledge and it only contains freshly created data this
                 // is not a security concern.
-                if (!OperatingSystem.IsOSPlatform(nameof(OSPlatform.Windows)))
+                if (!OperatingSystem.IsWindows())
                 {
                     if (!Directory.Exists(snapshotDirectoryPath)) Directory.CreateDirectory(snapshotDirectoryPath);
                     var unixFileInfo = new UnixFileInfo(snapshotDirectoryPath);

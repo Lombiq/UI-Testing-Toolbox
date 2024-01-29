@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,7 +111,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         var cliParameters = new List<object> { "run" };
 
-        if (OperatingSystem.IsOSPlatform(nameof(OSPlatform.Linux)))
+        if (OperatingSystem.IsLinux())
         {
             cliParameters.Add("--network");
             cliParameters.Add("host");
