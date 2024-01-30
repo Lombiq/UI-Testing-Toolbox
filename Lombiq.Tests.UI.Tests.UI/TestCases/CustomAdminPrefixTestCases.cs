@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Tests.UI.TestCases;
 public static class CustomAdminPrefixTestCases
 {
     public static Task NavigationWithCustomAdminPrefixShouldWorkAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser) =>
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
             async context =>
             {

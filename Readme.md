@@ -26,6 +26,7 @@ Highlights:
 - Visual verification testing: You can make the test fail if the look of the app changes. Demo video [here](https://www.youtube.com/watch?v=a-1zKjxTKkk).
 - If your app uses a camera, a fake video capture source in Chrome is supported. [Here's a demo video of the feature](https://www.youtube.com/watch?v=sGcD0eJ2ytc), and check out the docs [here](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md).
 - Interactive mode for debugging the app while the test is paused. [Here's a demo of the feature](Lombiq.Tests.UI.Samples/Tests/InteractiveModeTests.cs), and a [demo video here](https://www.youtube.com/watch?v=ItNltaruWTY).
+- Security scanning with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/), the world's most widely used web app security scanner, right from UI tests. See a demo video [here](https://www.youtube.com/watch?v=iUYivLkFbY4).
 
 See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
@@ -37,7 +38,7 @@ We at [Lombiq](https://lombiq.com/) also used this module for the following proj
 - The new [Smithsonian Folkways Recordings website](https://folkways.si.edu/) when migrating it from Orchard 1 to Orchard Core ([see case study](https://lombiq.com/blog/smithsonian-folkways-recordings-now-upgraded-to-orchard-core)).
 - The new [Lombiq website](https://lombiq.com/) when migrating it from Orchard 1 to Orchard Core ([see case study](https://lombiq.com/blog/how-we-renewed-and-migrated-lombiq-com-from-orchard-1-to-orchard-core)).
 - The new client portal for [WTW](https://www.wtwco.com/) ([see case study](https://lombiq.com/blog/lombiq-s-journey-with-wtw-s-client-portal)).
-- It also makes [DotNest, the Orchard SaaS](https://dotnest.com/) better.
+- It also makes [DotNest, the Orchard Core SaaS](https://dotnest.com/) better.
 
 Do you want to quickly try out this project and see it in action? Check it out in our [Open-Source Orchard Core Extensions](https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions) full Orchard Core solution and also see our other useful Orchard Core-related open-source projects!
 
@@ -50,6 +51,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Executing tests](Lombiq.Tests.UI/Docs/ExecutingTests.md)
 - [Fake video capture source](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md)
+- [Security scanning](Lombiq.Tests.UI/Docs/SecurityScanning.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)

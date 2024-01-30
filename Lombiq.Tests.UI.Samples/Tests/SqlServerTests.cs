@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
@@ -23,19 +22,17 @@ public class SqlServerTests : UITestBase
 
     // Here we have basically two of the same tests as in BasicTests but now we're using SQL Server as the site's
     // database. If they still work and there are no errors in the log then the app works with SQL Server too.
-    [Theory, Chrome]
-    public Task AnonymousHomePageShouldExistWithSqlServer(Browser browser) =>
+    [Fact]
+    public Task AnonymousHomePageShouldExistWithSqlServer() =>
         ExecuteTestAfterSetupAsync(
             context => context.CheckIfAnonymousHomePageExistsAsync(),
-            browser,
             // Note the configuration! We could also set this globally in UITestBase.
             configuration => configuration.UseSqlServer = true);
 
-    [Theory, Chrome]
-    public Task TogglingFeaturesShouldWorkWithSqlServer(Browser browser) =>
+    [Fact]
+    public Task TogglingFeaturesShouldWorkWithSqlServer() =>
         ExecuteTestAfterSetupAsync(
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
-            browser,
             configuration =>
             {
                 configuration.UseSqlServer = true;

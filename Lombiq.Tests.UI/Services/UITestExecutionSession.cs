@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
@@ -40,6 +41,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     private SqlServerManager _sqlServerManager;
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
+    private ZapManager _zapManager;
     private IWebApplicationInstance _applicationInstance;
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
@@ -168,11 +170,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
+        string contextId = null;
+
         if (_context != null)
         {
+            contextId = _context.Id;
             _context.Scope?.Dispose();
-
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(_context.Id));
 
             _context.FailureDumpContainer.Values.ForEach(value => value.Dispose());
             _context.FailureDumpContainer.Clear();
@@ -185,6 +188,25 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
+        if (_zapManager != null) await _zapManager.DisposeAsync();
+
+        // First the context needs to be disposed before anything else, and then, once the other services free up any
+        // handles to the temp folder, that can be cleaned up too.
+        if (!string.IsNullOrEmpty(contextId))
+        {
+            try
+            {
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+            }
+            catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
+            {
+                // This can be caused by running a security scan via ZapManager.
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Cleaning up the temporary directory failed with the following exception. Due to using ephemeral " +
+                        "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
+                    ex);
+            }
+        }
 
         _screenshotCount = 0;
 
@@ -598,6 +620,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
         if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
         if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
+        _zapManager = new ZapManager(_testOutputHelper);
+
         Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
@@ -658,6 +682,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _applicationInstance,
             atataScope,
             new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+            _zapManager,
             counterDataCollector);
     }
 

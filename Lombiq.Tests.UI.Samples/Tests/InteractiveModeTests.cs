@@ -1,6 +1,4 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System.Diagnostics.CodeAnalysis;
@@ -24,9 +22,9 @@ public class InteractiveModeTests : UITestBase
     }
 
     // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
-    [Theory(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI."), Chrome]
+    [Fact(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI.")]
     [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
-    public Task SampleTest(Browser browser) =>
+    public Task SampleTest() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -43,14 +41,13 @@ public class InteractiveModeTests : UITestBase
                 // won't affect the test. If that's not practical, you can also do your thing in a new tab and close it
                 // before continuing the test.
                 (await context.GetCurrentUserNameAsync()).ShouldNotBeNullOrWhiteSpace();
-            },
-            browser);
+            });
 
     // This test checks if interactive mode works by opening it in one thread, and then clicking it away in a different
     // thread. This ensures that the new tab correctly appears with the clickable "Continue Test" button, and then
     // disappears once it's clicked.
-    [Theory, Chrome]
-    public Task EnteringInteractiveModeShouldWait(Browser browser) =>
+    [Fact]
+    public Task EnteringInteractiveModeShouldWait() =>
         ExecuteTestAfterSetupAsync(
             async context =>
             {
@@ -69,9 +66,8 @@ public class InteractiveModeTests : UITestBase
 
                 // Ensure that the info tab is closed and the control handed back to the last tab.
                 context.Driver.Url.ShouldBe(currentUrl);
-            },
-            browser);
+            });
 }
 
 // END OF TRAINING SECTION: Interactive mode.
-// NEXT STATION: Head over to DuplicatedSqlQueryDetectorTests.cs.
+// NEXT STATION: Head over to Tests/SecurityScanningTests.cs.

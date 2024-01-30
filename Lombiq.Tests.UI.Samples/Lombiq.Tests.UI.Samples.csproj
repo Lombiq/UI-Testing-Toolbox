@@ -10,12 +10,16 @@
 
   <ItemGroup>
     <None Remove=".htmlvalidate.json" />
+    <None Remove="Tests\CustomZapAutomationFrameworkPlan.yml" />
     <None Remove="xunit.runner.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include=".htmlvalidate.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\CustomZapAutomationFrameworkPlan.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

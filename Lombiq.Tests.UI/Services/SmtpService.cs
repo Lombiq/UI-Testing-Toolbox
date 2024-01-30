@@ -110,7 +110,7 @@ public sealed class SmtpService : IAsyncDisposable
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
         await CliProgram.DotNet.GetCommand(
-            new object[] { "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri })
+            "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri)
             .ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(

@@ -26,8 +26,10 @@ public class BasicVisualVerificationTests : UITestBase
     // the Chrome version 67 and 68 in the image rendering. This caused that the rendered image looked similar, but
     // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
     // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
-    [Theory, Chrome]
-    public Task VerifyBlogImage(Browser browser) =>
+    // To update your baseline images after making changes to a visually checked element, remove the previous images
+    // and run the test with maxRetryCount set to 0.
+    [Fact]
+    public Task VerifyBlogImage() =>
         ExecuteTestAfterSetupAsync(
             context =>
             {
@@ -46,8 +48,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // Here we check that the rendered content visually equals the baseline image within a given error
                 // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
                 context.AssertVisualVerificationApproved(blogImageElementSelector, 0);
-            },
-            browser);
+            });
 
     // Checking that everything is OK with the branding of the navbar on the homepage. If you want to visually validate
     // text content on different platforms (like Windows or Linux) or browsers, it can cause surprises too. The reason

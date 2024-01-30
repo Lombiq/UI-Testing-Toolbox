@@ -31,8 +31,8 @@ public class CounterConfiguration
     /// </summary>
     public CounterThresholdConfiguration NavigationThreshold { get; set; } = new CounterThresholdConfiguration
     {
-        DbCommandExecutionThreshold = 11,
-        DbCommandTextExecutionThreshold = 22,
+        DbCommandIncludingParametersExecutionCountThreshold = 11,
+        DbCommandExcludingParametersExecutionThreshold = 22,
         DbReaderReadThreshold = 11,
     };
 
@@ -42,8 +42,8 @@ public class CounterConfiguration
     /// </summary>
     public CounterThresholdConfiguration SessionThreshold { get; set; } = new CounterThresholdConfiguration
     {
-        DbCommandExecutionThreshold = 22,
-        DbCommandTextExecutionThreshold = 44,
+        DbCommandIncludingParametersExecutionCountThreshold = 22,
+        DbCommandExcludingParametersExecutionThreshold = 44,
         DbReaderReadThreshold = 11,
     };
 
@@ -52,8 +52,8 @@ public class CounterConfiguration
     /// </summary>
     public CounterThresholdConfiguration PageLoadThreshold { get; set; } = new CounterThresholdConfiguration
     {
-        DbCommandExecutionThreshold = 22,
-        DbCommandTextExecutionThreshold = 44,
+        DbCommandIncludingParametersExecutionCountThreshold = 22,
+        DbCommandExcludingParametersExecutionThreshold = 44,
         DbReaderReadThreshold = 11,
     };
 

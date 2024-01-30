@@ -20,10 +20,12 @@ Note that since the tests are xUnit tests you can configure general parameters o
 </ItemGroup>
 ```
 
+Note also that some projects' _xunit.runner.json_ files may include the flag [`stopOnFail`](https://xunit.net/docs/configuration-files#stopOnFail) set to `true`, which makes further tests stop once a failing test is encountered.
+
 Certain test execution parameters can be configured externally too, the ones retrieved via the `TestConfigurationManager` class. All configuration options are basic key-value pairs and can be provided in one of the two ways:
 
 - Key-value pairs in a _TestConfiguration.json_ file. Note that this file needs to be in the folder where the UI tests execute. By default this is the build output folder of the given test project, i.e. where the projects's DLL is generated (e.g. _bin/Debug/net6.0_).
-- Environment variables: Their names should be prefixed with `Lombiq_Tests_UI`, followed by the config with a `__` as it is with [(ASP).NET configuration](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-5.0#environment-variables), e.g. `Lombiq_Tests_UI__OrchardCoreUITestExecutorConfiguration__MaxRetryCount` (instead of the double underscore you can also use a `:` on certain platforms like Windows). Keep in mind that you can set these just for the current session too. Configuration in environment variables will take precedence over the _TestConfiguration.json_ file. When you're setting environment variables while trying out test execution keep in mind that you'll have to restart the app after changing any environment variable.
+- Environment variables: Their names should be prefixed with `Lombiq_Tests_UI`, followed by the config with a `__` as it is with [(ASP).NET configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/), e.g. `Lombiq_Tests_UI__OrchardCoreUITestExecutorConfiguration__MaxRetryCount` (instead of the double underscore you can also use a `:` on certain platforms like Windows). Keep in mind that you can set these just for the current session too. Configuration in environment variables will take precedence over the _TestConfiguration.json_ file. When you're setting environment variables while trying out test execution keep in mind that you'll have to restart the app after changing any environment variable.
 
 Here's a full _TestConfiguration.json_ file example, something appropriate during development when you have a fast machine (probably faster then the one used to execute these tests) and want tests to fail fast instead of being reliable:
 
@@ -54,6 +56,54 @@ Recommendations and notes for such configuration:
 - We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 - If you have several UI test projects it can be cumbersome to maintain a _TestConfiguration.json_ file for each. Instead you can set the value of the `LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION` environment variable to the absolute path of a central configuration file and then each project will look it up. If you place an individual _TestConfiguration.json_ into a test directory it will still take precedence in case you need special configuration for just that one.
 - `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
+
+### HTML validation configuration
+
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). For example:
+
+```json
+{
+  "extends": [
+    "html-validate:recommended"
+  ],
+
+  "rules": {
+    "attribute-boolean-style": "off",
+    "element-required-attributes": "off",
+    "no-trailing-whitespace": "off",
+    "no-inline-style": "off",
+    "no-implicit-button-type": "off",
+    "wcag/h30": "off",
+    "wcag/h32": "off",
+    "wcag/h36": "off",
+    "wcag/h37": "off",
+    "wcag/h67": "off",
+    "wcag/h71": "off"
+  },
+
+  "root":  true
+}
+```
+
+Then you can change the configuration to use that:
+
+```cs
+ changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
+                configuration.HtmlValidationConfiguration.HtmlValidationOptions
+                    .CloneWith(validationOptions => validationOptions.ConfigPath =
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
+```
+
+Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
+
+```xml
+  <ItemGroup>
+    <Content Include="TestName.htmlvalidate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+ ```
 
 ## Multi-process test execution
 
