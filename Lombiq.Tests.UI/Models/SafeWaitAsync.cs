@@ -19,7 +19,7 @@ public class SafeWaitAsync<T> : IWait<T>
 
     private readonly IClock _clock;
 
-    private readonly List<Type> _ignoredExceptions = new();
+    private readonly List<Type> _ignoredExceptions = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SafeWaitAsync{T}"/> class.
