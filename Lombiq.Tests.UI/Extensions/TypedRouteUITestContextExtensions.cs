@@ -46,8 +46,7 @@ public static class TypedRouteUITestContextExtensions
         where TController : ControllerBase
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        // If we dispose this in this scope then the return will actually have a disposed
-        // service provider which will cause an exception in the consumers.
+        // We can't dispose the scope here because it would lead to exceptions in the consumers.
         var serviceProvider = CreateServiceProvider(context);
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var route = TypedRoute
@@ -69,6 +68,7 @@ public static class TypedRouteUITestContextExtensions
         where TController : ControllerBase
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
+        // We can't dispose the scope here because it would lead to exceptions in the consumers.
         var serviceProvider = CreateServiceProvider(context);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 

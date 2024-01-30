@@ -647,6 +647,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
+        // We can't dispose the scope here because it would lead to exceptions in the consumers.
         var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
