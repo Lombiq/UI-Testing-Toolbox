@@ -8,9 +8,12 @@ namespace Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 /// URL filter that matches the URL to see if NOT starts with the configured relative URL(s).
 /// </summary>
 [DebuggerDisplay("Does NOT start with {_relativeUrlNotStartsWith}")]
-public class NotStartsWithMonkeyTestingUrlFilter(params string[] relativeUrlNotStartsWith) : IMonkeyTestingUrlFilter
+public class NotStartsWithMonkeyTestingUrlFilter : IMonkeyTestingUrlFilter
 {
-    private readonly string[] _relativeUrlNotStartsWith = relativeUrlNotStartsWith;
+    private readonly string[] _relativeUrlNotStartsWith;
+
+    public NotStartsWithMonkeyTestingUrlFilter(params string[] relativeUrlNotStartsWith) =>
+        _relativeUrlNotStartsWith = relativeUrlNotStartsWith;
 
     public bool AllowUrl(UITestContext context, Uri url) =>
        !_relativeUrlNotStartsWith.Exists(url.PathAndQuery.StartsWithOrdinalIgnoreCase);

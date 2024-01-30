@@ -4,12 +4,17 @@ namespace Lombiq.Tests.UI.Exceptions;
 
 // Here we only need path instead of message.
 #pragma warning disable CA1032 // Implement standard exception constructors
-public class VisualVerificationBaselineImageNotFoundException(
-    string path,
-    int maxRetryCount,
-    Exception innerException = null) : Exception(GetExceptionMessage(path, maxRetryCount), innerException)
+public class VisualVerificationBaselineImageNotFoundException : Exception
 #pragma warning restore CA1032 // Implement standard exception constructors
 {
+    public VisualVerificationBaselineImageNotFoundException(
+        string path,
+        int maxRetryCount,
+        Exception innerException = null)
+        : base(GetExceptionMessage(path, maxRetryCount), innerException)
+    {
+    }
+
     private static string GetExceptionMessage(string path, int maxRetryCount) =>
         maxRetryCount == 0 ? $"Baseline image file not found, thus it was created automatically under the path {path}."
             + " Please set its \"Build action\" to \"Embedded resource\" if you want to deploy a self-contained"

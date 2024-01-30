@@ -8,11 +8,11 @@ namespace Lombiq.Tests.UI.Services;
 /// A representation of a scope wrapping an Atata-driven UI test. <see cref="AtataScope"/> is created in the beginning
 /// of a UI test, provides services for the test, and is disposed when the test finishes.
 /// </summary>
-public sealed class AtataScope(AtataContext atataContext, Uri baseUri) : IDisposable
+public sealed class AtataScope : IDisposable
 {
-    private Uri _baseUri = baseUri;
+    private Uri _baseUri;
 
-    public AtataContext AtataContext { get; } = atataContext;
+    public AtataContext AtataContext { get; }
     public IWebDriver Driver => AtataContext.Driver;
 
     public Uri BaseUri
@@ -24,6 +24,12 @@ public sealed class AtataScope(AtataContext atataContext, Uri baseUri) : IDispos
             _baseUri = value;
             AtataContext.BaseUrl = value.ToString();
         }
+    }
+
+    public AtataScope(AtataContext atataContext, Uri baseUri)
+    {
+        AtataContext = atataContext;
+        _baseUri = baseUri;
     }
 
     /// <summary>

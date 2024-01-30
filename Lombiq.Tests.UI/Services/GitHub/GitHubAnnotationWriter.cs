@@ -7,8 +7,12 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
-public class GitHubAnnotationWriter(ITestOutputHelper testOutputHelper)
+public class GitHubAnnotationWriter
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+
     public void Annotate(LogLevel severity, string title, string message, string file, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -41,7 +45,7 @@ public class GitHubAnnotationWriter(ITestOutputHelper testOutputHelper)
         // Sanitize message:
         message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
-        testOutputHelper.WriteLine(
+        _testOutputHelper.WriteLine(
             StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
     }
 

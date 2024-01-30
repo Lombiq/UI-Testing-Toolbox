@@ -3,7 +3,11 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
-public class TestOutputLogConsumer(ITestOutputHelper testOutputHelper) : TextOutputLogConsumer
+public class TestOutputLogConsumer : TextOutputLogConsumer
 {
-    protected override void Write(string completeMessage) => testOutputHelper.WriteLine(completeMessage);
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public TestOutputLogConsumer(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+
+    protected override void Write(string completeMessage) => _testOutputHelper.WriteLine(completeMessage);
 }

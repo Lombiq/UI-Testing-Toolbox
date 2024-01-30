@@ -4,16 +4,26 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class FailureDumpItem(
-    Func<Task<Stream>> getStream,
-    Action dispose = null) : IFailureDumpItem
+public class FailureDumpItem : IFailureDumpItem
 {
-    private readonly Func<Task<Stream>> _getStream = getStream ?? throw new ArgumentNullException(nameof(getStream));
+    private readonly Func<Task<Stream>> _getStream;
+    private readonly Action _dispose;
     private bool _disposed;
+
+    public FailureDumpItem(
+        Func<Task<Stream>> getStream,
+        Action dispose = null)
+    {
+        _getStream = getStream ?? throw new ArgumentNullException(nameof(getStream));
+        _dispose = dispose;
+    }
 
     public Task<Stream> GetStreamAsync()
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(FailureDumpItem));
+        }
 
         return _getStream();
     }
@@ -24,7 +34,7 @@ public class FailureDumpItem(
         {
             if (disposing)
             {
-                dispose?.Invoke();
+                _dispose?.Invoke();
             }
 
             _disposed = true;
