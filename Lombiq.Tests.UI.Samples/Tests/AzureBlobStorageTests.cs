@@ -10,8 +10,13 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Up until now the Orchard app always used the default local Media storage for managing Media files. However, you may
 // use Azure Blob Storage in production. You can also test your app with it!
-public class AzureBlobStorageTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
+public class AzureBlobStorageTests : UITestBase
 {
+    public AzureBlobStorageTests(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+    }
+
     // Here we have basically two of the same tests as in BasicTests but now we're using Azure Blob Storage as the
     // site's Media storage. If they still work and there are no errors in the log then the app works with Azure Blob
     // Storage too.

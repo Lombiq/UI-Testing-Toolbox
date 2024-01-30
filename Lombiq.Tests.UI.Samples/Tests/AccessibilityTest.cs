@@ -9,8 +9,13 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // Here we'll see how to check some web accessibility rules. Keeping our app accessible helps people with disabilities
 // consume the content of our website more easily. Do note though that only checking rules that can be automatically
 // checked is not enough for full compliance.
-public class AccessibilityTest(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
+public class AccessibilityTest : UITestBase
 {
+    public AccessibilityTest(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+    }
+
     [Fact]
     public Task FrontendPagesShouldBeAccessible() =>
         ExecuteTestAfterSetupAsync(
