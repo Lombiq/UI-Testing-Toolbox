@@ -17,18 +17,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services;
 
-internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
-    : IAsyncDisposable
+internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     where TEntryPoint : class
 {
-    private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration = configuration.FailureDumpConfiguration;
-    private readonly ITestOutputHelper _testOutputHelper = configuration.TestOutputHelper;
+    private readonly UITestManifest _testManifest;
+    private readonly OrchardCoreUITestExecutorConfiguration _configuration;
+    private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
+    private readonly ITestOutputHelper _testOutputHelper;
 
     private int _screenshotCount;
     private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
@@ -43,6 +45,14 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
 
+    public UITestExecutionSession(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        _testManifest = testManifest;
+        _configuration = configuration;
+        _dumpConfiguration = configuration.FailureDumpConfiguration;
+        _testOutputHelper = configuration.TestOutputHelper;
+    }
+
     public ValueTask DisposeAsync() => ShutdownAsync();
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
@@ -50,11 +60,11 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         var startTime = DateTime.UtcNow;
         IDictionary<string, IFailureDumpItem> failureDumpContainer = null;
 
-        _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", testManifest.Name);
+        _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
         try
         {
-            var setupConfiguration = configuration.SetupConfiguration;
+            var setupConfiguration = _configuration.SetupConfiguration;
             _hasSetupOperation = setupConfiguration.SetupOperation != null;
 
             _setupSnapshotDirectoryContainsApp = Directory.Exists(
@@ -63,13 +73,13 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             if (_hasSetupOperation)
             {
                 var snapshotSubdirectory = "SQLite";
-                if (configuration.UseSqlServer)
+                if (_configuration.UseSqlServer)
                 {
-                    snapshotSubdirectory = configuration.UseAzureBlobStorage
+                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
                         ? "SqlServer-AzureBlob"
                         : "SqlServer";
                 }
-                else if (configuration.UseAzureBlobStorage)
+                else if (_configuration.UseAzureBlobStorage)
                 {
                     snapshotSubdirectory = "SQLite-AzureBlob";
                 }
@@ -78,7 +88,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
                 _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
 
-                configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
+                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
 
                 _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
                     _snapshotDirectoryPath,
@@ -91,7 +101,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             // when calling the "ExecuteTestAsync()" method without setup operation.
             else if (_setupSnapshotDirectoryContainsApp)
             {
-                configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
+                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
             _context ??= await CreateContextAsync();
@@ -101,7 +111,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
             _context.SetDefaultBrowserSize();
 
-            await testManifest.TestAsync(_context);
+            await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
 
@@ -115,7 +125,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
             await CreateFailureDumpAsync(ex, dumpRootPath, retryCount, failureDumpContainer);
 
-            if (retryCount == configuration.MaxRetryCount)
+            if (retryCount == _configuration.MaxRetryCount)
             {
                 var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
 
@@ -130,14 +140,14 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
             LogRetry(retryCount);
 
-            await Task.Delay(configuration.RetryInterval);
+            await Task.Delay(_configuration.RetryInterval);
         }
         finally
         {
             await ShutdownAsync();
 
             _testOutputHelper.WriteLineTimestampedAndDebug(
-                "Finishing execution of {0}, total time: {1}", testManifest.Name, DateTime.UtcNow - startTime);
+                "Finishing execution of {0}, total time: {1}", _testManifest.Name, DateTime.UtcNow - startTime);
         }
 
         return false;
@@ -145,10 +155,10 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
     private async ValueTask ShutdownAsync()
     {
-        if (configuration.RunAssertLogsOnAllPageChanges)
+        if (_configuration.RunAssertLogsOnAllPageChanges)
         {
-            configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
-            configuration.Events.AfterPageChange -= OnAssertLogsAsync;
+            _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
+            _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
         }
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
@@ -241,7 +251,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             Directory.CreateDirectory(dumpContainerPath);
             Directory.CreateDirectory(debugInformationPath);
 
-            await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), testManifest.Name);
+            await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), _testManifest.Name);
 
             if (_context == null) return;
 
@@ -260,9 +270,9 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                 var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
                 File.Copy(file.FullName.Value, snapshotDumpPath);
 
-                if (configuration.ReportTeamCityMetadata)
+                if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(testManifest, "PageSource", snapshotDumpPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
                 }
             }
 
@@ -274,9 +284,9 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                     browserLogPath,
                     (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
 
-                if (configuration.ReportTeamCityMetadata)
+                if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(testManifest, "BrowserLog", browserLogPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
                 }
             }
 
@@ -342,9 +352,9 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                 var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
                 await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
 
-                if (configuration.ReportTeamCityMetadata)
+                if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(testManifest, "TestOutput", testOutputPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "TestOutput", testOutputPath);
                 }
             }
         }
@@ -402,19 +412,19 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         // that point there's no FailureDumps folder yet.
 
         if (ex is AccessibilityAssertionException accessibilityAssertionException
-            && configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
+            && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
             var accessibilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
             _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
-            if (configuration.ReportTeamCityMetadata)
+            if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(testManifest, "AccessibilityReport", accessibilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessibilityReportPath);
             }
         }
 
         if (ex is HtmlValidationAssertionException htmlValidationAssertionException
-            && configuration.HtmlValidationConfiguration.CreateReportOnFailure)
+            && _configuration.HtmlValidationConfiguration.CreateReportOnFailure)
         {
             var resultFilePath = htmlValidationAssertionException.HtmlValidationResult.ResultFilePath;
             if (!string.IsNullOrEmpty(resultFilePath))
@@ -422,9 +432,9 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                 var htmlValidationReportPath = Path.Combine(debugInformationPath, "HtmlValidationReport.txt");
                 File.Move(resultFilePath, htmlValidationReportPath);
 
-                if (configuration.ReportTeamCityMetadata)
+                if (_configuration.ReportTeamCityMetadata)
                 {
-                    TeamCityMetadataReporter.ReportArtifactLink(testManifest, "HtmlValidationReport", htmlValidationReportPath);
+                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "HtmlValidationReport", htmlValidationReportPath);
                 }
             }
             else
@@ -442,17 +452,17 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         _testOutputHelper.WriteLineTimestampedAndDebug(
             "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
             retryCount + 1,
-            configuration.MaxRetryCount - retryCount,
-            configuration.RetryInterval);
+            _configuration.MaxRetryCount - retryCount,
+            _configuration.RetryInterval);
 
-        if (configuration.ExtendGitHubActionsOutput &&
-            configuration.GitHubActionsOutputConfiguration.EnableTestRetryWarningAnnotations &&
+        if (_configuration.ExtendGitHubActionsOutput &&
+            _configuration.GitHubActionsOutputConfiguration.EnableTestRetryWarningAnnotations &&
             GitHubHelper.IsGitHubEnvironment)
         {
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
                 Microsoft.Extensions.Logging.LogLevel.Warning,
                 "UI test may be flaky",
-                $"The {testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
+                $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
                     "retried. This may indicate it being flaky.",
                 string.Empty);
         }
@@ -460,7 +470,7 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
     private async Task SetupAsync()
     {
-        var setupConfiguration = configuration.SetupConfiguration;
+        var setupConfiguration = _configuration.SetupConfiguration;
 
         try
         {
@@ -472,11 +482,11 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(configuration));
+                await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
                 if (setupConfiguration.FastFailSetup &&
                     UITestExecutionSessionsMeta.SetupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
-                    failure.FailureCount > configuration.MaxRetryCount)
+                    failure.FailureCount > _configuration.MaxRetryCount)
                 {
                     throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
                 }
@@ -527,14 +537,14 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
 
     private void SetupSqlServerSnapshot()
     {
-        if (!configuration.UseSqlServer) return;
+        if (!_configuration.UseSqlServer) return;
 
         // This is only necessary for the setup snapshot.
         Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
         {
             ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
-            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
 
             var containerName = _dockerConfiguration?.ContainerName;
             var remotePath = snapshotDirectoryPath;
@@ -561,25 +571,25 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         // This is necessary because a simple subtraction wouldn't remove previous instances of the local function.
         // Thus, if anything goes wrong between the below delegate registration and its invocation, it will remain
         // registered and fail on the disposed SqlServerManager during a retry.
-        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(SqlServerManagerBeforeTakeSnapshotHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += SqlServerManagerBeforeTakeSnapshotHandlerAsync;
     }
 
     private void SetupAzureBlobStorageSnapshot()
     {
-        if (!configuration.UseAzureBlobStorage) return;
+        if (!_configuration.UseAzureBlobStorage) return;
 
         // This is only necessary for the setup snapshot.
         Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
         {
-            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
             return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
         }
 
-        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
-            configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
+            _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot.RemoveAll(AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
     }
 
     private async Task<UITestContext> CreateContextAsync()
@@ -592,19 +602,19 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
         SmtpServiceRunningContext smtpContext = null;
 
-        if (configuration.UseSqlServer) sqlServerContext = await SetUpSqlServerAsync();
-        if (configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
-        if (configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
+        if (_configuration.UseSqlServer) sqlServerContext = await SetUpSqlServerAsync();
+        if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
+        if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
 
         _zapManager = new ZapManager(_testOutputHelper);
 
         Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
-            configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
             arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
 
-            if (configuration.ShortcutsConfiguration.InjectApplicationInfo)
+            if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
                 arguments.AddWithValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
             }
@@ -612,49 +622,46 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             return Task.CompletedTask;
         }
 
-        configuration.OrchardCoreConfiguration.BeforeAppStart =
-            configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeAppStart =
+            _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
         _applicationInstance = new OrchardCoreInstance<TEntryPoint>(
-            configuration.OrchardCoreConfiguration,
+            _configuration.OrchardCoreConfiguration,
             contextId,
             _testOutputHelper);
         var uri = await _applicationInstance.StartUpAsync();
 
-        configuration.SetUpEvents();
+        _configuration.SetUpEvents();
 
-        if (configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
+        if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
         {
-            configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
+            _configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
         }
 
-        if (configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
+        if (_configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
         {
-            configuration.SetUpHtmlValidationAssertionOnPageChange();
+            _configuration.SetUpHtmlValidationAssertionOnPageChange();
         }
 
-        if (configuration.RunAssertLogsOnAllPageChanges &&
-            configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
+        if (_configuration.RunAssertLogsOnAllPageChanges &&
+            _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
         {
-            configuration.Events.AfterPageChange += OnAssertLogsAsync;
+            _configuration.Events.AfterPageChange += OnAssertLogsAsync;
         }
 
         if (_dumpConfiguration.CaptureScreenshots)
         {
-            configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
-            configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        // We can't dispose the scope here because it would lead to exceptions in the consumers.
-        var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, configuration);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, _configuration);
 
         return new UITestContext(
             contextId,
-            testManifest,
-            configuration,
+            _testManifest,
+            _configuration,
             _applicationInstance,
             atataScope,
             new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
@@ -662,20 +669,20 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
     }
 
     private string GetSetupHashCode() =>
-        configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
-        configuration.UseSqlServer +
-        configuration.UseAzureBlobStorage;
+        _configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
+        _configuration.UseSqlServer +
+        _configuration.UseAzureBlobStorage;
 
     private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 
     private async Task<SqlServerRunningContext> SetUpSqlServerAsync()
     {
-        _sqlServerManager = new SqlServerManager(configuration.SqlServerDatabaseConfiguration);
+        _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
         var sqlServerContext = await _sqlServerManager.CreateDatabaseAsync();
 
         async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
-            configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath))
             {
@@ -710,21 +717,21 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             }
         }
 
-        configuration.OrchardCoreConfiguration.BeforeAppStart =
-            configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SqlServerManagerBeforeAppStartHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeAppStart =
+            _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SqlServerManagerBeforeAppStartHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeAppStart += SqlServerManagerBeforeAppStartHandlerAsync;
 
         return sqlServerContext;
     }
 
     private async Task<AzureBlobStorageRunningContext> SetUpAzureBlobStorageAsync()
     {
-        _azureBlobStorageManager = new AzureBlobStorageManager(configuration.AzureBlobStorageConfiguration);
+        _azureBlobStorageManager = new AzureBlobStorageManager(_configuration.AzureBlobStorageConfiguration);
         var azureBlobStorageContext = await _azureBlobStorageManager.SetupBlobStorageAsync();
 
         async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
-            configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
             // These need to be configured directly, since that module reads the configuration directly instead of
             // allowing post-configuration.
@@ -734,10 +741,10 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
                     value: azureBlobStorageContext.BasePath + "/{{ ShellSettings.Name }}")
                 .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ConnectionString",
-                    value: configuration.AzureBlobStorageConfiguration.ConnectionString)
+                    value: _configuration.AzureBlobStorageConfiguration.ConnectionString)
                 .AddWithValue(
                     "OrchardCore:OrchardCore_Media_Azure:ContainerName",
-                    value: configuration.AzureBlobStorageConfiguration.ContainerName)
+                    value: _configuration.AzureBlobStorageConfiguration.ContainerName)
                 .AddWithValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
                 .AddWithValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
 
@@ -746,30 +753,30 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             await _azureBlobStorageManager.RestoreSnapshotAsync(_snapshotDirectoryPath);
         }
 
-        configuration.OrchardCoreConfiguration.BeforeAppStart =
-            configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(AzureBlobStorageManagerBeforeAppStartHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeAppStart += AzureBlobStorageManagerBeforeAppStartHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeAppStart =
+            _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(AzureBlobStorageManagerBeforeAppStartHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeAppStart += AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
         return azureBlobStorageContext;
     }
 
     private async Task<SmtpServiceRunningContext> StartSmtpServiceAsync()
     {
-        _smtpService = new SmtpService();
+        _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
 
         Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {
-            configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
+            _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
                 .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
                 .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
             return Task.CompletedTask;
         }
 
-        configuration.OrchardCoreConfiguration.BeforeAppStart =
-            configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandlerAsync);
-        configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
+        _configuration.OrchardCoreConfiguration.BeforeAppStart =
+            _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(SmtpServiceBeforeAppStartHandlerAsync);
+        _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
         return smtpContext;
     }
@@ -810,10 +817,10 @@ internal sealed class UITestExecutionSession<TEntryPoint>(UITestManifest testMan
             var screenshotsDestinationPath = Path.Combine(debugInformationPath, DirectoryPaths.Screenshots);
             FileSystem.CopyDirectory(screenshotsSourcePath, screenshotsDestinationPath);
 
-            if (configuration.ReportTeamCityMetadata)
+            if (_configuration.ReportTeamCityMetadata)
             {
                 TeamCityMetadataReporter.ReportImage(
-                    testManifest,
+                    _testManifest,
                     "FailureScreenshot",
                     GetScreenshotPath(screenshotsDestinationPath, _screenshotCount - 1));
             }
