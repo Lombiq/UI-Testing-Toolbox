@@ -11,8 +11,13 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // We'll see some simpler tests as a start. Each of them will teach us important concepts.
-public class BasicTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
+public class BasicTests : UITestBase
 {
+    public BasicTests(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+    }
+
     // Checking that everything is OK with the homepage as an anonymous user. Note the [Fact] attribute: it's necessary
     // for xUnit.
     // Note that by default, tests are run via Chrome. Check out MultiBrowserTests for samples on using other browsers.

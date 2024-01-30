@@ -21,14 +21,14 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 /// </remarks>
 public class SecurityScanConfiguration
 {
-    private readonly List<Uri> _additionalUris = [];
-    private readonly List<string> _excludedUrlRegexPatterns = [];
-    private readonly List<ScanRule> _disabledActiveScanRules = [];
-    private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = [];
-    private readonly List<ScanRule> _disabledPassiveScanRules = [];
-    private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = [];
-    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = [];
-    private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = [];
+    private readonly List<Uri> _additionalUris = new();
+    private readonly List<string> _excludedUrlRegexPatterns = new();
+    private readonly List<ScanRule> _disabledActiveScanRules = new();
+    private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = new();
+    private readonly List<ScanRule> _disabledPassiveScanRules = new();
+    private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = new();
+    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = new();
+    private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = new();
 
     public Uri StartUri { get; private set; }
     public bool AjaxSpiderIsUsed { get; private set; }
@@ -275,10 +275,7 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-#pragma warning disable S3878 // Arrays should not be created for params parameters
-        // We need to make an array here because there would be an error otherwise.
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
-#pragma warning restore S3878 // Arrays should not be created for params parameters
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
         foreach (var ruleConfiguration in _configuredActiveScanRules)
@@ -296,9 +293,15 @@ public class SecurityScanConfiguration
         foreach (var modifier in _zapPlanModifiers) await modifier(yamlDocument);
     }
 
-    public class ScanRule(int id, string name)
+    public class ScanRule
     {
-        public int Id { get; } = id;
-        public string Name { get; } = name;
+        public int Id { get; }
+        public string Name { get; }
+
+        public ScanRule(int id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
     }
 }

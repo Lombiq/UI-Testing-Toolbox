@@ -8,22 +8,31 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [DevelopmentAndLocalhostOnly]
-public class AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager) : Controller
+public class AccountController : Controller
 {
+    private readonly UserManager<IUser> _userManager;
+    private readonly SignInManager<IUser> _userSignInManager;
+
+    public AccountController(UserManager<IUser> userManager, SignInManager<IUser> userSignInManager)
+    {
+        _userManager = userManager;
+        _userSignInManager = userSignInManager;
+    }
+
     [AllowAnonymous]
     public async Task<IActionResult> SignInDirectly(string userName)
     {
         if (string.IsNullOrWhiteSpace(userName)) userName = "admin";
-        if (await userManager.FindByNameAsync(userName) is not { } user) return NotFound();
+        if (await _userManager.FindByNameAsync(userName) is not { } user) return NotFound();
 
-        await userSignInManager.SignInAsync(user, isPersistent: false);
+        await _userSignInManager.SignInAsync(user, isPersistent: false);
 
         return Ok();
     }
 
     public async Task<IActionResult> SignOutDirectly()
     {
-        await userSignInManager.SignOutAsync();
+        await _userSignInManager.SignOutAsync();
 
         return Ok();
     }

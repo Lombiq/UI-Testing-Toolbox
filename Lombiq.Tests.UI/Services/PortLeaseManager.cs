@@ -19,11 +19,14 @@ namespace Lombiq.Tests.UI.Services;
     Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
         "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
         "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
-public class PortLeaseManager(int lowerBound, int upperBound)
+public class PortLeaseManager
 {
-    private readonly IEnumerable<int> _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);
-    private readonly HashSet<int> _usedPorts = [];
+    private readonly IEnumerable<int> _availablePortsRange;
+    private readonly HashSet<int> _usedPorts = new();
     private readonly SemaphoreSlim _portAcquisitionLock = new(1, 1);
+
+    public PortLeaseManager(int lowerBound, int upperBound) =>
+        _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);
 
     public async Task<int> LeaseAvailableRandomPortAsync()
     {

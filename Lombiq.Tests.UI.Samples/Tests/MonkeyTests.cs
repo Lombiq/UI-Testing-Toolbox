@@ -17,8 +17,13 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // It's possible to execute monkey tests that walk through site pages and do random interactions with pages, like click,
 // scrolling, form filling, etc. Such random actions can uncover bugs that are otherwise difficult to find. Use such
 // tests plug holes in your test suite which are not covered by explicit tests.
-public class MonkeyTests(ITestOutputHelper testOutputHelper) : UITestBase(testOutputHelper)
+public class MonkeyTests : UITestBase
 {
+    public MonkeyTests(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+    }
+
     // The basic idea is that you unleash monkey testing on specific pages or sections of the site, like a contact form
     // or the content management UI. First, we test a single page.
     [Fact]
