@@ -80,6 +80,7 @@ public partial class VisualVerificationMatchApprovedContext
 
     [GeneratedRegex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture)]
     private static partial Regex DepthMark();
+
     [GeneratedRegex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture)]
     private static partial Regex InheritedMethod();
 }
