@@ -53,7 +53,8 @@ public sealed class MonkeyTestingOptions
             log: true,
             canClick: (element) => {
                     for (; element && element !== document; element = element.parentNode) {
-                        if (!(!element.hasAttribute('href') || /https:\/\/localhost:\d\d\d\d.*/.test(element.href))) {
+                        if (element.hasAttribute('data-prevent-gremlin-click') ||
+                            !(!element.hasAttribute('href') || /https:\/\/localhost:\d\d\d\d.*/.test(element.href))) {
                             return false;
                         }
                     }
