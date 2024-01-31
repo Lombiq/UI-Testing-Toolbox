@@ -275,8 +275,8 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
+        // False positive: https://github.com/SonarSource/sonar-dotnet/issues/8510.
 #pragma warning disable S3878 // Arrays should not be created for params parameters
-        // Reason https://github.com/SonarSource/sonar-dotnet/issues/8510
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
 #pragma warning restore S3878 // Arrays should not be created for params parameters
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
