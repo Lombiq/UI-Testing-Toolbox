@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-// Here for future use.
 public class SmtpServiceConfiguration
 {
 }

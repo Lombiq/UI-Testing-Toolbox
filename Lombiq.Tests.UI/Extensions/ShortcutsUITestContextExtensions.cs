@@ -342,7 +342,6 @@ public static class ShortcutsUITestContextExtensions
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
         context.GetApi().GetApplicationInfoFromApiAsync();
 
-    // This is required to instantiate ILogger<>.
     private sealed class ExecuteRecipeShortcut { }
 
     /// <summary>
