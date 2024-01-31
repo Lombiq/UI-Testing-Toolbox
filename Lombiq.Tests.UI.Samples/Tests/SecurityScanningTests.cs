@@ -19,9 +19,11 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // https://github.com/Lombiq/UI-Testing-Toolbox/blob/dev/Lombiq.Tests.UI/Docs/SecurityScanning.md.
 
 // Most common alerts can be resolved by using the OrchardCoreBuilder.ConfigureSecurityDefaultsWithStaticFiles()
-// extension method from Lombiq.HelpfulLibraries.OrchardCore. It's worth enabling in in your Program and then verifying
-// that everything still works on the site before really getting into security scanning. If you experience any problems
-// related to Content-Security-Policy, take a look at the documentation of IContentSecurityPolicyProvider and
+// extension method from Lombiq.HelpfulLibraries.OrchardCore. We use it in this in our
+// https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions repo that these samples are configured for, and thus
+// there are almost no alerts. It's worth enabling in in your Program and then verifying that everything still works on
+// the site before really getting into security scanning. If you experience any problems related to
+// Content-Security-Policy, take a look at the documentation of IContentSecurityPolicyProvider and
 // ContentSecurityPolicyAttribute to adjust the permissions, because these defaults are rather strict out of the box.
 
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
@@ -66,7 +68,8 @@ public class SecurityScanningTests : UITestBase
     //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
     // - The assertion on the scan results is custom. Use this if you (conditionally) want to assert on the results
     //   differently from the global context.Configuration.SecurityScanningConfiguration.AssertSecurityScanResult. The
-    //   default there is "no scanning alert is allowed"; we expect some alerts here.
+    //   default there is "no scanning alert is allowed"; we expect an alert here due to the scan visiting the
+    //   intentional error page under /Lombiq.Tests.UI.Shortcuts/Error/Index.
     // - The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
@@ -79,7 +82,7 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBeInRange(17, 22)),
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(1)),
             changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
