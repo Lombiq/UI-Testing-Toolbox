@@ -631,7 +631,7 @@ public static class ShortcutsUITestContextExtensions
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>
-        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(ManifestConstants.AdminTag));
+        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(value: ManifestConstants.AdminTag));
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders, string permissionName) =>
