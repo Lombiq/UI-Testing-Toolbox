@@ -9,7 +9,6 @@ using OpenQA.Selenium.Support.UI;
 using OrchardCore.ContentFields.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -38,9 +37,7 @@ public static class NavigationUITestContextExtensions
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
         context.ExecuteLoggedAsync(
             nameof(GoToAbsoluteUrlAsync),
-            string.Create(
-                CultureInfo.InvariantCulture,
-                $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)"),
+            $"{absoluteUri} ({(onlyIfNotAlreadyThere ? "navigating also" : "not navigating")} if already there)",
             async () =>
             {
                 if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
