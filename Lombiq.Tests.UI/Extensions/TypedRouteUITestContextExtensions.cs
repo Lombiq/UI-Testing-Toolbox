@@ -45,10 +45,7 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase
     {
-        // We can't dispose the scope here because it would lead to exceptions in the consumers.
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        var serviceProvider = CreateServiceProvider(context);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        using var serviceProvider = CreateServiceProvider(context);
         var route = TypedRoute
             .CreateFromExpression(actionExpression, additionalArguments, serviceProvider)
             .ToString();
@@ -67,10 +64,7 @@ public static class TypedRouteUITestContextExtensions
         params (string Key, object Value)[] additionalArguments)
         where TController : ControllerBase
     {
-        // We can't dispose the scope here because it would lead to exceptions in the consumers.
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        var serviceProvider = CreateServiceProvider(context);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        using var serviceProvider = CreateServiceProvider(context);
 
         var route = TypedRoute
             .CreateFromExpression(actionExpressionAsync.StripResult(), additionalArguments, serviceProvider)
