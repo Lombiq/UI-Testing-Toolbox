@@ -193,8 +193,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return;
     }
 
-    // Use cancellationToken in ReadToEndAsync() once it's available after a .NET upgrade, see:
-    // https://github.com/dotnet/runtime/pull/61898.
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
     {
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
