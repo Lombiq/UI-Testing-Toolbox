@@ -101,12 +101,10 @@ jobs:
     reportDescription: ""
     displayReport: false
   risks:
-  - "info"
   - "low"
   - "medium"
   - "high"
   confidences:
-  - "falsepositive"
   - "low"
   - "medium"
   - "high"
