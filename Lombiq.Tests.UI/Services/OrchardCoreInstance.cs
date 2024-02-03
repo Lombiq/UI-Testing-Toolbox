@@ -51,6 +51,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly CounterDataCollector _counterDataCollector;
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
@@ -59,11 +60,16 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public IServiceProvider Services => _orchardApplication?.Services;
 
-    public OrchardCoreInstance(OrchardCoreConfiguration configuration, string contextId, ITestOutputHelper testOutputHelper)
+    public OrchardCoreInstance(
+        OrchardCoreConfiguration configuration,
+        string contextId,
+        ITestOutputHelper testOutputHelper,
+        CounterDataCollector counterDataCollector)
     {
         _configuration = configuration;
         _contextId = contextId;
         _testOutputHelper = testOutputHelper;
+        _counterDataCollector = counterDataCollector;
     }
 
     public async Task<Uri> StartUpAsync()
@@ -162,6 +168,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
 
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
+            _counterDataCollector,
             configuration =>
                 configuration.AddCommandLine(arguments.Arguments.ToArray()),
             builder => builder

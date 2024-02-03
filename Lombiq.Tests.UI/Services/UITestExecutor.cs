@@ -12,7 +12,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public static class UITestExecutor
 {
-    private static readonly object _numberOfTestsLimitLock = new();
+    private static readonly SemaphoreSlim _numberOfTestsLimitLock = new(1, 1);
     private static SemaphoreSlim _numberOfTestsLimit;
 
     /// <summary>
@@ -51,14 +51,6 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
-        {
-            lock (_numberOfTestsLimitLock)
-            {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
-            }
-        }
-
         return ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
     }
 
@@ -68,6 +60,8 @@ public static class UITestExecutor
         string dumpRootPath)
         where TEntryPoint : class
     {
+        await PrepareTestLimitAsync(configuration);
+
         var retryCount = 0;
         var passed = false;
         while (!passed)
@@ -90,7 +84,6 @@ public static class UITestExecutor
             catch (Exception ex)
             {
                 // When the last try failed.
-
                 if (configuration.ExtendGitHubActionsOutput &&
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations &&
                     GitHubHelper.IsGitHubEnvironment)
@@ -175,5 +168,17 @@ public static class UITestExecutor
         }
 
         return dumpRootPath;
+    }
+
+    private static async Task PrepareTestLimitAsync(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        await _numberOfTestsLimitLock.WaitAsync();
+
+        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
+        {
+            _numberOfTestsLimit = new SemaphoreSlim(configuration.MaxParallelTests);
+        }
+
+        _numberOfTestsLimitLock.Release();
     }
 }

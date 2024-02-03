@@ -107,6 +107,11 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    /// <summary>
+    /// Gets the currently running <see cref="CounterDataCollector"/> instance.
+    /// </summary>
+    public CounterDataCollector CounterDataCollector { get; init; }
+
     public UITestContext(
         string id,
         UITestManifest testManifest,
@@ -114,7 +119,8 @@ public class UITestContext
         IWebApplicationInstance application,
         AtataScope scope,
         RunningContextContainer runningContextContainer,
-        ZapManager zapManager)
+        ZapManager zapManager,
+        CounterDataCollector counterDataCollector)
     {
         Id = id;
         TestManifest = testManifest;
@@ -125,6 +131,7 @@ public class UITestContext
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = zapManager;
+        CounterDataCollector = counterDataCollector;
     }
 
     /// <summary>

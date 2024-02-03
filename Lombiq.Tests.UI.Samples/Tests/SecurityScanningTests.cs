@@ -164,3 +164,4 @@ public class SecurityScanningTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Security scanning.
+// NEXT STATION: Head over to DuplicatedSqlQueryDetectorTests.cs.

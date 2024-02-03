@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -175,6 +176,11 @@ public class OrchardCoreUITestExecutorConfiguration
     /// enabled in the app for these to work.
     /// </summary>
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets configuration for performance counting and monitoring.
+    /// </summary>
+    public CounterConfigurations CounterConfiguration { get; set; } = new();
 
     public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
     {

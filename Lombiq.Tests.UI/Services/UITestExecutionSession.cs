@@ -7,6 +7,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -107,6 +108,10 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _context ??= await CreateContextAsync();
 
             _context.FailureDumpContainer.Clear();
+            _context.CounterDataCollector.Reset();
+            _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Running);
+            _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Running.AssertCounterData
+                ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Running);
             failureDumpContainer = _context.FailureDumpContainer;
 
             _context.SetDefaultBrowserSize();
@@ -114,6 +119,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
+            _context.CounterDataCollector.Dump().ForEach(_testOutputHelper.WriteLine);
+            _context.CounterDataCollector.AssertCounter();
 
             return true;
         }
@@ -495,6 +502,10 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 // config to be available at startup too.
                 _context = await CreateContextAsync();
 
+                _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Setup);
+                _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Setup.AssertCounterData
+                    ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
+
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
 
@@ -503,6 +514,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
+                _context.CounterDataCollector.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
+                _context.CounterDataCollector.AssertCounter();
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -521,6 +534,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
 
             await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
+        catch (CounterThresholdException) { throw; }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
             if (setupConfiguration.FastFailSetup)
@@ -626,10 +640,13 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
+        var counterDataCollector = new CounterDataCollector(_testOutputHelper);
+
         _applicationInstance = new OrchardCoreInstance<TEntryPoint>(
             _configuration.OrchardCoreConfiguration,
             contextId,
-            _testOutputHelper);
+            _testOutputHelper,
+            counterDataCollector);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
@@ -665,7 +682,8 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _applicationInstance,
             atataScope,
             new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
-            _zapManager);
+            _zapManager,
+            counterDataCollector);
     }
 
     private string GetSetupHashCode() =>
