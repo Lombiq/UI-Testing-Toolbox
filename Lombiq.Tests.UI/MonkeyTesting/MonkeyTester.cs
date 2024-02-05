@@ -148,7 +148,7 @@ internal sealed class MonkeyTester
     {
         Log.ExecuteSection(
             new LogSection(
-                "Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
+                $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
                 $"with {randomSeed.ToTechnicalString()} random seed."),
             () =>
             {
