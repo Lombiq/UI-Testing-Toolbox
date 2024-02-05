@@ -6,7 +6,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
