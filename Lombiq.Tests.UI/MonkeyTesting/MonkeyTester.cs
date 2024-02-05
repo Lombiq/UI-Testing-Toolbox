@@ -98,12 +98,10 @@ internal sealed class MonkeyTester
 
         if (!canTest)
         {
-            var culture = CultureInfo.InvariantCulture;
-
             Log.Info(
                 !pageTestInfo.HasTimeToTest
-                ? string.Create(culture, $"Available monkey testing time for \"{pageTestInfo.SanitizedUrl}\" is up and thus testing is complete.")
-                : string.Create(culture, $"Navigated to \"{pageTestInfo.Url}\" that should not be tested."));
+                ? $"Available monkey testing time for \"{pageTestInfo.SanitizedUrl}\" is up and thus testing is complete."
+                : $"Navigated to \"{pageTestInfo.Url}\" that should not be tested.");
         }
 
         return canTest;
@@ -127,7 +125,7 @@ internal sealed class MonkeyTester
         var pageTestInfo = _visitedPages.Find(pageInfo => pageInfo.SanitizedUrl == sanitizedUrl)
             ?? new PageMonkeyTestInfo(url, sanitizedUrl, _options.PageTestTime);
 
-        Log.Info(string.Create(CultureInfo.InvariantCulture, $"Current page is \"{pageTestInfo.SanitizedUrl}\"."));
+        Log.Info($"Current page is \"{pageTestInfo.SanitizedUrl}\".");
 
         return pageTestInfo;
     }
@@ -150,10 +148,8 @@ internal sealed class MonkeyTester
     {
         Log.ExecuteSection(
             new LogSection(
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
-                    $"with {randomSeed.ToTechnicalString()} random seed.")),
+                "Monkey test \"{pageTestInfo.SanitizedUrl}\" within {pageTestInfo.TimeToTest.ToShortIntervalString()} " +
+                $"with {randomSeed.ToTechnicalString()} random seed."),
             () =>
             {
                 var pageTestTimeLeft = TestCurrentPageAndMeasureTestTimeLeft(pageTestInfo.TimeToTest, randomSeed);

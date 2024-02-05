@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-#pragma warning disable S2094 // Classes should not be empty
 public class SmtpServiceConfiguration
-#pragma warning restore S2094 // Classes should not be empty
 {
 }
 
