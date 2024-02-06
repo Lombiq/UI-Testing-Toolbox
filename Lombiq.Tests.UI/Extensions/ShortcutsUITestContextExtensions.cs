@@ -456,7 +456,7 @@ public static class ShortcutsUITestContextExtensions
         context.SetThemeDirectlyAsync(id, tenant, activateShell);
 
     /// <summary>
-    /// Selects the current site or admin theme by <paramref name="id"/> directly.
+    /// Sets the current site or admin theme by <paramref name="id"/> directly, activating the theme without user interaction.
     /// </summary>
     /// <exception cref="ThemeNotFoundException">
     /// Thrown if no theme was found with the given <paramref name="id"/>.
