@@ -447,7 +447,7 @@ public static class ShortcutsUITestContextExtensions
     /// Selects theme by <paramref name="id"/> directly.
     /// </summary>
     /// <exception cref="ThemeNotFoundException">If no theme found with the given <paramref name="id"/>.</exception>
-    [Obsolete("Use SetThemeDirectlyAsync() instead.")]
+    [Obsolete("Use SetThemeDirectlyAsync() instead. This method will be removed in a future version.")]
     public static Task SelectThemeAsync(
         this UITestContext context,
         string id,
