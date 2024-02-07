@@ -444,10 +444,24 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
-    /// Selects theme by <paramref name="id"/>.
+    /// Selects theme by <paramref name="id"/> directly.
     /// </summary>
     /// <exception cref="ThemeNotFoundException">If no theme found with the given <paramref name="id"/>.</exception>
+    [Obsolete("Use SetThemeDirectlyAsync() instead. This method will be removed in a future version.")]
     public static Task SelectThemeAsync(
+        this UITestContext context,
+        string id,
+        string tenant = null,
+        bool activateShell = true) =>
+        context.SetThemeDirectlyAsync(id, tenant, activateShell);
+
+    /// <summary>
+    /// Sets the current site or admin theme by <paramref name="id"/> directly, activating the theme without user interaction.
+    /// </summary>
+    /// <exception cref="ThemeNotFoundException">
+    /// Thrown if no theme was found with the given <paramref name="id"/>.
+    /// </exception>
+    public static Task SetThemeDirectlyAsync(
         this UITestContext context,
         string id,
         string tenant = null,
