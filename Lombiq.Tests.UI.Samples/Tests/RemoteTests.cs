@@ -37,7 +37,7 @@ public class RemoteTests : RemoteUITestBase
                 context.Exists(By.LinkText("More information..."));
 
                 // Note that due to a remote app not being under our control, some things are not supported. E.g., you
-                // can't access the Orchard Core logs.
+                // can't access the Orchard Core logs, or use shortcuts (the *Directly methods).
             },
             configuration => configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false);
 }
