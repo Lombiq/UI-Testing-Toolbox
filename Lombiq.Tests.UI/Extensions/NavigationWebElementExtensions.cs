@@ -67,7 +67,8 @@ public static class NavigationWebElementExtensions
 
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilPageLeaveAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
+    /// instead.
     /// </summary>
     public static Task ClickReliablyUntilPageLeaveAsync(
         this IWebElement element,
@@ -82,4 +83,24 @@ public static class NavigationWebElementExtensions
             },
             timeout,
             interval);
+
+    /// <summary>
+    /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnThenWaitForUrlChangeAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
+    /// instead.
+    /// </summary>
+    public static async Task ClickReliablyThenWaitForUrlChangeAsync(
+        this IWebElement element,
+        UITestContext context,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var originalUri = context.GetCurrentUri();
+        await element.ClickReliablyAsync(context);
+
+        context.DoWithRetriesOrFail(
+            () => context.GetCurrentUri() != originalUri,
+            timeout,
+            interval);
+    }
 }
