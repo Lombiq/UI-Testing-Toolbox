@@ -24,9 +24,9 @@ using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services;
 
-internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
-    where TEntryPoint : class
+internal sealed class UITestExecutionSession : IAsyncDisposable
 {
+    private readonly WebApplicationInstanceFactory _webApplicationInstanceFactory;
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
@@ -45,8 +45,12 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
 
-    public UITestExecutionSession(UITestManifest testManifest, OrchardCoreUITestExecutorConfiguration configuration)
+    public UITestExecutionSession(
+        WebApplicationInstanceFactory webApplicationInstanceFactory,
+        UITestManifest testManifest,
+        OrchardCoreUITestExecutorConfiguration configuration)
     {
+        _webApplicationInstanceFactory = webApplicationInstanceFactory;
         _testManifest = testManifest;
         _configuration = configuration;
         _dumpConfiguration = configuration.FailureDumpConfiguration;
@@ -626,10 +630,7 @@ internal sealed class UITestExecutionSession<TEntryPoint> : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = new OrchardCoreInstance<TEntryPoint>(
-            _configuration.OrchardCoreConfiguration,
-            contextId,
-            _testOutputHelper);
+        _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
