@@ -10,6 +10,10 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
+public delegate IWebApplicationInstance WebApplicationInstanceFactory(
+    OrchardCoreUITestExecutorConfiguration configuration,
+    string contextId);
+
 public static class UITestExecutor
 {
     private static readonly object _numberOfTestsLimitLock = new();
@@ -18,10 +22,10 @@ public static class UITestExecutor
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static Task ExecuteOrchardCoreTestAsync<TEntryPoint>(
+    public static Task ExecuteOrchardCoreTestAsync(
+        WebApplicationInstanceFactory webApplicationInstanceFactory,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
-        where TEntryPoint : class
     {
         if (string.IsNullOrEmpty(testManifest.Name))
         {
@@ -59,14 +63,14 @@ public static class UITestExecutor
             }
         }
 
-        return ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(testManifest, configuration, dumpRootPath);
+        return ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
     }
 
-    private static async Task ExecuteOrchardCoreTestInnerAsync<TEntryPoint>(
+    private static async Task ExecuteOrchardCoreTestInnerAsync(
+        WebApplicationInstanceFactory webApplicationInstanceFactory,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         string dumpRootPath)
-        where TEntryPoint : class
     {
         var retryCount = 0;
         var passed = false;
@@ -79,7 +83,7 @@ public static class UITestExecutor
                     await _numberOfTestsLimit.WaitAsync();
                 }
 
-                await using var instance = new UITestExecutionSession<TEntryPoint>(testManifest, configuration);
+                await using var instance = new UITestExecutionSession(webApplicationInstanceFactory, testManifest, configuration);
                 passed = await instance.ExecuteAsync(retryCount, dumpRootPath);
             }
             catch (Exception ex) when (retryCount < configuration.MaxRetryCount)
