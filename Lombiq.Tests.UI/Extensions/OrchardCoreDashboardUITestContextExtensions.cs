@@ -98,11 +98,11 @@ public static class OrchardCoreDashboardUITestContextExtensions
         if (dropdown)
         {
             await context.ClickReliablyOnAsync(By.Id("new-dropdown"));
-            await context.ClickReliablyOnAsync(By.LinkText(contentItemName));
+            await context.ClickReliablyOnByLinkTextAsync(contentItemName);
         }
         else
         {
-            await context.ClickReliablyOnAsync(By.LinkText($"New {contentItemName}"));
+            await context.ClickReliablyOnByLinkTextAsync($"New {contentItemName}");
         }
     }
 
