@@ -285,7 +285,7 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickReliablyAsync(context, maxTries);
 
     /// <summary>
-    /// Reliably clicks on the lnk identified by the given text with <see
+    /// Reliably clicks on the link identified by the given text with <see
     /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/>.
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
