@@ -150,7 +150,9 @@ public static class ExtendedLoggingExtensions
                 // multiple sections are started in concurrent threads, the result will be incorrect. This shouldn't be too much
                 // of an issue for now though since tests, while async, are single-threaded.
                 context.Scope.AtataContext.Log.Start(section);
+                context.Scope.AtataContext.Log.Info("Log section {0} started.", section.Message);
                 var result = await functionAsync();
+                context.Scope.AtataContext.Log.Info("Log section {0} ended.", section.Message);
                 context.Scope.AtataContext.Log.EndSection();
                 return result;
             }
