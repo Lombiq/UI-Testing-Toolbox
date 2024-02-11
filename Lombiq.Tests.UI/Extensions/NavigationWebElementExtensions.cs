@@ -66,9 +66,11 @@ public static class NavigationWebElementExtensions
             });
 
     /// <summary>
-    /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilPageLeaveAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
-    /// instead.
+    /// Repeatedly clicks an element until the browser leaves the page. Note that unlike <see
+    /// cref="ClickReliablyUntilUrlChangeAsync"/> this doesn't just necessitate a URL change but also a page leave. If
+    /// you're doing a Get() before then use <see
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilPageLeaveAsync(UITestContext, By, TimeSpan?,
+    /// TimeSpan?)"/> instead.
     /// </summary>
     public static Task ClickReliablyUntilPageLeaveAsync(
         this IWebElement element,
@@ -85,21 +87,26 @@ public static class NavigationWebElementExtensions
             interval);
 
     /// <summary>
-    /// Repeatedly clicks an element until the browser leaves the page. If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnThenWaitForUrlChangeAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
-    /// instead.
+    /// Repeatedly clicks an element until the browser URL changes. Note that unlike <see
+    /// cref="ClickReliablyUntilPageLeaveAsync"/> this doesn't necessitate a page leave, but can include it. If you're
+    /// doing a Get() before then use <see
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilUrlChangeAsync(UITestContext, By, TimeSpan?,
+    /// TimeSpan?)"/> instead.
     /// </summary>
-    public static async Task ClickReliablyThenWaitForUrlChangeAsync(
+    public static Task ClickReliablyUntilUrlChangeAsync(
         this IWebElement element,
         UITestContext context,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
         var originalUri = context.GetCurrentUri();
-        await element.ClickReliablyAsync(context);
 
-        context.DoWithRetriesOrFail(
-            () => context.GetCurrentUri() != originalUri,
+        return context.DoWithRetriesOrFailAsync(
+            async () =>
+            {
+                await element.ClickReliablyAsync(context);
+                return context.GetCurrentUri() != originalUri;
+            },
             timeout,
             interval);
     }

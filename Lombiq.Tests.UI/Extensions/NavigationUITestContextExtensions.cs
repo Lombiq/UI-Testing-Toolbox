@@ -306,15 +306,15 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyThenWaitForUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
     /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
     /// </summary>
-    public static Task ClickReliablyOnThenWaitForUrlChangeAsync(
+    public static Task ClickReliablyOnUntilUrlChangeAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyThenWaitForUrlChangeAsync(context, timeout, interval);
+        context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
