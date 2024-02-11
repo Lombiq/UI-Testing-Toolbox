@@ -105,6 +105,7 @@ public static class ExtendedLoggingExtensions
                 }
                 catch (StaleElementReferenceException) when (notLast)
                 {
+                    LogStaleElementReferenceExceptionRetry(context, i);
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
             }
@@ -122,6 +123,7 @@ public static class ExtendedLoggingExtensions
                 }
                 catch (StaleElementReferenceException) when (notLast)
                 {
+                    LogStaleElementReferenceExceptionRetry(context, i);
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
             }
@@ -158,10 +160,18 @@ public static class ExtendedLoggingExtensions
             }
             catch (StaleElementReferenceException) when (notLast)
             {
+                LogStaleElementReferenceExceptionRetry(context, i);
                 await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
 
         throw new InvalidOperationException("Impossible to reach.");
     }
+
+    private static void LogStaleElementReferenceExceptionRetry(UITestContext context, int tryIndex) =>
+        context.Scope.AtataContext.Log.Info(
+            "The operation in the log section failed with StaleElementReferenceException but will be retried. This " +
+            "is try number {0} out of {1}.",
+            tryIndex + 1,
+            StabilityRetryCount);
 }
