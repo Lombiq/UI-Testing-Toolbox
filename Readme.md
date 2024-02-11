@@ -9,7 +9,7 @@ Web UI testing toolbox mostly for Orchard Core applications. Everything you need
 Highlights:
 
 - Builds on proven libraries like Selenium, Atata, and xUnit. See all the tools we use [here](Lombiq.Tests.UI/Docs/Tools.md).
-- Execute fully self-contained, repeatable, parallelizable automated UI tests on Orchard Core apps.
+- Execute fully self-contained, repeatable, parallelizable automated UI tests on Orchard Core apps, running locally or remotely.
 - Do cross-browser testing with all current browsers, both in normal and headless modes.
 - Check the HTML structure and behavior of the app, check for errors in the Orchard logs and browser logs. Start troubleshooting from the detailed full application dumps and test logs if a test fails.
 - Start tests with a setup using recipes, start with an existing Orchard Core app or take snapshots in between tests and resume from there. Use SQLite or SQL Server database snapshots (but you can also use PostgreSQL or MySQL too without snapshots, see [this proof of concept](https://github.com/OrchardCMS/OrchardCore/pull/11194/files)).
