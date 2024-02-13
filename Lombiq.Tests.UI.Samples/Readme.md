@@ -29,6 +29,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Testing in tenants](Tests/TenantTests.cs)
 - [Interactive mode](Tests/InteractiveModeTests.cs)
 - [Security scanning](Tests/SecurityScanningTests.cs)
+- [Testing remote apps](Tests/RemoteTests.cs)
 
 ## Adding new tutorials
 

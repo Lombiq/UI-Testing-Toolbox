@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
 using System.Threading.Tasks;
@@ -31,19 +30,18 @@ public delegate Task ExecuteTestAfterSetupAsync(
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
 
-public abstract class OrchardCoreUITestBase<TEntryPoint>
+public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
 {
     private const string AppFolder = nameof(AppFolder);
 
-    protected ITestOutputHelper _testOutputHelper;
-
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait; // #spell-check-ignore-line
 
-    static OrchardCoreUITestBase() => AtataFactory.SetupShellCliCommandFactory();
-
-    protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+    protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
+    {
+    }
 
     // If you change this, then also change the corresponding delegate above.
     protected abstract Task ExecuteTestAfterSetupAsync(
@@ -335,25 +333,10 @@ public abstract class OrchardCoreUITestBase<TEntryPoint>
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
-        var originalTestOutputHelper = _testOutputHelper;
-        Action afterTest = null;
-        if (configuration.ExtendGitHubActionsOutput &&
-            configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping &&
-            GitHubHelper.IsGitHubEnvironment)
-        {
-            (_testOutputHelper, afterTest) =
-                GitHubActionsGroupingTestOutputHelper.CreateDecorator(_testOutputHelper, testManifest);
-            configuration.TestOutputHelper = _testOutputHelper;
-        }
-
-        try
-        {
-            await UITestExecutor.ExecuteOrchardCoreTestAsync<TEntryPoint>(testManifest, configuration);
-        }
-        finally
-        {
-            _testOutputHelper = originalTestOutputHelper;
-            afterTest?.Invoke();
-        }
+        await ExecuteOrchardCoreTestAsync(
+            (configuration, contextId) =>
+                new OrchardCoreInstance<TEntryPoint>(configuration.OrchardCoreConfiguration, contextId, configuration.TestOutputHelper),
+            testManifest,
+            configuration);
     }
 }
