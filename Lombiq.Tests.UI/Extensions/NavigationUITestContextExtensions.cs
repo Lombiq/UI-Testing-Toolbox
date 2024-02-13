@@ -285,6 +285,14 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickReliablyAsync(context, maxTries);
 
     /// <summary>
+    /// Reliably clicks on the link identified by the given text with <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/>.
+    /// </summary>
+    /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
+    public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
+        context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
+
+    /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
     /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
     /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
@@ -295,6 +303,18 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
         context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
+
+    /// <summary>
+    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
+    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// </summary>
+    public static Task ClickReliablyOnUntilUrlChangeAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
