@@ -40,7 +40,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private SmtpService _smtpService;
     private AzureBlobStorageManager _azureBlobStorageManager;
     private ZapManager _zapManager;
-    private OrchardCoreInstance<TEntryPoint> _applicationInstance;
+    private IWebApplicationInstance _applicationInstance;
     private UITestContext _context;
     private DockerConfiguration _dockerConfiguration;
 
