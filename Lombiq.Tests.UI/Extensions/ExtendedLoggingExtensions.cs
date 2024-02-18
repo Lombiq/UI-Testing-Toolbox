@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -151,11 +152,11 @@ public static class ExtendedLoggingExtensions
                 // This is somewhat risky. ILogManager is not thread-safe and uses as stack to keep track of sections, so if
                 // multiple sections are started in concurrent threads, the result will be incorrect. This shouldn't be too much
                 // of an issue for now though since tests, while async, are single-threaded.
-                context.Scope.AtataContext.Log.Start(section);
-                context.Scope.AtataContext.Log.Info("Log section {0} started.", section.Message);
+                await context.Scope.AtataContext.Log.ExecuteSection(section, functionAsync);
+                context.Scope.AtataContext.Log.Info($"Log section {section.Message} started.");
                 var result = await functionAsync();
-                context.Scope.AtataContext.Log.Info("Log section {0} ended.", section.Message);
-                context.Scope.AtataContext.Log.EndSection();
+                context.Scope.AtataContext.Log.Info($"Log section {section.Message} ended.");
+                await context.Scope.AtataContext.Log.ExecuteSection(section, functionAsync);
                 return result;
             }
             catch (StaleElementReferenceException) when (notLast)
@@ -168,10 +169,12 @@ public static class ExtendedLoggingExtensions
         throw new InvalidOperationException("Impossible to reach.");
     }
 
-    private static void LogStaleElementReferenceExceptionRetry(UITestContext context, int tryIndex) =>
+    private static void LogStaleElementReferenceExceptionRetry(UITestContext context, int tryIndex)
+    {
+        var index = string.Create(CultureInfo.InvariantCulture, $"{tryIndex + 1}");
+
         context.Scope.AtataContext.Log.Info(
             "The operation in the log section failed with StaleElementReferenceException but will be retried. This " +
-            "is try number {0} out of {1}.",
-            tryIndex + 1,
-            StabilityRetryCount);
+            $"is try number {index} out of {StabilityRetryCount}.");
+    }
 }
