@@ -39,9 +39,7 @@ public abstract class UITestBase
         {
             _testOutputHelper = originalTestOutputHelper;
             // This warning is a false positive as it is not considering the evaluation of the if statement above.
-#pragma warning disable S2583 // Conditionally executed code should be reachable
             afterTest?.Invoke();
-#pragma warning restore S2583 // Conditionally executed code should be reachable
         }
     }
 }
