@@ -26,8 +26,11 @@ internal sealed class MonkeyTester
         _randomizer = new NonSecurityRandomizer(_options.BaseRandomSeed);
     }
 
-    internal Task TestOnePageAsync(int? randomSeed = null) =>
-        Log.ExecuteSection(new LogSection("Execute monkey testing against one page"), async () =>
+    internal async Task TestOnePageAsync(int? randomSeed = null)
+    {
+        Log.Start(new LogSection("Execute monkey testing against one page"));
+
+        try
         {
             WriteOptionsToLog();
 
@@ -35,10 +38,18 @@ internal sealed class MonkeyTester
 
             if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
             else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
-        });
+        }
+        finally
+        {
+            Log.EndSection();
+        }
+    }
 
-    internal Task TestRecursivelyAsync() =>
-        Log.ExecuteSection(new LogSection($"Execute monkey testing recursively"), async () =>
+    internal async Task TestRecursivelyAsync()
+    {
+        Log.Start(new LogSection($"Execute monkey testing recursively"));
+
+        try
         {
             WriteOptionsToLog();
 
@@ -64,7 +75,12 @@ internal sealed class MonkeyTester
                     return;
                 }
             }
-        });
+        }
+        finally
+        {
+            Log.EndSection();
+        }
+    }
 
     private void WriteOptionsToLog() =>
         Log.Trace(@$"Monkey testing options:
