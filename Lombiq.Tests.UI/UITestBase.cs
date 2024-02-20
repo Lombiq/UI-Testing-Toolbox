@@ -38,7 +38,6 @@ public abstract class UITestBase
         finally
         {
             _testOutputHelper = originalTestOutputHelper;
-            // This warning is a false positive as it is not considering the evaluation of the if statement above.
             afterTest?.Invoke();
         }
     }
