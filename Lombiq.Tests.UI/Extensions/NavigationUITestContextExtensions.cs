@@ -239,6 +239,12 @@ public static class NavigationUITestContextExtensions
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
+    public static Task SetTaxonomyFieldByTextAsync(this UITestContext context, string taxonomyId, string text)
+    {
+        var baseSelector = ByHelper.Css($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        return SetFieldDropdownByTextAsync(context, baseSelector, text);
+    }
+
     public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
         var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
@@ -265,6 +271,20 @@ public static class NavigationUITestContextExtensions
     {
         var byItem = baseSelector
             .Then(ByHelper.Css($".multiselect__element:nth-child({index + 1}) .multiselect__option"))
+            .Visible();
+
+        while (!context.Exists(byItem.Safely()))
+        {
+            await context.ClickReliablyOnAsync(baseSelector.Then(By.CssSelector(".multiselect__select")));
+        }
+
+        await context.ClickReliablyOnAsync(byItem);
+    }
+
+    private static async Task SetFieldDropdownByTextAsync(UITestContext context, By baseSelector, string text)
+    {
+        var byItem = baseSelector
+            .Then(By.XPath($"//span[contains(@class,'multiselect__option')]//span[text() = '{text}']"))
             .Visible();
 
         while (!context.Exists(byItem.Safely()))
