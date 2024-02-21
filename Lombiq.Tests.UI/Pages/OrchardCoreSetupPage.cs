@@ -13,12 +13,12 @@ namespace Lombiq.Tests.UI.Pages;
 using _ = OrchardCoreSetupPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
-[VerifyTitle(values: new[] { DefaultPageTitle, OlderPageTitle }, Format = "{0}")]
-[VerifyH1(values: new[] { DefaultPageTitle, OlderPageTitle })]
+[VerifyTitle(values: [DefaultPageTitle, OlderPageTitle], Format = "{0}")]
+[VerifyH1(values: [DefaultPageTitle, OlderPageTitle])]
 [TermFindSettings(
     Case = TermCase.Pascal,
     TargetAllChildren = true,
-    TargetAttributeTypes = new[] { typeof(FindByIdAttribute), typeof(FindByNameAttribute) })]
+    TargetAttributeTypes = [typeof(FindByIdAttribute), typeof(FindByNameAttribute)])]
 public sealed class OrchardCoreSetupPage : Page<_>
 {
     public const string DefaultPageTitle = "Setup";

@@ -17,7 +17,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -561,7 +560,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 // user without access to freshly created directories by the current user. Since this is a subdirectory
                 // that third parties can't list without prior knowledge and it only contains freshly created data this
                 // is not a security concern.
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!OperatingSystem.IsWindows())
                 {
                     if (!Directory.Exists(snapshotDirectoryPath)) Directory.CreateDirectory(snapshotDirectoryPath);
                     var unixFileInfo = new UnixFileInfo(snapshotDirectoryPath);

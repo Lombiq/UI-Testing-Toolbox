@@ -15,7 +15,7 @@ internal sealed class MonkeyTester
     private readonly UITestContext _context;
     private readonly MonkeyTestingOptions _options;
     private readonly NonSecurityRandomizer _randomizer;
-    private readonly List<PageMonkeyTestInfo> _visitedPages = new();
+    private readonly List<PageMonkeyTestInfo> _visitedPages = [];
 
     private ILogManager Log => _context.Scope.AtataContext.Log;
 
@@ -200,8 +200,8 @@ internal sealed class MonkeyTester
     private string BuildGremlinsRunScript(TimeSpan testTime, int randomSeed) =>
         new GremlinsScripts.RunScriptBuilder
         {
-            Species = _options.GremlinsSpecies.ToArray(),
-            Mogwais = _options.GremlinsMogwais.ToArray(),
+            Species = [.. _options.GremlinsSpecies],
+            Mogwais = [.. _options.GremlinsMogwais],
             NumberOfAttacks = (int)(testTime.TotalMilliseconds / _options.GremlinsAttackDelay.TotalMilliseconds),
             AttackDelay = (int)_options.GremlinsAttackDelay.TotalMilliseconds,
             RandomSeed = randomSeed,

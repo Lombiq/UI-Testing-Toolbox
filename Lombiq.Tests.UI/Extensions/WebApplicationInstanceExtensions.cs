@@ -37,7 +37,7 @@ public static class WebApplicationInstanceExtensions
                 .SplitByNewLines()
                 .Where(line => line.Contains("|ERROR|"));
 
-            if (permittedErrorLines.Any())
+            if (permittedErrorLines.Count != 0)
             {
                 errorLines = errorLines.Where(line => !permittedErrorLines.Any(line.ContainsOrdinalIgnoreCase));
             }

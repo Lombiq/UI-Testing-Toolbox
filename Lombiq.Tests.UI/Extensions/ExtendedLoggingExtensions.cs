@@ -131,7 +131,7 @@ public static class ExtendedLoggingExtensions
             throw new InvalidOperationException("Impossible to reach.");
         });
 
-    private static Task ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> functionAsync) =>
+    private static Task<bool> ExecuteSectionAsync(this UITestContext context, LogSection section, Func<Task> functionAsync) =>
         context.ExecuteSectionAsync(
             section,
             async () =>

@@ -342,10 +342,7 @@ public static class ShortcutsUITestContextExtensions
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
         context.GetApi().GetApplicationInfoFromApiAsync();
 
-    // This is required to instantiate ILogger<>.
-#pragma warning disable S2094 // Classes should not be empty
     private sealed class ExecuteRecipeShortcut { }
-#pragma warning restore S2094 // Classes should not be empty
 
     /// <summary>
     /// Executes a recipe identified by its name directly.
@@ -646,7 +643,7 @@ public static class ShortcutsUITestContextExtensions
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>
-        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(ManifestConstants.AdminTag));
+        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(value: ManifestConstants.AdminTag));
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders, string permissionName) =>
