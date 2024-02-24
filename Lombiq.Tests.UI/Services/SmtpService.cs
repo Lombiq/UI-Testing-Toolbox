@@ -1,8 +1,8 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,10 +64,10 @@ public sealed class SmtpService : IAsyncDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        var manifest = JObject.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
+        var manifest = JsonNode.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
 
         // Verify that an smtp4dev configuration is in place.
-        if ((manifest["tools"] as JObject)?["rnwood.smtp4dev"] == null)
+        if (manifest?["tools"]?["rnwood.smtp4dev"] == null)
         {
             throw new InvalidOperationException("There was no smtp4dev configuration in the .NET CLI local tool manifest file.");
         }
