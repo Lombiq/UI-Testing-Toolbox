@@ -419,7 +419,7 @@ public static class ShortcutsUITestContextExtensions
                     BaseAddress = context.Scope.BaseUri,
                 };
 
-                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
+                return RestService.For<IShortcutsApi>(httpClient);
             });
 
     /// <summary>
