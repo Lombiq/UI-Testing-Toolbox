@@ -1,5 +1,4 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
-using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Pages;
