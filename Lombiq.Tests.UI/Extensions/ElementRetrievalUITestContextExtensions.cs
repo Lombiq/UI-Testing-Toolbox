@@ -1,6 +1,7 @@
 using Atata;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
+using Microsoft.IdentityModel.Tokens;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -120,7 +121,8 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch)
     {
-        context.Exists(by); // Ensure content is loaded first.
+        // Ensure content is loaded first.
+        context.DoWithRetriesOrFail(() => !context.Get(by).Text.Trim().IsNullOrEmpty());
 
         var dontCare = toMatch
             .Select((item, index) => item == null ? index : -1)
