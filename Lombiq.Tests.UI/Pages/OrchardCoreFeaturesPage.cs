@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Components;
+using OpenQA.Selenium;
 
 namespace Lombiq.Tests.UI.Pages;
 
@@ -17,6 +18,7 @@ public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
     [FindById("bulk-action-menu-button")]
     public BulkActionsDropdown BulkActions { get; private set; }
 
+    [FindByXPath("li[contains(@class, 'list-group-item') and not(contains(@class, 'd-none')) and .//label[contains(@class, 'form-check-label')]]")]
     public FeatureItemList Features { get; private set; }
 
     public FeatureItem SearchForFeature(string featureName) =>
@@ -32,15 +34,11 @@ public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
         public Link<_> Toggle { get; private set; }
     }
 
-    [ControlDefinition("li[not(contains(@class, 'd-none'))]", ContainingClass = "list-group-item", ComponentTypeName = "feature")]
     public sealed class FeatureItem : Control<_>
     {
         [FindFirst(Visibility = Visibility.Any)]
         [ClicksUsingActions]
         public CheckBox<_> CheckBox { get; private set; }
-
-        [FindByXPath("h6", "label")]
-        public Text<_> Name { get; private set; }
 
         [FindById(TermMatch.StartsWith, "btn-enable")]
         public Link<_> Enable { get; private set; }
@@ -58,7 +56,13 @@ public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
 
     public sealed class FeatureItemList : ControlList<FeatureItem, _>
     {
-        public FeatureItem this[string featureName] =>
-            GetItem(featureName, item => item.Name == featureName);
+        public FeatureItem this[string featureName]
+        {
+            get
+            {
+                var path = By.XPath($".//label[contains(., \"{featureName}\")]").Safely();
+                return GetItem(featureName, item => item.GetScope(null).FindElement(path) != null);
+            }
+        }
     }
 }
