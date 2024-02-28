@@ -238,7 +238,8 @@ public class OrchardCoreUITestExecutorConfiguration
             // a directory. Presumably this is an attempt to access protected files using source path manipulation.
             // This is handled by ASP.NET Core and there is nothing for us to worry about.
             "System.IO.IOException: Not a directory",
-            "The filename, directory name, or volume label syntax is incorrect",
+            "System.IO.IOException: The filename, directory name, or volume label syntax is incorrect",
+            "System.IO.DirectoryNotFoundException: Could not find a part of the path",
             // This happens when a request's model contains a dictionary and a key is missing. While this can be a
             // legitimate application error, during a security scan it's more likely the result of an incomplete
             // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
