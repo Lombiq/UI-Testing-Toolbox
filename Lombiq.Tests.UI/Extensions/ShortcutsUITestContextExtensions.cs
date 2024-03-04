@@ -41,6 +41,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -656,4 +657,34 @@ public static class ShortcutsUITestContextExtensions
         string tenant,
         bool activateShell) =>
         context.Application.UsingScopeAsync(execute, tenant ?? context.TenantName, activateShell);
+
+    /// <summary>
+    /// Places the provided <paramref name="steps"/> into a recipe and executes it with JSON Import.
+    /// </summary>
+    public static async Task ExecuteJsonRecipeAsync(this UITestContext context, params object[] steps)
+    {
+        await context.GoToAdminRelativeUrlAsync("/DeploymentPlan/Import/Json");
+
+        var json = JsonSerializer.Serialize(new { steps });
+        await context.FillInCodeMirrorEditorWithRetriesAsync(By.ClassName("CodeMirror"), json);
+        await context.ClickReliablyOnAsync(By.CssSelector(".ta-content button[type='submit']"));
+        context.ShouldBeSuccess();
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="settingsContent"/> which may include multiple named site settings.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingsAsync(this UITestContext context, IDictionary<string, object> settingsContent)
+    {
+        settingsContent["name"] = "settings";
+        return context.ExecuteJsonRecipeAsync(settingsContent);
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="setting"/>.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingAsync<T>(this UITestContext context, T setting) =>
+        context.ExecuteJsonRecipeSiteSettingsAsync(new Dictionary<string, object> { [typeof(T).Name] = setting });
 }
