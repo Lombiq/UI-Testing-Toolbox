@@ -25,20 +25,7 @@ public static class IWebApplicationInstanceExtensions
         Func<IServiceProvider, Task> execute,
         string tenant = "Default",
         bool activateShell = true) =>
-        instance.UsingScopeAsync(
-            shellScope =>
-            {
-                // Initialize IHttpContextAccessor and IActionContextAccessor using a new HTTP context. Needed e.g. for
-                // IUrlHelperFactory to create URL helpers.
-                var httpContext = shellScope.ShellContext.CreateHttpContext();
-                var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-                shellScope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = httpContext;
-                shellScope.ServiceProvider.GetRequiredService<IActionContextAccessor>().ActionContext = actionContext;
-
-                return execute(shellScope.ServiceProvider);
-            },
-            tenant,
-            activateShell);
+        instance.UsingScopeAsync(shellScope => execute(shellScope.ServiceProvider), tenant, activateShell);
 
     /// <summary>
     /// Executes a delegate using the shell scope given by <paramref name="tenant"/> in an isolated async flow, while
