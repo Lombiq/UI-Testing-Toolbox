@@ -33,6 +33,7 @@ public class SecurityScanConfiguration
     public Uri StartUri { get; private set; }
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
+    public bool AdminIsExcluded { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
@@ -97,6 +98,19 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration ExcludeUrlWithRegex(string excludedUrlRegex)
     {
         _excludedUrlRegexPatterns.Add(excludedUrlRegex);
+        return this;
+    }
+
+    /// <summary>
+    /// Excludes the Orchard Core admin area (dashboard), under /Admin by default, from the scan, or disables the
+    /// exclusion.
+    /// </summary>
+    /// <param name="adminIsExcluded">
+    /// Indicates whether the Orchard Core admin area (dashboard) should be excluded from the scan.
+    /// </param>
+    public SecurityScanConfiguration ExcludeAdmin(bool adminIsExcluded = true)
+    {
+        AdminIsExcluded = adminIsExcluded;
         return this;
     }
 
@@ -279,6 +293,9 @@ public class SecurityScanConfiguration
 #pragma warning disable S3878 // Arrays should not be created for params parameters
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
 #pragma warning restore S3878 // Arrays should not be created for params parameters
+
+        if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
+
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
         foreach (var ruleConfiguration in _configuredActiveScanRules)
