@@ -164,7 +164,7 @@ public class SecurityScanConfiguration
     /// Controls the number of attacks that ZAP will perform. See <see
     /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
     /// </param>
-    public SecurityScanConfiguration ConfigureXssActiveScanRule(ScanRuleThreshold threshold, ScanRuleStrength strength)
+    public SecurityScanConfiguration ConfigureXssActiveScanRule(ScanRuleThreshold threshold, ScanRuleStrength strength) // #spell-check-ignore-line
     {
         ConfigureActiveScanRule(40026, threshold, strength, "Cross Site Scripting (DOM Based)");
         return this;
