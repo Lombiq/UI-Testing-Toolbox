@@ -1,5 +1,6 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
@@ -280,7 +281,10 @@ public class SecurityScanConfiguration
     {
         yamlDocument.SetStartUrl(StartUri);
 
-        foreach (var uri in _additionalUris) yamlDocument.AddUrl(uri);
+        foreach (var uri in _additionalUris)
+        {
+            yamlDocument.AddUrl(uri.IsAbsoluteUri ? uri : context.GetAbsoluteUri(uri.OriginalString));
+        }
 
         if (AjaxSpiderIsUsed) yamlDocument.AddSpiderAjaxAfterSpider();
 
