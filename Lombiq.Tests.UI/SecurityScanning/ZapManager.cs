@@ -131,8 +131,9 @@ public sealed class ZapManager : IAsyncDisposable
             cliParameters.Add("localhost:host-gateway");
         }
 
+        // Using a different port than the default 8080 is necessary so ZAP doesn't clash with other web processes and
+        // to allow more than one security scan to run at the same time.
         _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
-
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
         cliParameters.AddRange(new object[]
