@@ -152,6 +152,25 @@ public class SecurityScanConfiguration
     }
 
     /// <summary>
+    /// Configures the <see href="https://www.zaproxy.org/docs/alerts/40026/">Cross Site Scripting (DOM Based)</see>
+    /// active scan rule for the whole scan. Since this scan takes usually the most time of an active scan, you may want
+    /// to reduce its strength at least, depending on your specific requirements.
+    /// </summary>
+    /// <param name="threshold">
+    /// Controls how likely ZAP is to report potential vulnerabilities. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#threshold">the official docs</see>.
+    /// </param>
+    /// <param name="strength">
+    /// Controls the number of attacks that ZAP will perform. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
+    /// </param>
+    public SecurityScanConfiguration ConfigureXssActiveScanRule(ScanRuleThreshold threshold, ScanRuleStrength strength)
+    {
+        ConfigureActiveScanRule(40026, threshold, strength, "Cross Site Scripting (DOM Based)");
+        return this;
+    }
+
+    /// <summary>
     /// Disable a certain passive scan rule for the whole scan. If you only want to disable a rule for specific pages
     /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int, string)"/> instead.
     /// </summary>
