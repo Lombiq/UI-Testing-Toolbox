@@ -35,6 +35,7 @@ public class SecurityScanConfiguration
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
     public bool AdminIsExcluded { get; private set; }
+    public bool UnusedDatabaseTechnologiesAreExcluded { get; private set; } = true;
 
     /// <summary>
     /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
@@ -112,6 +113,20 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration ExcludeAdmin(bool adminIsExcluded = true)
     {
         AdminIsExcluded = adminIsExcluded;
+        return this;
+    }
+
+    /// <summary>
+    /// Excludes those database engines from the technologies ZAP tailors attacks for that aren't currently used for
+    /// running the app.
+    /// </summary>
+    /// <param name="unusedDatabaseTechnologiesAreExcluded">
+    /// Indicates whether those database engines are excluded from the technologies ZAP tailors attacks for that aren't
+    /// currently used for running the app.
+    /// </param>
+    public SecurityScanConfiguration ExcludeUnusedDatabaseTechnologies(bool unusedDatabaseTechnologiesAreExcluded = true)
+    {
+        UnusedDatabaseTechnologiesAreExcluded = unusedDatabaseTechnologiesAreExcluded;
         return this;
     }
 
@@ -318,6 +333,28 @@ public class SecurityScanConfiguration
 #pragma warning restore S3878 // Arrays should not be created for params parameters
 
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
+
+        if (UnusedDatabaseTechnologiesAreExcluded)
+        {
+            var excludes = yamlDocument
+                .GetCurrentContext()
+                .GetOrAddNode<YamlMappingNode>("technology")
+                .GetOrAddNode<YamlSequenceNode>("exclude");
+
+            if (context.Configuration.UseSqlServer)
+            {
+                excludes.Add(new YamlScalarNode("MySQL"));
+                excludes.Add(new YamlScalarNode("PostgreSQL"));
+                excludes.Add(new YamlScalarNode("SQLite"));
+            }
+            else
+            {
+                // Assuming SQLite.
+                excludes.Add(new YamlScalarNode("Microsoft SQL Server"));
+                excludes.Add(new YamlScalarNode("MySQL"));
+                excludes.Add(new YamlScalarNode("PostgreSQL"));
+            }
+        }
 
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
