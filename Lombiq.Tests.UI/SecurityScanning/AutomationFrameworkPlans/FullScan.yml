@@ -71,7 +71,7 @@ jobs:
     newRisk: "False Positive"
     parameter: ""
     parameterRegex: false
-    url: ".*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin).*"
+    url: ".*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff).*"
     urlRegex: true
     attack: ""
     attackRegex: false
