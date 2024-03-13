@@ -25,31 +25,10 @@ public class EmailTests : UITestBase
                 // A shortcut to sign in without going through (and thus testing) the login screen.
                 await context.SignInDirectlyAsync();
 
-                // Let's go to the "Test settings" option of the e-mail admin page. The default sender is configured in
-                // the test recipe so we can use the test feature.
-                await context.GoToAdminRelativeUrlAsync("/Email/Index");
-
-                // Let's send a basic e-mail.
-                await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
-                await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
-                await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
-
-                // With the button being under the fold in the configured screen size, we need to make sure it's
-                // actually clicked. Scrolling there first doesn't work for some reason.
-                await ReliabilityHelper.DoWithRetriesOrFailAsync(
-                    async () =>
-                    {
-                        try
-                        {
-                            await context.ClickReliablyOnAsync(By.Id("emailtestsend")); // #spell-check-ignore-line
-                            return true;
-                        }
-                        catch (WebDriverException ex) when (ex.Message.Contains("move target out of bounds"))
-                        {
-                            return false;
-                        }
-                    });
-
+                // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
+                // sender is configured in the test recipe so we can use the test feature.
+                await context.GoToEmailTestAsync();
+                await context.FillEmailTestFormAsync("Test message");
                 context.ShouldBeSuccess();
 
                 // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
