@@ -254,7 +254,7 @@ public static class NavigationUITestContextExtensions
             async response =>
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json);
+                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
                 return result.IndexOf(result.First(item => item.DisplayText == text));
             });
 
