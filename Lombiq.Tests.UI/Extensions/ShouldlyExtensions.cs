@@ -8,7 +8,7 @@ namespace Shouldly;
 
 public static class ShouldlyExtensions
 {
-    private static readonly char[] newlineCharacters = ['\n', '\r'];
+    private static readonly char[] _newlineCharacters = ['\n', '\r'];
 
     /// <summary>
     /// Calls <see cref="object.ToString()"/> on both <paramref name="actual"/> and <paramref name="expected"/> (unless
@@ -67,6 +67,6 @@ public static class ShouldlyExtensions
     /// </summary>
     public static void ShouldBeByLine(this string actual, string expected) =>
         actual
-            .Split(newlineCharacters, StringSplitOptions.RemoveEmptyEntries)
-            .ShouldBe(expected.Split(newlineCharacters, StringSplitOptions.RemoveEmptyEntries));
+            .Split(_newlineCharacters, StringSplitOptions.RemoveEmptyEntries)
+            .ShouldBe(expected.Split(_newlineCharacters, StringSplitOptions.RemoveEmptyEntries));
 }
