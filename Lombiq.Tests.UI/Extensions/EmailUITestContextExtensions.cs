@@ -84,4 +84,18 @@ public static class EmailUITestContextExtensions
     /// </summary>
     public static Task FillEmailTestFormAsync(this UITestContext context, string subject) =>
         context.FillEmailTestFormAsync("recipient@example.com", subject, "Hi, this is a test.");
+
+    /// <summary>
+    /// Sets the SMTP port to the value in the current configuration (in <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>). It assumes that the SMTP email
+    /// provider is enabled.
+    /// </summary>
+    public static async Task ConfigureSmtpPortAsync(this UITestContext context)
+    {
+        var smtpPort = context.Configuration.SmtpServiceConfiguration.Context.Port;
+        await context.GoToAdminRelativeUrlAsync("/Settings/email");
+        await context.ClickReliablyOnAsync(By.CssSelector("a[href='#tab-s-m-t-p']"));
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort.ToTechnicalString());
+        await context.ClickReliablyOnAsync(By.ClassName("save"));
+    }
 }

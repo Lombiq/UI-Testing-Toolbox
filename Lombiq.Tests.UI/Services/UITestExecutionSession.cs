@@ -764,6 +764,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
+        _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
         Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {

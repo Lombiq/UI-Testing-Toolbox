@@ -10,6 +10,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public class SmtpServiceConfiguration
 {
+    public SmtpServiceRunningContext Context { get; set; }
 }
 
 public class SmtpServiceRunningContext

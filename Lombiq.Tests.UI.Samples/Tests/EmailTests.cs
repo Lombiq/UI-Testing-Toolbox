@@ -1,5 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using OpenQA.Selenium;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +24,9 @@ public class EmailTests : UITestBase
             {
                 // A shortcut to sign in without going through (and thus testing) the login screen.
                 await context.SignInDirectlyAsync();
+
+                // Set up the SMTP port. This is a dynamic value unique to each UI test so it can't come from a recipe.
+                await context.ConfigureSmtpPortAsync();
 
                 // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
                 // sender is configured in the test recipe so we can use the test feature.
