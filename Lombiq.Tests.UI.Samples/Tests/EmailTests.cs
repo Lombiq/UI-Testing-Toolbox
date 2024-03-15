@@ -1,7 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using OpenQA.Selenium;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
