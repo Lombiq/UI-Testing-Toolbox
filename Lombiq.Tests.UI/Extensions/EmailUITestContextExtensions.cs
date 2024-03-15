@@ -86,16 +86,26 @@ public static class EmailUITestContextExtensions
         context.FillEmailTestFormAsync("recipient@example.com", subject, "Hi, this is a test.");
 
     /// <summary>
-    /// Sets the SMTP port to the value in the current configuration (in <see
-    /// cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>). It assumes that the SMTP email
-    /// provider is enabled.
+    /// Goes to the Email settings and sets the SMTP port to the value of <paramref name="port"/>. If it's <see
+    /// langword="null"/> then the value in the current configuration (in <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>) is used instead.
+    /// The <c>OrchardCore.Email.Smtp</c> feature must be enabled, but if the SMTP provider is not turned on, this will
+    /// automatically do it as well.
     /// </summary>
-    public static async Task ConfigureSmtpPortAsync(this UITestContext context)
+    public static async Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true)
     {
-        var smtpPort = context.Configuration.SmtpServiceConfiguration.Context.Port;
         await context.GoToAdminRelativeUrlAsync("/Settings/email");
         await context.ClickReliablyOnAsync(By.CssSelector("a[href='#tab-s-m-t-p']"));
-        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort.ToTechnicalString());
-        await context.ClickReliablyOnAsync(By.ClassName("save"));
+
+        var byIsEnabled = By.Id("ISite_SmtpSettings_IsEnabled").OfAnyVisibility();
+        if (context.Get(byIsEnabled).GetAttribute("checked") == null)
+        {
+            await context.SetCheckboxValueAsync(byIsEnabled, isChecked: true);
+        }
+
+        var smtpPort = (port ?? context.Configuration.SmtpServiceConfiguration.Context.Port).ToTechnicalString();
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
+
+        if (publish) await context.ClickReliablyOnAsync(By.ClassName("save"));
     }
 }
