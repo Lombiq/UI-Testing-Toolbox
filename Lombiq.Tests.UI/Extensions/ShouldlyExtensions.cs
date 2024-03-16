@@ -8,6 +8,8 @@ namespace Shouldly;
 
 public static class ShouldlyExtensions
 {
+    private static readonly char[] _newlineCharacters = ['\n', '\r'];
+
     /// <summary>
     /// Calls <see cref="object.ToString()"/> on both <paramref name="actual"/> and <paramref name="expected"/> (unless
     /// they are <see langword="null"/>) and checks if they are the same.
@@ -58,4 +60,13 @@ public static class ShouldlyExtensions
             : JsonSerializer.Serialize(results.Select(messageTransform), jsonSerializerOptions);
         results.ShouldBeEmpty(message); // This will always throw at this point.
     }
+
+    /// <summary>
+    /// Compares the <paramref name="actual"/> with the <paramref name="expected"/> string by splitting both by lines
+    /// (ignoring the empty lines) and comparing the resulting arrays.
+    /// </summary>
+    public static void ShouldBeByLine(this string actual, string expected) =>
+        actual
+            .Split(_newlineCharacters, StringSplitOptions.RemoveEmptyEntries)
+            .ShouldBe(expected.Split(_newlineCharacters, StringSplitOptions.RemoveEmptyEntries));
 }

@@ -53,4 +53,65 @@ public static class EmailUITestContextExtensions
 
         return currentlySelectedEmail;
     }
+
+    /// <summary>
+    /// Navigates to the <c>/Admin/Settings/email</c> page.
+    /// </summary>
+    public static Task GoToEmailSettingsAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync("/Settings/email");
+
+    /// <summary>
+    /// Navigates to the <c>/Admin/Email/Test</c> page.
+    /// </summary>
+    public static Task GoToEmailTestAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync("/Email/Test");
+
+    /// <summary>
+    /// Fills out the form on the email test page by specifying the recipient address, subject and message body. If the
+    /// <paramref name="submit"/> is <see langword="true"/>, it also clicks on the send button.
+    /// </summary>
+    public static async Task FillEmailTestFormAsync(
+        this UITestContext context,
+        string to,
+        string subject,
+        string body,
+        bool submit = true)
+    {
+        await context.FillInWithRetriesAsync(By.Id("To"), to);
+        await context.FillInWithRetriesAsync(By.Id("Subject"), subject);
+        await context.FillInWithRetriesAsync(By.Id("Body"), body);
+
+        if (submit) await context.ClickReliablyOnSubmitAsync();
+    }
+
+    /// <summary>
+    /// A simplified version of <see cref="FillEmailTestFormAsync(UITestContext,string,string,string,bool)"/> where the
+    /// sender if <c>"recipient@example.com"</c> and the message body is <c>"Hi, this is a test."</c>.
+    /// </summary>
+    public static Task FillEmailTestFormAsync(this UITestContext context, string subject) =>
+        context.FillEmailTestFormAsync("recipient@example.com", subject, "Hi, this is a test.");
+
+    /// <summary>
+    /// Goes to the Email settings and sets the SMTP port to the value of <paramref name="port"/>. If it's <see
+    /// langword="null"/> then the value in the current configuration (in <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>) is used instead.
+    /// The <c>OrchardCore.Email.Smtp</c> feature must be enabled, but if the SMTP provider is not turned on, this will
+    /// automatically do it as well.
+    /// </summary>
+    public static async Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true)
+    {
+        await context.GoToEmailSettingsAsync();
+        await context.ClickReliablyOnAsync(By.CssSelector("a[href='#tab-s-m-t-p']"));
+
+        var byIsEnabled = By.Id("ISite_SmtpSettings_IsEnabled").OfAnyVisibility();
+        if (context.Get(byIsEnabled).GetAttribute("checked") == null)
+        {
+            await context.SetCheckboxValueAsync(byIsEnabled, isChecked: true);
+        }
+
+        var smtpPort = (port ?? context.Configuration.SmtpServiceConfiguration.Context.Port).ToTechnicalString();
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
+
+        if (publish) await context.ClickReliablyOnAsync(By.ClassName("save"));
+    }
 }

@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.Services;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
+using System.Text.Json;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -18,7 +18,7 @@ public static class ScriptingUITestContextExtensions
     public static void SetValueWithScript(this UITestContext context, string id, object value) =>
         ExecuteScript(
             context,
-            $"document.getElementById({JsonConvert.SerializeObject(id)}).value = {JsonConvert.SerializeObject(value)};");
+            $"document.getElementById({JsonSerializer.Serialize(id)}).value = {JsonSerializer.Serialize(value)};");
 
     /// <summary>
     /// Uses JavaScript to set textarea values that are hard or impossible by normal means.
@@ -26,5 +26,5 @@ public static class ScriptingUITestContextExtensions
     public static void SetTextContentWithScript(this UITestContext context, string textareaId, object value) =>
         ExecuteScript(
             context,
-            $"document.getElementById({JsonConvert.SerializeObject(textareaId)}).textContent = {JsonConvert.SerializeObject(value)};");
+            $"document.getElementById({JsonSerializer.Serialize(textareaId)}).textContent = {JsonSerializer.Serialize(value)};");
 }

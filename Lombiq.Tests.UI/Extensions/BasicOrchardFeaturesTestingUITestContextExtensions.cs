@@ -541,22 +541,23 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
 
                 context.RefreshCurrentAtataContext();
 
+                featuresPage.SearchForFeature(featureName).IsEnabled.Get(out var originalEnabledState);
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
+
                 featuresPage
-                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
-                    .Features[featureName].CheckBox.Check()
-                    .BulkActions.Toggle.Click()
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState));
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
 
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
-                .Features[featureName].CheckBox.Check()
-                .BulkActions.Toggle.Click()
-
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                featuresPage
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
             });
 
     public static Task TestMediaOperationsAsync(this UITestContext context) =>
@@ -579,7 +580,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]").OfAnyVisibility())
+                    .Get(By.CssSelector($"a[href^='/media/{imageName}']").OfAnyVisibility())
                     .ClickReliablyAsync(context);
                 context.SwitchToFirstWindow();
 
@@ -599,7 +600,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
+                    .Get(By.CssSelector($"a[href^='/media/{documentName}']"))
                     .ClickReliablyAsync(context);
                 context.SwitchToFirstWindow();
 
