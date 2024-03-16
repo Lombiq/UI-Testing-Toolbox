@@ -55,6 +55,12 @@ public static class EmailUITestContextExtensions
     }
 
     /// <summary>
+    /// Navigates to the <c>/Admin/Settings/email</c> page.
+    /// </summary>
+    public static Task GoToEmailSettingsAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync("/Settings/email");
+
+    /// <summary>
     /// Navigates to the <c>/Admin/Email/Test</c> page.
     /// </summary>
     public static Task GoToEmailTestAsync(this UITestContext context) =>
@@ -94,7 +100,7 @@ public static class EmailUITestContextExtensions
     /// </summary>
     public static async Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true)
     {
-        await context.GoToAdminRelativeUrlAsync("/Settings/email");
+        await context.GoToEmailSettingsAsync();
         await context.ClickReliablyOnAsync(By.CssSelector("a[href='#tab-s-m-t-p']"));
 
         var byIsEnabled = By.Id("ISite_SmtpSettings_IsEnabled").OfAnyVisibility();
