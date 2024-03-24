@@ -21,14 +21,14 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 /// </remarks>
 public class SecurityScanConfiguration
 {
-    private readonly List<Uri> _additionalUris = new();
-    private readonly List<string> _excludedUrlRegexPatterns = new();
-    private readonly List<ScanRule> _disabledActiveScanRules = new();
-    private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = new();
-    private readonly List<ScanRule> _disabledPassiveScanRules = new();
-    private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = new();
-    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = new();
-    private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = new();
+    private readonly List<Uri> _additionalUris = [];
+    private readonly List<string> _excludedUrlRegexPatterns = [];
+    private readonly List<ScanRule> _disabledActiveScanRules = [];
+    private readonly Dictionary<ScanRule, (ScanRuleThreshold Threshold, ScanRuleStrength Strength)> _configuredActiveScanRules = [];
+    private readonly List<ScanRule> _disabledPassiveScanRules = [];
+    private readonly List<(string Url, int Id, string RuleName)> _disabledRulesForUrls = [];
+    private readonly List<(string Url, int Id, string RuleName, string Justification)> _falsePositives = [];
+    private readonly List<Func<YamlDocument, Task>> _zapPlanModifiers = [];
 
     public Uri StartUri { get; private set; }
     public bool AjaxSpiderIsUsed { get; private set; }
@@ -275,7 +275,10 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
+        // False positive: https://github.com/SonarSource/sonar-dotnet/issues/8510.
+#pragma warning disable S3878 // Arrays should not be created for params parameters
+        yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
+#pragma warning restore S3878 // Arrays should not be created for params parameters
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
         foreach (var ruleConfiguration in _configuredActiveScanRules)

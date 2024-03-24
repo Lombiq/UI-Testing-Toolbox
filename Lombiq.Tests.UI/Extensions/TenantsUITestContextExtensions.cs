@@ -16,7 +16,7 @@ public static class TenantsUITestContextExtensions
     {
         await context.CreateTenantManuallyAsync(name, urlPrefix, urlHost, featureProfile, navigate);
 
-        await context.ClickReliablyOnAsync(By.LinkText("Setup"));
+        await context.ClickReliablyOnByLinkTextAsync("Setup");
 
         context.SwitchCurrentTenant(name, urlPrefix);
     }
@@ -34,7 +34,7 @@ public static class TenantsUITestContextExtensions
             await context.GoToAdminRelativeUrlAsync("/Tenants");
         }
 
-        await context.ClickReliablyOnAsync(By.LinkText("Add Tenant"));
+        await context.ClickReliablyOnByLinkTextAsync("Add Tenant");
         await context.ClickAndFillInWithRetriesAsync(By.Id("Name"), name);
 
         if (!string.IsNullOrEmpty(urlPrefix))

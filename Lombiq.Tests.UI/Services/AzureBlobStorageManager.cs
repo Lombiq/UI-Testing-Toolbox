@@ -1,8 +1,8 @@
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -42,10 +42,6 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     private BlobContainerClient _blobContainer;
     private bool _isDisposed;
 
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
     static AzureBlobStorageManager()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -78,7 +74,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                 var blobUrl = blobClient.Name[(blobClient.Name.IndexOf('/', StringComparison.OrdinalIgnoreCase) + 1)..];
 
                 var blobDirectoryPath = Path.GetDirectoryName(blobUrl);
-                var tenantDirectoryName = blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar) != -1
+                var tenantDirectoryName = blobDirectoryPath.Contains(Path.DirectorySeparatorChar)
                     ? blobDirectoryPath[..blobDirectoryPath.IndexOf(Path.DirectorySeparatorChar)]
                     : blobDirectoryPath;
                 var tenantMediaDirectoryPath = Path.Combine(sitesDirectoryPath, tenantDirectoryName, "Media");
@@ -130,7 +126,8 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         await _portLeaseManager.StopLeaseAsync(_folderId);
     }
 
-    private Task CreateContainerIfNotExistsAsync() => _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);
+    private Task<Response<BlobContainerInfo>> CreateContainerIfNotExistsAsync() =>
+        _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);
 
     private Task DropFolderIfExistsAsync() =>
         IterateThroughBlobsAsync(blobClient => blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots));

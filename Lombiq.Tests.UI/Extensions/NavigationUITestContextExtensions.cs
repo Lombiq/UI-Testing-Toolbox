@@ -239,6 +239,12 @@ public static class NavigationUITestContextExtensions
         return SetFieldDropdownByIndexAsync(context, baseSelector, index);
     }
 
+    public static Task SetTaxonomyFieldByTextAsync(this UITestContext context, string taxonomyId, string text)
+    {
+        var baseSelector = ByHelper.Css($".tags[data-taxonomy-content-item-id='{taxonomyId}']");
+        return SetFieldDropdownByTextAsync(context, baseSelector, text);
+    }
+
     public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
         var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
@@ -275,6 +281,20 @@ public static class NavigationUITestContextExtensions
         await context.ClickReliablyOnAsync(byItem);
     }
 
+    private static async Task SetFieldDropdownByTextAsync(UITestContext context, By baseSelector, string text)
+    {
+        var byItem = baseSelector
+            .Then(By.XPath($"//span[contains(@class,'multiselect__option')]//span[text() = '{text}']"))
+            .Visible();
+
+        while (!context.Exists(byItem.Safely()))
+        {
+            await context.ClickReliablyOnAsync(baseSelector.Then(By.CssSelector(".multiselect__select")));
+        }
+
+        await context.ClickReliablyOnAsync(byItem);
+    }
+
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
     /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/> so the <paramref
@@ -283,6 +303,14 @@ public static class NavigationUITestContextExtensions
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnAsync(this UITestContext context, By by, int maxTries = 3) =>
         context.Get(by).ClickReliablyAsync(context, maxTries);
+
+    /// <summary>
+    /// Reliably clicks on the link identified by the given text with <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/>.
+    /// </summary>
+    /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
+    public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
+        context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
@@ -295,6 +323,18 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
         context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
+
+    /// <summary>
+    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
+    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// </summary>
+    public static Task ClickReliablyOnUntilUrlChangeAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.

@@ -10,7 +10,6 @@ using OpenQA.Selenium.IE;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -73,7 +72,7 @@ public static class WebDriverFactory
             // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
             // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
             // sets the full path as the browser's binary location.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+            if (!OperatingSystem.IsWindows() &&
                 (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
             {
                 options.BinaryLocation = binaryLocation.FullName;

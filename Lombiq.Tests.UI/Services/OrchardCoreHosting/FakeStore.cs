@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
 public sealed class FakeStore : IStore
 {
-    private readonly ConcurrentBag<ISession> _createdSessions = new();
+    private readonly ConcurrentBag<ISession> _createdSessions = [];
     private readonly IStore _store;
 
     public FakeStore(IStore store) => _store = store;

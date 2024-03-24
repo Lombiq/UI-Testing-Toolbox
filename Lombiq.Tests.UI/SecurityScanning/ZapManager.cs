@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,7 +111,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         var cliParameters = new List<object> { "run" };
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (OperatingSystem.IsLinux())
         {
             cliParameters.Add("--network");
             cliParameters.Add("host");
@@ -176,15 +175,13 @@ public sealed class ZapManager : IAsyncDisposable
         return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
         {
-            _cancellationTokenSource.Cancel();
+            await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource.Dispose();
         }
-
-        return ValueTask.CompletedTask;
     }
 
     private async Task EnsureInitializedAsync()

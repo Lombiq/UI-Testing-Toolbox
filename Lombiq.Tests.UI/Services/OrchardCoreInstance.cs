@@ -193,17 +193,11 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return;
     }
 
-    // Use cancellationToken in ReadToEndAsync() once it's available after a .NET upgrade, see:
-    // https://github.com/dotnet/runtime/pull/61898.
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
     {
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
-        return await streamReader.ReadToEndAsync();
+        return await streamReader.ReadToEndAsync(cancellationToken);
     }
 
     private async Task TakeSnapshotInnerAsync(string snapshotDirectoryPath)

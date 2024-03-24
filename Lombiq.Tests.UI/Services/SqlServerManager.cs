@@ -9,7 +9,6 @@ using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +27,7 @@ public class SqlServerConfiguration
     public string ConnectionStringTemplate { get; set; } = TestConfigurationManager.GetConfiguration(
         "SqlServerDatabaseConfiguration:ConnectionStringTemplate",
         $"Server=.;Database=LombiqUITestingToolbox_{DatabaseIdPlaceholder};Integrated Security=True;" +
-            "MultipleActiveResultSets=True;Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;" +
-            "TrustServerCertificate=true;Encrypt=false");
+            "Connection Timeout=60;ConnectRetryCount=15;ConnectRetryInterval=5;TrustServerCertificate=True;Encrypt=False");
 }
 
 public class SqlServerRunningContext
@@ -56,10 +54,6 @@ public sealed class SqlServerManager : IAsyncDisposable
     private string _password;
     private bool _isDisposed;
 
-    [SuppressMessage(
-        "Performance",
-        "CA1810:Initialize reference type static fields inline",
-        Justification = "No GetAgentIndexOrDefault() duplication this way.")]
     static SqlServerManager()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
@@ -273,7 +267,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         var arguments = new List<object> { "exec", "-u", 0, containerName };
         arguments.AddRange(command);
 
-        return arguments.ToArray();
+        return [.. arguments];
     }
 
     public async ValueTask DisposeAsync()
