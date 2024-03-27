@@ -1,6 +1,6 @@
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Selenium.Axe;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,8 +62,8 @@ public class AccessibilityCheckingConfiguration
 
     public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
     {
-        axeResult.Violations.ShouldBeEmpty(AxeResultItemsToString(axeResult.Violations));
-        axeResult.Incomplete.ShouldBeEmpty(AxeResultItemsToString(axeResult.Incomplete));
+        axeResult.Violations.AxeResultItemsShouldBeEmpty();
+        axeResult.Incomplete.AxeResultItemsShouldBeEmpty();
     };
 
     public static readonly Func<IEnumerable<AxeResultItem>, string> AxeResultItemsToString =
