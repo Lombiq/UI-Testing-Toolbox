@@ -8,8 +8,8 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class AxeResultItemExtensions
 {
     /// <summary>
-    /// Check if <paramref name="axeResultItems"/> is empty, if not it converts the <see cref="AxeResultItem"/>s into
-    /// human readable strings.
+    /// Asserts if <paramref name="axeResultItems"/> is empty, and if not then produces an error with <see
+    /// cref="AxeResultItem"/>s converted into human-readable strings.
     /// </summary>
     public static void AxeResultItemsShouldBeEmpty(this IEnumerable<AxeResultItem> axeResultItems) =>
         axeResultItems.ShouldBeEmpty(AccessibilityCheckingConfiguration.AxeResultItemsToString(axeResultItems));
