@@ -247,6 +247,9 @@ public class OrchardCoreUITestExecutorConfiguration
             // One way to verify correct error handling is to navigate to ~/Lombiq.Tests.UI.Shortcuts/Error/Index, which
             // always throws an exception. This also gets logged but it's expected, so it should be ignored.
             ErrorController.ExceptionMessage,
+            // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
+            // invalid authentication challenges.
+            "System.InvalidOperationException: No authentication handler is registered for the scheme",
         };
 
         permittedErrorLines.AddRange(additionalPermittedErrorLines);

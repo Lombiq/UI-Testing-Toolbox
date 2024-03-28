@@ -11,6 +11,5 @@ public class ErrorController : Controller
     public const string ExceptionMessage = "This action intentionally causes an exception!";
 
     [AllowAnonymous]
-    public IActionResult Index() =>
-        throw new InvalidOperationException(ExceptionMessage);
+    public IActionResult Index() => throw new InvalidOperationException(ExceptionMessage);
 }

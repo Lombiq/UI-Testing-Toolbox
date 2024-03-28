@@ -1,5 +1,6 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
@@ -33,6 +34,8 @@ public class SecurityScanConfiguration
     public Uri StartUri { get; private set; }
     public bool AjaxSpiderIsUsed { get; private set; }
     public string SignInUserName { get; private set; }
+    public bool AdminIsExcluded { get; private set; }
+    public bool UnusedDatabaseTechnologiesAreExcluded { get; private set; } = true;
 
     /// <summary>
     /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
@@ -101,6 +104,33 @@ public class SecurityScanConfiguration
     }
 
     /// <summary>
+    /// Excludes the Orchard Core admin area (dashboard), under /Admin by default, from the scan, or disables the
+    /// exclusion.
+    /// </summary>
+    /// <param name="adminIsExcluded">
+    /// Indicates whether the Orchard Core admin area (dashboard) should be excluded from the scan.
+    /// </param>
+    public SecurityScanConfiguration ExcludeAdmin(bool adminIsExcluded = true)
+    {
+        AdminIsExcluded = adminIsExcluded;
+        return this;
+    }
+
+    /// <summary>
+    /// Excludes those database engines from the technologies ZAP tailors attacks for that aren't currently used for
+    /// running the app.
+    /// </summary>
+    /// <param name="unusedDatabaseTechnologiesAreExcluded">
+    /// Indicates whether those database engines are excluded from the technologies ZAP tailors attacks for that aren't
+    /// currently used for running the app.
+    /// </param>
+    public SecurityScanConfiguration ExcludeUnusedDatabaseTechnologies(bool unusedDatabaseTechnologiesAreExcluded = true)
+    {
+        UnusedDatabaseTechnologiesAreExcluded = unusedDatabaseTechnologiesAreExcluded;
+        return this;
+    }
+
+    /// <summary>
     /// Disable a certain active scan rule for the whole scan. If you only want to disable a rule for specific pages
     /// matched by a regex, use <see cref="DisableScanRuleForUrlWithRegex(string, int, string)"/> instead.
     /// </summary>
@@ -134,6 +164,25 @@ public class SecurityScanConfiguration
     public SecurityScanConfiguration ConfigureActiveScanRule(int id, ScanRuleThreshold threshold, ScanRuleStrength strength, string name = "")
     {
         _configuredActiveScanRules.Add(new ScanRule(id, name), (threshold, strength));
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the <see href="https://www.zaproxy.org/docs/alerts/40026/">Cross Site Scripting (DOM Based)</see>
+    /// active scan rule for the whole scan. Since this scan takes usually the most time of an active scan, you may want
+    /// to reduce its strength at least, depending on your specific requirements.
+    /// </summary>
+    /// <param name="threshold">
+    /// Controls how likely ZAP is to report potential vulnerabilities. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#threshold">the official docs</see>.
+    /// </param>
+    /// <param name="strength">
+    /// Controls the number of attacks that ZAP will perform. See <see
+    /// href="https://www.zaproxy.org/docs/desktop/ui/dialogs/scanpolicy/#strength">the official docs</see>.
+    /// </param>
+    public SecurityScanConfiguration ConfigureXssActiveScanRule(ScanRuleThreshold threshold, ScanRuleStrength strength) // #spell-check-ignore-line
+    {
+        ConfigureActiveScanRule(40026, threshold, strength, "Cross Site Scripting (DOM Based)");
         return this;
     }
 
@@ -247,7 +296,10 @@ public class SecurityScanConfiguration
     {
         yamlDocument.SetStartUrl(StartUri);
 
-        foreach (var uri in _additionalUris) yamlDocument.AddUrl(uri);
+        foreach (var uri in _additionalUris)
+        {
+            yamlDocument.AddUrl(uri.IsAbsoluteUri ? uri : context.GetAbsoluteUri(uri.OriginalString));
+        }
 
         if (AjaxSpiderIsUsed) yamlDocument.AddSpiderAjaxAfterSpider();
 
@@ -279,6 +331,31 @@ public class SecurityScanConfiguration
 #pragma warning disable S3878 // Arrays should not be created for params parameters
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
 #pragma warning restore S3878 // Arrays should not be created for params parameters
+
+        if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
+
+        if (UnusedDatabaseTechnologiesAreExcluded)
+        {
+            var excludes = yamlDocument
+                .GetCurrentContext()
+                .GetOrAddNode<YamlMappingNode>("technology")
+                .GetOrAddNode<YamlSequenceNode>("exclude");
+
+            if (context.Configuration.UseSqlServer)
+            {
+                excludes.Add(new YamlScalarNode("MySQL"));
+                excludes.Add(new YamlScalarNode("PostgreSQL"));
+                excludes.Add(new YamlScalarNode("SQLite"));
+            }
+            else
+            {
+                // Assuming SQLite.
+                excludes.Add(new YamlScalarNode("Microsoft SQL Server"));
+                excludes.Add(new YamlScalarNode("MySQL"));
+                excludes.Add(new YamlScalarNode("PostgreSQL"));
+            }
+        }
+
         foreach (var rule in _disabledActiveScanRules) yamlDocument.DisableActiveScanRule(rule.Id, rule.Name);
 
         foreach (var ruleConfiguration in _configuredActiveScanRules)
