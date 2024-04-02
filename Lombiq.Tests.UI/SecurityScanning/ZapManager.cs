@@ -33,11 +33,20 @@ public sealed class ZapManager : IAsyncDisposable
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
+    private static readonly PortLeaseManager _portLeaseManager;
 
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private static bool _wasPulled;
+
+    private int _zapPort;
+
+    static ZapManager()
+    {
+        var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
+        _portLeaseManager = new PortLeaseManager(15000 + agentIndexTimesHundred, 15099 + agentIndexTimesHundred);
+    }
 
     internal ZapManager(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
@@ -122,6 +131,11 @@ public sealed class ZapManager : IAsyncDisposable
             cliParameters.Add("localhost:host-gateway");
         }
 
+        // Using a different port than the default 8080 is necessary so ZAP doesn't clash with other web processes and
+        // to allow more than one security scan to run at the same time.
+        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
+
         cliParameters.AddRange(new object[]
         {
             "--rm",
@@ -133,6 +147,8 @@ public sealed class ZapManager : IAsyncDisposable
             "-cmd",
             "-autorun",
             _zapWorkingDirectoryPath + yamlFileName,
+            "-port",
+            _zapPort,
         });
 
         var stdErrBuffer = new StringBuilder();
@@ -182,6 +198,8 @@ public sealed class ZapManager : IAsyncDisposable
             await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource.Dispose();
         }
+
+        await _portLeaseManager.StopLeaseAsync(_zapPort);
     }
 
     private async Task EnsureInitializedAsync()
