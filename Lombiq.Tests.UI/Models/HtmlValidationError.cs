@@ -1,5 +1,4 @@
-﻿using Azure.Core.Serialization;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Lombiq.Tests.UI.Models;
