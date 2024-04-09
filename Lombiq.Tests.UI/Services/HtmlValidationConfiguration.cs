@@ -1,5 +1,6 @@
 using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Shouldly;
 using System;
@@ -64,13 +65,12 @@ public class HtmlValidationConfiguration
     public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
-    public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        validationResult =>
+    private static readonly Func<HtmlValidationResult, Task<Task>> AssertHtmlValidationOutputIsEmptyAsync = async validationResult =>
         {
-            validationResult.Output.ShouldBeEmpty();
+            (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
             return Task.CompletedTask;
         };
 
-    public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
+    private static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
 }
