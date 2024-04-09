@@ -675,14 +675,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var atataScope = await AtataFactory.StartAtataScopeAsync(_testOutputHelper, uri, _configuration);
 
         return new UITestContext(
-            contextId,
-            _testManifest,
-            _configuration,
-            _applicationInstance,
-            atataScope,
-            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
-            _zapManager,
-            counterDataCollector);
+            new()
+            {
+                Id = contextId,
+                TestManifest = _testManifest,
+                Configuration = _configuration,
+                Application = _applicationInstance,
+                Scope = atataScope,
+                RunningContextContainer = new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+                ZapManager = _zapManager,
+                CounterDataCollector = counterDataCollector,
+            });
     }
 
     private string GetSetupHashCode() =>

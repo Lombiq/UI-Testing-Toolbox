@@ -10,8 +10,8 @@ namespace Lombiq.Tests.UI.Services;
 public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollector
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly ConcurrentBag<ICounterProbe> _probes = new();
-    private readonly ConcurrentBag<Exception> _postponedCounterExceptions = new();
+    private readonly ConcurrentBag<ICounterProbe> _probes = [];
+    private readonly ConcurrentBag<Exception> _postponedCounterExceptions = [];
     public override bool IsAttached => true;
     public Action<ICounterDataCollector, ICounterProbe> AssertCounterData { get; set; }
     public string Phase { get; set; }
@@ -57,7 +57,7 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 
     public void AssertCounter()
     {
-        if (_postponedCounterExceptions.Any())
+        if (!_postponedCounterExceptions.IsEmpty)
         {
             throw new AggregateException(
                 "There were exceptions out of the test execution context.",

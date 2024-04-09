@@ -7,7 +7,7 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 
 public abstract class DbCommandCounterKey : CounterKey
 {
-    private readonly List<KeyValuePair<string, object>> _parameters = new();
+    private readonly List<KeyValuePair<string, object>> _parameters = [];
     public string CommandText { get; private set; }
     public IEnumerable<KeyValuePair<string, object>> Parameters => _parameters;
 

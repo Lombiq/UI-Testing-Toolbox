@@ -33,7 +33,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private readonly Action<IConfigurationBuilder> _configureHost;
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
-    private readonly ConcurrentBag<IStore> _createdStores = new();
+    private readonly ConcurrentBag<IStore> _createdStores = [];
 
     public OrchardApplicationFactory(
         ICounterDataCollector counterDataCollector,
