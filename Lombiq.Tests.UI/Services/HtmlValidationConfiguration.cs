@@ -1,3 +1,4 @@
+using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Helpers;
 using Shouldly;
@@ -28,6 +29,8 @@ public class HtmlValidationConfiguration
     /// </summary>
     public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
+        ResultFileFormatter = HtmlValidateFormatter.Names.Json,
+        OutputFormatter = HtmlValidateFormatter.Names.Json,
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
         // This is necessary so no long folder names will be generated, see:
