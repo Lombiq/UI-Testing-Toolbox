@@ -65,12 +65,9 @@ public class HtmlValidationConfiguration
     public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
-    private static readonly Func<HtmlValidationResult, Task<Task>> AssertHtmlValidationOutputIsEmptyAsync = async validationResult =>
-        {
-            (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
-            return Task.CompletedTask;
-        };
+    public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
+        async validationResult => (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
 
-    private static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
+    public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
 }
