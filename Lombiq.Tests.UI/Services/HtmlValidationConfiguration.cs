@@ -66,7 +66,19 @@ public class HtmlValidationConfiguration
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        async validationResult => (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
+        async validationResult =>
+        {
+            // Keep supporting cases where output format is not set to JSON.
+            if (validationResult.Output.Trim().StartsWith('[') ||
+                validationResult.Output.Trim().StartsWith('{'))
+            {
+                (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
+            }
+            else
+            {
+                validationResult.Output.ShouldBeEmpty();
+            }
+        };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
