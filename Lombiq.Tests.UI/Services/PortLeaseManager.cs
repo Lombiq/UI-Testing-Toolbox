@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Services;
 public class PortLeaseManager
 {
     private readonly IEnumerable<int> _availablePortsRange;
-    private readonly HashSet<int> _usedPorts = new();
+    private readonly HashSet<int> _usedPorts = [];
     private readonly SemaphoreSlim _portAcquisitionLock = new(1, 1);
 
     public PortLeaseManager(int lowerBound, int upperBound) =>

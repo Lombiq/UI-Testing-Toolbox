@@ -58,7 +58,7 @@ public class OrchardCoreUITestExecutorConfiguration
         "Design",
         "MA0016:Prefer return collection abstraction instead of implementation",
         Justification = "Deliberately modifiable by consumer code.")]
-    public Dictionary<string, object> CustomConfiguration { get; } = new();
+    public Dictionary<string, object> CustomConfiguration { get; } = [];
 
     public BrowserConfiguration BrowserConfiguration { get; set; } = new();
     public TimeoutConfiguration TimeoutConfiguration { get; set; } = TimeoutConfiguration.Default;
@@ -244,6 +244,8 @@ public class OrchardCoreUITestExecutorConfiguration
             // a directory. Presumably this is an attempt to access protected files using source path manipulation.
             // This is handled by ASP.NET Core and there is nothing for us to worry about.
             "System.IO.IOException: Not a directory",
+            "System.IO.IOException: The filename, directory name, or volume label syntax is incorrect",
+            "System.IO.DirectoryNotFoundException: Could not find a part of the path",
             // This happens when a request's model contains a dictionary and a key is missing. While this can be a
             // legitimate application error, during a security scan it's more likely the result of an incomplete
             // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
@@ -251,6 +253,9 @@ public class OrchardCoreUITestExecutorConfiguration
             // One way to verify correct error handling is to navigate to ~/Lombiq.Tests.UI.Shortcuts/Error/Index, which
             // always throws an exception. This also gets logged but it's expected, so it should be ignored.
             ErrorController.ExceptionMessage,
+            // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
+            // invalid authentication challenges.
+            "System.InvalidOperationException: No authentication handler is registered for the scheme",
         };
 
         permittedErrorLines.AddRange(additionalPermittedErrorLines);

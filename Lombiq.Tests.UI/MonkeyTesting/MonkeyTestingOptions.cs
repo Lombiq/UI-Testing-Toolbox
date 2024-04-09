@@ -47,8 +47,8 @@ public sealed class MonkeyTestingOptions
     /// <item><description><c>"gremlins.species.typer()"</c></description></item>
     /// </list>
     /// </summary>
-    public List<string> GremlinsSpecies { get; } = new()
-    {
+    public List<string> GremlinsSpecies { get; } =
+    [
         @"gremlins.species.clicker({
             log: true,
             canClick: (element) => {
@@ -65,7 +65,7 @@ public sealed class MonkeyTestingOptions
         "gremlins.species.formFiller()",
         "gremlins.species.scroller()",
         "gremlins.species.typer()",
-    };
+    ];
 
     /// <summary>
     /// <para>Gets the gremlins' mogwais.</para>
@@ -75,11 +75,11 @@ public sealed class MonkeyTestingOptions
     /// <item><description><c>"gremlins.mogwais.gizmo()"</c></description></item>
     /// </list>
     /// </summary>
-    public List<string> GremlinsMogwais { get; } = new()
-    {
+    public List<string> GremlinsMogwais { get; } =
+    [
         "gremlins.mogwais.alert()",
         "gremlins.mogwais.gizmo()",
-    };
+    ];
 
     /// <summary>
     /// Gets or sets the gremlins' attack delay. The default value is 10 milliseconds. Set greater time value to make
@@ -100,13 +100,13 @@ public sealed class MonkeyTestingOptions
     /// </item>
     /// </list>
     /// </summary>
-    public List<IMonkeyTestingUrlSanitizer> UrlSanitizers { get; } = new()
-    {
+    public List<IMonkeyTestingUrlSanitizer> UrlSanitizers { get; } =
+    [
         new RemovesFragmentMonkeyTestingUrlSanitizer(),
         new RemovesBaseUrlMonkeyTestingUrlSanitizer(),
         new RemovesQueryParameterMonkeyTestingUrlSanitizer("admin"),
         new RemovesQueryParameterMonkeyTestingUrlSanitizer("returnUrl"),
-    };
+    ];
 
     /// <summary>
     /// <para>
@@ -118,10 +118,10 @@ public sealed class MonkeyTestingOptions
     /// <item><description><see cref="StartsWithBaseUrlMonkeyTestingUrlFilter"/> instance.</description></item>
     /// </list>
     /// </summary>
-    public List<IMonkeyTestingUrlFilter> UrlFilters { get; } = new()
-    {
+    public List<IMonkeyTestingUrlFilter> UrlFilters { get; } =
+    [
         new StartsWithBaseUrlMonkeyTestingUrlFilter(),
-    };
+    ];
 
     /// <summary>
     /// Adds the login page (/Login) to the URL filters (i.e. monkey testing will not happen on that page).

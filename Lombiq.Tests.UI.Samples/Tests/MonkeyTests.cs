@@ -58,8 +58,17 @@ public class MonkeyTests : UITestBase
     public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
         ExecuteTestAfterSetupAsync(
             context =>
+            {
                 // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
-                context.TestAdminAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions()),
+
+                var monkeyTestingOptions = CreateMonkeyTestingOptions();
+
+                // So we don't take too much time testing the whole Orchard admin, this sample restricts requests to
+                // "/Admin". But this is just this sample, you can unleash monkeys on the whole admin too!
+                monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter("/Admin$"));
+
+                return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
+            },
             configuration =>
                 configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(
                     logEntry => IsValidAdminBrowserLogEntry(logEntry),

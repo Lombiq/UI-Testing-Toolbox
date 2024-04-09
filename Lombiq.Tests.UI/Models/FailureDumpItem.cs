@@ -20,10 +20,7 @@ public class FailureDumpItem : IFailureDumpItem
 
     public Task<Stream> GetStreamAsync()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(FailureDumpItem));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         return _getStream();
     }

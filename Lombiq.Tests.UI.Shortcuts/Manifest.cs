@@ -14,15 +14,15 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Category = "Development",
     Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcuts for common " +
         "operations that UI tests might want to do or check.",
-    Dependencies = new[]
-    {
+    Dependencies =
+    [
         "OrchardCore.ContentManagement",
         "OrchardCore.ContentTypes",
         "OrchardCore.DisplayManagement",
         "OrchardCore.Roles",
         "OrchardCore.Tenants",
         "OrchardCore.Users",
-    }
+    ]
 )]
 
 [assembly: Feature(
@@ -37,10 +37,10 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Name = "Media Cache Purge - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
     Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Media Cache Purge.",
-    Dependencies = new[]
-    {
+    Dependencies =
+    [
         "OrchardCore.Media.Cache",
-    }
+    ]
 )]
 
 [assembly: Feature(
@@ -48,8 +48,8 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Name = "Workflows - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
     Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Workflows.",
-    Dependencies = new[]
-    {
+    Dependencies =
+    [
         "OrchardCore.Workflows.Http",
-    }
+    ]
 )]

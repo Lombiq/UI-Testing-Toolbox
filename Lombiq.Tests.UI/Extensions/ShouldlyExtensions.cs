@@ -51,7 +51,7 @@ public static class ShouldlyExtensions
         JsonSerializerOptions jsonSerializerOptions = null)
     {
         var results = enumerable.Where(condition).ToList();
-        if (!results.Any()) return;
+        if (results.Count == 0) return;
 
         var message = messageTransform == null
             ? JsonSerializer.Serialize(results, jsonSerializerOptions)

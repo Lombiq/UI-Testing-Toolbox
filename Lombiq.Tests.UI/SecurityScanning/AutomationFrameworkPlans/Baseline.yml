@@ -16,21 +16,24 @@ env:
       parameters: {}
     technology:
       exclude:
-      - "C"
-      - "IBM DB2"
-      - "PHP"
       - "CouchDB"
-      - "Oracle"
-      - "JSP/Servlet"
       - "Firebird"
       - "HypersonicSQL"
-      - "SAP MaxDB"
-      - "Ruby"
+      - "IBM DB2"
       - "Microsoft Access"
-      - "Java"
-      - "Tomcat"
+      - "MongoDB"
+      - "Oracle"
+      - "SAP MaxDB"
       - "Sybase"
+      - "Java"
+      - "C"
+      - "JSP/Servlet"
+      - "Java"
+      - "PHP"
       - "Python"
+      - "Ruby"
+      - "Apache"
+      - "Tomcat"
   parameters:
     failOnError: true
     failOnWarning: false
@@ -101,12 +104,10 @@ jobs:
     reportDescription: ""
     displayReport: false
   risks:
-  - "info"
   - "low"
   - "medium"
   - "high"
   confidences:
-  - "falsepositive"
   - "low"
   - "medium"
   - "high"

@@ -342,10 +342,7 @@ public static class ShortcutsUITestContextExtensions
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
         context.GetApi().GetApplicationInfoFromApiAsync();
 
-    // This is required to instantiate ILogger<>.
-#pragma warning disable S2094 // Classes should not be empty
     private sealed class ExecuteRecipeShortcut { }
-#pragma warning restore S2094 // Classes should not be empty
 
     /// <summary>
     /// Executes a recipe identified by its name directly.
@@ -444,10 +441,24 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
-    /// Selects theme by <paramref name="id"/>.
+    /// Selects theme by <paramref name="id"/> directly.
     /// </summary>
     /// <exception cref="ThemeNotFoundException">If no theme found with the given <paramref name="id"/>.</exception>
+    [Obsolete("Use SetThemeDirectlyAsync() instead. This method will be removed in a future version.")]
     public static Task SelectThemeAsync(
+        this UITestContext context,
+        string id,
+        string tenant = null,
+        bool activateShell = true) =>
+        context.SetThemeDirectlyAsync(id, tenant, activateShell);
+
+    /// <summary>
+    /// Sets the current site or admin theme by <paramref name="id"/> directly, activating the theme without user interaction.
+    /// </summary>
+    /// <exception cref="ThemeNotFoundException">
+    /// Thrown if no theme was found with the given <paramref name="id"/>.
+    /// </exception>
+    public static Task SetThemeDirectlyAsync(
         this UITestContext context,
         string id,
         string tenant = null,
@@ -632,7 +643,7 @@ public static class ShortcutsUITestContextExtensions
     }
 
     private static bool IsAdminTheme(IManifestInfo manifest) =>
-        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(ManifestConstants.AdminTag));
+        manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(value: ManifestConstants.AdminTag));
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders, string permissionName) =>

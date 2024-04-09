@@ -3,7 +3,6 @@ using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -69,7 +68,7 @@ public static class AtataFactory
         var currentTry = 1;
 
         // Force headless mode if we are in Linux without a working graphical environment.
-        if (!browserConfiguration.Headless && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (!browserConfiguration.Headless && OperatingSystem.IsLinux())
         {
             browserConfiguration.Headless = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DISPLAY"));
         }

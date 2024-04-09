@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestContext
 {
-    private readonly List<LogEntry> _historicBrowserLog = new();
+    private readonly List<LogEntry> _historicBrowserLog = [];
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -81,7 +81,7 @@ public class UITestContext
         "Design",
         "MA0016:Prefer return collection abstraction instead of implementation",
         Justification = "Deliberately modifiable by consumer code.")]
-    public Dictionary<string, object> CustomContext { get; } = new();
+    public Dictionary<string, object> CustomContext { get; } = [];
 
     /// <summary>
     /// Gets a dictionary storing some custom data for collecting in the failure dump.
