@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Services;
 
 namespace Lombiq.Tests.UI.Models;
 
-internal record UITestContextParameters
+internal sealed record UITestContextParameters
 {
     public string Id { get; init; }
     public UITestManifest TestManifest { get; init; }
