@@ -18,7 +18,7 @@ public class CounterConfigurations
     /// <summary>
     /// Gets the counter configuration used in the running phase of the web application.
     /// </summary>
-    public RunningPhaseCounterConfiguration Running { get; } = new();
+    public RunningPhaseCounterConfiguration Running { get; } = [];
 
     public static Action<ICounterDataCollector, ICounterProbe> DefaultAssertCounterData(
         PhaseCounterConfiguration configuration) =>
@@ -52,13 +52,13 @@ public class CounterConfigurations
                     AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
                         probe,
                         counterConfiguration.ExcludeFilter ?? (key => false),
-                        $"{settings.Name}.{nameof(settings.Settings.DbCommandExecutionThreshold)}",
-                        settings.Settings.DbCommandExecutionThreshold);
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandIncludingParametersExecutionCountThreshold)}",
+                        settings.Settings.DbCommandIncludingParametersExecutionCountThreshold);
                     AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
                         probe,
                         counterConfiguration.ExcludeFilter ?? (key => false),
-                        $"{settings.Name}.{nameof(settings.Settings.DbCommandTextExecutionThreshold)}",
-                        settings.Settings.DbCommandTextExecutionThreshold);
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandExcludingParametersExecutionThreshold)}",
+                        settings.Settings.DbCommandExcludingParametersExecutionThreshold);
                     AssertIntegerCounterValue<DbReaderReadCounterKey>(
                         probe,
                         counterConfiguration.ExcludeFilter ?? (key => false),

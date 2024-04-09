@@ -20,10 +20,9 @@ public class BasicOrchardFeaturesTests : UITestBase
     // We could reuse the previously specified SetupHelpers.RecipeId const here but it's actually a different recipe for
     // this test.
     [Fact]
-    public Task BasicOrchardFeaturesShouldWork(Browser browser) =>
+    public Task BasicOrchardFeaturesShouldWork() =>
         ExecuteTestAsync(
             context => context.TestBasicOrchardFeaturesAsync(RecipeIds.BasicOrchardFeaturesTests),
-
             configuration =>
             {
                 // The UI Testing Toolbox includes a DbCommand execution counter to check for duplicated SQL queries..
@@ -31,7 +30,7 @@ public class BasicOrchardFeaturesTests : UITestBase
                 // and parameter set against the threshold value in its configuration. If the executed command count is
                 // greater than the threshold, it raises a CounterThresholdException. So here we set the minimum
                 // required value to avoid it.
-                configuration.CounterConfiguration.Running.PhaseThreshold.DbCommandExecutionThreshold = 26;
+                configuration.CounterConfiguration.Running.PhaseThreshold.DbCommandIncludingParametersExecutionCountThreshold = 26;
 
                 return Task.CompletedTask;
             });

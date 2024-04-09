@@ -643,7 +643,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId);
+        var counterDataCollector = new CounterDataCollector(_testOutputHelper);
+
+        _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId, counterDataCollector);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();

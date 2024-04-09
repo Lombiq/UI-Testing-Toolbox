@@ -1,6 +1,7 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.IO;
@@ -12,7 +13,8 @@ namespace Lombiq.Tests.UI.Services;
 
 public delegate IWebApplicationInstance WebApplicationInstanceFactory(
     OrchardCoreUITestExecutorConfiguration configuration,
-    string contextId);
+    string contextId,
+    ICounterDataCollector counterDataCollector);
 
 public static class UITestExecutor
 {

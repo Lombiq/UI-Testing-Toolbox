@@ -2,6 +2,7 @@ using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.OrchardCoreHosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -51,7 +52,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly CounterDataCollector _counterDataCollector;
+    private readonly ICounterDataCollector _counterDataCollector;
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
@@ -64,7 +65,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         OrchardCoreConfiguration configuration,
         string contextId,
         ITestOutputHelper testOutputHelper,
-        CounterDataCollector counterDataCollector)
+        ICounterDataCollector counterDataCollector)
     {
         _configuration = configuration;
         _contextId = contextId;

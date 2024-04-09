@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.SecurityScanning;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using OpenQA.Selenium;

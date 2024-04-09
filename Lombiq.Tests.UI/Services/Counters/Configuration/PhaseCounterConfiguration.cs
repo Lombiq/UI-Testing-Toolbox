@@ -7,8 +7,8 @@ public class PhaseCounterConfiguration : CounterConfiguration
     /// </summary>
     public CounterThresholdConfiguration PhaseThreshold { get; set; } = new CounterThresholdConfiguration
     {
-        DbCommandExecutionThreshold = 22,
-        DbCommandTextExecutionThreshold = 44,
+        DbCommandIncludingParametersExecutionCountThreshold = 22,
+        DbCommandExcludingParametersExecutionThreshold = 44,
         DbReaderReadThreshold = 11,
     };
 }

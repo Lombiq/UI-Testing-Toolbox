@@ -29,8 +29,13 @@ public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, 
 
     protected override void OnDisposing() => _session.Dispose();
 
+    // Needs to be implemented on mock class.
+#pragma warning disable CS0618 // Type or member is obsolete
     void ISession.Save(object obj, bool checkConcurrency, string collection) =>
         _session.Save(obj, checkConcurrency, collection);
+#pragma warning restore CS0618 // Type or member is obsolete
+    Task ISession.SaveAsync(object obj, bool checkConcurrency, string collection) =>
+        _session.SaveAsync(obj, checkConcurrency, collection);
     void ISession.Delete(object item, string collection) =>
         _session.Delete(item, collection);
     bool ISession.Import(object item, long id, long version, string collection) =>
