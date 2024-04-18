@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class HtmlValidationError
+public class JsonHtmlValidationError
 {
     [JsonPropertyName("ruleId")]
     public string RuleId { get; set; }

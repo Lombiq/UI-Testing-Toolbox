@@ -29,17 +29,9 @@ public static class HtmlValidationResultExtensions
     /// Gets the parsed errors from the HTML validation result.
     /// Can only be used if the output formatter is set to JSON.
     /// </summary>
-    public static async Task<IEnumerable<HtmlValidationError>> GetParsedErrorsAsync(this HtmlValidationResult result)
-    {
-        if (string.IsNullOrEmpty(result.ResultFilePath) || !File.Exists(result.ResultFilePath))
-        {
-            return Enumerable.Empty<HtmlValidationError>();
-        }
+    public static IEnumerable<JsonHtmlValidationError> GetParsedErrors(this HtmlValidationResult result) => ParseOutput(result.Output);
 
-        return ParseOutput(await File.ReadAllTextAsync(result.ResultFilePath));
-    }
-
-    private static IEnumerable<HtmlValidationError> ParseOutput(string output)
+    private static IEnumerable<JsonHtmlValidationError> ParseOutput(string output)
     {
         output = output.Trim();
         if ((!output.StartsWith('{') || !output.EndsWith('}')) &&
@@ -56,7 +48,7 @@ public static class HtmlValidationResultExtensions
                 .Select(message =>
                 {
                     var rawMessageText = message.GetRawText();
-                    return JsonSerializer.Deserialize<HtmlValidationError>(rawMessageText);
+                    return JsonSerializer.Deserialize<JsonHtmlValidationError>(rawMessageText);
                 });
         }
         catch (JsonException)

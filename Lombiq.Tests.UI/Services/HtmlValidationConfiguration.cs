@@ -30,7 +30,7 @@ public class HtmlValidationConfiguration
     /// </summary>
     public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
-        ResultFileFormatter = HtmlValidateFormatter.Names.Json,
+        ResultFileFormatter = HtmlValidateFormatter.Names.Text,
         OutputFormatter = HtmlValidateFormatter.Names.Json,
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
@@ -72,7 +72,7 @@ public class HtmlValidationConfiguration
             if (validationResult.Output.Trim().StartsWith('[') ||
                 validationResult.Output.Trim().StartsWith('{'))
             {
-                (await validationResult.GetParsedErrorsAsync()).ShouldBeEmpty();
+                validationResult.GetParsedErrors().ShouldBeEmpty();
             }
             else
             {
