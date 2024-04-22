@@ -43,13 +43,6 @@
     <PackageReference Include="OrchardCore.Abstractions" Version="1.5.0" />
     <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.5.0" />
     <PackageReference Include="OrchardCore.Workflows" Version="1.5.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="5.1.1" />
   </ItemGroup>
 
