@@ -72,7 +72,7 @@ public static class SecurityScanningUITestContextExtensions
         // Ignore some validation errors that only happen during security tests.
         context.Configuration.UseAssertAppLogsForSecurityScan();
 
-        // This takes over 10 minutes and the session will certainly time out with retries.
+        // This can take even over 10 minutes and the CI session would certainly time out with retries.
         context.Configuration.MaxRetryCount = 0;
 
         return context.RunAndAssertFullSecurityScanAsync(
