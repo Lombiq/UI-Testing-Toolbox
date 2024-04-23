@@ -17,10 +17,10 @@ public class OrchardCoreLoginPage : Page<_>
 {
     private const string DefaultUrl = "Login";
 
-    [FindById]
+    [FindById("LoginForm_UserName", nameof(UserName))]
     public TextInput<_> UserName { get; private set; }
 
-    [FindById]
+    [FindById("LoginForm_Password", nameof(Password))]
     public PasswordInput<_> Password { get; private set; }
 
     [FindByAttribute("type", "submit")]
