@@ -413,7 +413,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                await registrationPage.RegisterWithAsync(context, parameters);
                 context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
@@ -443,7 +443,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                await registrationPage.RegisterWithAsync(context, parameters);
                 context.RefreshCurrentAtataContext();
 
                 context
