@@ -414,7 +414,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
                 registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
-                registrationPage.ShouldStayOnRegistrationPage().ValidationMessages.Should.Not.BeEmpty();
+                context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
 
@@ -445,9 +445,11 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                 var registrationPage = await context.GoToRegistrationPageAsync();
                 registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
                 context.RefreshCurrentAtataContext();
-                registrationPage
-                    .ShouldStayOnRegistrationPage()
-                    .ValidationMessages[page => page.Email].Should.BeVisible();
+
+                context
+                    .Get(By.CssSelector(".text-danger.field-validation-error"))
+                    .Text
+                    .ShouldContain("A user with the same username already exists.");
             });
     }
 
