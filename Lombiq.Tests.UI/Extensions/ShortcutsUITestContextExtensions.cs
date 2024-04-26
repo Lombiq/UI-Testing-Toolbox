@@ -646,7 +646,8 @@ public static class ShortcutsUITestContextExtensions
         manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(value: ManifestConstants.AdminTag));
 
     private static async Task<bool> PermissionExistsAsync(
-        IEnumerable<IPermissionProvider> permissionProviders, string permissionName)
+        IEnumerable<IPermissionProvider> permissionProviders,
+        string permissionName)
     {
         var permissions = permissionProviders.ToAsyncEnumerable();
         await foreach (var provider in permissions)
