@@ -4,5 +4,5 @@ namespace Lombiq.Tests.UI.Attributes;
 
 public sealed class ChromeAttribute : BrowserAttributeBase
 {
-    protected override Browser Browser => Browser.Edge;
+    protected override Browser Browser => Browser.Chrome;
 }
