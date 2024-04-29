@@ -2,11 +2,11 @@ name: Publish to NuGet
 
 on:
   push:
-    tags:
-      - v*
 
 jobs:
   publish-nuget:
-    uses: Lombiq/GitHub-Actions/.github/workflows/publish-nuget.yml@dev
+    uses: Lombiq/GitHub-Actions/.github/workflows/publish-nuget.yml@issue/OSOE-842
     secrets:
       API_KEY: ${{ secrets.DEFAULT_NUGET_PUBLISH_API_KEY }}
+    with:
+      publish-version: 9.0.1-alpha.7.osoe-840
