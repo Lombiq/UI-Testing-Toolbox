@@ -59,10 +59,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="2.14.1" />
-    <PackageReference Include="Atata.Bootstrap" Version="2.2.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="2.5.0" />
-    <PackageReference Include="Atata.WebDriverExtras" Version="2.3.0" />
+    <PackageReference Include="Atata" Version="3.1.0" />
+    <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="3.0.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="3.0.0" />
     <PackageReference Include="Atata.WebDriverSetup" Version="2.10.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />

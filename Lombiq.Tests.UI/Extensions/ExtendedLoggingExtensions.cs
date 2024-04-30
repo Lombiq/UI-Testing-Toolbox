@@ -148,15 +148,15 @@ public static class ExtendedLoggingExtensions
             var notLast = i < StabilityRetryCount - 1;
             try
             {
-                // This is somewhat risky. ILogManager is not thread-safe and uses as stack to keep track of sections,
-                // so if multiple sections are started in concurrent threads, the result will be incorrect. This
-                // shouldn't be too much of an issue for now though since tests, while async, are single-threaded.
-                context.Scope.AtataContext.Log.Start(section);
-                context.Scope.AtataContext.Log.Info($"Log section {section.Message} started.");
-                var result = await functionAsync();
-                context.Scope.AtataContext.Log.Info($"Log section {section.Message} ended.");
-                context.Scope.AtataContext.Log.EndSection();
-                return result;
+                return await context.Scope.AtataContext.Log.ExecuteSectionAsync(
+                    section,
+                    async () =>
+                    {
+                        context.Scope.AtataContext.Log.Info($"Log section {section.Message} started.");
+                        var result = await functionAsync();
+                        context.Scope.AtataContext.Log.Info($"Log section {section.Message} ended.");
+                        return result;
+                    });
             }
             catch (StaleElementReferenceException) when (notLast)
             {

@@ -21,7 +21,8 @@ public static class AtataFactory
         Uri baseUri,
         OrchardCoreUITestExecutorConfiguration configuration)
     {
-        AtataContext.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
+        AtataContext.GlobalProperties.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
+        AtataContext.GlobalProperties.UseUtcTimeZone();
 
         // Since Atata 2.0 the default visibility option is Visibility.Any, these lines restore it to the 1.x behavior.
         AtataContext.GlobalConfiguration.UseDefaultControlVisibility(Visibility.Visible);
@@ -37,7 +38,6 @@ public static class AtataFactory
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .UseUtcTimeZone()
             .PageSnapshots.UseCdpOrPageSourceStrategy(); // #spell-check-ignore-line
 
         builder.LogConsumers.AddDebug();

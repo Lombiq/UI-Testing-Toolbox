@@ -26,61 +26,49 @@ internal sealed class MonkeyTester
         _randomizer = new NonSecurityRandomizer(_options.BaseRandomSeed);
     }
 
-    internal async Task TestOnePageAsync(int? randomSeed = null)
-    {
-        Log.Start(new LogSection("Execute monkey testing against one page"));
-
-        try
-        {
-            WriteOptionsToLog();
-
-            var pageTestInfo = GetCurrentPageTestInfo();
-
-            if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
-            else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
-        }
-        finally
-        {
-            Log.EndSection();
-        }
-    }
-
-    internal async Task TestRecursivelyAsync()
-    {
-        Log.Start(new LogSection($"Execute monkey testing recursively"));
-
-        try
-        {
-            WriteOptionsToLog();
-
-            var pageTestInfo = GetCurrentPageTestInfo();
-            await TestCurrentPageAsync(pageTestInfo);
-
-            while (true)
+    internal Task TestOnePageAsync(int? randomSeed = null) =>
+        Log.ExecuteSectionAsync(
+            new LogSection("Execute monkey testing against one page"),
+            async () =>
             {
-                pageTestInfo = GetCurrentPageTestInfo();
+                WriteOptionsToLog();
 
-                if (CanTestPage(pageTestInfo))
-                {
-                    await TestCurrentPageAsync(pageTestInfo);
-                }
-                else if (TryGetAvailablePageToTest(out var availablePageToTest))
-                {
-                    await _context.GoToAbsoluteUrlAsync(availablePageToTest.Url);
+                var pageTestInfo = GetCurrentPageTestInfo();
 
-                    await TestCurrentPageAsync(availablePageToTest);
-                }
-                else
+                if (randomSeed is null) await TestCurrentPageAsync(pageTestInfo);
+                else await TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed.Value);
+            });
+
+    internal Task TestRecursivelyAsync() =>
+        Log.ExecuteSectionAsync(
+            new LogSection($"Execute monkey testing recursively"),
+            async () =>
+            {
+                WriteOptionsToLog();
+
+                var pageTestInfo = GetCurrentPageTestInfo();
+                await TestCurrentPageAsync(pageTestInfo);
+
+                while (true)
                 {
-                    return;
+                    pageTestInfo = GetCurrentPageTestInfo();
+
+                    if (CanTestPage(pageTestInfo))
+                    {
+                        await TestCurrentPageAsync(pageTestInfo);
+                    }
+                    else if (TryGetAvailablePageToTest(out var availablePageToTest))
+                    {
+                        await _context.GoToAbsoluteUrlAsync(availablePageToTest.Url);
+
+                        await TestCurrentPageAsync(availablePageToTest);
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
-            }
-        }
-        finally
-        {
-            Log.EndSection();
-        }
-    }
+            });
 
     private void WriteOptionsToLog() =>
         Log.Trace(@$"Monkey testing options:
