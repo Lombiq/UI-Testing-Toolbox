@@ -84,7 +84,6 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // Action) to further configure it.
                 ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
-
                 // This is to make sure that the HTML validation config file in this project takes effect. Only needed
                 // until we fix https://github.com/Lombiq/UI-Testing-Toolbox/issues/359.
                 configuration.HtmlValidationConfiguration.HtmlValidationOptions =
