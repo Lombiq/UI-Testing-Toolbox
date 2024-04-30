@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -79,9 +80,17 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // disable it with the below config). With this, you can make sure that the HTML markup the app
                 // generates (also from content items) is valid. While the default settings for HTML validation are most
                 // possibly suitable for your projects, check out the HtmlValidationConfiguration class for what else
-                // you can configure. We've also added a .htmlvalidate.json file (note the Content Build
+                // you can configure. We've also added a custom .htmlvalidate.json file (note the Content Build
                 // Action) to further configure it.
                 ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+
+
+                // This is to make sure that the HTML validation config file in this project takes effect. Only needed
+                // until we fix https://github.com/Lombiq/UI-Testing-Toolbox/issues/359.
+                configuration.HtmlValidationConfiguration.HtmlValidationOptions =
+                    configuration.HtmlValidationConfiguration.HtmlValidationOptions
+                        .CloneWith(validationOptions => validationOptions.ConfigPath =
+                            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "samples.htmlvalidate.json")); // #spell-check-ignore-line
 
                 // The UI Testing Toolbox can run several checks for the app even if you don't add explicit
                 // assertions: By default, the Orchard logs and the browser logs (where e.g. JavaScript errors show
