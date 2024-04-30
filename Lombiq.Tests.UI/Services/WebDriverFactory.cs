@@ -22,16 +22,12 @@ public static class WebDriverFactory
     {
         Task<ChromeDriver> CreateDriverInnerAsync(ChromeDriverService service)
         {
+            // Note that no-sandbox should NOT be used, because it causes Chrome processes to remain open, see
+            // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356.
+
             var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
             chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
-
-            // Disabling the Chrome sandbox can speed things up a bit, so it's recommended when you get a lot of
-            // timeouts during parallel execution:
-            // https://stackoverflow.com/questions/22322596/selenium-error-the-http-request-to-the-remote-webdriver-timed-out-after-60-sec
-            // However, this makes the executing machine vulnerable to browser-based attacks so it should only be used
-            // with trusted code (like our own).
-            chromeConfig.Options.AddArgument("no-sandbox");
 
             // Linux-specific setting, may be necessary for running in containers, see
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
