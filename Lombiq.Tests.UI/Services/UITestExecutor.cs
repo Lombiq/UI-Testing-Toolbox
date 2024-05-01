@@ -129,7 +129,6 @@ public static class UITestExecutor
         {
             if (dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
             {
-
                 // The test uses parameters and is thus in the
                 // "Lombiq.Tests.UI.Samples.Tests.BasicTests.AnonymousHomePageShouldExist(browser: Chrome)" format.
                 var dumpFolderNameBeginningIndex =
@@ -144,10 +143,8 @@ public static class UITestExecutor
                 dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
             }
 
-            // Not using an SHA265 hash, which would always compute the same value, because it doesn't matter if
-            // different runs compute a different hash, and the chance of a hash collision for the name of a couple
-            // dozen tests is tiny. So, it's better to have the shorter numeric hash codes.
-            dumpFolderNameBase += " " + StringComparer.Ordinal.GetHashCode(testManifest.Name).ToTechnicalString();
+            // Can't use string.GetHasCode() because that varies between executions.
+            dumpFolderNameBase += " " + Sha256Helper.ComputeHash(testManifest.Name);
         }
 
         dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
@@ -177,9 +174,12 @@ public static class UITestExecutor
             var openingBracketIndex = dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal);
             var closingBracketIndex = dumpFolderNameBase.LastIndexOf(')');
 
+            // Only adding a hash of the parameters if the hash of the test's full name is not already there due to
+            // path shortening above.
             // Can't use string.GetHasCode() because that varies between executions.
-            var hashedParameters = Sha256Helper
-                .ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
+            var hashedParameters = dumpConfiguration.UseShortNames
+                ? string.Empty
+                : Sha256Helper.ComputeHash(dumpFolderNameBase[(openingBracketIndex + 1)..(closingBracketIndex + 1)]);
 
             dumpFolderNameBase =
                 dumpFolderNameBase[0..(openingBracketIndex + 1)] +
