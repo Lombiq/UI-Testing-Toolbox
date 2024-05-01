@@ -59,26 +59,17 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). For example:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). It can also extend the default one, only overriding the configuration necessary. For example:
 
 ```json
 {
   "extends": [
-    "html-validate:recommended"
+    "./.htmlvalidate.json"
   ],
 
   "rules": {
-    "attribute-boolean-style": "off",
     "element-required-attributes": "off",
-    "no-trailing-whitespace": "off",
-    "no-inline-style": "off",
-    "no-implicit-button-type": "off",
-    "wcag/h30": "off",
-    "wcag/h32": "off",
-    "wcag/h36": "off",
-    "wcag/h37": "off",
-    "wcag/h67": "off",
-    "wcag/h71": "off"
+    "no-implicit-button-type": "off"
   },
 
   "root":  true
@@ -88,10 +79,8 @@ If you want to change some HTML validation rules from only a few specific tests,
 Then you can change the configuration to use that:
 
 ```cs
- changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
-                configuration.HtmlValidationConfiguration.HtmlValidationOptions
-                    .CloneWith(validationOptions => validationOptions.ConfigPath =
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
+ changeConfiguration: configuration => 
+    configuration.HtmlValidationConfiguration.HtmlValidationOptions.SetLocalConfigFile("TestName.htmlvalidate.json");
 ```
 
 Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
