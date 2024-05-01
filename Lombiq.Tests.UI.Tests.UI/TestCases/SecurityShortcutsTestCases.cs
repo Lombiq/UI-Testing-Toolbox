@@ -36,7 +36,8 @@ public static class SecurityShortcutsTestCases
                 context.GetCurrentUri().AbsolutePath.ShouldBe("/Admin/ContentTypes/List");
             },
             browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            ConfigurationHelper.DisableHtmlValidation,
+            timeout: null);
 
     public static Task AddUserToFakeRoleShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
@@ -51,7 +52,8 @@ public static class SecurityShortcutsTestCases
                 context.ClearLogs();
             },
             browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            ConfigurationHelper.DisableHtmlValidation,
+            timeout: null);
 
     public static Task AllowFakePermissionToRoleShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
@@ -64,7 +66,8 @@ public static class SecurityShortcutsTestCases
                 context.ClearLogs();
             },
             browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            ConfigurationHelper.DisableHtmlValidation,
+            timeout: null);
 
     private static async Task CreateUserAndSignInAsync(UITestContext context)
     {

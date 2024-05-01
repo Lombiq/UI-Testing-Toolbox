@@ -30,5 +30,6 @@ public static class CustomAdminPrefixTestCases
                 };
 
                 return Task.CompletedTask;
-            });
+            },
+            timeout: null);
 }
