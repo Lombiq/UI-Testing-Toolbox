@@ -108,6 +108,9 @@ public static class FormUITestContextExtensions
         string editorId,
         string text)
     {
+        // Waiting for the editor to load.
+        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
+
         var script = $@"
             monaco.editor.getEditors().find((element) =>
                 element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).setValue({JsonConvert.SerializeObject(text)});";
