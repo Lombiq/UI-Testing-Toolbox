@@ -1,4 +1,5 @@
 using Atata.Cli;
+using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
@@ -53,6 +54,12 @@ public static class HtmlValidationUITestContextExtensions
     {
         var options = context.Configuration.HtmlValidationConfiguration.HtmlValidationOptions.Clone();
         htmlValidationOptionsAdjuster?.Invoke(options);
+
+        // Because of the default settings of Atata.HtmlValidation.HtmlValidationOptions overriding the formatter
+        // we need to set this back to JSON
+        if (options.OutputFormatter == HtmlValidateFormatter.Names.Stylish)
+            options.ResultFileFormatter = HtmlValidateFormatter.Names.Json;
+
         try
         {
             return new HtmlValidator(options).Validate(context.Driver.PageSource);
