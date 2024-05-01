@@ -64,20 +64,20 @@
     <PackageReference Include="Atata.HtmlValidation" Version="3.0.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.0.0" />
     <PackageReference Include="Atata.WebDriverSetup" Version="2.10.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="3.0.183" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.0.52" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.18.0" />
+    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.2.111" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="1.8.2" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="1.8.2" />
     <PackageReference Include="OrchardCore.Abstractions" Version="1.8.2" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="1.8.2" />
     <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
-    <PackageReference Include="Sarif.Sdk" Version="4.3.7" />
+    <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
     <PackageReference Include="Selenium.Axe" Version="4.0.14" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
