@@ -17,6 +17,7 @@ public class AtataConfiguration
 public static class AtataFactory
 {
     public static async Task<AtataScope> StartAtataScopeAsync(
+        string contextId,
         ITestOutputHelper testOutputHelper,
         Uri baseUri,
         OrchardCoreUITestExecutorConfiguration configuration)
@@ -38,7 +39,8 @@ public static class AtataFactory
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .PageSnapshots.UseCdpOrPageSourceStrategy(); // #spell-check-ignore-line
+            .PageSnapshots.UseCdpOrPageSourceStrategy() // #spell-check-ignore-line
+            .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
