@@ -144,7 +144,7 @@ public static class UITestExecutor
             }
 
             // Can't use string.GetHasCode() because that varies between executions.
-            dumpFolderNameBase += " " + Sha256Helper.ComputeHash(testManifest.Name);
+            dumpFolderNameBase += "-" + Sha256Helper.ComputeHash(testManifest.Name);
         }
 
         dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
