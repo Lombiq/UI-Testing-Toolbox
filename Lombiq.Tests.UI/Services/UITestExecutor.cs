@@ -125,11 +125,29 @@ public static class UITestExecutor
     {
         var dumpConfiguration = configuration.FailureDumpConfiguration;
         var dumpFolderNameBase = testManifest.Name;
-        if (dumpConfiguration.UseShortNames && dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
+        if (dumpConfiguration.UseShortNames)
         {
-            var dumpFolderNameBeginningIndex =
-                dumpFolderNameBase[..dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)].LastIndexOf('.') + 1;
-            dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
+            if (dumpFolderNameBase.Contains('(', StringComparison.Ordinal))
+            {
+
+                // The test uses parameters and is thus in the
+                // "Lombiq.Tests.UI.Samples.Tests.BasicTests.AnonymousHomePageShouldExist(browser: Chrome)" format.
+                var dumpFolderNameBeginningIndex =
+                    dumpFolderNameBase[..dumpFolderNameBase.IndexOf('(', StringComparison.Ordinal)].LastIndexOf('.') + 1;
+                dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
+            }
+            else
+            {
+                // The test doesn't use parameters and is thus in the
+                // "Lombiq.Tests.UI.Samples.Tests.BasicTests.AnonymousHomePageShouldExist" format.
+                var dumpFolderNameBeginningIndex = dumpFolderNameBase.LastIndexOf('.') + 1;
+                dumpFolderNameBase = dumpFolderNameBase[dumpFolderNameBeginningIndex..];
+            }
+
+            // Not using an SHA265 hash, which would always compute the same value, because it doesn't matter if
+            // different runs compute a different hash, and the chance of a hash collision for the name of a couple
+            // dozen tests is tiny. So, it's better to have the shorter numeric hash codes.
+            dumpFolderNameBase += " " + StringComparer.Ordinal.GetHashCode(testManifest.Name).ToTechnicalString();
         }
 
         dumpFolderNameBase = dumpFolderNameBase.MakeFileSystemFriendly();
