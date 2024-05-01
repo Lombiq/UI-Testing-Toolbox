@@ -44,8 +44,8 @@ public class InteractiveModeTests : UITestBase
             });
 
     // This test checks if interactive mode works by opening it in one thread, and then clicking it away in a different
-    // thread. This ensures that the new tab correctly appears with the clickable "Continue Test" button, and then
-    // disappears once it's clicked.
+    // thread. Two threads are necessary because interactive mode stops test execution on its current thread, so we
+    // wouldn't be able to end it from within a test.
     [Fact]
     public Task EnteringInteractiveModeShouldWait() =>
         ExecuteTestAfterSetupAsync(
@@ -59,7 +59,7 @@ public class InteractiveModeTests : UITestBase
                     {
                         // Ensure that the interactive mode polls for status at least once, so the arbitrary waiting
                         // actually works in a real testing scenario.
-                        await Task.Delay(1000);
+                        await Task.Delay(5000);
 
                         await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
                     }));
