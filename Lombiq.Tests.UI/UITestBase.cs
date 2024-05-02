@@ -39,13 +39,19 @@ public abstract class UITestBase
                 webApplicationInstanceFactory,
                 testManifest,
                 configuration);
+            var timeoutTask = Task.Delay(timeout);
 
-            await Task.WhenAny(testTask, Task.Delay(timeout));
+            await Task.WhenAny(testTask, timeoutTask);
 
-            if (!testTask.IsCompleted)
+            if (timeoutTask.IsCompleted)
             {
                 throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
             }
+
+            // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in
+            // some way. So it's safe to await it here. It's also necessary to cleanly propagate any exceptions that may
+            // have been thrown inside it.
+            await testTask;
         }
         finally
         {
