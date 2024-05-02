@@ -35,10 +35,12 @@ public abstract class UITestBase
 
         try
         {
-            var testTask = UITestExecutor.ExecuteOrchardCoreTestAsync(webApplicationInstanceFactory, testManifest, configuration);
-            var timeoutTask = Task.Delay(timeout);
+            var testTask = UITestExecutor.ExecuteOrchardCoreTestAsync(
+                webApplicationInstanceFactory,
+                testManifest,
+                configuration);
 
-            await Task.WhenAny(testTask, timeoutTask);
+            await Task.WhenAny(testTask, Task.Delay(timeout));
 
             if (!testTask.IsCompleted)
             {
