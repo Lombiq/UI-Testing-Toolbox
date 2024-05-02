@@ -28,8 +28,7 @@ internal static class OrchardCoreUITestBaseCounter
 public delegate Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync,
-        TimeSpan? timeout);
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
 
 public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
