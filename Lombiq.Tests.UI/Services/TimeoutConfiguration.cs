@@ -41,7 +41,7 @@ public class TimeoutConfiguration
     public TimeSpan TestRunTimeout { get; set; }
 
     /// <summary>
-    /// Gets a copy of the timout configuration derived from the values in the <see cref="TestConfigurationManager"/>.
+    /// Gets a copy of the timeout configuration derived from the values in the <see cref="TestConfigurationManager"/>.
     /// </summary>
     public static TimeoutConfiguration Default => new()
     {
