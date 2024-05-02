@@ -1,3 +1,4 @@
+using Shouldly;
 using System;
 
 namespace Lombiq.Tests.UI.Services;
@@ -27,13 +28,25 @@ public class TimeoutConfiguration
     /// </summary>
     public TimeSpan PageLoadTimeout { get; set; }
 
+    /// <summary>
+    /// Gets or sets how long an individual test can run to prevent hanging indefinitely. Defaults to 600s.
+    /// </summary>
+    public TimeSpan TestRunTimeout { get; set; }
+
     public static readonly TimeoutConfiguration Default = new()
     {
-        RetryTimeout = TimeSpan
-            .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryTimeoutSeconds", 10)),
-        RetryInterval = TimeSpan
-            .FromMilliseconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryIntervalMillisecondSeconds", 500)),
-        PageLoadTimeout = TimeSpan
-            .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:PageLoadTimeoutSeconds", 180)),
+        RetryTimeout = GetTimeoutConfiguration(nameof(RetryTimeout), 10),
+        RetryInterval = GetTimeoutConfiguration(nameof(RetryInterval), 500, useMilliseconds: true),
+        PageLoadTimeout = GetTimeoutConfiguration(nameof(PageLoadTimeout), 180),
+        TestRunTimeout = GetTimeoutConfiguration(nameof(TestRunTimeout), 600),
     };
+
+    private static TimeSpan GetTimeoutConfiguration(string name, int defaultValue, bool useMilliseconds = false)
+    {
+        var suffix = useMilliseconds ? "Milliseconds" : "Seconds";
+        var key = $"{nameof(TimeoutConfiguration)}:{name}{suffix}";
+        var value = TestConfigurationManager.GetIntConfiguration(key, defaultValue);
+        return useMilliseconds ? TimeSpan.FromMilliseconds(value) : TimeSpan.FromSeconds(value);
+    }
+
 }
