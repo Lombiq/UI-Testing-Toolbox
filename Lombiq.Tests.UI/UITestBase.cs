@@ -21,6 +21,8 @@ public abstract class UITestBase
         OrchardCoreUITestExecutorConfiguration configuration)
     {
         var originalTestOutputHelper = _testOutputHelper;
+        var timeout = configuration.TimeoutConfiguration.TestRunTimeout;
+
         Action afterTest = null;
         if (configuration.ExtendGitHubActionsOutput &&
             configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping &&
@@ -33,7 +35,15 @@ public abstract class UITestBase
 
         try
         {
-            await UITestExecutor.ExecuteOrchardCoreTestAsync(webApplicationInstanceFactory, testManifest, configuration);
+            var testTask = UITestExecutor.ExecuteOrchardCoreTestAsync(webApplicationInstanceFactory, testManifest, configuration);
+            var timeoutTask = Task.Delay(timeout);
+
+            await Task.WhenAny(testTask, timeoutTask);
+
+            if (!testTask.IsCompleted)
+            {
+                throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
+            }
         }
         finally
         {
