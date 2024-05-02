@@ -1,4 +1,3 @@
-using Shouldly;
 using System;
 
 namespace Lombiq.Tests.UI.Services;
@@ -48,5 +47,4 @@ public class TimeoutConfiguration
         var value = TestConfigurationManager.GetIntConfiguration(key, defaultValue);
         return useMilliseconds ? TimeSpan.FromMilliseconds(value) : TimeSpan.FromSeconds(value);
     }
-
 }

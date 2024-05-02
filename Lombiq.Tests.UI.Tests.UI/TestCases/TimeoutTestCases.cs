@@ -3,7 +3,7 @@ using Shouldly;
 
 namespace Lombiq.Tests.UI.Tests.UI.TestCases;
 
-public class TimeoutTestCases
+public static class TimeoutTestCases
 {
     public static Task TestRunTimeoutShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
