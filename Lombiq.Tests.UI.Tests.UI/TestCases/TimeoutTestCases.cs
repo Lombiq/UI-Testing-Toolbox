@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.Tests.UI.TestCases;
 
 public class TimeoutTestCases
 {
-    public static Task TestRunTimoutShouldThrowAsync(
+    public static Task TestRunTimeoutShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
         Browser browser = default) =>
         Should.ThrowAsync(
