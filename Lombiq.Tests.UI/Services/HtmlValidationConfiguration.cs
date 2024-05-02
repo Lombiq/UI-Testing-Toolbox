@@ -34,6 +34,14 @@ public class HtmlValidationConfiguration
         // This is necessary so no long folder names will be generated, see:
         // https://github.com/atata-framework/atata-htmlvalidation/issues/5
         WorkingDirectory = "HtmlValidationTemp",
+        // If a consuming project adds a ".htmlvalidate.json" config file then use it, otherwise fall back to the
+        // "default.htmlvalidate.json" which always exists becuase Lombiq.Tests.UI copies it into the directory during
+        // build.
+        ConfigPath =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".htmlvalidate.json") is { } rootConfiguration &&
+            File.Exists(rootConfiguration)
+                ? rootConfiguration
+                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default.htmlvalidate.json"),
     };
 
     /// <summary>

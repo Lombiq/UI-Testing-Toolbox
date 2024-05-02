@@ -59,7 +59,7 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file, which is always copied into the build directory. For example:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file (which is always copied into the build directory) by setting the value of `"extends"` to a relative path pointing to it. For example:
 
 ```json
 {
