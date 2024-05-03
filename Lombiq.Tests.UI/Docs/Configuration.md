@@ -72,7 +72,7 @@ If you want to change some HTML validation rules from only a few specific tests,
         "no-implicit-button-type": "off"
     },
 
-    "root":  true
+    "root": true
 }
 ```
 
