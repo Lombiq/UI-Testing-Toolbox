@@ -33,13 +33,6 @@ public static class HtmlValidationResultExtensions
 
     private static IEnumerable<JsonHtmlValidationError> ParseOutput(string output)
     {
-        output = output.Trim();
-        if ((!output.StartsWith('{') || !output.EndsWith('}')) &&
-            (!output.StartsWith('[') || !output.EndsWith(']')))
-        {
-            throw new JsonException($"Invalid JSON, make sure to set the OutputFormatter to JSON. Output: {output}");
-        }
-
         try
         {
             var document = JsonDocument.Parse(output);
@@ -51,9 +44,9 @@ public static class HtmlValidationResultExtensions
                     return JsonSerializer.Deserialize<JsonHtmlValidationError>(rawMessageText);
                 });
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
-            throw new JsonException("Unable to parse output, did you set the OutputFormatter to JSON?");
+            throw new JsonException($"Unable to parse output, did you set the OutputFormatter to JSON? Output: {output}", exception);
         }
     }
 }
