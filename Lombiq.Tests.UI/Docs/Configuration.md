@@ -76,7 +76,9 @@ If you want to change some HTML validation rules from only a few specific tests,
 }
 ```
 
-Then you can change the configuration to use that:
+You can also create a completely standalone config file too, without any inheritance, but we'd recommend against that. 
+
+You can change the configuration to use the above file as follows:
 
 ```cs
 changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
