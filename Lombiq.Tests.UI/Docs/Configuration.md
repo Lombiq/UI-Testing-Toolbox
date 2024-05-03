@@ -81,10 +81,9 @@ You can also create a completely standalone config file too, without any inherit
 You can change the configuration to use the above file as follows:
 
 ```cs
-changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
-    configuration.HtmlValidationConfiguration.HtmlValidationOptions
-        .CloneWith(validationOptions => validationOptions.ConfigPath =
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
+changeConfiguration: configuration =>
+    configuration.HtmlValidationConfiguration.HtmlValidationOptions.ConfigPath =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json");
 ```
 
 Though if the file is in the base directory like above, then it can be simplified using the `WithRelativeConfigPath(params string[] pathSegments)` method:

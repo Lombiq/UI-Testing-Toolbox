@@ -80,9 +80,7 @@ public class HtmlValidationConfiguration
     public HtmlValidationConfiguration WithRelativeConfigPath(params string[] pathSegments)
     {
         string[] path = [AppDomain.CurrentDomain.BaseDirectory, .. pathSegments];
-
-        HtmlValidationOptions = HtmlValidationOptions
-            .CloneWith(options => options.ConfigPath = Path.Combine(path));
+        HtmlValidationOptions.ConfigPath = Path.Combine(path);
 
         return this;
     }
