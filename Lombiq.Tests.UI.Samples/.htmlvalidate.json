@@ -1,20 +1,10 @@
 {
   "extends": [
-    "html-validate:recommended"
+    "./default.htmlvalidate.json"
   ],
 
   "rules": {
-    "attribute-boolean-style": "off",
     "long-title": "off",
-    "no-trailing-whitespace": "off",
-    "no-inline-style": "off",
-    "no-dup-class": "off",
-    "wcag/h30": "off",
-    "wcag/h32": "off",
-    "wcag/h36": "off",
-    "wcag/h37": "off",
-    "wcag/h67": "off",
-    "wcag/h71": "off",
-    "form-dup-name": "off"
+    "no-dup-class": "off"
   }
 }
