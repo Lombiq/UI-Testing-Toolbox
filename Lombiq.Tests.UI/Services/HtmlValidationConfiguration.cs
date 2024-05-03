@@ -38,10 +38,9 @@ public class HtmlValidationConfiguration
         // "default.htmlvalidate.json" which always exists because Lombiq.Tests.UI copies it into the directory during
         // build.
         ConfigPath =
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".htmlvalidate.json") is { } rootConfiguration &&
-            File.Exists(rootConfiguration)
-                ? rootConfiguration
-                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default.htmlvalidate.json"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".htmlvalidate.json") is { } rootConfiguration && File.Exists(rootConfiguration)
+            ? rootConfiguration
+            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default.htmlvalidate.json"),
     };
 
     /// <summary>
@@ -71,9 +70,9 @@ public class HtmlValidationConfiguration
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
     /// <summary>
-    /// Updates the <see cref="HtmlValidationOptions"/>.<see
-    /// cref="Atata.HtmlValidation.HtmlValidationOptions.ConfigPath"/> with a path relative to the <see
-    /// cref="AppDomain.BaseDirectory"/> of the <see cref="AppDomain.CurrentDomain"/> (i.e. the build directory).
+    /// Updates the <see cref="HtmlValidationOptions"/>.<see cref="HtmlValidationOptions.ConfigPath"/> with a path
+    /// relative to the <see cref="AppDomain.BaseDirectory"/> of the <see cref="AppDomain.CurrentDomain"/> (i.e. the
+    /// build directory).
     /// </summary>
     /// <param name="pathSegments">
     /// Directory and file names which are joined together using <see cref="Path.Combine(string[])"/>.
