@@ -91,6 +91,8 @@ Though if the file is in the base directory like above, then it can be simplifie
 changeConfiguration: configuration => configuration.HtmlValidationConfiguration.WithRelativeConfigPath("TestName.htmlvalidate.json");
 ```
 
+If you want to do this for all tests in the project, just put an _.htmlvalidate.json_ file into the project root and it will be picked up without further configuration.
+
 Include it in the test project like this:
 
 ```xml
