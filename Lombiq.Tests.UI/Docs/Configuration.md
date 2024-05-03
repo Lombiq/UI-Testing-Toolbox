@@ -59,51 +59,22 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). For example:
+If you want to change some HTML validation rules for only a few specific tests you can exclude them from the results.
+For example if you want to exclude the `prefer-native-element` rule from the results you can do it by doing the following:
 
-```json
-{
-  "extends": [
-    "html-validate:recommended"
-  ],
-
-  "rules": {
-    "attribute-boolean-style": "off",
-    "element-required-attributes": "off",
-    "no-trailing-whitespace": "off",
-    "no-inline-style": "off",
-    "no-implicit-button-type": "off",
-    "wcag/h30": "off",
-    "wcag/h32": "off",
-    "wcag/h36": "off",
-    "wcag/h37": "off",
-    "wcag/h67": "off",
-    "wcag/h71": "off"
-  },
-
-  "root":  true
-}
+```c#
+configuration => configuration.HtmlValidationConfiguration.AssertHtmlValidationResultAsync =
+    validationResult =>
+    {
+        var errors = validationResult.GetParsedErrors()
+            .Where(error => error.RuleId is not "prefer-native-element");
+        errors.ShouldBeEmpty(string.Join('\n', errors.Select(error => error.Message)));
+        return Task.CompletedTask;
+    });
 ```
 
-Then you can change the configuration to use that:
-
-```cs
- changeConfiguration: configuration => configuration.HtmlValidationConfiguration.HtmlValidationOptions =
-                configuration.HtmlValidationConfiguration.HtmlValidationOptions
-                    .CloneWith(validationOptions => validationOptions.ConfigPath =
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json")));
-```
-
-Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
-
-```xml
-  <ItemGroup>
-    <Content Include="TestName.htmlvalidate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-  </ItemGroup>
- ```
+Note that the `RuleId` is the identifier of the rule that you want to exclude from the results.
+The custom string formatter in the call to `errors.ShouldBeEmpty` is used to display the errors in a more readable way and is not strictly necessary.
 
 ## Multi-process test execution
 
