@@ -37,7 +37,7 @@ public static class HtmlValidationResultExtensions
         if ((!output.StartsWith('{') || !output.EndsWith('}')) &&
             (!output.StartsWith('[') || !output.EndsWith(']')))
         {
-            throw new JsonException("Invalid JSON, make sure to set the OutputFormatter to JSON.");
+            throw new JsonException($"Invalid JSON, make sure to set the OutputFormatter to JSON. Output: {output}");
         }
 
         try
