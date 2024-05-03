@@ -59,8 +59,7 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules for only a few specific tests you can exclude them from the results.
-For example if you want to exclude the `prefer-native-element` rule from the results you can do it by doing the following:
+If you want to change some HTML validation rules for only a few specific tests you can exclude them from the results. For example if you want to exclude the `prefer-native-element` rule from the results you can do it by doing the following:
 
 ```c#
 configuration => configuration.HtmlValidationConfiguration.AssertHtmlValidationResultAsync =
@@ -73,8 +72,7 @@ configuration => configuration.HtmlValidationConfiguration.AssertHtmlValidationR
     });
 ```
 
-Note that the `RuleId` is the identifier of the rule that you want to exclude from the results.
-The custom string formatter in the call to `errors.ShouldBeEmpty` is used to display the errors in a more readable way and is not strictly necessary.
+Note that the `RuleId` is the identifier of the rule that you want to exclude from the results. The custom string formatter in the call to `errors.ShouldBeEmpty` is used to display the errors in a more readable way and is not strictly necessary.
 
 ## Multi-process test execution
 
