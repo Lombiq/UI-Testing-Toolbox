@@ -14,7 +14,6 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // with it, should there be any incompatibilities). Note that for this, you need an SQL Server instance running; by
 // default, this will be attempted under the default localhost server name. If you're using anything else, check out the
 // settings in SqlServerConfiguration and Docs/Configuration.md, especially if you use Docker.
-[SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Blocked by the linked issue.")]
 public class SqlServerTests : UITestBase
 {
     public SqlServerTests(ITestOutputHelper testOutputHelper)
@@ -24,14 +23,14 @@ public class SqlServerTests : UITestBase
 
     // Here we have basically two of the same tests as in BasicTests but now we're using SQL Server as the site's
     // database. If they still work and there are no errors in the log then the app works with SQL Server too.
-    [Fact(Skip = "https://github.com/OrchardCMS/OrchardCore/issues/15628")]
+    [Fact]
     public Task AnonymousHomePageShouldExistWithSqlServer() =>
         ExecuteTestAfterSetupAsync(
             context => context.CheckIfAnonymousHomePageExistsAsync(),
             // Note the configuration! We could also set this globally in UITestBase.
             configuration => configuration.UseSqlServer = true);
 
-    [Fact(Skip = "https://github.com/OrchardCMS/OrchardCore/issues/15628")]
+    [Fact]
     public Task TogglingFeaturesShouldWorkWithSqlServer() =>
         ExecuteTestAfterSetupAsync(
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
