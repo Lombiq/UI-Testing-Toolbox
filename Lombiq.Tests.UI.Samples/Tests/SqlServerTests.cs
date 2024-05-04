@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
 using Lombiq.Tests.UI.Services;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
