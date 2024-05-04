@@ -102,6 +102,7 @@ public class MonkeyTests : UITestBase
                     && !logEntry
                         .Message
                         .Contains("An invalid form control with name='LockExpiration' is not focusable.")
+                    && !logEntry.IsNotFoundLogEntry("/favicon.ico")
                     && logEntry.Level != LogLevel.Info)
                 .ShouldBeEmpty());
 

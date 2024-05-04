@@ -646,10 +646,19 @@ public static class ShortcutsUITestContextExtensions
         manifest.Tags.Any(tag => tag.EqualsOrdinalIgnoreCase(value: ManifestConstants.AdminTag));
 
     private static async Task<bool> PermissionExistsAsync(
-        IEnumerable<IPermissionProvider> permissionProviders, string permissionName) =>
-        (await Task.WhenAll(permissionProviders.Select(provider => provider.GetPermissionsAsync())))
-            .SelectMany(permissions => permissions)
-            .Any(permission => permission.Name == permissionName);
+        IEnumerable<IPermissionProvider> permissionProviders,
+        string permissionName)
+    {
+        var permissions = permissionProviders.ToAsyncEnumerable();
+        await foreach (var provider in permissions)
+        {
+            var providerPermissions = await provider.GetPermissionsAsync();
+            if (providerPermissions.Any(permission => permission.Name == permissionName))
+                return true;
+        }
+
+        return false;
+    }
 
     private static Task UsingScopeAsync(
         UITestContext context,
