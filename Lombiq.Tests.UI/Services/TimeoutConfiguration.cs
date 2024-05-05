@@ -36,7 +36,7 @@ public class TimeoutConfiguration
     public TimeSpan PageLoadTimeout { get; set; }
 
     /// <summary>
-    /// Gets or sets how long an individual test can run to prevent hanging indefinitely. Defaults to 600s.
+    /// Gets or sets how long an individual test can run to prevent hanging indefinitely. Defaults to 10 minutes.
     /// </summary>
     public TimeSpan TestRunTimeout { get; set; }
 
