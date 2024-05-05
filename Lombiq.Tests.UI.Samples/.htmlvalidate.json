@@ -6,5 +6,7 @@
   "rules": {
     "long-title": "off",
     "no-dup-class": "off"
-  }
+  },
+
+  "root": true
 }
