@@ -64,7 +64,7 @@ public static class HtmlValidationResultExtensions
         {
             throw new JsonException(
                 $"Unable to parse output, was OutputFormatter set to JSON? Length: {output.Length} " +
-                $"Output: {output[..Math.Min(10, output.Length)]} - {output[Math.Max(0, output.Length - 10)..]}",
+                $"Output: {output}",
                 exception);
         }
     }
