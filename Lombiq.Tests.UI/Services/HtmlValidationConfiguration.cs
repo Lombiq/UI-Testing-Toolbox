@@ -31,8 +31,8 @@ public class HtmlValidationConfiguration
     /// </summary>
     public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
-        ResultFileFormatter = HtmlValidateFormatter.Names.Text,
-        OutputFormatter = HtmlValidateFormatter.Names.Json,
+        ResultFileFormatter = HtmlValidateFormatter.Names.Json,
+        OutputFormatter = HtmlValidateFormatter.Names.Stylish,
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
         // This is necessary so no long folder names will be generated, see:
@@ -67,21 +67,19 @@ public class HtmlValidationConfiguration
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        validationResult =>
+        async validationResult =>
         {
             // Keep supporting cases where output format is not set to JSON.
             if (validationResult.Output.Trim().StartsWith('[') ||
                 validationResult.Output.Trim().StartsWith('{'))
             {
-                var errors = validationResult.GetParsedErrors();
+                var errors = await validationResult.GetParsedErrorsAsync();
                 errors.ShouldBeEmpty(string.Join('\n', errors.Select(error => error.Message)));
             }
             else
             {
                 validationResult.Output.ShouldBeEmpty();
             }
-
-            return Task.CompletedTask;
         };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
