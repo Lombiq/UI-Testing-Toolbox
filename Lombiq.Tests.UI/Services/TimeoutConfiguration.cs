@@ -4,6 +4,14 @@ namespace Lombiq.Tests.UI.Services;
 
 public class TimeoutConfiguration
 {
+    private static readonly TimeoutConfiguration _default = new()
+    {
+        RetryTimeout = GetTimeoutConfiguration(nameof(RetryTimeout), 10),
+        RetryInterval = GetTimeoutConfiguration(nameof(RetryInterval), 500, useMilliseconds: true),
+        PageLoadTimeout = GetTimeoutConfiguration(nameof(PageLoadTimeout), 180),
+        TestRunTimeout = GetTimeoutConfiguration(nameof(TestRunTimeout), 600),
+    };
+
     /// <summary>
     /// Gets or sets how long to wait for an operation to finish when it's retried. Defaults to 10s. Higher,
     /// paradoxically, is usually less safe.
@@ -27,13 +35,27 @@ public class TimeoutConfiguration
     /// </summary>
     public TimeSpan PageLoadTimeout { get; set; }
 
-    public static readonly TimeoutConfiguration Default = new()
+    /// <summary>
+    /// Gets or sets how long an individual test can run to prevent hanging indefinitely. Defaults to 10 minutes.
+    /// </summary>
+    public TimeSpan TestRunTimeout { get; set; }
+
+    /// <summary>
+    /// Gets a copy of the timeout configuration derived from the values in the <see cref="TestConfigurationManager"/>.
+    /// </summary>
+    public static TimeoutConfiguration Default => new()
     {
-        RetryTimeout = TimeSpan
-            .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryTimeoutSeconds", 10)),
-        RetryInterval = TimeSpan
-            .FromMilliseconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:RetryIntervalMillisecondSeconds", 500)),
-        PageLoadTimeout = TimeSpan
-            .FromSeconds(TestConfigurationManager.GetIntConfiguration("TimeoutConfiguration:PageLoadTimeoutSeconds", 180)),
+        RetryTimeout = _default.RetryTimeout,
+        RetryInterval = _default.RetryInterval,
+        PageLoadTimeout = _default.PageLoadTimeout,
+        TestRunTimeout = _default.TestRunTimeout,
     };
+
+    private static TimeSpan GetTimeoutConfiguration(string name, int defaultValue, bool useMilliseconds = false)
+    {
+        var suffix = useMilliseconds ? "Milliseconds" : "Seconds";
+        var key = $"{nameof(TimeoutConfiguration)}:{name}{suffix}";
+        var value = TestConfigurationManager.GetIntConfiguration(key, defaultValue);
+        return useMilliseconds ? TimeSpan.FromMilliseconds(value) : TimeSpan.FromSeconds(value);
+    }
 }
