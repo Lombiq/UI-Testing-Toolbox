@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 
@@ -10,7 +9,7 @@ public sealed class DbCommandTextExecuteCounterKey : DbCommandCounterKey
     public override string DisplayName => "Database command execute counter";
 
     public DbCommandTextExecuteCounterKey(string commandText)
-        : base(commandText, Enumerable.Empty<KeyValuePair<string, object>>())
+        : base(commandText, Enumerable.Empty<CounterDbCommandParameter>())
     {
     }
 

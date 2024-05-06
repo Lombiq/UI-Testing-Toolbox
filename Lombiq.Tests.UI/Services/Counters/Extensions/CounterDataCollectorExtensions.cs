@@ -39,6 +39,7 @@ public static class CounterDataCollectorExtensions
     {
         collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
         collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
+
         return dbCommand.ExecuteScalarAsync(cancellationToken);
     }
 
@@ -49,6 +50,7 @@ public static class CounterDataCollectorExtensions
     {
         collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
         collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
+
         return dbCommand.ExecuteReader(behavior);
     }
 
@@ -60,6 +62,7 @@ public static class CounterDataCollectorExtensions
     {
         collector.Increment(DbCommandExecuteCounterKey.CreateFrom(dbCommand));
         collector.Increment(DbCommandTextExecuteCounterKey.CreateFrom(dbCommand));
+
         return dbCommand.ExecuteReaderAsync(behavior, cancellationToken);
     }
 }

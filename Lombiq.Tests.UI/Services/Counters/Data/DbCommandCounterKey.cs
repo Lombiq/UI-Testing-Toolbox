@@ -7,11 +7,11 @@ namespace Lombiq.Tests.UI.Services.Counters.Data;
 
 public abstract class DbCommandCounterKey : CounterKey
 {
-    private readonly List<KeyValuePair<string, object>> _parameters = [];
+    private readonly List<CounterDbCommandParameter> _parameters = [];
     public string CommandText { get; private set; }
-    public IEnumerable<KeyValuePair<string, object>> Parameters => _parameters;
+    public IEnumerable<CounterDbCommandParameter> Parameters => _parameters;
 
-    protected DbCommandCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
+    protected DbCommandCounterKey(string commandText, IEnumerable<CounterDbCommandParameter> parameters)
     {
         _parameters.AddRange(parameters);
         CommandText = commandText;
@@ -27,8 +27,8 @@ public abstract class DbCommandCounterKey : CounterKey
             && string.Equals(CommandText, otherKey.CommandText, StringComparison.OrdinalIgnoreCase)
             && Parameters.Any()
             && Parameters
-                .Select(param => (param.Key, param.Value))
-                .SequenceEqual(otherKey.Parameters.Select(param => (param.Key, param.Value)));
+                .Select(param => (param.Name, param.Value))
+                .SequenceEqual(otherKey.Parameters.Select(param => (param.Name, param.Value)));
     }
 
     public override IEnumerable<string> Dump()
@@ -44,7 +44,7 @@ public abstract class DbCommandCounterKey : CounterKey
             var commandParams = Parameters.Select((parameter, index) =>
                 string.Create(
                     CultureInfo.InvariantCulture,
-                    $"[{index}]{parameter.Key ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
+                    $"[{index}]{parameter.Name ?? string.Empty} = {parameter.Value?.ToString() ?? "(null)"}"))
                 .Join(", ");
             lines.Add($"\t\tParameters: {commandParams}");
         }

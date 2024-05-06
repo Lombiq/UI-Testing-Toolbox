@@ -29,7 +29,7 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
                 browser,
                 ConfigureAsync));
 
-    // This test will pass because not the Admin page was loaded.
+    // This test will pass because not any of the Admin page was loaded.
     [Theory, Chrome]
     public Task PageWithoutDuplicatedSqlQueriesShouldPass(Browser browser) =>
         Should.NotThrowAsync(() =>
@@ -45,12 +45,21 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
         // The test is guaranteed to fail so we don't want to retry it needlessly.
         configuration.MaxRetryCount = 0;
 
-        var adminCounterConfiguration = new CounterConfiguration();
-        // Let's enable and configure the counter threshold for ORM sessions.
-        adminCounterConfiguration.SessionThreshold.Disable = false;
-        adminCounterConfiguration.SessionThreshold.DbReaderReadThreshold = 0;
+        var adminCounterConfiguration = new CounterConfiguration
+        {
+            ExcludeFilter = OrchardCoreUITestExecutorConfiguration.DefaultCounterExcludeFilter,
+            SessionThreshold =
+            {
+                // Let's enable and configure the counter threshold for ORM sessions.
+                IsEnabled = true,
+                DbCommandExcludingParametersExecutionThreshold = 5,
+                DbCommandIncludingParametersExecutionCountThreshold = 15,
+                DbReaderReadThreshold = 0,
+            },
+        };
+
         // Apply the configuration to the Admin pages only.
-        configuration.CounterConfiguration.Running.Add(
+        configuration.CounterConfiguration.AfterSetup.Add(
             new RelativeUrlConfigurationKey(new Uri("/Admin", UriKind.Relative), exactMatch: false),
             adminCounterConfiguration);
 

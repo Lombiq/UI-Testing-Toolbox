@@ -30,7 +30,7 @@ public class BasicOrchardFeaturesTests : UITestBase
                 // and parameter set against the threshold value in its configuration. If the executed command count is
                 // greater than the threshold, it raises a CounterThresholdException. So here we set the minimum
                 // required value to avoid it.
-                configuration.CounterConfiguration.Running.PhaseThreshold.DbCommandIncludingParametersExecutionCountThreshold = 26;
+                configuration.CounterConfiguration.AfterSetup.PhaseThreshold.DbCommandIncludingParametersExecutionCountThreshold = 26;
 
                 return Task.CompletedTask;
             });

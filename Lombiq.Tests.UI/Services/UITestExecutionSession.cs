@@ -7,7 +7,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
-using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -112,9 +111,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context.FailureDumpContainer.Clear();
             _context.CounterDataCollector.Reset();
-            _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Running);
-            _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Running.AssertCounterData
-                ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Running);
+            _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.AfterSetup);
+            _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.AfterSetup.AssertCounterData
+                ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.AfterSetup);
             failureDumpContainer = _context.FailureDumpContainer;
 
             _context.SetDefaultBrowserSize();
@@ -507,7 +506,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Setup);
                 _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Setup.AssertCounterData
-                    ?? CounterConfigurations.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
+                    ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
 
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();

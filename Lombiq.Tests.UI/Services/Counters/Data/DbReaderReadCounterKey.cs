@@ -8,8 +8,13 @@ public class DbReaderReadCounterKey : DbCommandCounterKey
 {
     public override string DisplayName => "Database reader read counter";
 
-    public DbReaderReadCounterKey(string commandText, IEnumerable<KeyValuePair<string, object>> parameters)
+    public DbReaderReadCounterKey(string commandText, IEnumerable<CounterDbCommandParameter> parameters)
         : base(commandText, parameters)
+    {
+    }
+
+    public DbReaderReadCounterKey(string commandText, params CounterDbCommandParameter[] parameters)
+        : this(commandText, parameters.AsEnumerable())
     {
     }
 
@@ -18,5 +23,5 @@ public class DbReaderReadCounterKey : DbCommandCounterKey
             dbCommand.CommandText,
             dbCommand.Parameters
                 .OfType<DbParameter>()
-                .Select(parameter => new KeyValuePair<string, object>(parameter.ParameterName, parameter.Value)));
+                .Select(parameter => new CounterDbCommandParameter(parameter.ParameterName, parameter.Value)));
 }

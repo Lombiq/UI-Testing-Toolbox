@@ -1,6 +1,11 @@
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.SecurityScanning;
+using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Configuration;
+using Lombiq.Tests.UI.Services.Counters.Data;
+using Lombiq.Tests.UI.Services.Counters.Extensions;
+using Lombiq.Tests.UI.Services.Counters.Value;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using OpenQA.Selenium;
@@ -25,6 +30,13 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
+    private const string WorkflowTypeStartActivitiesQuery =
+        "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+        + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+        + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+        + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+        + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))";
+
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
         app.LogsShouldBeEmptyAsync();
 
@@ -45,6 +57,22 @@ public class OrchardCoreUITestExecutorConfiguration
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
             // under a different URL.
             !logEntry.IsNotFoundLogEntry("/favicon.ico");
+
+    public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList = new List<ICounterKey>
+    {
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentCreatedEvent"),
+            new("p1", value: true)),
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentPublishedEvent"),
+            new("p1", value: true)),
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentUpdatedEvent"),
+            new("p1", value: true)),
+    };
 
     /// <summary>
     /// Gets the global events available during UI test execution.
@@ -262,4 +290,80 @@ public class OrchardCoreUITestExecutorConfiguration
 
         return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
     }
+
+    public static Action<ICounterDataCollector, ICounterProbe> DefaultAssertCounterData(
+        PhaseCounterConfiguration configuration) =>
+        (collector, probe) =>
+        {
+            var counterConfiguration = configuration as CounterConfiguration;
+            if (counterConfiguration is RunningPhaseCounterConfiguration runningPhaseCounterConfiguration
+                && probe is ICounterConfigurationKey counterConfigurationKey)
+            {
+                counterConfiguration = runningPhaseCounterConfiguration.GetMaybeByKey(counterConfigurationKey)
+                    ?? configuration;
+            }
+
+            (CounterThresholdConfiguration Settings, string Name)? threshold = probe switch
+            {
+                NavigationProbe =>
+                    (Settings: counterConfiguration.NavigationThreshold, Name: nameof(counterConfiguration.NavigationThreshold)),
+                PageLoadProbe =>
+                    (Settings: counterConfiguration.PageLoadThreshold, Name: nameof(counterConfiguration.PageLoadThreshold)),
+                SessionProbe =>
+                    (Settings: counterConfiguration.SessionThreshold, Name: nameof(counterConfiguration.SessionThreshold)),
+                CounterDataCollector when counterConfiguration is PhaseCounterConfiguration phaseCounterConfiguration =>
+                    (Settings: phaseCounterConfiguration.PhaseThreshold, Name: nameof(phaseCounterConfiguration.PhaseThreshold)),
+                _ => null,
+            };
+
+            if (threshold is { } settings && settings.Settings.IsEnabled)
+            {
+                try
+                {
+                    AssertIntegerCounterValue<DbCommandExecuteCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandIncludingParametersExecutionCountThreshold)}",
+                        settings.Settings.DbCommandIncludingParametersExecutionCountThreshold);
+                    AssertIntegerCounterValue<DbCommandTextExecuteCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbCommandExcludingParametersExecutionThreshold)}",
+                        settings.Settings.DbCommandExcludingParametersExecutionThreshold);
+                    AssertIntegerCounterValue<DbReaderReadCounterKey>(
+                        probe,
+                        counterConfiguration.ExcludeFilter ?? (key => false),
+                        $"{settings.Name}.{nameof(settings.Settings.DbReaderReadThreshold)}",
+                        settings.Settings.DbReaderReadThreshold);
+                }
+                catch (CounterThresholdException exception) when (probe is IOutOfTestContextCounterProbe)
+                {
+                    collector.PostponeCounterException(exception);
+                }
+            }
+        };
+
+    public static void AssertIntegerCounterValue<TKey>(
+        ICounterProbe probe,
+        Func<ICounterKey, bool> excludeFilter,
+        string thresholdName,
+        int threshold)
+        where TKey : ICounterKey =>
+        probe.Counters.Keys
+            .OfType<TKey>()
+            .Where(key => !excludeFilter(key))
+            .ForEach(key =>
+            {
+                if (probe.Counters[key] is IntegerCounterValue counterValue
+                    && counterValue.Value > threshold)
+                {
+                    throw new CounterThresholdException(
+                        probe,
+                        key,
+                        counterValue,
+                        $"Counter value is greater then {thresholdName}, threshold: {threshold.ToTechnicalString()}.");
+                }
+            });
+
+    public static bool DefaultCounterExcludeFilter(ICounterKey key) => DefaultCounterExcludeList.Contains(key);
 }
