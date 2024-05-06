@@ -56,7 +56,9 @@ public static class HtmlValidationResultExtensions
         }
         catch (JsonException exception)
         {
-            throw new JsonException($"Unable to parse output, did you set the OutputFormatter to JSON? Output: {output}", exception);
+            throw new JsonException(
+                $"Unable to parse output, was OutputFormatter set to JSON? Length: {output.Length} Output: {output[0]} - {output[^1]}",
+                exception);
         }
     }
 }
