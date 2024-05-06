@@ -45,6 +45,12 @@ public static class HtmlValidationResultExtensions
     {
         try
         {
+            // In some cases the output is too large and is not a valid JSON anymore. In this case we need to fix it.
+            if (output.Trim().StartsWith('[') && !output.Trim().EndsWith(']'))
+            {
+                output += "\"}]";
+            }
+
             var document = JsonDocument.Parse(output);
             return document.RootElement.EnumerateArray()
                 .SelectMany(element => element.GetProperty("messages").EnumerateArray())
