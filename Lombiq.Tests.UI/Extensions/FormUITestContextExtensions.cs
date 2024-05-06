@@ -108,8 +108,7 @@ public static class FormUITestContextExtensions
         string editorId,
         string text)
     {
-        // Waiting for the editor to load.
-        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
+        WaitForMonacoEditor(context, editorId);
 
         var script = $@"
             monaco.editor.getEditors().find((element) =>
@@ -125,6 +124,8 @@ public static class FormUITestContextExtensions
         this UITestContext context,
         string editorId)
     {
+        WaitForMonacoEditor(context, editorId);
+
         var script = $@"
             return monaco.editor.getEditors().find((element) =>
                 element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).getValue();";
@@ -378,4 +379,7 @@ public static class FormUITestContextExtensions
 
         return context.Driver.TryFillElement(element, text);
     }
+
+    private static void WaitForMonacoEditor(UITestContext context, string editorId) =>
+        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
 }
