@@ -1,0 +1,12 @@
+{
+  "extends": [
+    "./default.htmlvalidate.json"
+  ],
+
+  "rules": {
+    "long-title": "off",
+    "no-dup-class": "off"
+  },
+
+  "root": true
+}

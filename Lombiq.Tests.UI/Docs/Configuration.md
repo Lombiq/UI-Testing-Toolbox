@@ -59,31 +59,42 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). It can also extend the default one, only overriding the configuration necessary. For example:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file (which is always copied into the build directory) by setting the value of `"extends"` to a relative path pointing to it and declaring `"root": true`. For example:
 
 ```json
 {
-  "extends": [
-    "./.htmlvalidate.json"
-  ],
+    "extends": [
+        "./default.htmlvalidate.json"
+    ],
 
-  "rules": {
-    "element-required-attributes": "off",
-    "no-implicit-button-type": "off"
-  },
+    "rules": {
+        "element-required-attributes": "off",
+        "no-implicit-button-type": "off"
+    },
 
-  "root":  true
+    "root": true
 }
 ```
 
-Then you can change the configuration to use that:
+You can also create a completely standalone config file too, without any inheritance, but we'd recommend against that.
+
+You can change the configuration to use the above file as follows:
 
 ```cs
- changeConfiguration: configuration => 
-    configuration.HtmlValidationConfiguration.HtmlValidationOptions.SetLocalConfigFile("TestName.htmlvalidate.json");
+changeConfiguration: configuration =>
+    configuration.HtmlValidationConfiguration.HtmlValidationOptions.ConfigPath =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json");
 ```
 
-Make sure to also include the `root` attribute and set it to `true` inside the custom _.htmlvalidate.json_ file and include it in the test project like this:
+Though if the file is in the base directory like above, then it can be simplified using the `WithRelativeConfigPath(params string[] pathSegments)` method:
+
+```cs
+changeConfiguration: configuration => configuration.HtmlValidationConfiguration.WithRelativeConfigPath("TestName.htmlvalidate.json");
+```
+
+If you want to do this for all tests in the project, just put an _.htmlvalidate.json_ file into the project root and it will be picked up without further configuration.
+
+Include it in the test project like this:
 
 ```xml
   <ItemGroup>
