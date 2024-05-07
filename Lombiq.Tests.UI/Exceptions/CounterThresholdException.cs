@@ -54,7 +54,10 @@ public class CounterThresholdException : Exception
         ICounterValue value,
         string message)
     {
-        var builder = new StringBuilder();
+        var builder = new StringBuilder()
+            .AppendLine()
+            .AppendLine("A counter value has crossed the configured threshold level. Details:");
+
         if (probe is not null) builder.AppendLine(probe.DumpHeadline());
         counter?.Dump().ForEach(line => builder.AppendLine(line));
         value?.Dump().ForEach(line => builder.AppendLine(line));
