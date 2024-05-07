@@ -1,9 +1,11 @@
 using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Shouldly;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -90,7 +92,18 @@ public class HtmlValidationConfiguration
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
         validationResult =>
         {
-            validationResult.Output.ShouldBeEmpty();
+            // Keep supporting cases where output format is not set to JSON.
+            if (validationResult.Output.Trim().StartsWith('[') ||
+                validationResult.Output.Trim().StartsWith('{'))
+            {
+                var errors = validationResult.GetParsedErrors();
+                errors.ShouldBeEmpty(string.Join('\n', errors.Select(error => error.Message)));
+            }
+            else
+            {
+                validationResult.Output.ShouldBeEmpty();
+            }
+
             return Task.CompletedTask;
         };
 
