@@ -1,10 +1,8 @@
-using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Shouldly;
 using System;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -31,13 +29,18 @@ public class HtmlValidationConfiguration
     /// </summary>
     public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
-        ResultFileFormatter = HtmlValidateFormatter.Names.Json,
-        OutputFormatter = HtmlValidateFormatter.Names.Stylish,
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
         // This is necessary so no long folder names will be generated, see:
         // https://github.com/atata-framework/atata-htmlvalidation/issues/5
         WorkingDirectory = "HtmlValidationTemp",
+        // If a consuming project adds a ".htmlvalidate.json" config file then use it, otherwise fall back to the
+        // "default.htmlvalidate.json" which always exists because Lombiq.Tests.UI copies it into the directory during
+        // build.
+        ConfigPath =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".htmlvalidate.json") is { } rootConfiguration && File.Exists(rootConfiguration)
+            ? rootConfiguration
+            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default.htmlvalidate.json"),
     };
 
     /// <summary>
@@ -66,20 +69,27 @@ public class HtmlValidationConfiguration
     public Predicate<UITestContext> HtmlValidationAndAssertionOnPageChangeRule { get; set; } =
         EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule;
 
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationOptions"/>.<see cref="HtmlValidationOptions.ConfigPath"/> with a path
+    /// relative to the <see cref="AppDomain.BaseDirectory"/> of the <see cref="AppDomain.CurrentDomain"/> (i.e. the
+    /// build directory).
+    /// </summary>
+    /// <param name="pathSegments">
+    /// Directory and file names which are joined together using <see cref="Path.Combine(string[])"/>.
+    /// </param>
+    public HtmlValidationConfiguration WithRelativeConfigPath(params string[] pathSegments)
+    {
+        string[] path = [AppDomain.CurrentDomain.BaseDirectory, .. pathSegments];
+        HtmlValidationOptions.ConfigPath = Path.Combine(path);
+
+        return this;
+    }
+
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        async validationResult =>
+        validationResult =>
         {
-            // Keep supporting cases where output format is not set to JSON.
-            if (validationResult.Output.Trim().StartsWith('[') ||
-                validationResult.Output.Trim().StartsWith('{'))
-            {
-                var errors = await validationResult.GetParsedErrorsAsync();
-                errors.ShouldBeEmpty(string.Join('\n', errors.Select(error => error.Message)));
-            }
-            else
-            {
-                validationResult.Output.ShouldBeEmpty();
-            }
+            validationResult.Output.ShouldBeEmpty();
+            return Task.CompletedTask;
         };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =

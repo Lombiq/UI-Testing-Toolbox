@@ -1,0 +1,45 @@
+# WARNING: Only edit this file in the Lombiq .NET Analyzers repository's "Lombiq.Analyzers" folder. A copy of this file
+# anywhere else will be overwritten.
+
+# All files
+[*]
+
+# Basics
+charset = utf-8
+guidelines = 120 1px solid a0ffc000, 150 1px solid 80ff0000
+
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+trim_trailing_whitespace = true
+
+# New line preferences
+end_of_line = crlf
+insert_final_newline = true
+tab_width = 4
+
+# Various config files
+[*.{config,csproj,json,props,targets}]
+
+indent_size = 2
+
+# Markdown files
+[*.md]
+
+trim_trailing_whitespace = false
+
+# JavaScript files
+[*.js]
+
+# Placeholder, no unique rules for JS files at the moment.
+
+
+# SCSS files
+[*.scss]
+
+# Placeholder, no unique rules for SCSS files at the moment.
+
+# PowerShell files
+[*.ps1]
+
+# Placeholder, no unique rules for PS files at the moment.

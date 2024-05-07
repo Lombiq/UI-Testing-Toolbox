@@ -59,20 +59,51 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules for only a few specific tests you can exclude them from the results. For example if you want to exclude the `prefer-native-element` rule from the results you can do it by doing the following:
+If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file (which is always copied into the build directory) by setting the value of `"extends"` to a relative path pointing to it and declaring `"root": true`. For example:
 
-```c#
-configuration => configuration.HtmlValidationConfiguration.AssertHtmlValidationResultAsync =
-    validationResult =>
-    {
-        var errors = validationResult.GetParsedErrors()
-            .Where(error => error.RuleId is not "prefer-native-element");
-        errors.ShouldBeEmpty(string.Join('\n', errors.Select(error => error.Message)));
-        return Task.CompletedTask;
-    });
+```json
+{
+    "extends": [
+        "./default.htmlvalidate.json"
+    ],
+
+    "rules": {
+        "element-required-attributes": "off",
+        "no-implicit-button-type": "off"
+    },
+
+    "root": true
+}
 ```
 
-Note that the `RuleId` is the identifier of the rule that you want to exclude from the results. The custom string formatter in the call to `errors.ShouldBeEmpty` is used to display the errors in a more readable way and is not strictly necessary.
+You can also create a completely standalone config file too, without any inheritance, but we'd recommend against that.
+
+You can change the configuration to use the above file as follows:
+
+```cs
+changeConfiguration: configuration =>
+    configuration.HtmlValidationConfiguration.HtmlValidationOptions.ConfigPath =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestName.htmlvalidate.json");
+```
+
+Though if the file is in the base directory like above, then it can be simplified using the `WithRelativeConfigPath(params string[] pathSegments)` method:
+
+```cs
+changeConfiguration: configuration => configuration.HtmlValidationConfiguration.WithRelativeConfigPath("TestName.htmlvalidate.json");
+```
+
+If you want to do this for all tests in the project, just put an _.htmlvalidate.json_ file into the project root and it will be picked up without further configuration.
+
+Include it in the test project like this:
+
+```xml
+  <ItemGroup>
+    <Content Include="TestName.htmlvalidate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+ ```
 
 ## Multi-process test execution
 

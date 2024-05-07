@@ -5,8 +5,9 @@
 
   "rules": {
     "attribute-boolean-style": "off",
-    "no-trailing-whitespace": "off",
+    "form-dup-name": "off",
     "no-inline-style": "off",
+    "no-trailing-whitespace": "off",
     "wcag/h30": "off",
     "wcag/h32": "off",
     "wcag/h36": "off",
