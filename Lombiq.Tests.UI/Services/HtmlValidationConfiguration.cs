@@ -31,7 +31,6 @@ public class HtmlValidationConfiguration
     public HtmlValidationOptions HtmlValidationOptions { get; set; } = new()
     {
         OutputFormatter = HtmlValidateFormatter.Names.Json,
-        ResultFileFormatter = HtmlValidateFormatter.Names.Codeframe,
         SaveHtmlToFile = HtmlSaveCondition.Never,
         SaveResultToFile = true,
         // This is necessary so no long folder names will be generated, see:
