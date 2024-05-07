@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.Counters.Configuration;
@@ -21,25 +20,43 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
 
     // This test will fail because the app will read the same command result more times than the configured threshold
     // during the Admin page rendering.
-    [Theory, Chrome]
-    public Task PageWithTooManyDuplicatedSqlQueriesShouldThrow(Browser browser) =>
+    [Fact]
+    public Task PageWithTooManyDuplicatedSqlQueriesShouldThrow() =>
         Should.ThrowAsync<AggregateException>(() =>
             ExecuteTestAfterSetupAsync(
                 context => context.SignInDirectlyAndGoToDashboardAsync(),
-                browser,
-                ConfigureAsync));
+                configuration => ConfigureAsync(
+                    configuration,
+                    commandExcludingParametersThreshold: 3,
+                    commandIncludingParametersThreshold: 2,
+                    readerReadThreshold: 0)));
 
-    // This test will pass because not any of the Admin page was loaded.
-    [Theory, Chrome]
-    public Task PageWithoutDuplicatedSqlQueriesShouldPass(Browser browser) =>
+    // This test will pass because not any of the Admin page was loaded where the SQL queries are under monitoring.
+    [Fact]
+    public Task PageWithoutDuplicatedSqlQueriesShouldPass() =>
         ExecuteTestAfterSetupAsync(
-            async context => await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false),
-            browser,
-            ConfigureAsync);
+            context => context.GoToHomePageAsync(onlyIfNotAlreadyThere: false),
+            configuration => ConfigureAsync(configuration));
+
+    // This test will pass because counter thresholds are exactly matching with the counter values captured during
+    // navigating to the Admin dashboard page.
+    [Fact]
+    public Task PageWithMatchingCounterThresholdsShouldPass() =>
+        ExecuteTestAfterSetupAsync(
+            context => context.SignInDirectlyAndGoToDashboardAsync(),
+            configuration => ConfigureAsync(
+                configuration,
+                commandExcludingParametersThreshold: 3,
+                commandIncludingParametersThreshold: 2,
+                readerReadThreshold: 2));
 
     // We configure the test to throw an exception if a certain counter threshold is exceeded, but only in case of Admin
     // pages.
-    private static Task ConfigureAsync(OrchardCoreUITestExecutorConfiguration configuration)
+    private static Task ConfigureAsync(
+        OrchardCoreUITestExecutorConfiguration configuration,
+        int commandExcludingParametersThreshold = 0,
+        int commandIncludingParametersThreshold = 0,
+        int readerReadThreshold = 0)
     {
         // The test is guaranteed to fail so we don't want to retry it needlessly.
         configuration.MaxRetryCount = 0;
@@ -51,9 +68,9 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
             {
                 // Let's enable and configure the counter thresholds for ORM sessions.
                 IsEnabled = true,
-                DbCommandExcludingParametersExecutionThreshold = 5,
-                DbCommandIncludingParametersExecutionCountThreshold = 2,
-                DbReaderReadThreshold = 0,
+                DbCommandExcludingParametersExecutionThreshold = commandExcludingParametersThreshold,
+                DbCommandIncludingParametersExecutionCountThreshold = commandIncludingParametersThreshold,
+                DbReaderReadThreshold = readerReadThreshold,
             },
         };
 
