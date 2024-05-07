@@ -32,11 +32,10 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
     // This test will pass because not any of the Admin page was loaded.
     [Theory, Chrome]
     public Task PageWithoutDuplicatedSqlQueriesShouldPass(Browser browser) =>
-        Should.NotThrowAsync(() =>
-            ExecuteTestAfterSetupAsync(
-                async context => await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false),
-                browser,
-                ConfigureAsync));
+        ExecuteTestAfterSetupAsync(
+            async context => await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false),
+            browser,
+            ConfigureAsync);
 
     // We configure the test to throw an exception if a certain counter threshold is exceeded, but only in case of Admin
     // pages.
