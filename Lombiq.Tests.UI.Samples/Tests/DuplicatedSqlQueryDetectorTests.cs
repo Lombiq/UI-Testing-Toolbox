@@ -50,10 +50,10 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
             ExcludeFilter = OrchardCoreUITestExecutorConfiguration.DefaultCounterExcludeFilter,
             SessionThreshold =
             {
-                // Let's enable and configure the counter threshold for ORM sessions.
+                // Let's enable and configure the counter thresholds for ORM sessions.
                 IsEnabled = true,
                 DbCommandExcludingParametersExecutionThreshold = 5,
-                DbCommandIncludingParametersExecutionCountThreshold = 15,
+                DbCommandIncludingParametersExecutionCountThreshold = 2,
                 DbReaderReadThreshold = 0,
             },
         };
@@ -62,6 +62,9 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
         configuration.CounterConfiguration.AfterSetup.Add(
             new RelativeUrlConfigurationKey(new Uri("/Admin", UriKind.Relative), exactMatch: false),
             adminCounterConfiguration);
+
+        // Enable the counter subsystem.
+        configuration.CounterConfiguration.IsEnabled = true;
 
         return Task.CompletedTask;
     }

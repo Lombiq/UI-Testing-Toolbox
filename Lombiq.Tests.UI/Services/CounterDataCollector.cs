@@ -15,12 +15,18 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
     public override bool IsAttached => true;
     public Action<ICounterDataCollector, ICounterProbe> AssertCounterData { get; set; }
     public string Phase { get; set; }
+    public bool IsEnabled { get; set; }
 
     public CounterDataCollector(ITestOutputHelper testOutputHelper) =>
         _testOutputHelper = testOutputHelper;
 
     public void AttachProbe(ICounterProbe probe)
     {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
         probe.CaptureCompleted = ProbeCaptureCompleted;
         _probes.Add(probe);
     }
@@ -34,6 +40,11 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 
     public override void Increment(ICounterKey counter)
     {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
         _probes.Where(probe => probe.IsAttached)
             .ForEach(probe => probe.Increment(counter));
         base.Increment(counter);
@@ -57,6 +68,11 @@ public sealed class CounterDataCollector : CounterProbeBase, ICounterDataCollect
 
     public void AssertCounter()
     {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
         if (!_postponedCounterExceptions.IsEmpty)
         {
             throw new AggregateException(

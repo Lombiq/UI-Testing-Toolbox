@@ -7,6 +7,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -110,10 +111,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context ??= await CreateContextAsync();
 
             _context.FailureDumpContainer.Clear();
-            _context.CounterDataCollector.Reset();
-            _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.AfterSetup);
-            _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.AfterSetup.AssertCounterData
-                ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.AfterSetup);
+
+            BeginDataCollection(
+                _configuration.CounterConfiguration.AfterSetup,
+                nameof(_configuration.CounterConfiguration.AfterSetup));
+
             failureDumpContainer = _context.FailureDumpContainer;
 
             _context.SetDefaultBrowserSize();
@@ -121,8 +123,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
-            _context.CounterDataCollector.Dump().ForEach(_testOutputHelper.WriteLine);
-            _context.CounterDataCollector.AssertCounter();
+
+            EndAssertDataCollection();
 
             return true;
         }
@@ -160,6 +162,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
 
         return false;
+    }
+
+    private void BeginDataCollection(PhaseCounterConfiguration counterConfiguration, string phase)
+    {
+        _context.CounterDataCollector.Reset();
+        _context.CounterDataCollector.Phase = phase;
+        _context.CounterDataCollector.AssertCounterData = counterConfiguration.AssertCounterData
+            ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(counterConfiguration);
+        _context.CounterDataCollector.IsEnabled = _configuration.CounterConfiguration.IsEnabled;
+    }
+
+    private void EndAssertDataCollection()
+    {
+        _context.CounterDataCollector.Dump().ForEach(_testOutputHelper.WriteLine);
+        _context.CounterDataCollector.AssertCounter();
     }
 
     private async ValueTask ShutdownAsync()
@@ -504,9 +521,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 // config to be available at startup too.
                 _context = await CreateContextAsync();
 
-                _context.CounterDataCollector.Phase = nameof(_configuration.CounterConfiguration.Setup);
-                _context.CounterDataCollector.AssertCounterData = _configuration.CounterConfiguration.Setup.AssertCounterData
-                    ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(_configuration.CounterConfiguration.Setup);
+                BeginDataCollection(
+                    _configuration.CounterConfiguration.Setup,
+                    nameof(_configuration.CounterConfiguration.Setup));
 
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
@@ -516,8 +533,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
-                _context.CounterDataCollector.Dump().ForEach(line => _testOutputHelper.WriteLine(line));
-                _context.CounterDataCollector.AssertCounter();
+
+                EndAssertDataCollection();
+
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
