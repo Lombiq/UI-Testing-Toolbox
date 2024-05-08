@@ -122,7 +122,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
             context.RefreshCurrentAtataContext();
             contentItemsPage
                 .CreateNewPage()
-                    .Title.Set("Audit Trail")
+                    .Title.Set("Audit Trail Test Page")
                     .Publish.ClickAndGo()
                 .AlertMessages.Should.Contain(message => message.IsSuccess);
 
@@ -186,7 +186,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                 context.RefreshCurrentAtataContext();
                 contentItemsPage
                     .CreateNewPage()
-                        .Title.Set("Workflows")
+                        .Title.Set("Workflows Test Page")
                         .Publish.ClickAndGo();
 
                 context.ShouldBeSuccess(contentItemPublishTestSuccessMessage);
