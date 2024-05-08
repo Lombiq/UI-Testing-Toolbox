@@ -164,16 +164,20 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync();
 
                 var taskXPath = "//div[contains(@class, 'activity-task')]";
-                var eventXPath = "//div[contains(@class, 'activity-event')]";
 
                 context.DragAndDropToOffset(By.XPath(taskXPath), 400, 0);
 
                 context.DragAndDrop(
-                    By.XPath(eventXPath + "//circle"),
-                    By.XPath(taskXPath + "//circle"));
+                    By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"),
+                    By.XPath(taskXPath));
 
-                await context.ClickReliablyOnAsync(By.XPath(eventXPath));
-                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']"));
+                await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
+
+                // Waiting is necessary here because when we click on the event, we need to wait for the popup
+                // otherwise, the startup task button won't be clicked.
+                await Task.Delay(1000);
+
+                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']").Visible());
                 await context.ClickReliablyOnSubmitAsync();
 
                 context.ShouldBeSuccess("Workflow has been saved.");
@@ -190,6 +194,6 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                 // Checking if the workflow run was logged.
                 await context.GoToAdminRelativeUrlAsync(workflowsPath);
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'Instances')]"));
-                context.Exists(By.XPath("//a[@class = 'badge text-bg-success']"));
+                context.Exists(By.XPath("//span[@class = 'badge text-bg-success']"));
             });
 }
