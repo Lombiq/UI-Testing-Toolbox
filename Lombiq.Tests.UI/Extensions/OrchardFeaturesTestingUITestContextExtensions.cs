@@ -168,7 +168,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                 context.DragAndDropToOffset(By.XPath(taskXPath), 400, 0);
 
                 context.DragAndDrop(
-                    By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"),
+                    By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"), // #spell-check-ignore-line
                     By.XPath(taskXPath));
 
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
