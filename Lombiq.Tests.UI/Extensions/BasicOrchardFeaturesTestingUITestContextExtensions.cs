@@ -1,10 +1,8 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -142,6 +140,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
+        await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
     }
 
@@ -170,6 +169,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestAuditTrailAsync();
+        await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
     }
 
@@ -560,130 +560,6 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
                     .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
                     .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
             });
-
-    public static Task TestMediaOperationsAsync(this UITestContext context) =>
-        context.ExecuteTestAsync(
-            "Test media operations",
-            async () =>
-            {
-                const string mediaPath = "/Media";
-                var imageName = FileUploadHelper.SamplePngFileName;
-                var documentName = FileUploadHelper.SamplePdfFileName;
-
-                await context.GoToAdminRelativeUrlAsync(mediaPath);
-
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
-
-                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
-                context.WaitForPageLoad();
-                await context.ClickReliablyOnAsync(By.CssSelector("body"));
-
-                context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
-
-                await context
-                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]").OfAnyVisibility())
-                    .ClickReliablyAsync(context);
-                context.SwitchToFirstWindow();
-
-                context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync(mediaPath);
-
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
-
-                // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
-                context.WaitForPageLoad();
-                await context.ClickReliablyOnAsync(By.CssSelector("body"));
-
-                context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
-
-                await context
-                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility())
-                    .ClickReliablyAsync(context);
-
-                await context
-                    .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
-                    .ClickReliablyAsync(context);
-                context.SwitchToFirstWindow();
-
-                context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync(mediaPath);
-
-                await context
-                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions")) // #spell-check-ignore-line
-                    .ClickReliablyAsync(context);
-
-                context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
-
-                await context.ClickReliablyOnAsync(By.Id("modalFooterOk"));
-
-                // Wait until new folder is created.
-                context.Exists(
-                    By.XPath("//div[contains(@class, 'alert-info') and contains(.,'This folder is empty')]"));
-
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
-                context.WaitForPageLoad();
-
-                var image = context.Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
-
-                context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
-
-                await image.ClickReliablyAsync(context);
-
-                await context
-                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]/ancestor::tr"))
-                    .Get(By.CssSelector("a.btn.btn-link.btn-sm.delete-button"))
-                    .ClickReliablyAsync(context);
-
-                await context.ClickModalOkAsync();
-                context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync(mediaPath);
-
-                context.Missing(By.XPath("//span[text()=' Image.png ' and @class='break-word']"));
-
-                var deleteFolderButton =
-                    context.Get(By.CssSelector("#folder-tree  li.selected  div.btn-group.folder-actions .svg-inline--fa.fa-trash"));
-                await deleteFolderButton.ClickReliablyAsync(context);
-
-                await context.ClickModalOkAsync();
-                context.WaitForPageLoad();
-                await context.GoToAdminRelativeUrlAsync(mediaPath);
-
-                context.Missing(By.XPath("//div[text()='Example Folder' and @class='folder-name ms-2']"));
-            });
-
-    public static Task TestAuditTrailAsync(this UITestContext context) =>
-    context.ExecuteTestAsync(
-        "Test Audit Trail",
-        async () =>
-        {
-            var auditTrailPath = "/AuditTrail";
-
-            await context.EnableFeatureDirectlyAsync("OrchardCore.AuditTrail");
-            await context.GoToAdminRelativeUrlAsync("/Settings" + auditTrailPath);
-
-            await context.GoToEditorTabAsync("Content");
-
-            await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"), isChecked: true);
-
-            await context.ClickReliablyOnSubmitAsync();
-
-            var contentItemsPage = await context.GoToContentItemsPageAsync();
-            context.RefreshCurrentAtataContext();
-            contentItemsPage
-                .CreateNewPage()
-                    .Title.Set("Audit Trail")
-                    .Publish.ClickAndGo()
-                .AlertMessages.Should.Contain(message => message.IsSuccess);
-
-            await context.GoToAdminRelativeUrlAsync(auditTrailPath);
-
-            context.Exists(ByHelper.TextContains("of the Page"));
-
-            context.Exists(ByHelper.TextContains("was published"));
-
-            context.Exists(ByHelper.TextContains("was created"));
-        });
 
     /// <summary>
     /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
