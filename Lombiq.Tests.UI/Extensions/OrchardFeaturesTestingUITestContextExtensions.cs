@@ -114,7 +114,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
 
             await context.GoToEditorTabAsync("Content");
 
-            await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"), isChecked: true);
+            await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
 
             await context.ClickReliablyOnSubmitAsync();
 
@@ -133,6 +133,8 @@ public static class OrchardFeaturesTestingUITestContextExtensions
             context.Exists(ByHelper.TextContains("was published"));
 
             context.Exists(ByHelper.TextContains("was created"));
+
+            context.Exists(ByHelper.TextContains("Audit Trail Test Page"));
         });
 
     public static Task TestWorkflowsAsync(this UITestContext context) =>
@@ -153,7 +155,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'ContentPublishedEvent')]"));
 
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_Title"), "Content Published Trigger");
-                await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"), isChecked: true);
+                await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
@@ -171,13 +173,12 @@ public static class OrchardFeaturesTestingUITestContextExtensions
                     By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"), // #spell-check-ignore-line
                     By.XPath(taskXPath));
 
+                // We need to save the workflow early, because sometimes the editor, thus the startup task button can be
+                // buggy during UI testing. This way it's always clicked.
+                await context.ClickReliablyOnSubmitAsync();
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
-                // Waiting is necessary here because when we click on the event, we need to wait for the popup
-                // otherwise, the startup task button won't be clicked.
-                await Task.Delay(1000);
-
-                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']").Visible());
+                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 context.ShouldBeSuccess("Workflow has been saved.");
@@ -193,7 +194,7 @@ public static class OrchardFeaturesTestingUITestContextExtensions
 
                 // Checking if the workflow run was logged.
                 await context.GoToAdminRelativeUrlAsync(workflowsPath);
-                await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'Instances')]"));
+                await context.ClickReliablyOnAsync(By.XPath("//a[text()='Test workflow']/following-sibling::a[contains(@href, 'Instances')]"));
                 context.Exists(By.XPath("//span[@class = 'badge text-bg-success']"));
             });
 }

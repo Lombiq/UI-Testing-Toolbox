@@ -388,7 +388,7 @@ public static class NavigationUITestContextExtensions
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
     /// <summary>
-    /// A method to perform a drag and drop action.
+    /// A method to perform a drag and drop action from a source element to a destination elment.
     /// </summary>
     /// <param name="sourceElementBy">The source element, that should be dragged and dropped.</param>
     /// <param name="destinationBy">The destination element, where the source element should be dropped.</param>
@@ -397,6 +397,12 @@ public static class NavigationUITestContextExtensions
             .Build()
             .Perform();
 
+    /// <summary>
+    /// A method to perform a drag and drop action from a source element to an offset.
+    /// </summary>
+    /// <param name="sourceElementBy">The source element, that should be dragged and dropped.</param>
+    /// <param name="offsetX">The x offset in pixels.</param>
+    /// <param name="offsetY">The y offset in pixels.</param>
     public static void DragAndDropToOffset(this UITestContext context, By sourceElementBy, int offsetX, int offsetY) =>
         new Actions(context.Driver).DragAndDropToOffset(context.Get(sourceElementBy), offsetX, offsetY)
             .Build()
