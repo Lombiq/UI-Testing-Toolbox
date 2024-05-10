@@ -1,9 +1,9 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
