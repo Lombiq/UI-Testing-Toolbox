@@ -49,7 +49,7 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
         if (_isStarted)
         {
             Decorated.WriteLine("::endgroup::");
-            _commongLog.Dispose();
+            _commongLog?.Dispose();
         }
     }
 
