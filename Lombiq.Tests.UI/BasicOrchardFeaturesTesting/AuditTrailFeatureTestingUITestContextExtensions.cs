@@ -38,7 +38,7 @@ public static class AuditTrailFeatureTestingUITestContextExtensions
 
             await context.GoToAdminRelativeUrlAsync(auditTrailPath);
 
-            var auditTrailTestPageSuccessXpath = "//div[contains(@class, eventdata)]/small[contains(., 'was published')" +
+            var auditTrailTestPageSuccessXpath = "//div[contains(@class, eventdata)]/small[contains(., 'was published')" + // #spell-check-ignore-line
                 $" and contains(., 'of the Page')]/a[text()='{auditTrailTestPageTitle}']";
 
             context.Exists(By.XPath(auditTrailTestPageSuccessXpath));
