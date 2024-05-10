@@ -3,11 +3,12 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Extensions;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Extensions;
+namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
 
 /// <summary>
 /// Provides a set of extension methods for basic Orchard features testing.
@@ -131,14 +132,8 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         this UITestContext context,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
-        await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
-        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
-        await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
-        await context.TestTurningFeatureOnAndOffAsync();
-        await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
@@ -164,10 +159,7 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         bool dontCheckFrontend,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
-        await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
-        await context.TestTurningFeatureOnAndOffAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();

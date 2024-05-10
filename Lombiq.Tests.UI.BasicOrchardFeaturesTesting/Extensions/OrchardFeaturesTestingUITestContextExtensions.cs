@@ -1,10 +1,11 @@
 using Atata;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Extensions;
+namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
 
 /// <summary>
 /// Provides a set of extension methods for Orchard features testing like Audit Trail, media operations and workflows.

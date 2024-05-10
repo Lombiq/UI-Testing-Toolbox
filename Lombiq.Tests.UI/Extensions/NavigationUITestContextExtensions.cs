@@ -388,7 +388,7 @@ public static class NavigationUITestContextExtensions
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
 
     /// <summary>
-    /// A method to perform a drag and drop action from a source element to a destination elment.
+    /// A method to perform a drag and drop action from a source element to a destination element.
     /// </summary>
     /// <param name="sourceElementBy">The source element, that should be dragged and dropped.</param>
     /// <param name="destinationBy">The destination element, where the source element should be dropped.</param>
