@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Services.GitHub;
 internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperDecorator
 {
     private readonly string _groupName;
-    private FileStream _commongLog;
+    private FileStream _logFileStream;
 
     private bool _isStarted;
 
@@ -24,25 +24,29 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
     public void WriteLine(string message)
     {
         Start();
-        _commongLog.Write(FormatMessage(message));
+        _logFileStream.Write(FormatMessage(message));
         Decorated.WriteLine(message);
     }
 
     public void WriteLine(string format, params object[] args)
     {
         Start();
-        _commongLog.Write(FormatMessage(string.Format(CultureInfo.InvariantCulture, format, args)));
+        _logFileStream.Write(FormatMessage(string.Format(CultureInfo.InvariantCulture, format, args)));
         Decorated.WriteLine(format, args);
     }
 
     private void Start()
     {
+        if (_logFileStream == null)
+        {
+            if (!Directory.Exists("FailureDumps\\DebugLog")) Directory.CreateDirectory("FailureDumps\\DebugLog");
+            _logFileStream = File.Open("FailureDumps\\DebugLog\\Log.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
+        }
+
         if (_isStarted) return;
 
         Decorated.WriteLine($"::group::{_groupName}");
         _isStarted = true;
-        Directory.CreateDirectory("FailureDumps\\DebugLog");
-        _commongLog = File.Open("FailureDumps\\DebugLog\\Log.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
     }
 
     private void EndGroup()
@@ -50,7 +54,12 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
         if (_isStarted)
         {
             Decorated.WriteLine("::endgroup::");
-            _commongLog?.Dispose();
+        }
+
+        if (_logFileStream != null)
+        {
+            _logFileStream.Dispose();
+            _logFileStream = null;
         }
     }
 
