@@ -132,8 +132,14 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         this UITestContext context,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
+        await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
+        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
+        await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
+        await context.TestContentOperationsAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
+        await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
@@ -159,7 +165,10 @@ public static class BasicOrchardFeaturesTestingUITestContextExtensions
         bool dontCheckFrontend,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
+        await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
+        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
+        await context.TestTurningFeatureOnAndOffAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
