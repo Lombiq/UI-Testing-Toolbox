@@ -2,6 +2,7 @@ using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -30,6 +31,13 @@ public static class HtmlValidationResultExtensions
     /// Can only be used if the output formatter is set to JSON.
     /// </summary>
     public static IEnumerable<JsonHtmlValidationError> GetParsedErrors(this HtmlValidationResult result) => ParseOutput(result.Output);
+
+    public static string GetParsedErrorMessageString(IEnumerable<JsonHtmlValidationError> errors) =>
+        string.Join(
+            '\n', errors.Select(error =>
+                $"{error.Line.ToString(CultureInfo.InvariantCulture)}:{error.Column.ToString(CultureInfo.InvariantCulture)} - " +
+                $"{error.Message} - " +
+                $"{error.RuleId}"));
 
     private static IEnumerable<JsonHtmlValidationError> ParseOutput(string output)
     {
