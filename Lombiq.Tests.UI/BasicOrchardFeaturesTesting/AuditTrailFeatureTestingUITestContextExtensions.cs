@@ -38,8 +38,8 @@ public static class AuditTrailFeatureTestingUITestContextExtensions
 
             await context.GoToAdminRelativeUrlAsync(auditTrailPath);
 
-            var auditTrailTestPageSuccessXpath = "//small[contains(., 'was published') and contains(., 'of the Page')]" +
-                $"/a[text()='{auditTrailTestPageTitle}']";
+            var auditTrailTestPageSuccessXpath = "//div[contains(@class, eventdata)]/small[contains(., 'was published')" +
+                $" and contains(., 'of the Page')]/a[text()='{auditTrailTestPageTitle}']";
 
             context.Exists(By.XPath(auditTrailTestPageSuccessXpath));
 
