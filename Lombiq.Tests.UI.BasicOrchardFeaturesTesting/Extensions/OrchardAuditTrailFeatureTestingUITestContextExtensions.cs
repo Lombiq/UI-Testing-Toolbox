@@ -18,6 +18,7 @@ public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
         async () =>
         {
             var auditTrailPath = "/AuditTrail";
+            var auditTrailTestPageTitle = "Audit Trail Test Page";
 
             await context.EnableFeatureDirectlyAsync("OrchardCore.AuditTrail");
             await context.GoToAdminRelativeUrlAsync("/Settings" + auditTrailPath);
@@ -32,7 +33,7 @@ public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
             context.RefreshCurrentAtataContext();
             contentItemsPage
                 .CreateNewPage()
-                    .Title.Set("Audit Trail Test Page")
+                    .Title.Set(auditTrailTestPageTitle)
                     .Publish.ClickAndGo()
                 .AlertMessages.Should.Contain(message => message.IsSuccess);
 
@@ -44,6 +45,6 @@ public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
 
             context.Exists(ByHelper.TextContains("was created"));
 
-            context.Exists(ByHelper.TextContains("Audit Trail Test Page"));
+            context.Exists(ByHelper.TextContains(auditTrailTestPageTitle));
         });
 }
