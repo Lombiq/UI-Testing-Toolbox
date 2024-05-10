@@ -41,7 +41,8 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
 
         Decorated.WriteLine($"::group::{_groupName}");
         _isStarted = true;
-        _commongLog = File.Open("FailureDumps\\DebugLog.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
+        Directory.CreateDirectory("FailureDumps\\DebugLog");
+        _commongLog = File.Open("FailureDumps\\DebugLog\\Log.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
     }
 
     private void EndGroup()
