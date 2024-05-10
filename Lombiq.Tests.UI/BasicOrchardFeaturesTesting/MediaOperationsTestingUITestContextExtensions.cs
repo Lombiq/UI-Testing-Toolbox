@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 /// <summary>
 /// Provides a set of extension methods for testing Orchard Core media operations.
 /// </summary>
-public static class OrchardMediaOperationsTestingUITestContextExtensions
+public static class MediaOperationsTestingUITestContextExtensions
 {
     public static Task TestMediaOperationsAsync(this UITestContext context) =>
         context.ExecuteTestAsync(

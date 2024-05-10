@@ -1,6 +1,5 @@
 using Atata;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 /// <summary>
 /// Provides a set of extension methods for Orchard Core Audit Trail feature testing.
 /// </summary>
-public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
+public static class AuditTrailFeatureTestingUITestContextExtensions
 {
     public static Task TestAuditTrailAsync(this UITestContext context) =>
     context.ExecuteTestAsync(
@@ -39,12 +38,13 @@ public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
 
             await context.GoToAdminRelativeUrlAsync(auditTrailPath);
 
-            context.Exists(ByHelper.TextContains("of the Page"));
+            var auditTrailTestPageSuccessXpath = "//small[contains(., 'was published') and contains(., 'of the Page')]" +
+                $"/a[text()='{auditTrailTestPageTitle}']";
 
-            context.Exists(ByHelper.TextContains("was published"));
+            context.Exists(By.XPath(auditTrailTestPageSuccessXpath));
 
-            context.Exists(ByHelper.TextContains("was created"));
+            auditTrailTestPageSuccessXpath = auditTrailTestPageSuccessXpath.Replace("published", "created");
 
-            context.Exists(ByHelper.TextContains(auditTrailTestPageTitle));
+            context.Exists(By.XPath(auditTrailTestPageSuccessXpath));
         });
 }

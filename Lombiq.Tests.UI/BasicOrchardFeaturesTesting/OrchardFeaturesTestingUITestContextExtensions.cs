@@ -13,7 +13,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 /// <summary>
 /// Provides a set of extension methods for basic Orchard features testing.
 /// </summary>
-public static class BasicOrchardFeaturesTestingUITestContextExtensions
+public static class OrchardFeaturesTestingUITestContextExtensions
 {
     /// <summary>
     /// <para>

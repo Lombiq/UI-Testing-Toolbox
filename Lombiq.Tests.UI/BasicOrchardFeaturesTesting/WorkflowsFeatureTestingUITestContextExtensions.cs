@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 /// <summary>
 /// Provides a set of extension methods for Orchard Core Workflows feature testing.
 /// </summary>
-public static class OrchardWorkflowsFeatureTestingUITestContextExtensions
+public static class WorkflowsFeatureTestingUITestContextExtensions
 {
     public static Task TestWorkflowsAsync(this UITestContext context) =>
         context.ExecuteTestAsync(
@@ -48,7 +48,8 @@ public static class OrchardWorkflowsFeatureTestingUITestContextExtensions
                     By.XPath(taskXPath));
 
                 // We need to save the workflow early, because sometimes the editor, thus the startup task button can be
-                // buggy during UI testing. This way it's always clicked.
+                // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
+                // always clicked.
                 await context.ClickReliablyOnSubmitAsync();
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
