@@ -8,7 +8,7 @@ using Shouldly;
 using System;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
+namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 
 /// <summary>
 /// Provides a set of extension methods for basic Orchard features testing.

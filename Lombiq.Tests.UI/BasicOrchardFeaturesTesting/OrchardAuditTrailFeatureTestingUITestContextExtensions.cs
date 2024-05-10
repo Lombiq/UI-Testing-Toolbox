@@ -5,7 +5,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
+namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 
 /// <summary>
 /// Provides a set of extension methods for Orchard Core Audit Trail feature testing.
