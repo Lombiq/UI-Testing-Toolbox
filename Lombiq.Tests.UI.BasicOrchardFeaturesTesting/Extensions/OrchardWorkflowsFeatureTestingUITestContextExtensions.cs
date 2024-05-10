@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
 /// <summary>
 /// Provides a set of extension methods for Orchard Core Workflows feature testing.
 /// </summary>
-public static class WorkflowsFeatureTestingUITestContextExtensions
+public static class OrchardWorkflowsFeatureTestingUITestContextExtensions
 {
     public static Task TestWorkflowsAsync(this UITestContext context) =>
         context.ExecuteTestAsync(

@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting.Extensions;
 /// <summary>
 /// Provides a set of extension methods for Orchard Core Audit Trail feature testing.
 /// </summary>
-public static class AuditTrailFeatureTestingUITestContextExtensions
+public static class OrchardAuditTrailFeatureTestingUITestContextExtensions
 {
     public static Task TestAuditTrailAsync(this UITestContext context) =>
     context.ExecuteTestAsync(
