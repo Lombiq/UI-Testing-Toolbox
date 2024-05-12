@@ -76,7 +76,7 @@ to customize the name of the dump item.";
                         {
                             var oS = OperatingSystem.IsWindows() ? "Windows" : "Unix";
 
-                            fileNameSuffix = fileNameSuffix + "-" + oS;
+                            fileNameSuffix = $"{fileNameSuffix}-{oS}";
                         }
 
                         configuration.WithFileNameSuffix(fileNameSuffix);
