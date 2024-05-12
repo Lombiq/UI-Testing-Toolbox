@@ -236,7 +236,7 @@ public static class FormUITestContextExtensions
     public static bool IsElementChecked(this UITestContext context, By by) =>
         context.Get(by.OfAnyVisibility()).GetDomProperty("checked") == bool.TrueString;
 
-    public static async Task SetCheckboxValueAsync(this UITestContext context, By by, bool isChecked)
+    public static async Task SetCheckboxValueAsync(this UITestContext context, By by, bool isChecked = true)
     {
         var element = context.Get(by.OfAnyVisibility());
         var currentValue = element.GetDomProperty("checked") == bool.TrueString;
