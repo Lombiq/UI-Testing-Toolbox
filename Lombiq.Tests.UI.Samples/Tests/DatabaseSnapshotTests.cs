@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Constants;
 using System.IO;
