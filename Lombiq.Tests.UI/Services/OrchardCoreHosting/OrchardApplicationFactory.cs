@@ -126,7 +126,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             int.MaxValue);
 
         builder.Configure(
-            app => app.UseMiddleware<PageLoadProbeMiddleware>(),
+            app => app.UseMiddleware<RequestProbeMiddleware>(),
             int.MaxValue);
     }
 

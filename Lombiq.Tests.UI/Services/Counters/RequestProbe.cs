@@ -3,19 +3,19 @@ using System;
 
 namespace Lombiq.Tests.UI.Services.Counters;
 
-public sealed class PageLoadProbe : CounterProbe, IRelativeUrlConfigurationKey
+public sealed class RequestProbe : CounterProbe, IRelativeUrlConfigurationKey
 {
     public string RequestMethod { get; init; }
     public Uri AbsoluteUri { get; init; }
 
-    public PageLoadProbe(ICounterDataCollector counterDataCollector, string requestMethod, Uri absoluteUri)
+    public RequestProbe(ICounterDataCollector counterDataCollector, string requestMethod, Uri absoluteUri)
         : base(counterDataCollector)
     {
         RequestMethod = requestMethod;
         AbsoluteUri = absoluteUri;
     }
 
-    public override string DumpHeadline() => $"{nameof(PageLoadProbe)}, [{RequestMethod}]{AbsoluteUri}";
+    public override string DumpHeadline() => $"{nameof(RequestProbe)}, [{RequestMethod}]{AbsoluteUri}";
 
     #region IRelativeUrlConfigurationKey implementation
 

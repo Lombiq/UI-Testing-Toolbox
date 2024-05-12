@@ -307,7 +307,7 @@ public class OrchardCoreUITestExecutorConfiguration
             {
                 NavigationProbe =>
                     (Settings: counterConfiguration.NavigationThreshold, Name: nameof(counterConfiguration.NavigationThreshold)),
-                PageLoadProbe =>
+                RequestProbe =>
                     (Settings: counterConfiguration.PageLoadThreshold, Name: nameof(counterConfiguration.PageLoadThreshold)),
                 SessionProbe =>
                     (Settings: counterConfiguration.SessionThreshold, Name: nameof(counterConfiguration.SessionThreshold)),

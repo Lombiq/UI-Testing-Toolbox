@@ -28,7 +28,7 @@ public class CounterConfiguration
     public CounterThresholdConfiguration SessionThreshold { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets threshold configuration used per page load. See: <see cref="PageLoadProbe"/>.
+    /// Gets or sets threshold configuration used per page load. See: <see cref="RequestProbe"/>.
     /// </summary>
     public CounterThresholdConfiguration PageLoadThreshold { get; set; } = new();
 }
