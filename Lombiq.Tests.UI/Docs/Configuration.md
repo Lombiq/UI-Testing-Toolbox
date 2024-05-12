@@ -59,7 +59,22 @@ Recommendations and notes for such configuration:
 
 ### HTML validation configuration
 
-If you want to change some HTML validation rules from only a few specific tests, you can create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file (which is always copied into the build directory) by setting the value of `"extends"` to a relative path pointing to it and declaring `"root": true`. For example:
+If you want to filter out certain html validation errors for a specific test you can simply filter them out of the error results by their rule ID. For example:
+
+```c#
+configuration => configuration.HtmlValidationConfiguration.AssertHtmlValidationResultAsync =
+    validationResult =>
+    {
+        var errors = validationResult.GetParsedErrors()
+            .Where(error => error.RuleId is not "prefer-native-element");
+        errors.ShouldBeEmpty(HtmlValidationResultExtensions.GetParsedErrorMessageString(errors));
+        return Task.CompletedTask;
+    });
+```
+
+Note that the `RuleId` is the identifier of the rule that you want to exclude from the results. The custom string formatter in the call to `errors.ShouldBeEmpty` is used to display the errors in a more readable way and is not strictly necessary.
+
+If you want to change some HTML validation rules for multiple tests, you can also create a custom _.htmlvalidate.json_ file (e.g. _TestName.htmlvalidate.json_). This should extend the [default.htmlvalidate.json](../default.htmlvalidate.json) file (which is always copied into the build directory) by setting the value of `"extends"` to a relative path pointing to it and declaring `"root": true`. For example:
 
 ```json
 {
