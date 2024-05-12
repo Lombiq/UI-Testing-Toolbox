@@ -24,14 +24,14 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
     public void WriteLine(string message)
     {
         Start();
-        _logFileStream.Write(FormatMessage(message));
+        _logFileStream?.Write(FormatMessage(message));
         Decorated.WriteLine(message);
     }
 
     public void WriteLine(string format, params object[] args)
     {
         Start();
-        _logFileStream.Write(FormatMessage(string.Format(CultureInfo.InvariantCulture, format, args)));
+        _logFileStream?.Write(FormatMessage(string.Format(CultureInfo.InvariantCulture, format, args)));
         Decorated.WriteLine(format, args);
     }
 
@@ -39,8 +39,8 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
     {
         if (_logFileStream == null)
         {
-            if (!Directory.Exists("FailureDumps\\DebugLog")) Directory.CreateDirectory("FailureDumps\\DebugLog");
-            _logFileStream = File.Open("FailureDumps\\DebugLog\\Log.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
+            //if (!Directory.Exists("FailureDumps\\DebugLog")) Directory.CreateDirectory("FailureDumps\\DebugLog");
+            //_logFileStream = File.Open("FailureDumps\\DebugLog\\Log.txt", FileMode.Append, FileAccess.Write, FileShare.Write);
         }
 
         if (_isStarted) return;
