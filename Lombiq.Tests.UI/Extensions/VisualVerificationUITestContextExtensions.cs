@@ -18,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -54,7 +53,6 @@ to customize the name of the dump item.";
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
-        bool checkOS = false,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
     {
         context.HideScrollbar();
@@ -71,16 +69,7 @@ to customize the name of the dump item.";
                     pixelErrorPercentageThreshold: pixelErrorPercentageThreshold,
                     configurator: configuration =>
                     {
-                        var fileNameSuffix = StringHelper.CreateInvariant($"{size.Width}x{size.Height}");
-
-                        if (checkOS)
-                        {
-                            var oS = RuntimeInformation.OSDescription;
-
-                            fileNameSuffix = $"{fileNameSuffix}-{oS}";
-                        }
-
-                        configuration.WithFileNameSuffix(fileNameSuffix);
+                        configuration.WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}"));
                         configurator?.Invoke(configuration);
                     });
             }
