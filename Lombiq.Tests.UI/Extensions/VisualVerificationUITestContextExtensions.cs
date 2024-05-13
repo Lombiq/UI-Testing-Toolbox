@@ -94,6 +94,41 @@ to customize the name of the dump item.";
     }
 
     /// <summary>
+    /// Compares the baseline image and screenshot of the selected element on multiple different resolutions, based on
+    /// the operating system's platform.
+    /// </summary>
+    /// <param name="sizes">The comparison is performed on each of these resolutions.</param>
+    /// <param name="getSelector">
+    /// Returns the selector for the given screen size. This may return the same selector all the time, or a different
+    /// selector, e.g. if mobile and desktop views have different DOMs.
+    /// </param>
+    /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
+    /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>, but in the
+    /// method we are always using <see
+    /// cref="VisualVerificationMatchApprovedConfiguration.WithUsePlatformAsSuffix()"/>.</param>
+    /// <remarks>
+    /// <para>
+    /// The parameter <c>beforeAssertAsync</c> was removed, because it sometimes polluted the stack trace, which was
+    /// used in visual verification tests, so it caused tests to fail. The point of <c>beforeAssertAsync</c> was, that
+    /// sometimes the page can change on the resize window event. So the navigation happening after the window resize
+    /// ensures that the currently loaded page only existed with the desired screen size.
+    /// </para>
+    /// </remarks>
+    [VisualVerificationApprovedMethod]
+    public static void AssertVisualVerificationApprovedOnAllResolutionsWithPlatformSuffix(
+        this UITestContext context,
+        IEnumerable<Size> sizes,
+        Func<Size, By> getSelector,
+        double pixelErrorPercentageThreshold = 0,
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+        AssertVisualVerificationOnAllResolutions(
+            context,
+            sizes,
+            getSelector,
+            pixelErrorPercentageThreshold,
+            configurator: configuration => configuration.WithUsePlatformAsSuffix());
+
+    /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
     /// <see cref="AssertVisualVerificationApproved(UITestContext, By, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
     /// </summary>
