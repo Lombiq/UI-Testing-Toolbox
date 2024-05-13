@@ -28,6 +28,15 @@ public class CounterThresholdConfiguration
     /// <see cref="System.Data.Common.DbCommand.CommandText"/> and <see cref="System.Data.Common.DbCommand.Parameters"/>
     /// for counting.
     /// </summary>
-    // TODO: Human readable comments.
-    public int DbReaderReadThreshold { get; set; } = 11;
+    /// <remarks>
+    /// <para>
+    /// Use this to set the maximum number of reads allowed on a <see cref="System.Data.Common.DbDataReader"/> instace.
+    /// The counter infrastructure counts the <see cref="System.Data.Common.DbDataReader.Read"/> and
+    /// <see cref="System.Data.Common.DbDataReader.ReadAsync()"/> calls, also the
+    /// <see cref="System.Collections.IEnumerator.MoveNext"/> calls are counted on
+    /// <see cref="System.Collections.IEnumerator"/> instance returned by the
+    /// <see cref="System.Data.Common.DbDataReader.GetEnumerator"/>.
+    /// </para>
+    /// </remarks>
+    public int DbReaderReadThreshold { get; set; }
 }

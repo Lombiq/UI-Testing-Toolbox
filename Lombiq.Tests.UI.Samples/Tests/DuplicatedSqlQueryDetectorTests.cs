@@ -21,7 +21,7 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
     // This test will fail because the app will read the same command result more times than the configured threshold
     // during the Admin page rendering.
     [Fact]
-    public Task PageWithTooManyDuplicatedSqlQueriesShouldThrow() =>
+    public Task PageWithTooManyReadsOnDbDataReaderShouldThrow() =>
         Should.ThrowAsync<AggregateException>(() =>
             ExecuteTestAfterSetupAsync(
                 context => context.SignInDirectlyAndGoToDashboardAsync(),
@@ -30,6 +30,32 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
                     commandExcludingParametersThreshold: 3,
                     commandIncludingParametersThreshold: 2,
                     readerReadThreshold: 0)));
+
+    // This test will fail because the app will execute the same SQL query having same parameter set more times than
+    // expected during the Admin page rendering.
+    [Fact]
+    public Task PageWithTooManySqlQueriesExecutedHavingTheSameParameterSetShouldThrow() =>
+        Should.ThrowAsync<AggregateException>(() =>
+            ExecuteTestAfterSetupAsync(
+                context => context.SignInDirectlyAndGoToDashboardAsync(),
+                configuration => ConfigureAsync(
+                    configuration,
+                    commandExcludingParametersThreshold: 3,
+                    commandIncludingParametersThreshold: 0,
+                    readerReadThreshold: 2)));
+
+    // This test will fail because the app will execute the same SQL query more times than expected during the Admin
+    // page rendering.
+    [Fact]
+    public Task PageWithTooManySqlQueriesExecutedShouldThrow() =>
+        Should.ThrowAsync<AggregateException>(() =>
+            ExecuteTestAfterSetupAsync(
+                context => context.SignInDirectlyAndGoToDashboardAsync(),
+                configuration => ConfigureAsync(
+                    configuration,
+                    commandExcludingParametersThreshold: 0,
+                    commandIncludingParametersThreshold: 2,
+                    readerReadThreshold: 2)));
 
     // This test will pass because not any of the Admin page was loaded where the SQL queries are under monitoring.
     [Fact]
