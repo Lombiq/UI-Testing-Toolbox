@@ -53,6 +53,7 @@ to customize the name of the dump item.";
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
+        bool checkOS = false,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
     {
         context.HideScrollbar();
@@ -69,7 +70,16 @@ to customize the name of the dump item.";
                     pixelErrorPercentageThreshold: pixelErrorPercentageThreshold,
                     configurator: configuration =>
                     {
-                        configuration.WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}"));
+                        var fileNameSuffix = StringHelper.CreateInvariant($"{size.Width}x{size.Height}");
+
+                        if (checkOS)
+                        {
+                            var oS = OperatingSystem.IsWindows() ? "Windows" : "Unix";
+
+                            fileNameSuffix = $"{fileNameSuffix}-{oS}";
+                        }
+
+                        configuration.WithFileNameSuffix(fileNameSuffix);
                         configurator?.Invoke(configuration);
                     });
             }
