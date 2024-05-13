@@ -121,12 +121,11 @@ to customize the name of the dump item.";
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-        AssertVisualVerificationOnAllResolutions(
-            context,
+        context.AssertVisualVerificationOnAllResolutions(
             sizes,
             getSelector,
             pixelErrorPercentageThreshold,
-            configurator: configuration => configuration.WithUsePlatformAsSuffix());
+            configuration => configuration.WithUsePlatformAsSuffix());
 
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
