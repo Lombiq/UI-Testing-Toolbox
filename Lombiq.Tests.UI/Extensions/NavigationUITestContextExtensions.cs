@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using OrchardCore.ContentFields.ViewModels;
 using System;
@@ -396,4 +397,25 @@ public static class NavigationUITestContextExtensions
 
     public static Task GoToContentItemByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToRelativeUrlAsync("/Contents/ContentItems/" + contentItemId);
+
+    /// <summary>
+    /// A method to perform a drag and drop action from a source element to a destination element.
+    /// </summary>
+    /// <param name="sourceElementBy">The source element, that should be dragged and dropped.</param>
+    /// <param name="destinationBy">The destination element, where the source element should be dropped.</param>
+    public static void DragAndDrop(this UITestContext context, By sourceElementBy, By destinationBy) =>
+        new Actions(context.Driver).DragAndDrop(context.Get(sourceElementBy), context.Get(destinationBy))
+            .Build()
+            .Perform();
+
+    /// <summary>
+    /// A method to perform a drag and drop action from a source element to an offset.
+    /// </summary>
+    /// <param name="sourceElementBy">The source element, that should be dragged and dropped.</param>
+    /// <param name="offsetX">The x offset in pixels.</param>
+    /// <param name="offsetY">The y offset in pixels.</param>
+    public static void DragAndDropToOffset(this UITestContext context, By sourceElementBy, int offsetX, int offsetY) =>
+        new Actions(context.Driver).DragAndDropToOffset(context.Get(sourceElementBy), offsetX, offsetY)
+            .Build()
+            .Perform();
 }
