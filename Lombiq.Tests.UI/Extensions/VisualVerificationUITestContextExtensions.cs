@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -74,7 +75,7 @@ to customize the name of the dump item.";
 
                         if (checkOS)
                         {
-                            var oS = OperatingSystem.IsWindows() ? "Windows" : "Unix";
+                            var oS = RuntimeInformation.OSDescription;
 
                             fileNameSuffix = $"{fileNameSuffix}-{oS}";
                         }
