@@ -45,9 +45,11 @@ public static class HtmlValidationResultExtensions
         {
             // In some cases the output is too large and is not a valid JSON anymore. In this case we need to fix it.
             // tracking issue: https://github.com/atata-framework/atata-htmlvalidation/issues/9
-            if (output.Trim().StartsWith('[') && !output.Trim().EndsWith(']'))
+            int index = output.IndexOf(",\"source\":", StringComparison.Ordinal);
+            if (index != -1)
             {
-                output += "\"}]";
+                output = output[..index];
+                output += "}]";
             }
 
             var document = JsonDocument.Parse(output);
