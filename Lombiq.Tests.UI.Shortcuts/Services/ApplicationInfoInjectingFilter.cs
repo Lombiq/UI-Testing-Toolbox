@@ -1,16 +1,18 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using OrchardCore.Modules;
 using OrchardCore.ResourceManagement;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Services;
 
 public class ApplicationInfoInjectingFilter : IAsyncResultFilter
 {
+    private static readonly JsonSerializerOptions _indentedJsonSerializerOptions = new() { WriteIndented = true };
+
     private readonly IResourceManager _resourceManager;
     private readonly IConfiguration _shellConfiguration;
     private readonly IApplicationContext _applicationContext;
@@ -35,7 +37,7 @@ public class ApplicationInfoInjectingFilter : IAsyncResultFilter
 
         _resourceManager.RegisterHeadScript(new HtmlString(
             $"<!--{Environment.NewLine}" +
-            JsonConvert.SerializeObject(_applicationContext.GetApplicationInfo(), Formatting.Indented) +
+            JsonSerializer.Serialize(_applicationContext.GetApplicationInfo(), _indentedJsonSerializerOptions) +
             Environment.NewLine +
             "-->"));
 

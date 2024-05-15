@@ -10,13 +10,13 @@ using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
-using Newtonsoft.Json.Linq;
 using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -711,7 +711,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath))!;
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
                 await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
             }
@@ -764,6 +764,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
+        _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
         Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
         {

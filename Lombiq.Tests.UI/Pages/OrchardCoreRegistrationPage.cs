@@ -19,20 +19,20 @@ public class OrchardCoreRegistrationPage : Page<_>
 {
     public const string DefaultUrl = "Register";
 
-    [FindByName]
+    [FindById("RegisterUserForm_UserName")]
     public TextInput<_> UserName { get; private set; }
 
-    [FindByName]
+    [FindById("RegisterUserForm_Email")]
     [SetsValueReliably]
     public TextInput<_> Email { get; private set; }
 
-    [FindByName]
+    [FindById("RegisterUserForm_Password")]
     public PasswordInput<_> Password { get; private set; }
 
-    [FindByName]
+    [FindById("RegisterUserForm_ConfirmPassword")]
     public PasswordInput<_> ConfirmPassword { get; private set; }
 
-    [FindByName("RegistrationCheckbox")]
+    [FindById("RegisterUserForm_RegistrationCheckbox")]
     public CheckBox<_> PrivacyPolicyAgreement { get; private set; }
 
     [FindByAttribute("type", "submit")]
