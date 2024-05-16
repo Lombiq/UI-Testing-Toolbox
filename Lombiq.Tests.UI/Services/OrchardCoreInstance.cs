@@ -180,7 +180,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private async Task StopOrchardAppAsync()
     {
-        _reverseProxy.DetachConnectionProvider();
+        _reverseProxy?.DetachConnectionProvider();
+
         if (_orchardApplication == null) return;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");
