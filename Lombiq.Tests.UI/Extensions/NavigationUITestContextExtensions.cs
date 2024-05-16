@@ -35,6 +35,17 @@ public static class NavigationUITestContextExtensions
         return context.GoToAbsoluteUrlAsync(context.GetAbsoluteAdminUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
     }
 
+    public static async Task SignInDirectlyAndGoToAdminRelativeUrlAsync(
+        this UITestContext context,
+        string urlWithoutAdminPrefix = null,
+        bool onlyIfNotAlreadyThere = true,
+        string email = DefaultUser.UserName)
+    {
+        await context.SignInDirectlyAsync(email);
+
+        await GoToAdminRelativeUrlAsync(context, urlWithoutAdminPrefix, onlyIfNotAlreadyThere);
+    }
+
     public static Task GoToAbsoluteUrlAsync(this UITestContext context, Uri absoluteUri, bool onlyIfNotAlreadyThere = true) =>
         context.ExecuteLoggedAsync(
             nameof(GoToAbsoluteUrlAsync),

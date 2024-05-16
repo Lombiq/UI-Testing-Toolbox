@@ -34,7 +34,8 @@ public static class HtmlValidationResultExtensions
 
     public static string GetParsedErrorMessageString(IEnumerable<JsonHtmlValidationError> errors) =>
         string.Join(
-            '\n', errors.Select(error =>
+            '\n',
+            errors.Select(error =>
                 $"{error.Line.ToString(CultureInfo.InvariantCulture)}:{error.Column.ToString(CultureInfo.InvariantCulture)} - " +
                 $"{error.Message} - " +
                 $"{error.RuleId}"));
