@@ -90,8 +90,7 @@ public class MonkeyTests : UITestBase
                 // You could also configure the same thing with regex:
                 ////_monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter(@"\/Admin\/BackgroundTasks"));
 
-                await context.SignInDirectlyAsync();
-                await context.GoToAdminRelativeUrlAsync("/BackgroundTasks");
+                await context.SignInDirectlyAndGoToAdminRelativeUrlAsync("/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
             configuration => configuration.AssertBrowserLog = (logEntries) => logEntries
