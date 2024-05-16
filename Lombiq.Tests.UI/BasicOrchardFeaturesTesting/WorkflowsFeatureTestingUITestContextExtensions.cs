@@ -16,13 +16,14 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
             "Test Workflows",
             async () =>
             {
+                var testWorkflowName = "Test workflow";
                 var workflowsPath = "/Workflows/Types";
                 var contentItemPublishTestSuccessMessage = "The content item was published.";
 
                 await context.EnableFeatureDirectlyAsync("OrchardCore.Workflows");
                 await context.GoToAdminRelativeUrlAsync(workflowsPath + "/EditProperties");
 
-                await context.ClickAndFillInWithRetriesAsync(By.Id("Name"), "Test workflow");
+                await context.ClickAndFillInWithRetriesAsync(By.Id("Name"), testWorkflowName);
                 await context.ClickReliablyOnSubmitAsync();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Event']"));
@@ -66,6 +67,14 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                         .Publish.ClickAndGo();
 
                 context.ShouldBeSuccess(contentItemPublishTestSuccessMessage);
+
+                // If we are testing an app with already existing workflows, our "Test workflow" can end up on a
+                // different page, rather than on the first.
+                await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), testWorkflowName);
+
+                // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden,
+                // so we have to use JS to click on it.
+                context.ExecuteScript("document.querySelector('#submitFilter').click();");
 
                 // Checking if the workflow run was logged.
                 await context.GoToAdminRelativeUrlAsync(workflowsPath);
