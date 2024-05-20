@@ -16,9 +16,9 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
             "Test Workflows",
             async () =>
             {
-                var testWorkflowName = "Test workflow";
-                var workflowsPath = "/Workflows/Types";
-                var contentItemPublishTestSuccessMessage = "The content item was published.";
+                const string testWorkflowName = "Test workflow";
+                const string workflowsPath = "/Workflows/Types";
+                const string contentItemPublishTestSuccessMessage = "The content item was published.";
 
                 await context.EnableFeatureDirectlyAsync("OrchardCore.Workflows");
                 await context.GoToAdminRelativeUrlAsync(workflowsPath + "/EditProperties");
