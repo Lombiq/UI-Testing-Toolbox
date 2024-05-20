@@ -430,6 +430,6 @@ public static class NavigationUITestContextExtensions
 
         // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden,
         // so we have to use JS to click on it.
-        context.ExecuteScript("document.querySelector('#submitFilter').click();");
+        context.ExecuteScript("document.getElementById('submitFilter').click();");
     }
 }
