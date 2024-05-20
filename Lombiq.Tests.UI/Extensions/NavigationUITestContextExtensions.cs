@@ -418,4 +418,18 @@ public static class NavigationUITestContextExtensions
         new Actions(context.Driver).DragAndDropToOffset(context.Get(sourceElementBy), offsetX, offsetY)
             .Build()
             .Perform();
+
+    /// <summary>
+    /// A method to filter for an item on one of the admin pages.
+    /// </summary>
+    /// <param name="itemName">The element we should search or filter for. It could be for example a workflow too,
+    /// that's why it's not called "contentItem".</param>
+    public static async Task FilterOnAdminAsync(this UITestContext context, string itemName)
+    {
+        await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
+
+        // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden,
+        // so we have to use JS to click on it.
+        context.ExecuteScript("document.querySelector('#submitFilter').click();");
+    }
 }

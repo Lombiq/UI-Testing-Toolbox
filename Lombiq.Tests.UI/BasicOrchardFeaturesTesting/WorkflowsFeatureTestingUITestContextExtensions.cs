@@ -73,11 +73,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
 
                 // If we are testing an app with already existing workflows, our "Test workflow" can end up on a
                 // different page, rather than on the first.
-                await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), testWorkflowName);
-
-                // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden,
-                // so we have to use JS to click on it.
-                context.ExecuteScript("document.querySelector('#submitFilter').click();");
+                await context.FilterOnAdminAsync(testWorkflowName);
 
                 await context.ClickReliablyOnAsync(By.XPath("//a[text()='Test workflow']/following-sibling::a[contains(@href, 'Instances')]"));
                 context.Exists(By.XPath("//span[@class = 'badge text-bg-success']"));
