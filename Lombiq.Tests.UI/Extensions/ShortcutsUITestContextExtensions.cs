@@ -8,6 +8,7 @@ using Lombiq.Tests.UI.Shortcuts.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
@@ -600,6 +601,28 @@ public static class ShortcutsUITestContextExtensions
             activateShell);
 
         return eventUrl;
+    }
+
+    /// <summary>
+    /// Retrieves the options of the given type from the current tenant's shell scope.
+    /// </summary>
+    public static async Task<IOptions<T>> GetTenantOptionsAsync<T>(
+        this UITestContext context,
+        string tenant = null,
+        bool activateShell = true)
+        where T : class
+    {
+        IOptions<T> options = null;
+        await UsingScopeAsync(
+            context,
+            serviceProvider =>
+            {
+                options = serviceProvider.GetRequiredService<IOptions<T>>();
+                return Task.CompletedTask;
+            },
+            tenant,
+            activateShell);
+        return options;
     }
 
     /// <summary>
