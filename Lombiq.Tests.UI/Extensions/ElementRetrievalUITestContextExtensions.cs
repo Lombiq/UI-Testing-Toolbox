@@ -100,7 +100,7 @@ public static class ElementRetrievalUITestContextExtensions
         if (within is { } timeSpan) by = by.Within(timeSpan);
 
         var element = context.Get(by);
-        if (!string.IsNullOrEmpty(matchText)) element.Text.Trim().ShouldContain(matchText);
+        if (!string.IsNullOrEmpty(matchText)) element.GetTextTrimmed().ShouldContain(matchText);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class ElementRetrievalUITestContextExtensions
 
         context
             .GetAll(by)
-            .Select((element, index) => dontCare.Contains(index) ? null : element.Text.Trim())
+            .Select((element, index) => dontCare.Contains(index) ? null : element.GetTextTrimmed())
             .ToArray()
             .ShouldBe(target);
     }
