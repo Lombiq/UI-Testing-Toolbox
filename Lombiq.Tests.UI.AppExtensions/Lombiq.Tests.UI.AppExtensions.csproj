@@ -33,8 +33,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore" Version="2.0.0-preview-18222" />
-    <PackageReference Include="OrchardCore.Email.Abstractions" Version="2.0.0-preview-18222" />
+    <PackageReference Include="OrchardCore" Version="2.0.0-preview-18226" />
+    <PackageReference Include="OrchardCore.Email.Abstractions" Version="2.0.0-preview-18226" />
   </ItemGroup>
 
 </Project>
