@@ -71,7 +71,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
     [FindByName]
     public PasswordInput<_> PasswordConfirmation { get; private set; }
 
-    public Button<_> FinishSetup { get; private set; }
+    public Button<_> FinishSetup { get; }
 
     public _ ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
 

@@ -13,7 +13,7 @@ public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
     [FindById("new-dropdown")]
     public NewItemDropdown NewDropdown { get; private set; }
 
-    public Link<_> NewPageLink { get; private set; }
+    public Link<_> NewPageLink { get; }
 
     [FindById("items-form")]
     public UnorderedList<ContentListItem, _> Items { get; private set; }
@@ -24,7 +24,7 @@ public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
 
     public sealed class NewItemDropdown : BSDropdownToggle<_>
     {
-        public Link<_> Page { get; private set; }
+        public Link<_> Page { get; }
     }
 
     [ControlDefinition("li[position() > 1]", ComponentTypeName = "item")]

@@ -29,7 +29,7 @@ public class OrchardCoreLoginPage : Page<_>
     [FindByAttribute("href", TermMatch.Contains, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
     public Link<OrchardCoreRegistrationPage, _> RegisterAsNewUser { get; private set; }
 
-    public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
+    public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; }
 
     public _ ShouldStayOnLoginPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);

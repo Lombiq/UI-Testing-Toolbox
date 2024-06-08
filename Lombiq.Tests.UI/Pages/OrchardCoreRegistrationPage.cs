@@ -38,7 +38,7 @@ public class OrchardCoreRegistrationPage : Page<_>
     [FindByAttribute("type", "submit")]
     public Button<_> Register { get; private set; }
 
-    public ValidationMessageList<_> ValidationMessages { get; private set; }
+    public ValidationMessageList<_> ValidationMessages { get; }
 
     public _ ShouldStayOnRegistrationPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);

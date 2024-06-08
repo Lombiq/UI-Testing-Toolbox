@@ -7,6 +7,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [AllowAnonymous]
 [DevelopmentAndLocalhostOnly]
+[Route("[controller]/{action=Index}")]
 public class InteractiveModeController : Controller
 {
     private readonly IInteractiveModeStatusAccessor _interactiveModeStatusAccessor;

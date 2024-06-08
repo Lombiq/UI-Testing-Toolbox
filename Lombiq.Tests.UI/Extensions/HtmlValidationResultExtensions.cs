@@ -16,7 +16,7 @@ public static class HtmlValidationResultExtensions
     {
         if (string.IsNullOrEmpty(result.ResultFilePath) || !File.Exists(result.ResultFilePath))
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         var fullOutput = await File.ReadAllTextAsync(result.ResultFilePath);

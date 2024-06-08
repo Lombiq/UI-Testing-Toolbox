@@ -17,7 +17,7 @@ public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
     [FindById("bulk-action-menu-button")]
     public BulkActionsDropdown BulkActions { get; private set; }
 
-    public FeatureItemList Features { get; private set; }
+    public FeatureItemList Features { get; }
 
     public FeatureItem SearchForFeature(string featureName) =>
         SearchBox.Set(featureName)
@@ -25,11 +25,11 @@ public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
 
     public sealed class BulkActionsDropdown : BSDropdownToggle<_>
     {
-        public Link<_> Enable { get; private set; }
+        public Link<_> Enable { get; }
 
-        public Link<_> Disable { get; private set; }
+        public Link<_> Disable { get; }
 
-        public Link<_> Toggle { get; private set; }
+        public Link<_> Toggle { get; }
     }
 
     [ControlDefinition("li[not(contains(@class, 'd-none'))]", ContainingClass = "list-group-item", ComponentTypeName = "feature")]
