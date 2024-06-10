@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
@@ -19,6 +20,10 @@ using _ = OrchardCoreSetupPage;
     Case = TermCase.Pascal,
     TargetAllChildren = true,
     TargetAttributeTypes = [typeof(FindByIdAttribute), typeof(FindByNameAttribute)])]
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Removing private setters result in failing UI Tests with NRE.")]
 public sealed class OrchardCoreSetupPage : Page<_>
 {
     public const string DefaultPageTitle = "Setup";
@@ -71,10 +76,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
     [FindByName]
     public PasswordInput<_> PasswordConfirmation { get; private set; }
 
-    // Removing the private setter breaks functionality and causes NRE during UI tests.
-#pragma warning disable S1144 // Unused private types or members should be removed
     public Button<_> FinishSetup { get; private set; }
-#pragma warning restore S1144 // Unused private types or members should be removed
 
     public _ ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
 

@@ -1,16 +1,21 @@
 using Atata;
 using Lombiq.Tests.UI.Components;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Tests.UI.Pages;
 
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Removing private setters result in failing UI Tests with NRE.")]
 public abstract class OrchardCoreAdminPage<TOwner> : Page<TOwner>
     where TOwner : OrchardCoreAdminPage<TOwner>
 {
-    public OrchardCoreAdminTopNavbar<TOwner> TopNavbar { get; }
+    public OrchardCoreAdminTopNavbar<TOwner> TopNavbar { get; private set; }
 
-    public OrchardCoreAdminMenu<TOwner> AdminMenu { get; }
+    public OrchardCoreAdminMenu<TOwner> AdminMenu { get; private set; }
 
-    public ControlList<AlertMessage<TOwner>, TOwner> AlertMessages { get; }
+    public ControlList<AlertMessage<TOwner>, TOwner> AlertMessages { get; private set; }
 
     public TOwner ShouldStayOnAdminPage() => AdminMenu.Should.BePresent();
 

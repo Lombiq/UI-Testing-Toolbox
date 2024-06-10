@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
@@ -13,6 +14,10 @@ using _ = OrchardCoreLoginPage;
 
 [Url(DefaultUrl)]
 [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByIdAttribute))]
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Removing private setters result in failing UI Tests with NRE.")]
 public class OrchardCoreLoginPage : Page<_>
 {
     private const string DefaultUrl = "Login";
@@ -29,7 +34,7 @@ public class OrchardCoreLoginPage : Page<_>
     [FindByAttribute("href", TermMatch.Contains, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
     public Link<OrchardCoreRegistrationPage, _> RegisterAsNewUser { get; private set; }
 
-    public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; }
+    public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
 
     public _ ShouldStayOnLoginPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);

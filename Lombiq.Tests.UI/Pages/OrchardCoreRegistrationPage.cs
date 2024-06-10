@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
@@ -15,6 +16,10 @@ using _ = OrchardCoreRegistrationPage;
 
 [Url(DefaultUrl)]
 [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByNameAttribute))]
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Removing private setters result in failing UI Tests with NRE.")]
 public class OrchardCoreRegistrationPage : Page<_>
 {
     public const string DefaultUrl = "Register";
@@ -38,7 +43,7 @@ public class OrchardCoreRegistrationPage : Page<_>
     [FindByAttribute("type", "submit")]
     public Button<_> Register { get; private set; }
 
-    public ValidationMessageList<_> ValidationMessages { get; }
+    public ValidationMessageList<_> ValidationMessages { get; private set; }
 
     public _ ShouldStayOnRegistrationPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
