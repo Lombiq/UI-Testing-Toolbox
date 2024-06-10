@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
