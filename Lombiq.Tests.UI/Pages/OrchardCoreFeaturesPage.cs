@@ -13,7 +13,7 @@ using _ = OrchardCoreFeaturesPage;
 [SuppressMessage(
     "Major Code Smell",
     "S1144:Unused private types or members should be removed",
-    Justification = "Removing private setters result in failing UI Tests with NRE.")]
+    Justification = "Atata requires private setters. https://atata.io/examples/page-object-inheritance/")]
 public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
 {
     [FindById]

@@ -327,7 +327,6 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        // False positive: https://github.com/SonarSource/sonar-dotnet/issues/8510.
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
