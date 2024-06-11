@@ -164,7 +164,7 @@ public sealed class SqlServerManager : IAsyncDisposable
                 if (File.Exists(filePathLocal)) File.Delete(filePathLocal);
 
                 await Cli.Wrap("docker")
-                    .WithArguments(new[] { "cp", $"{containerName}:{filePathRemote}", filePathLocal })
+                    .WithArguments(["cp", $"{containerName}:{filePathRemote}", filePathLocal])
                     .ExecuteAsync();
             }
 

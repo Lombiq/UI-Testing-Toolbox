@@ -120,7 +120,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     FullName = Path.GetFullPath(filePath),
                     ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
                 })
-            : Enumerable.Empty<IApplicationLog>();
+            : [];
     }
 
     public TService GetRequiredService<TService>() =>
