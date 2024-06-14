@@ -261,7 +261,7 @@ public static class FormUITestContextExtensions
         await context.DoWithRetriesOrFailAsync(
             () =>
             {
-                title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+                title = context.Get(By.CssSelector(".nav-item.nav-link.active")).GetTextTrimmed();
                 return Task.FromResult(title != defaultTitle);
             },
             timeout,

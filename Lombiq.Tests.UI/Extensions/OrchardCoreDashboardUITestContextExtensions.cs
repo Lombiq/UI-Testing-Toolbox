@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -106,11 +107,9 @@ public static class OrchardCoreDashboardUITestContextExtensions
         }
     }
 
-    public static async Task GoToUsersAsync(this UITestContext context)
-    {
-        await context.ClickReliablyOnAsync(By.CssSelector("#security .title"));
-        await context.ClickReliablyOnAsync(By.CssSelector(".item-label.users .title"));
-    }
+    public static Task GoToUsersAsync(this UITestContext context, string query = null) =>
+        context.GoToAdminRelativeUrlAsync(
+            string.IsNullOrWhiteSpace(query) ? "/Users/Index" : $"/Users/Index?q={WebUtility.UrlEncode(query)}");
 
     public static Task GoToContentItemEditorByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Edit");

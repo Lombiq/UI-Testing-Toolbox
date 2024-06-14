@@ -38,11 +38,11 @@ public class SecurityScanConfiguration
     public bool UnusedDatabaseTechnologiesAreExcluded { get; private set; } = true;
 
     /// <summary>
-    /// Gets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
+    /// Gets or sets a value indicating whether the security scan should not visit the <see cref="ErrorController"/> to test
     /// for correct error handling. This is achieved by adding the error page URL to the configuration with <see
     /// cref="YamlDocumentExtensions.AddRequestor"/>.
     /// </summary>
-    public bool DontScanErrorPage { get; private set; }
+    public bool DontScanErrorPage { get; set; }
 
     internal SecurityScanConfiguration()
     {
@@ -327,11 +327,7 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        // False positive: https://github.com/SonarSource/sonar-dotnet/issues/8510.
-#pragma warning disable S3878 // Arrays should not be created for params parameters
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
-#pragma warning restore S3878 // Arrays should not be created for params parameters
-
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
         if (UnusedDatabaseTechnologiesAreExcluded)

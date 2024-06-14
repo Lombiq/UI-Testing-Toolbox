@@ -136,8 +136,8 @@ public sealed class ZapManager : IAsyncDisposable
         _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
-        cliParameters.AddRange(new object[]
-        {
+        cliParameters.AddRange(
+        [
             "--rm",
             "--volume",
             $"{mountedDirectoryPath}:{_zapWorkingDirectoryPath}:rw",
@@ -149,7 +149,7 @@ public sealed class ZapManager : IAsyncDisposable
             _zapWorkingDirectoryPath + yamlFileName,
             "-port",
             _zapPort,
-        });
+        ]);
 
         var stdErrBuffer = new StringBuilder();
 
