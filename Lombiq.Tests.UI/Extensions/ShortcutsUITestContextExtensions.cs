@@ -270,7 +270,7 @@ public static class ShortcutsUITestContextExtensions
 
                 var feature = extensionManager.GetFeature(featureId);
 
-                return shellFeatureManager.EnableFeaturesAsync(new[] { feature }, force: true);
+                return shellFeatureManager.EnableFeaturesAsync([feature], force: true);
             },
             tenant,
             activateShell);
@@ -292,7 +292,7 @@ public static class ShortcutsUITestContextExtensions
 
                 var feature = extensionManager.GetFeature(featureId);
 
-                return shellFeatureManager.DisableFeaturesAsync(new[] { feature }, force: true);
+                return shellFeatureManager.DisableFeaturesAsync([feature], force: true);
             },
             tenant,
             activateShell);
@@ -489,7 +489,7 @@ public static class ShortcutsUITestContextExtensions
 
                 if (!isEnabled)
                 {
-                    await shellFeatureManager.EnableFeaturesAsync(new[] { themeFeature }, force: true);
+                    await shellFeatureManager.EnableFeaturesAsync([themeFeature], force: true);
                 }
             },
             tenant,

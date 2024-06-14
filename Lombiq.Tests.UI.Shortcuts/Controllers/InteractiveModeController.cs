@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
