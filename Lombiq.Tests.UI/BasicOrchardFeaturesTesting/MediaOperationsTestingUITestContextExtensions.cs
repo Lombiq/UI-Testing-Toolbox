@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
@@ -68,8 +69,11 @@ public static class MediaOperationsTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.Id("modalFooterOk"));
 
                 // Wait until new folder is created.
-                context.Exists(
-                    By.XPath("//div[contains(@class, 'alert-info') and contains(.,'This folder is empty')]"));
+                await context.DoWithRetriesOrFailAsync(
+                    () => Task.FromResult(context.Exists(By
+                        .XPath("//div[contains(@class, 'alert-info') and contains(.,'This folder is empty')]")
+                        .Safely())),
+                    timeout: TimeSpan.FromMinutes(2));
 
                 context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
