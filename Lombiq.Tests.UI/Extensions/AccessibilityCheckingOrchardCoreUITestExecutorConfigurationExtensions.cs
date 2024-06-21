@@ -1,5 +1,6 @@
+using Deque.AxeCore.Commons;
+using Deque.AxeCore.Selenium;
 using Lombiq.Tests.UI.Services;
-using Selenium.Axe;
 using System;
 using System.Threading.Tasks;
 
