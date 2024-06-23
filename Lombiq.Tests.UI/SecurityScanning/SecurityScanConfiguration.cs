@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
@@ -293,10 +292,6 @@ public class SecurityScanConfiguration
         return this;
     }
 
-    [SuppressMessage(
-        "Minor Code Smell",
-        "S3878:Arrays should not be created for params parameters",
-        Justification = "We must convert the parameter into an array for the method. Using ToArray produces IDE0305.")]
     internal async Task ApplyToPlanAsync(YamlDocument yamlDocument, UITestContext context)
     {
         yamlDocument.SetStartUrl(StartUri);
