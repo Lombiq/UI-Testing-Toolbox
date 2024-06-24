@@ -56,7 +56,6 @@ public static class ScreenshotUITestContextExtensions
                     currentScrollPosition.X,
                     currentScrollPosition.Y + viewportSize.Height);
                 context.ScrollTo(requestedScrollPosition);
-                context.Refresh();
                 context.WaitScrollToNotChange(interval: TimeSpan.FromMilliseconds(100));
                 currentScrollPosition = context.GetScrollPosition();
             }
