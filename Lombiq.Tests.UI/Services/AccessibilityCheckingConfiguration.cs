@@ -1,6 +1,7 @@
+using Deque.AxeCore.Commons;
+using Deque.AxeCore.Selenium;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Selenium.Axe;
 using System;
 using System.Collections.Generic;
 using System.Linq;

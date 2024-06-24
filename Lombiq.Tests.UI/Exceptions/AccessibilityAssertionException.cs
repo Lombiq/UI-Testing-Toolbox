@@ -1,4 +1,4 @@
-using Selenium.Axe;
+using Deque.AxeCore.Commons;
 using System;
 
 namespace Lombiq.Tests.UI.Exceptions;

@@ -1,5 +1,5 @@
+using Deque.AxeCore.Commons;
 using Lombiq.Tests.UI.Services;
-using Selenium.Axe;
 using Shouldly;
 using System.Collections.Generic;
 

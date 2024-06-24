@@ -66,6 +66,8 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.258" />
+    <PackageReference Include="Deque.AxeCore.Commons" Version="4.9.1" />
+    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.9.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.2.111" />
@@ -77,9 +79,9 @@
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.0.0-preview-18200" />
     <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
     <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
-    <PackageReference Include="Selenium.Axe" Version="4.0.17" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="xunit" Version="2.8.0" />
     <PackageReference Include="YamlDotNet" Version="15.1.4" />
   </ItemGroup>

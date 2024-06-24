@@ -10,7 +10,6 @@ using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
-using Selenium.Axe;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using TWP.Selenium.Axe.Html;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
