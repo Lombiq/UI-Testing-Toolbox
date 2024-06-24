@@ -1,8 +1,10 @@
+using Deque.AxeCore.Commons;
+using Deque.AxeCore.Selenium;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Services;
-using Selenium.Axe;
 using System;
 using System.IO;
+using TWP.Selenium.Axe.Html;
 
 namespace Lombiq.Tests.UI.Extensions;
 
