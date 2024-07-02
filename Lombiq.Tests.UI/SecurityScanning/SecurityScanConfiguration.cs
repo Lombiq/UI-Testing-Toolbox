@@ -272,6 +272,7 @@ public class SecurityScanConfiguration
         return this;
     }
 
+
     /// <summary>
     /// Modifies the <see href="https://www.zaproxy.org/docs/automate/automation-framework/">Automation Framework</see>
     /// plan of <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see>, the tool used for the security scan.
