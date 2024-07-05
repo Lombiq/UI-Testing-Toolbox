@@ -1,36 +1,36 @@
 ---
 env:
   contexts:
-    - name: 'Default Context'
+    - name: Default Context
       urls:
-      - '<start URL>'
+        - <start URL>
       excludePaths: []
       authentication:
         parameters: {}
         verification:
-          method: 'response'
+          method: response
           pollFrequency: 60
-          pollUnits: 'requests'
+          pollUnits: requests
       sessionManagement:
-        method: 'cookie'
+        method: cookie
         parameters: {}
       technology:
         exclude:
-        - 'C'
-        - 'IBM DB2'
-        - 'PHP'
-        - 'CouchDB'
-        - 'Oracle'
-        - 'JSP/Servlet'
-        - 'Firebird'
-        - 'HypersonicSQL'
-        - 'SAP MaxDB'
-        - 'Ruby'
-        - 'Microsoft Access'
-        - 'Java'
-        - 'Tomcat'
-        - 'Sybase'
-        - 'Python'
+        - C
+        - IBM DB2
+        - PHP
+        - CouchDB
+        - Oracle
+        - JSP/Servlet
+        - Firebird
+        - HypersonicSQL
+        - SAP MaxDB
+        - Ruby
+        - Microsoft Access
+        - Java
+        - Tomcat
+        - Sybase
+        - Python
   parameters:
     failOnError: true
     failOnWarning: false
@@ -45,59 +45,59 @@ jobs:
       # This is required for <script> blocks which OC uses extensively. The rule may be removed when OC starts to provide
       # cryptographic nonce for these script blocks (see https://github.com/OrchardCMS/OrchardCore/issues/13389).
       - id: 10055
-        name: 'script-src includes unsafe-inline'
-        threshold: 'off'
-    name: 'passiveScan-config'
-    type: 'passiveScan-config'
+        name: script-src includes unsafe-inline
+        threshold: off
+    name: passiveScan-config
+    type: passiveScan-config
   - parameters: {}
-    name: 'spider'
-    type: 'spider'
+    name: spider
+    type: spider
   - parameters: {}
-    name: 'passiveScan-wait'
-    type: 'passiveScan-wait'
+    name: passiveScan-wait
+    type: passiveScan-wait
   - parameters:
-      reportDir: '/zap/wrk/reports'
-      template: 'modern'
-      theme: 'corporate'
-      reportTitle: 'ZAP Scanning Report'
+      reportDir: /zap/wrk/reports
+      template: modern
+      theme: corporate
+      reportTitle: ZAP Scanning Report
       reportDescription: ''
     risks:
-    - 'low'
-    - 'medium'
-    - 'high'
+    - low
+    - medium
+    - high
     confidences:
-    - 'low'
-    - 'medium'
-    - 'high'
-    - 'confirmed'
+    - low
+    - medium
+    - high
+    - confirmed
     sections:
-    - 'passingrules'
-    - 'instancecount'
-    - 'alertdetails'
-    - 'alertcount'
-    - 'params'
-    - 'chart'
-    - 'statistics'
-    name: 'report'
-    type: 'report'
+    - passingrules
+    - instancecount
+    - alertdetails
+    - alertcount
+    - params
+    - chart
+    - statistics
+    name: report
+    type: report
   - parameters:
-      template: 'sarif-json'
-      reportDir: '/zap/wrk/reports'
+      template: sarif-json
+      reportDir: /zap/wrk/reports
       reportFile: ''
-      reportTitle: 'ZAP Scanning Report'
+      reportTitle: ZAP Scanning Report
       reportDescription: ''
       displayReport: false
     risks:
-    - 'info'
-    - 'low'
-    - 'medium'
-    - 'high'
+    - info
+    - low
+    - medium
+    - high
     confidences:
-    - 'falsepositive'
-    - 'low'
-    - 'medium'
-    - 'high'
-    - 'confirmed'
+    - falsepositive
+    - low
+    - medium
+    - high
+    - confirmed
     sites: []
-    name: 'sarifReport'
-    type: 'report'
+    name: sarifReport
+    type: report
