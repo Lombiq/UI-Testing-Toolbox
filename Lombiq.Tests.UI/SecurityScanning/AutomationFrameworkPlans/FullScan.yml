@@ -70,15 +70,15 @@ jobs:
       # the login screen at all times for External Login. Might happen in similar cases with other brand names too.
       - ruleId: 90017
         ruleName: XSLT Injection (90017)
-        context:
+        context: ''
         newRisk: False Positive
-        parameter:
+        parameter: ''
         parameterRegex: false
         url: .*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff).*
         urlRegex: true
-        attack:
+        attack: ''
         attackRegex: false
-        evidence:
+        evidence: ''
         evidenceRegex: false
         methods: []
     parameters:
@@ -101,7 +101,7 @@ jobs:
       template: modern
       theme: corporate
       reportTitle: ZAP Scanning Report
-      reportDescription:
+      reportDescription: ''
     risks:
       - low
       - medium
@@ -124,9 +124,9 @@ jobs:
   - parameters:
       template: sarif-json
       reportDir: /zap/wrk/reports
-      reportFile:
+      reportFile: ''
       reportTitle: ZAP Scanning Report
-      reportDescription:
+      reportDescription: ''
       displayReport: false
     risks:
       - low

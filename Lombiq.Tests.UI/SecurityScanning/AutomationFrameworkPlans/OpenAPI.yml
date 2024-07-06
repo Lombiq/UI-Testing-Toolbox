@@ -78,7 +78,7 @@ jobs:
       template: modern
       theme: corporate
       reportTitle: ZAP Scanning Report
-      reportDescription:
+      reportDescription: ''
     risks:
       - low
       - medium
@@ -101,9 +101,9 @@ jobs:
   - parameters:
       template: sarif-json
       reportDir: /zap/wrk/reports
-      reportFile:
+      reportFile: ''
       reportTitle: ZAP Scanning Report
-      reportDescription:
+      reportDescription: ''
       displayReport: false
     risks:
       - low
