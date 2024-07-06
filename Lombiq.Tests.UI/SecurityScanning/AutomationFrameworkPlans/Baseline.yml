@@ -45,8 +45,8 @@ jobs:
       enableTags: false
       disableAllRules: false
     rules:
-    # This needs to be disabled during UI testing, because a local app needn't use HSTS. It's also something commonly
-    # configured outside the app, like in Cloudflare.
+      # This needs to be disabled during UI testing, because a local app needn't use HSTS. It's also something commonly
+      # configured outside the app, like in Cloudflare.
       - id: 10035
         name: Strict-Transport-Security Header
         threshold: 'off'
