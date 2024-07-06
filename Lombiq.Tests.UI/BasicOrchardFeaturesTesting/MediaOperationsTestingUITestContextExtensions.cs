@@ -32,7 +32,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{imageName}\"]").OfAnyVisibility())
+                    .Get(By.CssSelector($"a[href*=\"/media/{imageName}\"]").OfAnyVisibility())
                     .ClickReliablyAsync(context);
                 context.SwitchToFirstWindow();
 
@@ -52,7 +52,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
 
                 await context
-                    .Get(By.CssSelector($"a[href=\"/media/{documentName}\"]"))
+                    .Get(By.CssSelector($"a[href*=\"/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
                 context.SwitchToFirstWindow();
 
