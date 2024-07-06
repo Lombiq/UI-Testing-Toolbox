@@ -1,36 +1,36 @@
 ---
 env:
   contexts:
-  - name: "Default Context"
-    urls:
-    - "<start URL>"
-    excludePaths: []
-    authentication:
-      parameters: {}
-      verification:
-        method: "response"
-        pollFrequency: 60
-        pollUnits: "requests"
-    sessionManagement:
-      method: "cookie"
-      parameters: {}
-    technology:
-      exclude:
-      - "C"
-      - "IBM DB2"
-      - "PHP"
-      - "CouchDB"
-      - "Oracle"
-      - "JSP/Servlet"
-      - "Firebird"
-      - "HypersonicSQL"
-      - "SAP MaxDB"
-      - "Ruby"
-      - "Microsoft Access"
-      - "Java"
-      - "Tomcat"
-      - "Sybase"
-      - "Python"
+    - name: Default Context
+      urls:
+        - <start URL>
+      excludePaths: []
+      authentication:
+        parameters: {}
+        verification:
+          method: response
+          pollFrequency: 60
+          pollUnits: requests
+      sessionManagement:
+        method: cookie
+        parameters: {}
+      technology:
+        exclude:
+          - C
+          - IBM DB2
+          - PHP
+          - CouchDB
+          - Oracle
+          - JSP/Servlet
+          - Firebird
+          - HypersonicSQL
+          - SAP MaxDB
+          - Ruby
+          - Microsoft Access
+          - Java
+          - Tomcat
+          - Sybase
+          - Python
   parameters:
     failOnError: true
     failOnWarning: false
@@ -42,79 +42,79 @@ jobs:
     enableTags: false
     disableAllRules: false
   rules:
-  # This needs to be disabled during UI testing, because a local app needn't use HSTS. It's also something commonly
-  # configured outside the app, like in Cloudflare.
-  - id: 10035
-    name: "Strict-Transport-Security Header"
-    threshold: "off"
-  # This is required for <script> blocks which OC uses extensively. The rule may be removed when OC starts to provide
-  # cryptographic nonce for these script blocks (see https://github.com/OrchardCMS/OrchardCore/issues/13389).
-  - id: 10055
-    name: "script-src includes unsafe-inline"
-    threshold: "off"
-  # This is a low-risk alert, enforcing it is undesirable for branding.
-  - id: 10037
-    name: "Server Leaks Information via 'X-Powered-By' HTTP Response Header Field(s)"
-    threshold: "off"
-  # This rule generates false positives on UUIDs or random numeric sequences, see https://github.com/zaproxy/zaproxy/issues/8303.
-  - id: 10062
-    name: "The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data."
-    threshold: "high"
-  name: "passiveScan-config"
-  type: "passiveScan-config"
+    # This needs to be disabled during UI testing, because a local app needn't use HSTS. It's also something commonly
+    # configured outside the app, like in Cloudflare.
+    - id: 10035
+      name: Strict-Transport-Security Header
+      threshold: 'off'
+    # This is required for <script> blocks which OC uses extensively. The rule may be removed when OC starts to provide
+    # cryptographic nonce for these script blocks (see https://github.com/OrchardCMS/OrchardCore/issues/13389).
+    - id: 10055
+      name: script-src includes unsafe-inline
+      threshold: 'off'
+    # This is a low-risk alert, enforcing it is undesirable for branding.
+    - id: 10037
+      name: Server Leaks Information via 'X-Powered-By' HTTP Response Header Field(s)
+      threshold: 'off'
+    # This rule generates false positives on UUIDs or random numeric sequences, see https://github.com/zaproxy/zaproxy/issues/8303.
+    - id: 10062
+      name: The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data.
+      threshold: high
+  name: passiveScan-config
+  type: passiveScan-config
 - parameters: {}
-  name: "openapi"
-  type: "openapi"
+  name: openapi
+  type: openapi
 - parameters: {}
-  name: "passiveScan-wait"
-  type: "passiveScan-wait"
+  name: passiveScan-wait
+  type: passiveScan-wait
 - parameters: {}
   policyDefinition:
     rules: []
-  name: "activeScan"
-  type: "activeScan"
+  name: activeScan
+  type: activeScan
 - parameters:
-    reportDir: "/zap/wrk/reports"
-    template: "modern"
-    theme: "corporate"
-    reportTitle: "ZAP Scanning Report"
-    reportDescription: ""
+    reportDir: /zap/wrk/reports
+    template: modern
+    theme: corporate
+    reportTitle: ZAP Scanning Report
+    reportDescription: 
   risks:
-  - "low"
-  - "medium"
-  - "high"
+    - low
+    - medium
+    - high
   confidences:
-  - "low"
-  - "medium"
-  - "high"
-  - "confirmed"
+    - low
+    - medium
+    - high
+    - confirmed
   sections:
-  - "passingrules"
-  - "instancecount"
-  - "alertdetails"
-  - "alertcount"
-  - "params"
-  - "chart"
-  - "statistics"
-  name: "report"
-  type: "report"
+    - passingrules
+    - instancecount
+    - alertdetails
+    - alertcount
+    - params
+    - chart
+    - statistics
+  name: report
+  type: report
 - parameters:
-    template: "sarif-json"
-    reportDir: "/zap/wrk/reports"
-    reportFile: ""
-    reportTitle: "ZAP Scanning Report"
-    reportDescription: ""
+    template: sarif-json
+    reportDir: /zap/wrk/reports
+    reportFile: 
+    reportTitle: ZAP Scanning Report
+    reportDescription: 
     displayReport: false
   risks:
-  - "low"
-  - "medium"
-  - "high"
+    - low
+    - medium
+    - high
   confidences:
-  - "low"
-  - "medium"
-  - "high"
-  - "confirmed"
+    - low
+    - medium
+    - high
+    - confirmed
   sites: []
-  name: "sarifReport"
-  type: "report"
+  name: sarifReport
+  type: report
 
