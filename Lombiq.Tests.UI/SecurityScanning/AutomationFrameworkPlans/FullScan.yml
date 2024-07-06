@@ -66,21 +66,21 @@ jobs:
     name: passiveScan-config
     type: passiveScan-config
   - alertFilters:
-    # Mistakes a system-property('xsl:vendor') XSLT injection attempt as successful due to Microsoft being there on
-    # the login screen at all times for External Login. Might happen in similar cases with other brand names too.
-    - ruleId: 90017
-      ruleName: XSLT Injection (90017)
-      context:
-      newRisk: False Positive
-      parameter:
-      parameterRegex: false
-      url: .*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff).*
-      urlRegex: true
-      attack:
-      attackRegex: false
-      evidence:
-      evidenceRegex: false
-      methods: []
+      # Mistakes a system-property('xsl:vendor') XSLT injection attempt as successful due to Microsoft being there on
+      # the login screen at all times for External Login. Might happen in similar cases with other brand names too.
+      - ruleId: 90017
+        ruleName: XSLT Injection (90017)
+        context:
+        newRisk: False Positive
+        parameter:
+        parameterRegex: false
+        url: .*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff).*
+        urlRegex: true
+        attack:
+        attackRegex: false
+        evidence:
+        evidenceRegex: false
+        methods: []
     parameters:
       deleteGlobalAlerts: false
     name: alertFilter
