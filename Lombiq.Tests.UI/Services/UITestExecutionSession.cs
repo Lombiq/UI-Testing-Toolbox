@@ -522,7 +522,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            await _context.GoToRelativeUrlAsync("/");
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {

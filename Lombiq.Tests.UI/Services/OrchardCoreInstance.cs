@@ -94,7 +94,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         await StartOrchardAppAsync();
 
-        return new Uri(_url);
+        return new Uri(_url + Environment.GetEnvironmentVariable("LOMBIQ_UI_TESTING_TOOLBOX_URL_PREFIX"));
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
