@@ -1,25 +1,25 @@
 - parameters:
-    action: "add"
-    type: "active"
-    engine: "ECMAScript : Graal.js"
-    name: "displayRuleRuntimes"
-    target: ""
-    inline: "var extAscan = control.getExtensionLoader().getExtension(\n   org.zaproxy.zap.extension.ascan.ExtensionActiveScan.NAME);\n\
+    action: add
+    type: active
+    engine: 'ECMAScript : Graal.js'
+    name: displayRuleRuntimes
+    target: ''
+    inline: var extAscan = control.getExtensionLoader().getExtension(\n   org.zaproxy.zap.extension.ascan.ExtensionActiveScan.NAME);\n\
       \nif (extAscan != null) {\n  var lastScan = extAscan.getLastScan();\n  if (lastScan\
       \ != null) {\n    var hps = lastScan.getHostProcesses().toArray();\n    for\
       \ (var i=0; i < hps.length; i++) {\n      var hp = hps[i];\n      var plugins\
       \ = hp.getCompleted().toArray();\n      for (var j=0; j < plugins.length; j++)\
       \ {\n        var plugin = plugins[j];\n        var timeTaken = plugin.getTimeFinished().getTime()\n\
       \          - plugin.getTimeStarted().getTime();\n        print(plugin.getName()\
-      \ + \"\\t\" + timeTaken);\n      }\n    }\n  }\n}\n"
-  name: "script"
-  type: "script"
+      \ + \\\t\ + timeTaken);\n      }\n    }\n  }\n}\n
+  name: script
+  type: script
 - parameters:
-    action: "run"
-    type: "standalone"
-    engine: ""
-    name: "displayRuleRuntimes"
-    target: ""
-    inline: ""
-  name: "script"
-  type: "script"
+    action: run
+    type: standalone
+    engine: ''
+    name: displayRuleRuntimes
+    target: ''
+    inline: ''
+  name: script
+  type: script
