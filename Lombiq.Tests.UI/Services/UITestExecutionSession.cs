@@ -481,7 +481,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
-            var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
+            await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
