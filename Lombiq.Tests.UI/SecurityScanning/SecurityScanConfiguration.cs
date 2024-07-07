@@ -327,7 +327,7 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
+        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
         if (UnusedDatabaseTechnologiesAreExcluded)
