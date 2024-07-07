@@ -25,6 +25,13 @@ public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string sn
 public class OrchardCoreConfiguration
 {
     public string SnapshotDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the base path of the application if mapped to a different URL. For example, if the Orchard Core
+    /// application is mapped to "/cms" then this should be "/cms/". The / is important at the end, otherwise during
+    /// absolute URL creation the base path will be deleted.
+    /// </summary>
+    public string BasePath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 }
@@ -88,13 +95,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     _contentRootPath);
         }
 
-        _reverseProxy = new TestReverseProxy(_url);
+        _reverseProxy = new TestReverseProxy(_url, _configuration.BasePath);
 
         await _reverseProxy.StartAsync();
 
         await StartOrchardAppAsync();
 
-        return new Uri(_url + Environment.GetEnvironmentVariable("LOMBIQ_UI_TESTING_TOOLBOX_URL_PREFIX"));
+        return new Uri(_url + _configuration.BasePath);
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
