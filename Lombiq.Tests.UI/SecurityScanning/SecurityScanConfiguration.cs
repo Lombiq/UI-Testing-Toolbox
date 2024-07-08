@@ -327,7 +327,10 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
+        // False positive, since _excludedUrlRegexPatterns needs to be turned into an array to be passed to the method.
+#pragma warning disable S3878 // Arrays should not be created for params parameters
         yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
+#pragma warning restore S3878 // Arrays should not be created for params parameters
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
         if (UnusedDatabaseTechnologiesAreExcluded)
