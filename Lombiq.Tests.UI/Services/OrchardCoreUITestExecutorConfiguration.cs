@@ -30,6 +30,16 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAndCacheFolderErrorsAsync =
+        app => app.LogsShouldBeEmptyAsync(
+            canContainWarnings: true,
+            permittedErrorLines:
+            [
+                // These errors frequently happen during UI testing when using Azure Blob Storage for media storage.
+                // They're harmless, though.
+                "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
+            ]);
+
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
             logEntry => IsValidBrowserLogEntry(logEntry),

@@ -24,29 +24,26 @@ public static class WebApplicationInstanceExtensions
         ICollection<string> permittedErrorLines = null,
         CancellationToken cancellationToken = default)
     {
-        if (cancellationToken == default) cancellationToken = CancellationToken.None;
         permittedErrorLines ??= [];
 
         var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
 
-        if (canContainWarnings)
+        logOutput.ShouldNotContain("|FATAL|");
+
+        var lines = logOutput.SplitByNewLines();
+
+        var errorLines = lines.Where(line => line.Contains("|ERROR|"));
+
+        if (permittedErrorLines.Count != 0)
         {
-            logOutput.ShouldNotContain("|FATAL|");
-
-            var errorLines = logOutput
-                .SplitByNewLines()
-                .Where(line => line.Contains("|ERROR|"));
-
-            if (permittedErrorLines.Count != 0)
-            {
-                errorLines = errorLines.Where(line => !permittedErrorLines.Any(line.ContainsOrdinalIgnoreCase));
-            }
-
-            errorLines.ShouldBeEmpty();
+            errorLines = errorLines.Where(line => !permittedErrorLines.Any(line.ContainsOrdinalIgnoreCase));
         }
-        else
+
+        errorLines.ShouldBeEmpty();
+
+        if (!canContainWarnings)
         {
-            logOutput.ShouldBeEmpty();
+            lines.Where(line => line.Contains("|WARNING|")).ShouldBeEmpty();
         }
     }
 
