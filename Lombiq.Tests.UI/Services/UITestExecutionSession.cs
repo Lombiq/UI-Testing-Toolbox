@@ -62,7 +62,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var startTime = DateTime.UtcNow;
         IDictionary<string, IFailureDumpItem> failureDumpContainer = null;
-        if (_context != null) _context.RetryCount = retryCount; // At this point _context may not exist yet.
+        // At this point _context may not exist yet.
+        if (_context != null) _context.RetryCount = retryCount;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Starting execution of {0}.", _testManifest.Name);
 
@@ -109,7 +110,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             }
 
             _context ??= await CreateContextAsync();
-            _context.RetryCount = retryCount; // At this point _context definitely exists, so ensure that RetryCount is set.
+            // At this point _context definitely exists, so ensure that RetryCount is set.
+            _context.RetryCount = retryCount;
 
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
