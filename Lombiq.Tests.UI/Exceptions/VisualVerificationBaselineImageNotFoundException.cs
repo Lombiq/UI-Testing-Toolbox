@@ -22,5 +22,5 @@ public class VisualVerificationBaselineImageNotFoundException : Exception
               $"package) UI testing assembly. If you run the test again, this newly created verification file will " +
               $"be asserted against and the assertion will pass (unless the display of the app changed in the " +
               $"meantime)."
-            : $"Baseline image file was not found under the path {path} and this isn't the last try.";
+            : $"Baseline image file was not found under the path {path} and this isn't the final try.";
 }
