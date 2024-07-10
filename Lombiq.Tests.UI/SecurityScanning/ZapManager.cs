@@ -30,6 +30,7 @@ public sealed class ZapManager : IAsyncDisposable
     private const string _zapImage = "zaproxy/zap-stable:2.15.0"; // #spell-check-ignore-line
     private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
     private const string _zapReportsDirectoryName = "reports";
+    private const string _zapHomeDirectoryName = "home";
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
@@ -137,7 +138,15 @@ public sealed class ZapManager : IAsyncDisposable
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
-        const string zapHomeDirectoryName = "home";
+
+        var homeDirectoryPath = Path.Combine(mountedDirectoryPath, _zapHomeDirectoryName);
+        Directory.CreateDirectory(homeDirectoryPath);
+
+        // Same as for reportsDirectoryPath above.
+        if (GitHubHelper.IsGitHubEnvironment)
+        {
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", homeDirectoryPath);
+        }
 
         cliParameters.AddRange(
         [
@@ -155,7 +164,7 @@ public sealed class ZapManager : IAsyncDisposable
             "-loglevel",
             configuration.ZapLogLevel,
             "-dir",
-            Path.Combine(_zapWorkingDirectoryPath, zapHomeDirectoryName),
+            Path.Combine(_zapWorkingDirectoryPath, _zapHomeDirectoryName),
         ]);
 
         var stdErrBuffer = new StringBuilder();
@@ -197,7 +206,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         return new SecurityScanResult(
             reportsDirectoryPath,
-            Path.Combine(mountedDirectoryPath, zapHomeDirectoryName, "zap.log"),
+            Path.Combine(homeDirectoryPath, "zap.log"),
             SarifLog.Load(jsonReports[0]));
     }
 
