@@ -67,10 +67,11 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null,
         bool doSignIn = true,
         int maxActiveScanDurationInMinutes = 10,
-        int maxRuleDurationInMinutes = 2)
+        int maxRuleDurationInMinutes = 2,
+        string[] additionalPermittedErrorLinePatterns = null)
     {
         // Ignore some validation errors that only happen during security tests.
-        context.Configuration.UseAssertAppLogsForSecurityScan();
+        context.Configuration.UseAssertAppLogsForSecurityScan(additionalPermittedErrorLinePatterns ?? []);
 
         // This can take even over 10 minutes and the CI session would certainly time out with retries.
         context.Configuration.MaxRetryCount = 0;
