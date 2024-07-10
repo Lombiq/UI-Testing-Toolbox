@@ -94,7 +94,7 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 configuration.AssertAppLogsAsync = webApplicationInstance =>
                     webApplicationInstance.LogsShouldBeEmptyAsync(
                         canContainWarnings: true,
-                        permittedErrorLines:
+                        permittedErrorLinePatterns:
                         [
                             "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
                         ]);
