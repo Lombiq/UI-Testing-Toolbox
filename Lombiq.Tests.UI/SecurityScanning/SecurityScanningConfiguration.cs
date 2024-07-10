@@ -43,7 +43,7 @@ public class SecurityScanningConfiguration
     /// standard log levels</see>. Also see <see
     /// href="https://www.zaproxy.org/faq/how-do-you-configure-zap-logging/">the docs on ZAP's logging</see>.
     /// </summary>
-    public ZapLogLevel ZapLogLevel { get; set; } = ZapLogLevel.Debug;
+    public ZapLogLevel ZapLogLevel { get; set; } = ZapLogLevel.Info;
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="SarifLog"/> when security scanning happens.
