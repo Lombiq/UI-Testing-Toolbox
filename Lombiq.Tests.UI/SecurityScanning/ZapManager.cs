@@ -136,6 +136,11 @@ public sealed class ZapManager : IAsyncDisposable
         _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
+        var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
+        const string zapHomeDirectoryName = "home";
+
+        // This is not about normalization, ZAP needs a full lowercase string as the CLI parameter.
+#pragma warning disable CA1308 // Normalize strings to uppercase
         cliParameters.AddRange(
         [
             "--rm",
@@ -149,7 +154,12 @@ public sealed class ZapManager : IAsyncDisposable
             _zapWorkingDirectoryPath + yamlFileName,
             "-port",
             _zapPort,
+            "-loglevel",
+            configuration.ZapLogLevel.ToString().ToLowerInvariant(),
+            "-dir",
+            Path.Combine(_zapWorkingDirectoryPath, zapHomeDirectoryName),
         ]);
+#pragma warning restore CA1308 // Normalize strings to uppercase
 
         var stdErrBuffer = new StringBuilder();
 
@@ -188,7 +198,10 @@ public sealed class ZapManager : IAsyncDisposable
                 "Check the test output for details.");
         }
 
-        return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
+        return new SecurityScanResult(
+            reportsDirectoryPath,
+            Path.Combine(mountedDirectoryPath, zapHomeDirectoryName, "zap.log"),
+            SarifLog.Load(jsonReports[0]));
     }
 
     public async ValueTask DisposeAsync()

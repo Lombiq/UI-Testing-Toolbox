@@ -174,14 +174,11 @@ public static class SecurityScanningUITestContextExtensions
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
             else configuration.AssertSecurityScanResult(context, result.SarifLog);
 
-            if (configuration.CreateReportAlways)
-            {
-                context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
-            }
+            if (configuration.CreateReportAlways) AppendResultToFailureDump(context, result);
         }
         catch (Exception ex)
         {
-            if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            if (result != null) AppendResultToFailureDump(context, result);
             throw new SecurityScanningAssertionException(ex);
         }
     }
@@ -222,5 +219,11 @@ public static class SecurityScanningUITestContextExtensions
             context,
             automationFrameworkYamlPath,
             async plan => await configuration.ApplyToPlanAsync(plan, context));
+    }
+
+    private static void AppendResultToFailureDump(UITestContext context, SecurityScanResult result)
+    {
+        context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+        context.AppendFailureDump(result.ZapLogPath);
     }
 }
