@@ -139,8 +139,6 @@ public sealed class ZapManager : IAsyncDisposable
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
         const string zapHomeDirectoryName = "home";
 
-        // This is not about normalization, ZAP needs a full lowercase string as the CLI parameter.
-#pragma warning disable CA1308 // Normalize strings to uppercase
         cliParameters.AddRange(
         [
             "--rm",
@@ -155,11 +153,10 @@ public sealed class ZapManager : IAsyncDisposable
             "-port",
             _zapPort,
             "-loglevel",
-            configuration.ZapLogLevel.ToString().ToLowerInvariant(),
+            configuration.ZapLogLevel,
             "-dir",
             Path.Combine(_zapWorkingDirectoryPath, zapHomeDirectoryName),
         ]);
-#pragma warning restore CA1308 // Normalize strings to uppercase
 
         var stdErrBuffer = new StringBuilder();
 
