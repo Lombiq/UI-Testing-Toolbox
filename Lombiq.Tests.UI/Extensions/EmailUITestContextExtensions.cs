@@ -1,7 +1,6 @@
 using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
@@ -113,7 +112,7 @@ public static class EmailUITestContextExtensions
         port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.Port;
         if (!port.HasValue)
         {
-            throw new InvalidOperandException(
+            throw new InvalidOperationException(
                 "The SMTP port configuration is missing. Did you forget to include \"configuration.UseSmtpService = true\"?");
         }
 
