@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Modules;
 
@@ -14,5 +15,6 @@ public class ApplicationInfoController : ControllerBase
     public ApplicationInfoController(IApplicationContext applicationContext) => _applicationContext = applicationContext;
 
     [HttpGet]
+    [ProducesResponseType<int>(StatusCodes.Status200OK)]
     public IActionResult Get() => Ok(_applicationContext.GetApplicationInfo());
 }
