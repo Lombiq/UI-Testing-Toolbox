@@ -22,6 +22,7 @@ public class InteractiveModeController : Controller
     }
 
     [Route("api/InteractiveMode/IsInteractive")]
+    [HttpGet]
     public IActionResult IsInteractive() => Json(_interactiveModeStatusAccessor.Enabled);
 
     public IActionResult Continue()

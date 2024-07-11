@@ -296,6 +296,9 @@ public class SecurityScanConfiguration
     {
         yamlDocument.SetStartUrl(StartUri);
 
+        var openApiJob = yamlDocument.GetJobByType("openapi");
+        openApiJob?.GetOrCreateParameters().SetMappingChild("targetUrl", StartUri.ToString());
+
         foreach (var uri in _additionalUris)
         {
             yamlDocument.AddUrl(uri.IsAbsoluteUri ? uri : context.GetAbsoluteUri(uri.OriginalString));

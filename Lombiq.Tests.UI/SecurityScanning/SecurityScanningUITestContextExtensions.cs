@@ -110,7 +110,12 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.GraphQLPlanPath,
-            configure,
+            configuration =>
+            {
+                configuration.DontScanErrorPage = true;
+
+                configure?.Invoke(configuration);
+            },
             assertSecurityScanResult);
 
     /// <summary>
@@ -119,18 +124,48 @@ public static class SecurityScanningUITestContextExtensions
     /// href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
+    /// <param name="apiDefinitionUri">
+    /// The <see cref="Uri"/> of the JSON OpenAPI definition for the API to scan. If <see langword="null"/> then the API
+    /// of the app will automatically be discovered with Swagger.
+    /// </param>
     /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
-    public static Task RunAndAssertOpenApiSecurityScanAsync(
+    public static async Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
+        Uri apiDefinitionUri = null,
         Action<SecurityScanConfiguration> configure = null,
-        Action<SarifLog> assertSecurityScanResult = null) =>
-        context.RunAndAssertSecurityScanAsync(
+        Action<SarifLog> assertSecurityScanResult = null)
+    {
+        if (apiDefinitionUri == null)
+        {
+            await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.Swagger");
+        }
+
+        await context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.OpenAPIPlanPath,
-            configure,
+            configuration =>
+            {
+                configuration.ModifyZapPlan(plan =>
+                {
+                    var openApiJob =
+                        plan.GetJobByType("openapi") ??
+                        throw new ArgumentException(
+                            "No job named \"openapi\" found in the Automation Framework Plan. We can only run the " +
+                            "OpenAPI scan if the job exists.");
+
+                    apiDefinitionUri ??= context.GetAbsoluteUri("/swagger/v1/swagger.json");
+
+                    openApiJob.GetOrCreateParameters().SetMappingChild("apiUrl", apiDefinitionUri.ToString());
+                });
+
+                configuration.DontScanErrorPage = true;
+
+                configure?.Invoke(configuration);
+            },
             assertSecurityScanResult);
+    }
 
     /// <summary>
     /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app and runs
@@ -161,14 +196,14 @@ public static class SecurityScanningUITestContextExtensions
         {
             result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, scanConfiguration =>
             {
+                configure?.Invoke(scanConfiguration);
+
                 // Verify that error page handling also works by visiting a known error page with no logging.
                 if (!scanConfiguration.DontScanErrorPage)
                 {
                     var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
                     scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));
                 }
-
-                configure?.Invoke(scanConfiguration);
             });
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);

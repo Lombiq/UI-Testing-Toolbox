@@ -42,6 +42,9 @@
     <PackageReference Include="OrchardCore.Abstractions" Version="1.8.0" />
     <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.8.0" />
     <PackageReference Include="OrchardCore.Workflows" Version="1.8.0" />
+    <!-- With 6.6.2 and possible earlier versions we'd get an exception that the Tenants API doesn't comply with the
+    recommendations, see https://github.com/OrchardCMS/OrchardCore/issues/16430. -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
