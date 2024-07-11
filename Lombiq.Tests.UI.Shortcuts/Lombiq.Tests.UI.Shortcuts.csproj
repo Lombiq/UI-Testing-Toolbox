@@ -33,15 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Module.Targets" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Tenants" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Themes" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Users" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="2.0.0-preview-18259" />
-    <PackageReference Include="OrchardCore.Workflows" Version="2.0.0-preview-18259" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Tenants" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Themes" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Users" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="2.0.0-preview-18268" />
+    <PackageReference Include="OrchardCore.Workflows" Version="2.0.0-preview-18268" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
