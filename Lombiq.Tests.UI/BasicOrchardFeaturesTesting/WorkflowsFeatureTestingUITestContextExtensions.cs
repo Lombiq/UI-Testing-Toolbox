@@ -54,7 +54,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync();
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
-                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']"));
+                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup event']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 context.ShouldBeSuccess("Workflow has been saved.");
