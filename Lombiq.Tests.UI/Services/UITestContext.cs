@@ -22,6 +22,16 @@ public class UITestContext
     public string Id { get; }
 
     /// <summary>
+    /// Gets or sets the current retry count. This should only be edited from <c>UITestExecutionSession</c>.
+    /// </summary>
+    internal int RetryCount { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether there may be further retries for this test.
+    /// </summary>
+    public bool IsFinalTry => RetryCount >= Configuration?.MaxRetryCount;
+
+    /// <summary>
     /// Gets data about the currently executing test.
     /// </summary>
     public UITestManifest TestManifest { get; }
