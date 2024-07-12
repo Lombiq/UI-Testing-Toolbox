@@ -117,6 +117,8 @@ public static class EmailUITestContextExtensions
                 "The SMTP port configuration is missing. Did you forget to include \"configuration.UseSmtpService = true\"?");
         }
 
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Host"), "localhost");
+
         var smtpPort = port.Value.ToTechnicalString();
         await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
 
