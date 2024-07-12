@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium;
 using Shouldly;
 using SixLabors.ImageSharp;
@@ -424,7 +423,7 @@ to customize the name of the dump item.";
 
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                if (context.Configuration.MaxRetryCount == 0 || GitHubHelper.IsGitHubEnvironment)
+                if (context.IsFinalTry)
                 {
                     context.SaveSuggestedImage(
                         element,
@@ -433,7 +432,7 @@ to customize the name of the dump item.";
                 }
 
                 throw new VisualVerificationBaselineImageNotFoundException(
-                    approvedContext.BaselineImagePath, context.Configuration.MaxRetryCount);
+                    approvedContext.BaselineImagePath, context.IsFinalTry);
             }
 
             baselineImage = Image.Load(approvedContext.BaselineImagePath);
