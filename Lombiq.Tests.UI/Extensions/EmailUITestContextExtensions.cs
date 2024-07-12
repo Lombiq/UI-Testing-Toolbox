@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using Shouldly;
 using System;
 using System.Threading.Tasks;
 
@@ -119,6 +120,10 @@ public static class EmailUITestContextExtensions
         var smtpPort = port.Value.ToTechnicalString();
         await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
 
-        if (publish) await context.ClickReliablyOnAsync(By.ClassName("save"));
+        if (publish)
+        {
+            await context.ClickReliablyOnAsync(By.ClassName("save"));
+            context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
+        }
     }
 }
