@@ -41,7 +41,9 @@ public class SecurityScanningConfiguration
     /// Gets or sets the log level for the ZAP security scanning. Defaults to <see cref="ZapLogLevel.Info"/>. These log
     /// levels correspond to <see href="https://logging.apache.org/log4j/2.x/manual/customloglevels.html">Log4j's
     /// standard log levels</see>. Also see <see
-    /// href="https://www.zaproxy.org/faq/how-do-you-configure-zap-logging/">the docs on ZAP's logging</see>.
+    /// href="https://www.zaproxy.org/faq/how-do-you-configure-zap-logging/">the docs on ZAP's logging</see>. Note that
+    /// using a log level more granular than <see cref="ZapLogLevel.Info"/> (like <see cref="ZapLogLevel.Debug"/> slows
+    /// down the security scan considerably (can even double the runtime), so use it only when necessary.
     /// </summary>
     public ZapLogLevel ZapLogLevel { get; set; } = ZapLogLevel.Info;
 
