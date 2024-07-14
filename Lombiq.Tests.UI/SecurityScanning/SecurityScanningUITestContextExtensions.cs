@@ -202,7 +202,7 @@ public static class SecurityScanningUITestContextExtensions
                 if (!scanConfiguration.DontScanErrorPage)
                 {
                     var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
-                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));
+                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri, 500));
                 }
             });
 
