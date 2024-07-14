@@ -77,7 +77,7 @@
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.0.0-preview-18268" />
     <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0-preview-18268" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.0.0-preview-18268" />
-    <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="7.1.2" />
     <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
