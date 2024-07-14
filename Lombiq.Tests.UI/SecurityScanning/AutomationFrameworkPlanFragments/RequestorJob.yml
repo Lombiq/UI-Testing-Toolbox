@@ -1,12 +1,12 @@
 parameters:
-  user: ""
+  user: ''
 requests:
-- url: ""
-  name: ""
-  method: ""
-  httpVersion: ""
-  headers: []
-  data: ""
-  responseCode: 200
-name: "requestor"
-type: "requestor"
+  - url: ''
+    name: ''
+    method: ''
+    httpVersion: ''
+    headers: []
+    data: ''
+    responseCode: 200
+name: requestor
+type: requestor

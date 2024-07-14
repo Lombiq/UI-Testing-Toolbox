@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Components;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Tests.UI.Pages;
 
@@ -9,6 +10,10 @@ namespace Lombiq.Tests.UI.Pages;
 using _ = OrchardCoreFeaturesPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
 public sealed class OrchardCoreFeaturesPage : OrchardCoreAdminPage<_>
 {
     [FindById]

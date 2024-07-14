@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
@@ -19,6 +20,10 @@ using _ = OrchardCoreSetupPage;
     Case = TermCase.Pascal,
     TargetAllChildren = true,
     TargetAttributeTypes = [typeof(FindByIdAttribute), typeof(FindByNameAttribute)])]
+[SuppressMessage(
+    "Major Code Smell",
+    "S1144:Unused private types or members should be removed",
+    Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
 public sealed class OrchardCoreSetupPage : Page<_>
 {
     public const string DefaultPageTitle = "Setup";

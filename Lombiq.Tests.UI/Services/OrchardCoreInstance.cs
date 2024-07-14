@@ -127,7 +127,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     FullName = Path.GetFullPath(filePath),
                     ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
                 })
-            : Enumerable.Empty<IApplicationLog>();
+            : [];
     }
 
     public TService GetRequiredService<TService>() =>
@@ -188,7 +188,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private async Task StopOrchardAppAsync()
     {
-        _reverseProxy.DetachConnectionProvider();
+        _reverseProxy?.DetachConnectionProvider();
+
         if (_orchardApplication == null) return;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Attempting to stop the Orchard Core instance.");

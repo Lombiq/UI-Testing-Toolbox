@@ -16,11 +16,10 @@
     <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox/tree/dev/Lombiq.Tests.UI.Shortcuts</PackageProjectUrl>
-    <PackageLicenseFile>License.md</PackageLicenseFile>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="License.md" Pack="true" PackagePath="" />
     <None Include="Readme.md" />
     <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
@@ -34,15 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Module.Targets" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Tenants" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Themes" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Users" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.8.2" />
-    <PackageReference Include="OrchardCore.Workflows" Version="1.8.2" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Tenants" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Themes" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Users" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.8.0" />
+    <PackageReference Include="OrchardCore.Workflows" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
@@ -50,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="9.1.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="10.0.0" />
   </ItemGroup>
 
 </Project>

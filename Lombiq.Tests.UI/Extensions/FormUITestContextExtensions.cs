@@ -108,6 +108,8 @@ public static class FormUITestContextExtensions
         string editorId,
         string text)
     {
+        WaitForMonacoEditor(context, editorId);
+
         var script = $@"
             monaco.editor.getEditors().find((element) =>
                 element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).setValue({JsonConvert.SerializeObject(text)});";
@@ -122,6 +124,8 @@ public static class FormUITestContextExtensions
         this UITestContext context,
         string editorId)
     {
+        WaitForMonacoEditor(context, editorId);
+
         var script = $@"
             return monaco.editor.getEditors().find((element) =>
                 element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).getValue();";
@@ -257,7 +261,7 @@ public static class FormUITestContextExtensions
         await context.DoWithRetriesOrFailAsync(
             () =>
             {
-                title = context.Get(By.CssSelector(".nav-item.nav-link.active")).Text.Trim();
+                title = context.Get(By.CssSelector(".nav-item.nav-link.active")).GetTextTrimmed();
                 return Task.FromResult(title != defaultTitle);
             },
             timeout,
@@ -375,4 +379,7 @@ public static class FormUITestContextExtensions
 
         return context.Driver.TryFillElement(element, text);
     }
+
+    private static void WaitForMonacoEditor(UITestContext context, string editorId) =>
+        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
 }

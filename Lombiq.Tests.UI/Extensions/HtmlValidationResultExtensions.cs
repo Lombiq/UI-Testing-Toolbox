@@ -16,7 +16,7 @@ public static class HtmlValidationResultExtensions
     {
         if (string.IsNullOrEmpty(result.ResultFilePath) || !File.Exists(result.ResultFilePath))
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         var fullOutput = await File.ReadAllTextAsync(result.ResultFilePath);
@@ -34,7 +34,8 @@ public static class HtmlValidationResultExtensions
 
     public static string GetParsedErrorMessageString(IEnumerable<JsonHtmlValidationError> errors) =>
         string.Join(
-            '\n', errors.Select(error =>
+            '\n',
+            errors.Select(error =>
                 $"{error.Line.ToString(CultureInfo.InvariantCulture)}:{error.Column.ToString(CultureInfo.InvariantCulture)} - " +
                 $"{error.Message} - " +
                 $"{error.RuleId}"));
@@ -45,9 +46,11 @@ public static class HtmlValidationResultExtensions
         {
             // In some cases the output is too large and is not a valid JSON anymore. In this case we need to fix it.
             // tracking issue: https://github.com/atata-framework/atata-htmlvalidation/issues/9
-            if (output.Trim().StartsWith('[') && !output.Trim().EndsWith(']'))
+            int index = output.IndexOf(",\"source\":", StringComparison.Ordinal);
+            if (index != -1)
             {
-                output += "\"}]";
+                output = output[..index];
+                output += "}]";
             }
 
             var document = JsonDocument.Parse(output);

@@ -33,6 +33,10 @@ public static class WebDriverFactory
             // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
             chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
 
+            // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
+            // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for details.
+            chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings"); // #spell-check-ignore-line
+
             chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
@@ -40,7 +44,7 @@ public static class WebDriverFactory
             chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
             chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
             // By default localhost is only allowed in IPv4.
-            chromeConfig.Service.WhitelistedIPAddresses += "::ffff:127.0.0.1";
+            chromeConfig.Service.AllowedIPAddresses += "::ffff:127.0.0.1";
             // Helps with misconfigured hosts.
             if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 

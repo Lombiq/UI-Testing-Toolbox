@@ -25,7 +25,7 @@ public static class WebApplicationInstanceExtensions
         CancellationToken cancellationToken = default)
     {
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
-        permittedErrorLines ??= Array.Empty<string>();
+        permittedErrorLines ??= [];
 
         var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
 
