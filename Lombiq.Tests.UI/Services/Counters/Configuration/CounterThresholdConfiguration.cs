@@ -30,7 +30,7 @@ public class CounterThresholdConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Use this to set the maximum number of reads allowed on a <see cref="System.Data.Common.DbDataReader"/> instace.
+    /// Use this to set the maximum number of reads allowed on a <see cref="System.Data.Common.DbDataReader"/> instance.
     /// The counter infrastructure counts the <see cref="System.Data.Common.DbDataReader.Read"/> and
     /// <see cref="System.Data.Common.DbDataReader.ReadAsync()"/> calls, also the
     /// <see cref="System.Collections.IEnumerator.MoveNext"/> calls are counted on
