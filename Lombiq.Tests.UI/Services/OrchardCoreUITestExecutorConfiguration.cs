@@ -100,6 +100,11 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cause performance issues, like running out of memory.
     /// </para>
     /// </remarks>
+    [Obsolete("As of xUnit v2.8, the \"conservative\" parallelism algorithm is used by default, which limits the " +
+        "number of tests started (not currently running, as before) parallel tests. This feature is no longer needed " +
+        "and will be removed in a future version. Set maxParallelThreads in your test project's xunit.runner.json " +
+        "instead (see https://xunit.net/docs/running-tests-in-parallel).")]
+    // When removing this property, also remove the "ui-test-parallelism" config from Lombiq GitHub Actions.
     public int MaxParallelTests { get; set; } =
         TestConfigurationManager.GetIntConfiguration(
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
