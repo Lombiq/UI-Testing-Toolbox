@@ -58,8 +58,8 @@ public class OrchardCoreUITestExecutorConfiguration
             // under a different URL.
             !logEntry.IsNotFoundLogEntry("/favicon.ico");
 
-    public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList = new List<ICounterKey>
-    {
+    public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList =
+    [
         new DbCommandExecuteCounterKey(
             WorkflowTypeStartActivitiesQuery,
             new("p0", "ContentCreatedEvent"),
@@ -72,7 +72,7 @@ public class OrchardCoreUITestExecutorConfiguration
             WorkflowTypeStartActivitiesQuery,
             new("p0", "ContentUpdatedEvent"),
             new("p1", value: true)),
-    };
+    ];
 
     /// <summary>
     /// Gets the global events available during UI test execution.

@@ -11,5 +11,5 @@ public abstract class CounterValue<TValue> : ICounterValue
     public TValue Value { get; set; }
 
     public virtual IEnumerable<string> Dump() =>
-        new[] { string.Create(CultureInfo.InvariantCulture, $"{GetType().Name} value: {Value}") };
+        [string.Create(CultureInfo.InvariantCulture, $"{GetType().Name} value: {Value}")];
 }

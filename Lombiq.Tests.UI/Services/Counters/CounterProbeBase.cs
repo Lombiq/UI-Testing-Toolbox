@@ -30,7 +30,7 @@ public abstract class CounterProbeBase : ICounterProbe
     {
         if (!Counters.Any())
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         var lines = new List<string>
