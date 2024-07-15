@@ -14,7 +14,7 @@
       \ {\n        var plugin = plugins[j];\n        var timeTaken = plugin.getTimeFinished().getTime()\n\
       \          - plugin.getTimeStarted().getTime();\n        print(plugin.getName()\
       \ + \"\\t\" + timeTaken);\n      }\n    }\n  }\n}"
-      # yamllint enable
+    # yamllint enable
   name: script
   type: script
 - parameters:
