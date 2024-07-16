@@ -155,6 +155,8 @@ public static class SecurityScanningUITestContextExtensions
     {
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
 
+        await context.GoToAsync<ShapeTableController>(controller => controller.Prepare());
+
         SecurityScanResult result = null;
         try
         {
