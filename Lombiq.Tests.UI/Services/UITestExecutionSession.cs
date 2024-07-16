@@ -485,7 +485,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
-            await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
+            var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
@@ -526,7 +526,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            await _context.GoToRelativeUrlAsync("/");
+            await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {

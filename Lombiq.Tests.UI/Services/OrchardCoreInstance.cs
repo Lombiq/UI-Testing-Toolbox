@@ -24,20 +24,7 @@ public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string sn
 
 public class OrchardCoreConfiguration
 {
-    private string _basePath;
-
     public string SnapshotDirectoryPath { get; set; }
-
-    /// <summary>
-    /// Gets or sets the base path of the application if mapped to a different URL. For example, if the Orchard Core
-    /// application is mapped to "/cms" then this should be "/cms".
-    /// </summary>
-    public string BasePath
-    {
-        get => _basePath;
-        set => _basePath = value.TrimEnd('/') + '/';
-    }
-
     public BeforeAppStartHandler BeforeAppStart { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 }
@@ -101,13 +88,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     _contentRootPath);
         }
 
-        _reverseProxy = new TestReverseProxy(_url, _configuration.BasePath);
+        _reverseProxy = new TestReverseProxy(_url);
 
         await _reverseProxy.StartAsync();
 
         await StartOrchardAppAsync();
 
-        return new Uri(new Uri(_url), _configuration.BasePath);
+        return new Uri(_url);
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
