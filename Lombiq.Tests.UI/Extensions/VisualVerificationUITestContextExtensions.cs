@@ -423,7 +423,7 @@ to customize the name of the dump item.";
 
             if (!File.Exists(approvedContext.BaselineImagePath))
             {
-                if (context.Configuration.MaxRetryCount == 0)
+                if (context.IsFinalTry)
                 {
                     context.SaveSuggestedImage(
                         element,
@@ -432,7 +432,7 @@ to customize the name of the dump item.";
                 }
 
                 throw new VisualVerificationBaselineImageNotFoundException(
-                    approvedContext.BaselineImagePath, context.Configuration.MaxRetryCount);
+                    approvedContext.BaselineImagePath, context.IsFinalTry);
             }
 
             baselineImage = Image.Load(approvedContext.BaselineImagePath);
