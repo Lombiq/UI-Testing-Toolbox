@@ -327,11 +327,11 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        // We can do this or .ToArray() which results IDE0305: Collection initialization can be simplified. So let's use
-        // this.
-#pragma warning disable S3878 //S3878: Remove this array creation and simply pass the elements.
-        yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
-#pragma warning restore S3878
+        // We can do this or use collection expression which results S3878: Remove this array creation and simply pass
+        // the elements.
+#pragma warning disable IDE0305 // IDE0305: Collection initialization can be simplified
+        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
+#pragma warning restore IDE0305
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
         if (UnusedDatabaseTechnologiesAreExcluded)
