@@ -27,8 +27,12 @@ public static class ScrollingUITestContextExtensions
     /// <summary>
     /// Scrolls to a particular set of coordinates in the document.
     /// </summary>
-    public static void ScrollTo(this UITestContext context, int x, int y) =>
+    public static void ScrollTo(this UITestContext context, int x, int y)
+    {
         context.ExecuteScript("window.scrollTo(arguments[0], arguments[1], \"instant\");", x, y);
+        context.ExecuteScript("document.body.style.transform = 'scale(1)';");
+        context.ExecuteScript("document.body.style.transform = '';");
+    }
 
     /// <summary>
     /// Scrolls the document vertically to the given <paramref name="position"/>.
