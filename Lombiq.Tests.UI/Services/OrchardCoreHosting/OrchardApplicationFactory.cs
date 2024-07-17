@@ -1,5 +1,10 @@
 using Lombiq.Tests.Integration.Services;
+using Lombiq.Tests.UI.Services.Counters;
+using Lombiq.Tests.UI.Services.Counters.Middlewares;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -11,27 +16,32 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Web;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using YesSql;
+using ISession = YesSql.ISession;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
 public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IProxyConnectionProvider
    where TStartup : class
 {
+    private readonly ICounterDataCollector _counterDataCollector;
     private readonly Action<IConfigurationBuilder> _configureHost;
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
-    private readonly List<IStore> _createdStores = [];
+    private readonly ConcurrentBag<IStore> _createdStores = [];
 
     public OrchardApplicationFactory(
+        ICounterDataCollector counterDataCollector,
         Action<IConfigurationBuilder> configureHost = null,
         Action<IWebHostBuilder> configuration = null,
         Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
     {
+        _counterDataCollector = counterDataCollector;
         _configureHost = configureHost;
         _configuration = configuration;
         _configureOrchard = configureOrchard;
@@ -91,16 +101,18 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     private void ConfigureTestServices(IServiceCollection services)
     {
+        services.AddSingleton(_counterDataCollector);
+
         var builder = services
-                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
-                .ImplementationInstance as OrchardCoreBuilder
-                ?? throw new InvalidOperationException(
-                    "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+            .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
+            .ImplementationInstance as OrchardCoreBuilder
+            ?? throw new InvalidOperationException(
+                "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
         var configuration = services
-                .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
-                .ImplementationInstance as ConfigurationManager
-                ?? throw new InvalidOperationException(
-                    $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
+            .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
+            .ImplementationInstance as ConfigurationManager
+            ?? throw new InvalidOperationException(
+                $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
 
         _configureOrchard?.Invoke(configuration, builder);
 
@@ -109,7 +121,12 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             {
                 AddFakeStore(builderServices);
                 AddFakeViewCompilerProvider(builderServices);
+                AddSessionProbe(builderServices);
             },
+            int.MaxValue);
+
+        builder.Configure(
+            app => app.UseMiddleware<RequestProbeMiddleware>(),
             int.MaxValue);
     }
 
@@ -127,13 +144,38 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 return null;
             }
 
-            lock (_createdStores)
-            {
-                var fakeStore = new FakeStore((IStore)storeDescriptor.ImplementationFactory.Invoke(serviceProvider));
-                _createdStores.Add(fakeStore);
+            store.Configuration.ConnectionFactory = new ProbedConnectionFactory(
+                store.Configuration.ConnectionFactory,
+                _counterDataCollector);
 
-                return fakeStore;
+            var fakeStore = new FakeStore(store);
+            _createdStores.Add(fakeStore);
+
+            return fakeStore;
+        });
+    }
+
+    private void AddSessionProbe(IServiceCollection services)
+    {
+        var sessionDescriptor = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(ISession));
+
+        services.RemoveAll<ISession>();
+
+        services.AddScoped<ISession>(serviceProvider =>
+        {
+            var session = (ISession)sessionDescriptor.ImplementationFactory.Invoke(serviceProvider);
+            if (session is null)
+            {
+                return null;
             }
+
+            var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+
+            return new SessionProbe(
+                _counterDataCollector,
+                httpContextAccessor.HttpContext.Request.Method,
+                new Uri(httpContextAccessor.HttpContext.Request.GetEncodedUrl()),
+                session);
         });
     }
 

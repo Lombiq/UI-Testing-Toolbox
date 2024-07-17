@@ -43,3 +43,4 @@ public class RemoteTests : RemoteUITestBase
 }
 
 // END OF TRAINING SECTION: Remote tests.
+// NEXT STATION: Head over to DuplicatedSqlQueryDetectorTests.cs.

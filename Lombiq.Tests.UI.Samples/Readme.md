@@ -30,6 +30,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Interactive mode](Tests/InteractiveModeTests.cs)
 - [Security scanning](Tests/SecurityScanningTests.cs)
 - [Testing remote apps](Tests/RemoteTests.cs)
+- [Duplicated SQL query detector](Tests/DuplicatedSqlQueryDetectorTests.cs)
 
 ## Adding new tutorials
 

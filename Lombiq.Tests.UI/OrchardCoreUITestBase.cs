@@ -334,8 +334,12 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync(
-            (configuration, contextId) =>
-                new OrchardCoreInstance<TEntryPoint>(configuration.OrchardCoreConfiguration, contextId, configuration.TestOutputHelper),
+            (configuration, contextId, counterDataCollector) =>
+                new OrchardCoreInstance<TEntryPoint>(
+                    configuration.OrchardCoreConfiguration,
+                    contextId,
+                    configuration.TestOutputHelper,
+                    counterDataCollector),
             testManifest,
             configuration);
     }

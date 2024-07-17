@@ -117,24 +117,23 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
-    public UITestContext(
-        string id,
-        UITestManifest testManifest,
-        OrchardCoreUITestExecutorConfiguration configuration,
-        IWebApplicationInstance application,
-        AtataScope scope,
-        RunningContextContainer runningContextContainer,
-        ZapManager zapManager)
+    /// <summary>
+    /// Gets the currently running <see cref="CounterDataCollector"/> instance.
+    /// </summary>
+    public CounterDataCollector CounterDataCollector { get; init; }
+
+    internal UITestContext(UITestContextParameters parameters)
     {
-        Id = id;
-        TestManifest = testManifest;
-        Configuration = configuration;
-        SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
-        Application = application;
-        Scope = scope;
-        SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
-        AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
-        ZapManager = zapManager;
+        Id = parameters.Id;
+        TestManifest = parameters.TestManifest;
+        Configuration = parameters.Configuration;
+        SqlServerRunningContext = parameters.RunningContextContainer.SqlServerRunningContext;
+        Application = parameters.Application;
+        Scope = parameters.Scope;
+        SmtpServiceRunningContext = parameters.RunningContextContainer.SmtpServiceRunningContext;
+        AzureBlobStorageRunningContext = parameters.RunningContextContainer.AzureBlobStorageRunningContext;
+        ZapManager = parameters.ZapManager;
+        CounterDataCollector = parameters.CounterDataCollector;
     }
 
     /// <summary>

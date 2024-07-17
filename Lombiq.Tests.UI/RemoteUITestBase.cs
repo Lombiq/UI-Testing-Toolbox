@@ -71,6 +71,6 @@ public abstract class RemoteUITestBase : UITestBase
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
 
-        await ExecuteOrchardCoreTestAsync((_, _) => new RemoteInstance(baseUri), testManifest, configuration);
+        await ExecuteOrchardCoreTestAsync((_, _, _) => new RemoteInstance(baseUri), testManifest, configuration);
     }
 }

@@ -7,6 +7,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
+using Lombiq.Tests.UI.Services.Counters.Configuration;
 using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
@@ -114,6 +115,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context.RetryCount = retryCount;
 
             _context.FailureDumpContainer.Clear();
+
+            BeginDataCollection(
+                _configuration.CounterConfiguration.AfterSetup,
+                nameof(_configuration.CounterConfiguration.AfterSetup));
+
             failureDumpContainer = _context.FailureDumpContainer;
 
             _context.SetDefaultBrowserSize();
@@ -121,6 +127,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             await _testManifest.TestAsync(_context);
 
             await _context.AssertLogsAsync();
+
+            EndAssertDataCollection();
 
             return true;
         }
@@ -158,6 +166,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
 
         return false;
+    }
+
+    private void BeginDataCollection(PhaseCounterConfiguration counterConfiguration, string phase)
+    {
+        _context.CounterDataCollector.Reset();
+        _context.CounterDataCollector.Phase = phase;
+        _context.CounterDataCollector.AssertCounterData = counterConfiguration.AssertCounterData
+            ?? OrchardCoreUITestExecutorConfiguration.DefaultAssertCounterData(counterConfiguration);
+        _context.CounterDataCollector.IsEnabled = _configuration.CounterConfiguration.IsEnabled;
+    }
+
+    private void EndAssertDataCollection()
+    {
+        _context.CounterDataCollector.Dump().ForEach(_testOutputHelper.WriteLine);
+        _context.CounterDataCollector.AssertCounter();
     }
 
     private async ValueTask ShutdownAsync()
@@ -502,6 +525,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 // config to be available at startup too.
                 _context = await CreateContextAsync();
 
+                BeginDataCollection(
+                    _configuration.CounterConfiguration.Setup,
+                    nameof(_configuration.CounterConfiguration.Setup));
+
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
 
@@ -510,6 +537,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
+
+                EndAssertDataCollection();
+
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -528,6 +558,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
+        catch (CounterThresholdException) { throw; }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
             if (setupConfiguration.FastFailSetup)
@@ -633,7 +664,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart.RemoveAll(UITestingBeforeAppStartHandlerAsync);
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
-        _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId);
+        var counterDataCollector = new CounterDataCollector(_testOutputHelper);
+
+        _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId, counterDataCollector);
         var uri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
@@ -663,13 +696,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, uri, _configuration);
 
         return new UITestContext(
-            contextId,
-            _testManifest,
-            _configuration,
-            _applicationInstance,
-            atataScope,
-            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
-            _zapManager);
+            new()
+            {
+                Id = contextId,
+                TestManifest = _testManifest,
+                Configuration = _configuration,
+                Application = _applicationInstance,
+                Scope = atataScope,
+                RunningContextContainer = new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+                ZapManager = _zapManager,
+                CounterDataCollector = counterDataCollector,
+            });
     }
 
     private string GetSetupHashCode() =>
