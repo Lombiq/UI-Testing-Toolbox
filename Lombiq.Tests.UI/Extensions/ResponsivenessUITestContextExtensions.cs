@@ -36,8 +36,6 @@ public static class ResponsivenessUITestContextExtensions
         context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
             "Set window size to {0}x{1}.", size.Width, size.Height);
         context.Driver.Manage().Window.Size = new System.Drawing.Size(size.Width, size.Height);
-        context.ExecuteScript("document.body.style.transform = 'scale(1)';");
-        context.ExecuteScript("document.body.style.transform = '';");
     }
 
     /// <summary>
