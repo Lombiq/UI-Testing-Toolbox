@@ -30,6 +30,15 @@ public static class ScrollingUITestContextExtensions
     public static void ScrollTo(this UITestContext context, int x, int y)
     {
         context.ExecuteScript("window.scrollTo(arguments[0], arguments[1], \"instant\");", x, y);
+        context.TriggerHtmlReload();
+    }
+
+    /// <summary>
+    /// Sometimes after scrolling elements can't render properly, so we need to set the scale, to trigger the HTML
+    /// elements.
+    /// </summary>
+    public static void TriggerHtmlReload(this UITestContext context)
+    {
         context.ExecuteScript("document.body.style.transform = 'scale(1)';");
         context.ExecuteScript("document.body.style.transform = '';");
     }
