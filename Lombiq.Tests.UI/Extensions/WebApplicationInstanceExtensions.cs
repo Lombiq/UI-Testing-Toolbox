@@ -3,6 +3,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,39 +15,37 @@ public static class WebApplicationInstanceExtensions
     /// Asserting that the logs should be empty. When they aren't the Shouldly exception will contain the logs'
     /// contents.
     /// </summary>
-    /// <param name="permittedErrorLines">
+    /// <param name="permittedErrorLinePatterns">
     /// If not <see langword="null"/> or empty, each line is split and any lines containing <c>|ERROR|</c> will be
-    /// ignored if they contain any string from this collection (case-insensitive).
+    /// ignored if they regex match any string from this collection (case-insensitive).
     /// </param>
     public static async Task LogsShouldBeEmptyAsync(
         this IWebApplicationInstance webApplicationInstance,
         bool canContainWarnings = false,
-        ICollection<string> permittedErrorLines = null,
+        ICollection<string> permittedErrorLinePatterns = null,
         CancellationToken cancellationToken = default)
     {
-        if (cancellationToken == default) cancellationToken = CancellationToken.None;
-        permittedErrorLines ??= [];
+        permittedErrorLinePatterns ??= [];
 
         var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
 
-        if (canContainWarnings)
+        logOutput.ShouldNotContain("|FATAL|");
+
+        var lines = logOutput.SplitByNewLines();
+
+        var errorLines = lines.Where(line => line.Contains("|ERROR|"));
+
+        if (permittedErrorLinePatterns.Count != 0)
         {
-            logOutput.ShouldNotContain("|FATAL|");
-
-            var errorLines = logOutput
-                .SplitByNewLines()
-                .Where(line => line.Contains("|ERROR|"));
-
-            if (permittedErrorLines.Count != 0)
-            {
-                errorLines = errorLines.Where(line => !permittedErrorLines.Any(line.ContainsOrdinalIgnoreCase));
-            }
-
-            errorLines.ShouldBeEmpty();
+            errorLines = errorLines.Where(line =>
+                !permittedErrorLinePatterns.Any(pattern => Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)));
         }
-        else
+
+        errorLines.ShouldBeEmpty();
+
+        if (!canContainWarnings)
         {
-            logOutput.ShouldBeEmpty();
+            lines.Where(line => line.Contains("|WARNING|")).ShouldBeEmpty();
         }
     }
 

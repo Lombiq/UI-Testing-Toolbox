@@ -24,12 +24,13 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public sealed class ZapManager : IAsyncDisposable
 {
     // Using the then-latest stable release of ZAP. You can check for newer version tags here:
-    // https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags.
+    // https://hub.docker.com/r/zaproxy/zap-stable/tags.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "softwaresecurityproject/zap-stable:2.14.0"; // #spell-check-ignore-line
+    private const string _zapImage = "zaproxy/zap-stable:2.15.0"; // #spell-check-ignore-line
     private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
     private const string _zapReportsDirectoryName = "reports";
+    private const string _zapHomeDirectoryName = "home";
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
@@ -136,6 +137,17 @@ public sealed class ZapManager : IAsyncDisposable
         _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
+        var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
+
+        var homeDirectoryPath = Path.Combine(mountedDirectoryPath, _zapHomeDirectoryName);
+        Directory.CreateDirectory(homeDirectoryPath);
+
+        // Same as for reportsDirectoryPath above.
+        if (GitHubHelper.IsGitHubEnvironment)
+        {
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", homeDirectoryPath);
+        }
+
         cliParameters.AddRange(
         [
             "--rm",
@@ -149,6 +161,10 @@ public sealed class ZapManager : IAsyncDisposable
             _zapWorkingDirectoryPath + yamlFileName,
             "-port",
             _zapPort,
+            "-loglevel",
+            configuration.ZapLogLevel,
+            "-dir",
+            Path.Combine(_zapWorkingDirectoryPath, _zapHomeDirectoryName),
         ]);
 
         var stdErrBuffer = new StringBuilder();
@@ -188,7 +204,10 @@ public sealed class ZapManager : IAsyncDisposable
                 "Check the test output for details.");
         }
 
-        return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
+        return new SecurityScanResult(
+            reportsDirectoryPath,
+            Path.Combine(homeDirectoryPath, "zap.log"),
+            SarifLog.Load(jsonReports[0]));
     }
 
     public async ValueTask DisposeAsync()

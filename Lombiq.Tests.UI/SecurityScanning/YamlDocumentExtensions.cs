@@ -291,10 +291,15 @@ public static class YamlDocumentExtensions
     /// Adds a "requestor" job to the ZAP Automation Framework plan just before the job named "spider".
     /// </summary>
     /// <param name="url">The URL the requestor job will access.</param>
+    /// <param name="expectedResponseCode">
+    /// The HTTP response code to expect. When a different response code is returned, it'll show up in the ZAP logs as a
+    /// warning along the lines of "Difference in response code values for message GET..." and make ZAP exit with a code
+    /// other than 0.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// If no job named "spider" is found in the ZAP Automation Framework plan.
     /// </exception>
-    public static YamlDocument AddRequestor(this YamlDocument yamlDocument, string url)
+    public static YamlDocument AddRequestor(this YamlDocument yamlDocument, string url, int expectedResponseCode = 200)
     {
         var jobs = yamlDocument.GetJobs();
 
@@ -306,7 +311,9 @@ public static class YamlDocumentExtensions
 
         var requestorJob = YamlHelper.LoadDocument(AutomationFrameworkPlanFragmentsPaths.RequestorJobPath).GetRootNode();
 
-        ((YamlSequenceNode)requestorJob["requests"]).Children[0]["url"].SetValue(url);
+        var children = ((YamlSequenceNode)requestorJob["requests"]).Children[0];
+        children["url"].SetValue(url);
+        children["responseCode"].SetValue(expectedResponseCode.ToTechnicalString());
 
         var spiderIndex = jobs.Children.IndexOf(spiderJob);
         jobs.Children.Insert(spiderIndex, requestorJob);
