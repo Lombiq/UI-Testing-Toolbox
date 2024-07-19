@@ -55,6 +55,8 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
+        // This is our property.
+#pragma warning disable CS0618 // Type or member is obsolete
         if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
         {
             lock (_numberOfTestsLimitLock)
@@ -62,6 +64,7 @@ public static class UITestExecutor
                 _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         return ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
     }

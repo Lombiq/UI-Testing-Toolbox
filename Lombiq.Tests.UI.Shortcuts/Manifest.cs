@@ -53,3 +53,11 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.Workflows.Http",
     ]
 )]
+
+[assembly: Feature(
+    Id = Swagger,
+    Name = "Swagger - Shortcuts - Lombiq UI Testing Toolbox",
+    Category = "Development",
+    Description = "WARNING: Only enable this feature in the UI testing environment. Provides a Swagger endpoint to " +
+        "generate a JSON OpenAPI definition for the web APIs available in the app. Used in security scanning."
+)]
