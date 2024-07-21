@@ -254,6 +254,8 @@ public static class ReliabilityUITestContextExtensions
 
                 lastScrollPosition = currentScrollPosition;
 
+                context.TriggerHtmlReload();
+
                 return ready;
             },
             timeout,
