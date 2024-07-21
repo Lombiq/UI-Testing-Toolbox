@@ -45,7 +45,7 @@ public abstract class UITestBase
 
             if (timeoutTask.IsCompleted)
             {
-                throw new TimeoutException($"The time allowed for the test ({timeout}) was exceeded.");
+                throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
             }
 
             // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in
