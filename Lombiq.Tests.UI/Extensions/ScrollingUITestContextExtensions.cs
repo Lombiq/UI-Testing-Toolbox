@@ -34,8 +34,7 @@ public static class ScrollingUITestContextExtensions
     }
 
     /// <summary>
-    /// Sometimes after scrolling elements can't render properly, so we need to set the scale, to trigger the HTML
-    /// elements.
+    /// Sometimes elements don't render properly after scrolling. So we have to set the scale to re-render them.
     /// </summary>
     public static void TriggerHtmlReload(this UITestContext context)
     {
