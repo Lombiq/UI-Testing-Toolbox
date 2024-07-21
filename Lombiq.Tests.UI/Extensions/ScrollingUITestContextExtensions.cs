@@ -29,7 +29,7 @@ public static class ScrollingUITestContextExtensions
     /// </summary>
     public static void ScrollTo(this UITestContext context, int x, int y)
     {
-        context.ExecuteScript("window.scrollTo(arguments[0], arguments[1], \"instant\");", x, y);
+        context.ExecuteScript("window.scrollTo(arguments[0], arguments[1], 'instant');", x, y);
         context.TriggerHtmlReload();
     }
 
