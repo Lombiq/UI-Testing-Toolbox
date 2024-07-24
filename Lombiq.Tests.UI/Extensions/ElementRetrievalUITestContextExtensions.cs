@@ -1,7 +1,6 @@
 using Atata;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
-using Microsoft.IdentityModel.Tokens;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
