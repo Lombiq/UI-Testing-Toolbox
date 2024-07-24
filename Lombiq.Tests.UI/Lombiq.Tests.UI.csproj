@@ -82,7 +82,7 @@
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
-    <PackageReference Include="xunit" Version="2.8.0" />
+    <PackageReference Include="xunit" Version="2.9.0" />
     <PackageReference Include="YamlDotNet" Version="15.1.4" />
   </ItemGroup>
 

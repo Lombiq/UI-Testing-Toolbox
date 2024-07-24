@@ -30,6 +30,16 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
         app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
 
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAndCacheFolderErrorsAsync =
+        app => app.LogsShouldBeEmptyAsync(
+            canContainWarnings: true,
+            permittedErrorLinePatterns:
+            [
+                // These errors frequently happen during UI testing when using Azure Blob Storage for media storage.
+                // They're harmless, though.
+                "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
+            ]);
+
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
             logEntry => IsValidBrowserLogEntry(logEntry),
@@ -90,6 +100,11 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cause performance issues, like running out of memory.
     /// </para>
     /// </remarks>
+    [Obsolete("As of xUnit v2.8, the \"conservative\" parallelism algorithm is used by default, which limits the " +
+        "number of tests started (not currently running, as before) parallel tests. This feature is no longer needed " +
+        "and will be removed in a future version. Set maxParallelThreads in your test project's xunit.runner.json " +
+        "instead (see https://xunit.net/docs/running-tests-in-parallel).")]
+    // When removing this property, also remove the "ui-test-parallelism" config from Lombiq GitHub Actions.
     public int MaxParallelTests { get; set; } =
         TestConfigurationManager.GetIntConfiguration(
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
@@ -214,9 +229,9 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Sets the <see cref="AssertAppLogsAsync"/> to the output of <see cref="CreateAppLogAssertionForSecurityScan"/> so
     /// it accepts errors in the log caused by the security scanning.
     /// </summary>
-    public OrchardCoreUITestExecutorConfiguration UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
+    public OrchardCoreUITestExecutorConfiguration UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLinePatterns)
     {
-        AssertAppLogsAsync = CreateAppLogAssertionForSecurityScan(additionalPermittedErrorLines);
+        AssertAppLogsAsync = CreateAppLogAssertionForSecurityScan(additionalPermittedErrorLinePatterns);
 
         return this;
     }
@@ -225,7 +240,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
     /// entries which represent correct reactions to incorrect or malicious user behavior during a security scan.
     /// </summary>
-    public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLines)
+    public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLinePatterns)
     {
         var permittedErrorLines = new List<string>
         {
@@ -234,6 +249,8 @@ public class OrchardCoreUITestExecutorConfiguration
             // model. This is correct, safe behavior and should be logged in production.
             "is not a valid value for Boolean",
             "An unhandled exception has occurred while executing the request. System.FormatException: any",
+            "System.FormatException: The input string '[\\S\\s]+' was not in a correct format.",
+            "System.FormatException: The input string 'any",
             // Happens when the static file middleware tries to access a path that doesn't exist or access a file as
             // a directory. Presumably this is an attempt to access protected files using source path manipulation.
             // This is handled by ASP.NET Core and there is nothing for us to worry about.
@@ -252,7 +269,7 @@ public class OrchardCoreUITestExecutorConfiguration
             "System.InvalidOperationException: No authentication handler is registered for the scheme",
         };
 
-        permittedErrorLines.AddRange(additionalPermittedErrorLines);
+        permittedErrorLines.AddRange(additionalPermittedErrorLinePatterns);
 
         return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
     }

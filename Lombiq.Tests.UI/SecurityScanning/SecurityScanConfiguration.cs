@@ -296,6 +296,9 @@ public class SecurityScanConfiguration
     {
         yamlDocument.SetStartUrl(StartUri);
 
+        var openApiJob = yamlDocument.GetJobByType("openapi");
+        openApiJob?.GetOrCreateParameters().SetMappingChild("targetUrl", StartUri.ToString());
+
         foreach (var uri in _additionalUris)
         {
             yamlDocument.AddUrl(uri.IsAbsoluteUri ? uri : context.GetAbsoluteUri(uri.OriginalString));
@@ -327,7 +330,11 @@ public class SecurityScanConfiguration
             //   pollPostData: ""
         }
 
-        yamlDocument.AddExcludePathsRegex([.. _excludedUrlRegexPatterns]);
+        // We can do this or use collection expression which results S3878: Remove this array creation and simply pass
+        // the elements.
+#pragma warning disable IDE0305 // IDE0305: Collection initialization can be simplified
+        yamlDocument.AddExcludePathsRegex(_excludedUrlRegexPatterns.ToArray());
+#pragma warning restore IDE0305
         if (AdminIsExcluded) yamlDocument.AddExcludePathsRegex($".*{context.AdminUrlPrefix}.*");
 
         if (UnusedDatabaseTechnologiesAreExcluded)
