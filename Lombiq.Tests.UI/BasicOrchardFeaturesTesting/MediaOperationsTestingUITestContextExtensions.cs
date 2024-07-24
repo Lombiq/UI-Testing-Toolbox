@@ -33,7 +33,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
-                    .Get(By.CssSelector($"a[href^=\"/media/{imageName}\"]").OfAnyVisibility())
+                    .Get(By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{imageName}\"]").OfAnyVisibility())
                     .ClickReliablyAsync(context);
                 // Closing the newly opened tab with the image, so the browser doesn't continue to switch the UI back
                 // and forth.
@@ -57,7 +57,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
 
                 await context
-                    .Get(By.CssSelector($"a.btn-link[href^=\"/media/{documentName}\"]"))
+                    .Get(By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
                 context.SwitchToLastWindow();
                 context.Driver.Close();
