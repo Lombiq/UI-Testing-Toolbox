@@ -4,7 +4,6 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.Helpers;
 using Lombiq.Tests.UI.Exceptions;
 using Microsoft.Data.SqlClient;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
