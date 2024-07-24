@@ -73,7 +73,7 @@ to customize the name of the dump item.";
                         configurator?.Invoke(configuration);
                     });
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not ImageFormatException)
             {
                 // We don't throw yet, this way if there are missing images they are generated all in one run.
                 exceptions.Add(exception);
