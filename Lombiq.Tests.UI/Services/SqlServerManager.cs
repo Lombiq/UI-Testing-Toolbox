@@ -367,7 +367,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
                 result = await DockerExecuteAndGetOutputAsync(containerName, "ls", Path.GetDirectoryName(remote));
 
-                if (result.IsNullOrEmpty())
+                if (string.IsNullOrEmpty(result))
                 {
                     DebugHelper.WriteLineTimestamped($"Attempt {(retryCount + 1).ToTechnicalString()} of copying " +
                         "snapshot failed. Retrying...");
@@ -384,9 +384,9 @@ public sealed class SqlServerManager : IAsyncDisposable
 
             await Task.Delay(1000);
         }
-        while (result.IsNullOrEmpty() && retryCount < maxRetries + 1);
+        while (string.IsNullOrEmpty(result) && retryCount < maxRetries + 1);
 
-        if (result.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(result))
         {
             throw new DockerFileCopyException(
                 $"Failed to copy snapshot file to \"{remote}\" after {maxRetries.ToTechnicalString()} retries.");
