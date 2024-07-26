@@ -403,18 +403,6 @@ public static class YamlDocumentExtensions
     }
 
     /// <summary>
-    /// Sets the maximum number of threads per host on the "activeScan" job. The default value is 2.
-    /// </summary>
-    public static void SetActiveScanThreadsPerHost(this YamlDocument yamlDocument, int maxThreadCount) =>
-        yamlDocument.SetActiveScanParameter("threadPerHost", maxThreadCount.ToTechnicalString());
-
-    /// <summary>
-    /// Sets the maximum number of threads to 1 on the "activeScan" job. Use this if you experience deadlocks.
-    /// </summary>
-    public static void MakeActiveScanSingleThreaded(this YamlDocument yamlDocument) =>
-        yamlDocument.SetActiveScanThreadsPerHost(maxThreadCount: 1);
-
-    /// <summary>
     /// Gets a job from the "jobs" section of the ZAP Automation Framework plan by its name.
     /// </summary>
     /// <param name="jobName">The "name" field of the job to search for.</param>
