@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.AspNetCore.Extensions;
+using Lombiq.Tests.UI.Shortcuts.Middlewares;
 using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -20,6 +21,9 @@ public class Startup : StartupBase
         // To ensure we don't encounter any concurrency issue, enable EnableThreadSafetyChecks for all tests.
         services.Configure<YesSqlOptions>(options => options.EnableThreadSafetyChecks = true);
     }
+
+    public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider) =>
+        app.UseMiddleware<ExceptionContextLoggingMiddleware>();
 }
 
 [Feature("Lombiq.Tests.UI.Shortcuts.Swagger")]
