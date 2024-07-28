@@ -2,6 +2,7 @@ using Atata;
 using Atata.Bootstrap;
 using Lombiq.Tests.UI.Components;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Pages;

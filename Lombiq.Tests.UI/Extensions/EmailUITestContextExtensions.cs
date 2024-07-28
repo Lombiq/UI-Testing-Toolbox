@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using Shouldly;
 using System;
 using System.Threading.Tasks;
 
@@ -109,9 +110,22 @@ public static class EmailUITestContextExtensions
             await context.SetCheckboxValueAsync(byIsEnabled, isChecked: true);
         }
 
-        var smtpPort = (port ?? context.Configuration.SmtpServiceConfiguration.Context.Port).ToTechnicalString();
+        port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.Port;
+        if (!port.HasValue)
+        {
+            throw new InvalidOperationException(
+                "The SMTP port configuration is missing. Did you forget to include \"configuration.UseSmtpService = true\"?");
+        }
+
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Host"), "localhost");
+
+        var smtpPort = port.Value.ToTechnicalString();
         await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
 
-        if (publish) await context.ClickReliablyOnAsync(By.ClassName("save"));
+        if (publish)
+        {
+            await context.ClickReliablyOnAsync(By.ClassName("save"));
+            context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
+        }
     }
 }

@@ -191,6 +191,10 @@ public static class SecurityScanningUITestContextExtensions
     {
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
 
+        var currentUrl = new Uri(context.Driver.Url);
+        await context.GoToAsync<ShapeTableController>(controller => controller.Prepare());
+        await context.GoToAbsoluteUrlAsync(currentUrl);
+
         SecurityScanResult result = null;
         try
         {

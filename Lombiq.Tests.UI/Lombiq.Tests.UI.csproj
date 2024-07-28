@@ -73,11 +73,11 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.2.111" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="OrchardCore.ContentFields" Version="2.0.0-preview-18200" />
-    <PackageReference Include="OrchardCore.Logging.NLog" Version="2.0.0-preview-18200" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0-preview-18200" />
-    <PackageReference Include="OrchardCore.Recipes.Core" Version="2.0.0-preview-18200" />
-    <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
+    <PackageReference Include="OrchardCore.ContentFields" Version="2.0.0-preview-18282" />
+    <PackageReference Include="OrchardCore.Logging.NLog" Version="2.0.0-preview-18282" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0-preview-18282" />
+    <PackageReference Include="OrchardCore.Recipes.Core" Version="2.0.0-preview-18282" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="7.1.2" />
     <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
     <PackageReference Include="Shouldly" Version="4.2.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
@@ -103,9 +103,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="3.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="10.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="10.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="10.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="10.0.1-alpha.2.occ-245" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="10.0.1-alpha.2.occ-245" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="10.0.1-alpha.2.occ-245" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 
