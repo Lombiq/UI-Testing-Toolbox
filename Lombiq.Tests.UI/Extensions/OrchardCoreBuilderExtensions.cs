@@ -40,7 +40,7 @@ public static class OrchardCoreBuilderExtensions
 
         var smtpPort = configuration.GetValue<string>("Lombiq_Tests_UI:SmtpSettings:Port");
 
-        if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email");
+        if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email.Smtp");
 
         if (configuration.GetValue<bool>("Lombiq_Tests_UI:UseAzureBlobStorage"))
         {
