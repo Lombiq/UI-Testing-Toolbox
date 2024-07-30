@@ -4,4 +4,7 @@ public static class ConfigurationExtensions
 {
     public static bool IsUITesting(this IConfiguration configuration) =>
         configuration.GetValue("Lombiq_Tests_UI:IsUITesting", defaultValue: false);
+
+    public static void DontDisableUseCdn(this IConfiguration configuration) =>
+        configuration["Lombiq_Tests_UI:DontDisableUseCdn"] = "true";
 }
