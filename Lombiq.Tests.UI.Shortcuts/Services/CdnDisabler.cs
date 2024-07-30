@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using OrchardCore.Modules;
 using OrchardCore.Settings;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Services;
 
-internal class CdnDisabler : ModularTenantEvents
+internal sealed class CdnDisabler : ModularTenantEvents
 {
     private readonly ISiteService _siteService;
     private readonly IConfiguration _shellConfiguration;
