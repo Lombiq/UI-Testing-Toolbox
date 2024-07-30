@@ -57,7 +57,7 @@ public static class NavigationUITestContextExtensions
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
-                context.Driver.Navigate().GoToUrl(absoluteUri);
+                await context.Driver.Navigate().GoToUrlAsync(absoluteUri);
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
