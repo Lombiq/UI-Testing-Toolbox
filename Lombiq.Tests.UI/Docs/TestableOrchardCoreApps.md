@@ -67,6 +67,12 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ```json
     "steps": [
         {
+            "name": "Feature",
+            "enable": [
+              "OrchardCore.Localization"
+            ]
+        },
+        {
             "name": "settings",
             // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify the
             // culture too.
