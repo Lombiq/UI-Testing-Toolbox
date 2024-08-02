@@ -37,6 +37,9 @@ public static class WebDriverFactory
             // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for details.
             chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings"); // #spell-check-ignore-line
 
+            // Disables the default search engine selector splash screen.
+            chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
+
             chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
