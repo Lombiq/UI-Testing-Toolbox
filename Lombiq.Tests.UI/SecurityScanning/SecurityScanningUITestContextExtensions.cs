@@ -236,7 +236,7 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> configure = null)
     {
         var configuration = new SecurityScanConfiguration()
-            .StartAtUri(context.GetCurrentUri());
+            .StartAtUri(context.Scope.BaseUri);
 
         // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
         // they may contain several false positives (e.g. in font-awesome).

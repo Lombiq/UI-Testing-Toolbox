@@ -116,7 +116,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
 
-            _context.SetDefaultBrowserSize();
+            //_context.SetDefaultBrowserSize();
 
             await _testManifest.TestAsync(_context);
 
@@ -526,7 +526,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            //await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
