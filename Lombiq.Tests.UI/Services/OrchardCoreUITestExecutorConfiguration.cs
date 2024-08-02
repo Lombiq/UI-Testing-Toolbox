@@ -20,12 +20,6 @@ public enum Browser
     Edge,
     Firefox,
     InternetExplorer,
-
-    /// <summary>
-    /// No browser will be used. Useful for testing things that don't require a browser, like API endpoints or running
-    /// security scans.
-    /// </summary>
-    None,
 }
 
 public class OrchardCoreUITestExecutorConfiguration

@@ -20,7 +20,7 @@ public static class VerificationUITestContextExtensions
         var configuration = context.Configuration;
         var testOutputHelper = configuration.TestOutputHelper;
 
-        if (context.IsBrowserUsed) await context.UpdateHistoricBrowserLogAsync();
+        await context.UpdateHistoricBrowserLogAsync();
 
         try
         {
@@ -34,19 +34,16 @@ public static class VerificationUITestContextExtensions
             throw;
         }
 
-        if (context.IsBrowserUsed)
+        try
         {
-            try
-            {
-                configuration.AssertBrowserLog?.Invoke(context.HistoricBrowserLog);
-            }
-            catch (Exception)
-            {
-                testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                testOutputHelper.WriteLine(context.HistoricBrowserLog.ToFormattedString());
+            configuration.AssertBrowserLog?.Invoke(context.HistoricBrowserLog);
+        }
+        catch (Exception)
+        {
+            testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
+            testOutputHelper.WriteLine(context.HistoricBrowserLog.ToFormattedString());
 
-                throw;
-            }
+            throw;
         }
     }
 }

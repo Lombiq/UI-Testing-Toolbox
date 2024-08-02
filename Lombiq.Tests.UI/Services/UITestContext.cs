@@ -117,12 +117,6 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
-    /// <summary>
-    /// Gets a value indicating whether a browser is used for the test. <see langword="false"/> means that no browser
-    /// was launched.
-    /// </summary>
-    public bool IsBrowserUsed => Configuration.BrowserConfiguration.Browser != Browser.None;
-
     public UITestContext(
         string id,
         UITestManifest testManifest,

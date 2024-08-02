@@ -32,20 +32,9 @@ public static class AtataFactory
         var timeoutConfiguration = configuration.TimeoutConfiguration;
         var browserConfiguration = configuration.BrowserConfiguration;
 
-        var builder = AtataContext.Configure();
-
-        if (browserConfiguration.Browser != Browser.None)
-        {
-            builder
-                .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
-                .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper));
-        }
-        else
-        {
-            builder.UseDriverInitializationStage(AtataContextDriverInitializationStage.None);
-        }
-
-        builder.UseBaseUrl(baseUri.ToString())
+        var builder = AtataContext.Configure()
+            .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
+            .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
@@ -96,7 +85,6 @@ public static class AtataFactory
                     Browser.Edge => await FromAsync(WebDriverFactory.CreateEdgeDriverAsync),
                     Browser.Firefox => await FromAsync(WebDriverFactory.CreateFirefoxDriverAsync),
                     Browser.InternetExplorer => await FromAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
-                    Browser.None => null,
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

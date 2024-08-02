@@ -148,16 +148,6 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
-    protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
-        Func<UITestContext, Task> testAsync,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
-
-    protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
-        Func<UITestContext, Task> testAsync,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
-
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
