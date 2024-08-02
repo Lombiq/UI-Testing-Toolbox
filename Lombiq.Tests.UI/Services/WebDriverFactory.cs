@@ -14,59 +14,65 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
+// The awkward async-method-that-returns-a-func pattern is used here because the WebDriver factory method required by
+// Atata is synchronous but we need async I/O for the initialization before that.
 public static class WebDriverFactory
 {
     private static readonly object _setupLock = new();
 
-    public static Task<ChromeDriver> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
+    public static Task<Func<ChromeDriver>> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        Task<ChromeDriver> CreateDriverInnerAsync(ChromeDriverService service)
-        {
-            // Note that no-sandbox should NOT be used, because it causes Chrome processes to remain open, see
-            // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356.
+        Task<Func<ChromeDriver>> CreateDriverInnerAsync(string driverPath = null) =>
+            Task.FromResult(() =>
+            {
+                // Note that no-sandbox should NOT be used, because it causes Chrome processes to remain open, see
+                // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356.
 
-            var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
+                var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-            chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
+                chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
-            // Linux-specific setting, may be necessary for running in containers, see
-            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-            chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
+                // Linux-specific setting, may be necessary for running in containers, see
+                // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+                chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
 
-            // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
-            // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for details.
-            chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings"); // #spell-check-ignore-line
+                // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
+                // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
+                // details.
+                chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings"); // #spell-check-ignore-line
 
-            // Disables the default search engine selector splash screen.
-            chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
+                // Disables the default search engine selector splash screen.
+                chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
 
-            chromeConfig.Options.SetCommonChromiumOptions(configuration);
+                chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
-            configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
+                configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
-            chromeConfig.Service = service ?? ChromeDriverService.CreateDefaultService();
-            chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
-            // By default localhost is only allowed in IPv4.
-            chromeConfig.Service.AllowedIPAddresses += "::ffff:127.0.0.1";
-            // Helps with misconfigured hosts.
-            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
+                chromeConfig.Service = driverPath == null
+                    ? ChromeDriverService.CreateDefaultService()
+                    : ChromeDriverService.CreateDefaultService(driverPath);
 
-            return Task.FromResult(
-                new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
-                    .SetCommonTimeouts(pageLoadTimeout));
-        }
+                chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
+                // By default localhost is only allowed in IPv4.
+                chromeConfig.Service.AllowedIPAddresses += "::ffff:127.0.0.1";
+                // Helps with misconfigured hosts.
+                if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
+
+                return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
+                    .SetCommonTimeouts(pageLoadTimeout);
+            });
 
         var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
         if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
-            return CreateDriverInnerAsync(ChromeDriverService.CreateDefaultService(driverPath));
+            return CreateDriverInnerAsync(driverPath);
         }
 
-        return CreateDriverAsync(BrowserNames.Chrome, () => CreateDriverInnerAsync(service: null));
+        return CreateDriverAsync(BrowserNames.Chrome, () => CreateDriverInnerAsync());
     }
 
-    public static Task<EdgeDriver> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(BrowserNames.Edge, async () =>
+    public static Task<Func<EdgeDriver>> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync<EdgeDriver>(BrowserNames.Edge, async () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -86,33 +92,35 @@ public static class WebDriverFactory
             var service = EdgeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
 
-            return new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
+            return () => new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
-    public static Task<FirefoxDriver> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
-    {
-        var options = new FirefoxOptions().SetCommonOptions();
-
-        options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
-
-        // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
-        options.SetPreference("general.smoothScroll", preferenceValue: false);
-
-        // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-        options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
-        options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
-
-        if (configuration.Headless) options.AddArgument("--headless");
-
-        configuration.BrowserOptionsConfigurator?.Invoke(options);
-
-        return CreateDriverAsync(
+    public static Task<Func<FirefoxDriver>> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(
             BrowserNames.Firefox,
-            () => Task.FromResult(new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout)));
-    }
+            () => Task.FromResult(() =>
+            {
+                var options = new FirefoxOptions().SetCommonOptions();
 
-    public static Task<InternetExplorerDriver> CreateInternetExplorerDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(BrowserNames.InternetExplorer, () =>
+                options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+
+                // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
+                options.SetPreference("general.smoothScroll", preferenceValue: false);
+
+                // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+                options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
+                options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
+
+                if (configuration.Headless) options.AddArgument("--headless");
+
+                configuration.BrowserOptionsConfigurator?.Invoke(options);
+
+                return new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout);
+            }));
+
+    public static Task<Func<InternetExplorerDriver>> CreateInternetExplorerDriverAsync(
+        BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(BrowserNames.InternetExplorer, () => Task.FromResult(() =>
         {
             var options = new InternetExplorerOptions().SetCommonOptions();
 
@@ -120,8 +128,8 @@ public static class WebDriverFactory
             options.AcceptInsecureCertificates = false;
             configuration.BrowserOptionsConfigurator?.Invoke(options);
 
-            return Task.FromResult(new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout));
-        });
+            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
+        }));
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
@@ -182,7 +190,7 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static async Task<TDriver> CreateDriverAsync<TDriver>(string browserName, Func<Task<TDriver>> driverFactory)
+    private static async Task<Func<TDriver>> CreateDriverAsync<TDriver>(string browserName, Func<Task<Func<TDriver>>> driverFactory)
         where TDriver : IWebDriver
     {
         try
