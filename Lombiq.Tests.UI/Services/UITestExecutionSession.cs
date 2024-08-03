@@ -239,43 +239,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context == null) return;
 
-            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
-            // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-            if (_dumpConfiguration.CaptureScreenshots && _context.IsBrowserRunning)
-            {
-                await CreateScreenshotsDumpAsync(debugInformationPath);
-            }
-
-            if (_dumpConfiguration.CaptureHtmlSource && _context.IsBrowserRunning)
-            {
-                _context.RefreshCurrentAtataContext();
-                _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
-
-                var file = _context.Scope.AtataContext.Artifacts.Files.Value
-                    .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
-
-                var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
-                File.Copy(file.FullName.Value, snapshotDumpPath);
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
-                }
-            }
-
-            if (_dumpConfiguration.CaptureBrowserLog && _context.IsBrowserRunning)
-            {
-                var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
-
-                await File.WriteAllLinesAsync(
-                    browserLogPath,
-                    (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
-                }
-            }
+            if (_context.IsBrowserRunning) await CaptureBrowserUsingDumpsAsync(debugInformationPath);
 
             if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
@@ -788,6 +752,47 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
         return smtpContext;
+    }
+
+    private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)
+    {
+        // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
+        // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+        if (_dumpConfiguration.CaptureScreenshots)
+        {
+            await CreateScreenshotsDumpAsync(debugInformationPath);
+        }
+
+        if (_dumpConfiguration.CaptureHtmlSource)
+        {
+            _context.RefreshCurrentAtataContext();
+            _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
+
+            var file = _context.Scope.AtataContext.Artifacts.Files.Value
+                .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
+
+            var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
+            File.Copy(file.FullName.Value, snapshotDumpPath);
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
+            }
+        }
+
+        if (_dumpConfiguration.CaptureBrowserLog)
+        {
+            var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
+
+            await File.WriteAllLinesAsync(
+                browserLogPath,
+                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
+            }
+        }
     }
 
     private Task TakeScreenshotIfEnabledAsync(UITestContext context)
