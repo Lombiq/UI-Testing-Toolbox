@@ -49,8 +49,8 @@ public class SecurityScanningTests : UITestBase
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
         // Note how we use a method that doesn't launch a browser. Security scanning happens fully in ZAP, and doesn't
-        // use the browser launched by the UI Testing Toolbox. However, you can use the browser to prepare the app for
-        // security scanning if necessary.
+        // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
+        // faster. However, you can opt to launch a browser to prepare the app for security scanning if necessary.
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
             context => context.RunAndAssertBaselineSecurityScanAsync(),
             // You should configure the assertion that checks the app logs to accept some common cases that only should
