@@ -67,17 +67,17 @@ jobs:
     type: passiveScan-config
   - alertFilters:
       # The Error shortcut shows an error page by design.
-      - ruleId: "90022"
-        ruleName: "Application Error Disclosure (90022)"
-        context: ""
-        newRisk: "False Positive"
-        parameter: ""
+      - ruleId: 90022
+        ruleName: Application Error Disclosure (90022)
+        context: ''
+        newRisk: False Positive
+        parameter: ''
         parameterRegex: false
-        url: ".*/Lombiq.Tests.UI.Shortcuts/Error/Index"
+        url: .*/Lombiq.Tests.UI.Shortcuts/Error/Index
         urlRegex: true
-        attack: ""
+        attack: ''
         attackRegex: false
-        evidence: ""
+        evidence: ''
         evidenceRegex: false
         methods: []
     parameters:
