@@ -48,7 +48,10 @@ public class SecurityScanningTests : UITestBase
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        ExecuteTestAfterSetupAsync(
+        // Note how we use a method that doesn't launch a browser. Security scanning happens fully in ZAP, and doesn't
+        // use the browser launched by the UI Testing Toolbox. However, you can use the browser to prepare the app for
+        // security scanning if necessary.
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
             context => context.RunAndAssertBaselineSecurityScanAsync(),
             // You should configure the assertion that checks the app logs to accept some common cases that only should
             // appear during security scanning. If you launch a full scan, this is automatically configured by the
@@ -74,7 +77,7 @@ public class SecurityScanningTests : UITestBase
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
-        ExecuteTestAfterSetupAsync(
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
             context => context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
@@ -105,7 +108,7 @@ public class SecurityScanningTests : UITestBase
     // customize them if something you need is not surfaced as configuration.
     [Fact]
     public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
-        ExecuteTestAfterSetupAsync(
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
             context => context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
