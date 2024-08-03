@@ -63,6 +63,18 @@ public class UITestContext
     public IWebDriver Driver => Scope.Driver;
 
     /// <summary>
+    /// Gets a value indicating whether a browser is currently running for the test. <see langword="false"/> means that
+    /// no browser was launched.
+    /// </summary>
+    public bool IsBrowserRunning => Scope.IsBrowserRunning;
+
+    /// <summary>
+    /// Gets a value indicating whether a browser is used for the test. <see langword="false"/> means that no browser
+    /// was launched.
+    /// </summary>
+    public bool IsBrowserUsed => Configuration.BrowserConfiguration.Browser != Browser.None;
+
+    /// <summary>
     /// Gets the context for the SMTP service running for the test, if it was requested.
     /// </summary>
     public SmtpServiceRunningContext SmtpServiceRunningContext { get; }

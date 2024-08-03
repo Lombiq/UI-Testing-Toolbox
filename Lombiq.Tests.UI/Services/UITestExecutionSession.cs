@@ -77,35 +77,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_hasSetupOperation)
             {
-                var snapshotSubdirectory = "SQLite";
-                if (_configuration.UseSqlServer)
-                {
-                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
-                        ? "SqlServer-AzureBlob"
-                        : "SqlServer";
-                }
-                else if (_configuration.UseAzureBlobStorage)
-                {
-                    snapshotSubdirectory = "SQLite-AzureBlob";
-                }
-
-                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
-
-                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
-
-                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
-
-                _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
-                    _snapshotDirectoryPath,
-                    path => new SynchronizingWebApplicationSnapshotManager(path));
-
                 await SetupAsync();
             }
-
-            // In some cases, there is a temporary setup snapshot directory path but no setup operation. For example,
-            // when calling the "ExecuteTestAsync()" method without a setup operation.
             else if (_setupSnapshotDirectoryContainsApp)
             {
+                // In some cases, there is a temporary setup snapshot directory path but no setup operation. For
+                // example, when calling the "ExecuteTestAsync()" method without a setup operation.
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
@@ -116,7 +93,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
 
-            //_context.SetDefaultBrowserSize();
+            if (_context.IsBrowserUsed) _context.SetDefaultBrowserSize();
 
             await _testManifest.TestAsync(_context);
 
@@ -479,6 +456,28 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var setupConfiguration = _configuration.SetupConfiguration;
 
+        var snapshotSubdirectory = "SQLite";
+        if (_configuration.UseSqlServer)
+        {
+            snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                ? "SqlServer-AzureBlob"
+                : "SqlServer";
+        }
+        else if (_configuration.UseAzureBlobStorage)
+        {
+            snapshotSubdirectory = "SQLite-AzureBlob";
+        }
+
+        snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
+
+        _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
+        _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
+
+        _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
+            _snapshotDirectoryPath,
+            path => new SynchronizingWebApplicationSnapshotManager(path));
+
         try
         {
             _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
@@ -505,11 +504,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
 
-                _context.SetDefaultBrowserSize();
+                if (_context.IsBrowserUsed) _context.SetDefaultBrowserSize();
 
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
+
+                await setupConfiguration.AfterSetup.InvokeAsync<AfterSetupHandler>(handler => handler(_configuration));
+
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -526,7 +528,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            //await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            if (_context.IsBrowserUsed) await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {

@@ -33,8 +33,6 @@ public static class AtataFactory
         var browserConfiguration = configuration.BrowserConfiguration;
 
         var builder = AtataContext.Configure()
-            .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
-            .UseDriver(await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
@@ -42,6 +40,17 @@ public static class AtataFactory
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
             .PageSnapshots.UseCdpOrPageSourceStrategy() // #spell-check-ignore-line
             .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
+
+        if (configuration.BrowserConfiguration.Browser != Browser.None)
+        {
+            builder
+                .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
+                .UseDriver(await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper));
+        }
+        else
+        {
+            builder.UseDriverInitializationStage(AtataContextDriverInitializationStage.None);
+        }
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));

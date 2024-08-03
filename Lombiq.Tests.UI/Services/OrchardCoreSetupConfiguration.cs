@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Services;
 
 public delegate Task BeforeSetupHandler(OrchardCoreUITestExecutorConfiguration configuration);
+public delegate Task AfterSetupHandler(OrchardCoreUITestExecutorConfiguration configuration);
 
 /// <summary>
 /// Configuration for the initial setup of an Orchard Core app.
@@ -35,4 +36,5 @@ public class OrchardCoreSetupConfiguration
         Path.Combine(DirectoryPaths.Temp, DirectoryPaths.SetupSnapshot);
 
     public BeforeSetupHandler BeforeSetup { get; set; }
+    public AfterSetupHandler AfterSetup { get; set; }
 }
