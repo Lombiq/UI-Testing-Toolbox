@@ -64,16 +64,16 @@ public class UITestContext
 
     /// <summary>
     /// Gets a value indicating whether a browser is currently running for the test. <see langword="false"/> means that
-    /// no browser was launched. Note that since the browser is only started on demand, with the first operation
+    /// no browser was launched (yet). Note that since the browser is only started on demand, with the first operation
     /// requiring it, a browser might not be currently running even if <see cref="IsBrowserConfigured"/> suggests it
-    /// should.
+    /// may.
     /// </summary>
     public bool IsBrowserRunning => Scope.IsBrowserRunning;
 
     /// <summary>
     /// Gets a value indicating whether a browser is configured to be used for the test. <see langword="false"/> means
     /// that no browser will be launched. Note that since the browser is only started on demand, with the first
-    /// operation requiring it, a browser might not be currently running even if this suggests it should. Check <see
+    /// operation requiring it, a browser might not be currently running even if this suggests it may. Check <see
     /// cref="IsBrowserRunning"/>" to check for that.
     /// </summary>
     public bool IsBrowserConfigured => Configuration.BrowserConfiguration.Browser != Browser.None;
