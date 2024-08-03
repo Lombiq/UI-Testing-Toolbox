@@ -756,8 +756,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)
     {
-        // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
-        // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+        // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they show
+        // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
         if (_dumpConfiguration.CaptureScreenshots)
         {
             await CreateScreenshotsDumpAsync(debugInformationPath);
