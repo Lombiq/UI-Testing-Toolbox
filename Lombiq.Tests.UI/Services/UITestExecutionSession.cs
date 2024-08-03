@@ -241,9 +241,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
             // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-            if (_dumpConfiguration.CaptureScreenshots) await CreateScreenshotsDumpAsync(debugInformationPath);
+            if (_dumpConfiguration.CaptureScreenshots && _context.IsBrowserRunning)
+            {
+                await CreateScreenshotsDumpAsync(debugInformationPath);
+            }
 
-            if (_dumpConfiguration.CaptureHtmlSource)
+            if (_dumpConfiguration.CaptureHtmlSource && _context.IsBrowserRunning)
             {
                 _context.RefreshCurrentAtataContext();
                 _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
@@ -260,7 +263,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 }
             }
 
-            if (_dumpConfiguration.CaptureBrowserLog)
+            if (_dumpConfiguration.CaptureBrowserLog && _context.IsBrowserRunning)
             {
                 var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
 
@@ -789,7 +792,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private Task TakeScreenshotIfEnabledAsync(UITestContext context)
     {
-        if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
+        if (_context == null || !_dumpConfiguration.CaptureScreenshots || _context.IsBrowserRunning) return Task.CompletedTask;
 
         var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screenshotsPath);
