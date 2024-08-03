@@ -19,7 +19,7 @@ public sealed class AtataScope : IDisposable
         get
         {
             var driver = AtataContext.Driver;
-            if (driver != null) IsBrowserRunning = true;
+            IsBrowserRunning = driver != null;
             return driver;
         }
     }
