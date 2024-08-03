@@ -797,7 +797,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private Task TakeScreenshotIfEnabledAsync(UITestContext context)
     {
-        if (_context == null || !_dumpConfiguration.CaptureScreenshots || _context.IsBrowserRunning) return Task.CompletedTask;
+        if (_context == null || !_dumpConfiguration.CaptureScreenshots || !_context.IsBrowserRunning) return Task.CompletedTask;
 
         var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screenshotsPath);
