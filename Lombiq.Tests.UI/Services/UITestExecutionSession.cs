@@ -93,7 +93,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
 
-            if (_context.IsBrowserUsed) _context.SetDefaultBrowserSize();
+            if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
             await _testManifest.TestAsync(_context);
 
@@ -504,7 +504,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
 
-                if (_context.IsBrowserUsed) _context.SetDefaultBrowserSize();
+                if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
@@ -528,7 +528,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _context = await CreateContextAsync();
 
-            if (_context.IsBrowserUsed) await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            if (_context.IsBrowserConfigured) await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {

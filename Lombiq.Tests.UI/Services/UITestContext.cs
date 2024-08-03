@@ -64,15 +64,19 @@ public class UITestContext
 
     /// <summary>
     /// Gets a value indicating whether a browser is currently running for the test. <see langword="false"/> means that
-    /// no browser was launched.
+    /// no browser was launched. Note that since the browser is only started on demand, with the first operation
+    /// requiring it, a browser might not be currently running even if <see cref="IsBrowserConfigured"/> suggests it
+    /// should.
     /// </summary>
     public bool IsBrowserRunning => Scope.IsBrowserRunning;
 
     /// <summary>
-    /// Gets a value indicating whether a browser is used for the test. <see langword="false"/> means that no browser
-    /// was launched.
+    /// Gets a value indicating whether a browser is configured to be used for the test. <see langword="false"/> means
+    /// that no browser will be launched. Note that since the browser is only started on demand, with the first
+    /// operation requiring it, a browser might not be currently running even if this suggests it should. Check <see
+    /// cref="IsBrowserRunning"/>" to check for that.
     /// </summary>
-    public bool IsBrowserUsed => Configuration.BrowserConfiguration.Browser != Browser.None;
+    public bool IsBrowserConfigured => Configuration.BrowserConfiguration.Browser != Browser.None;
 
     /// <summary>
     /// Gets the context for the SMTP service running for the test, if it was requested.
