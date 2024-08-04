@@ -223,16 +223,15 @@ public class UITestContext
     /// </exception>
     public async Task TriggerAfterPageChangeEventAsync()
     {
-        if (IsNoAlert())
+        if (IsAlert()) return;
+
+        try
         {
-            try
-            {
-                await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
-            }
-            catch (Exception exception)
-            {
-                throw new PageChangeAssertionException(this, exception);
-            }
+            await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
+        }
+        catch (Exception exception)
+        {
+            throw new PageChangeAssertionException(this, exception);
         }
     }
 
@@ -266,7 +265,7 @@ public class UITestContext
         Scope.BaseUri = new Uri(Scope.BaseUri, "/" + UrlPrefix + (string.IsNullOrEmpty(UrlPrefix) ? string.Empty : "/"));
     }
 
-    private bool IsNoAlert()
+    private bool IsAlert()
     {
         // If there's an alert (which can happen mostly after a click but also after navigating) then all other driver
         // operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need to check if
@@ -274,11 +273,11 @@ public class UITestContext
         try
         {
             Driver.SwitchTo().Alert();
-            return false;
+            return true;
         }
         catch (NoAlertPresentException)
         {
-            return true;
+            return false;
         }
     }
 }
