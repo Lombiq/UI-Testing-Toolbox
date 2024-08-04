@@ -157,7 +157,7 @@ public class UITestContext
         SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
-        TestStartUri = testStartUri ?? scope.BaseUri;
+        TestStartUri = testStartUri;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = zapManager;
