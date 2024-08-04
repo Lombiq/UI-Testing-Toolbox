@@ -86,7 +86,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
-            _context ??= await CreateContextAsync();
+            // This means there was no setup operation.
+            _context ??= await CreateContextAsync(testStartUri: null);
+
             // At this point _context definitely exists, so ensure that RetryCount is set.
             _context.RetryCount = retryCount;
 
@@ -451,7 +453,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
-            var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
+            var testStartUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
@@ -466,7 +468,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
                 // config to be available at startup too.
-                _context = await CreateContextAsync();
+                _context = await CreateContextAsync(testStartUri: null);
 
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
@@ -493,9 +495,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _context = null;
             }
 
-            _context = await CreateContextAsync();
+            _context = await CreateContextAsync(testStartUri);
 
-            if (_context.IsBrowserConfigured) await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            if (_context.IsBrowserConfigured) await _context.GoToRelativeUrlAsync(testStartUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
@@ -568,7 +570,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
     }
 
-    private async Task<UITestContext> CreateContextAsync()
+    private async Task<UITestContext> CreateContextAsync(Uri testStartUri)
     {
         var contextId = Guid.NewGuid().ToString();
 
@@ -637,6 +639,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration,
             _applicationInstance,
             atataScope,
+            testStartUri,
             new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
             _zapManager);
     }

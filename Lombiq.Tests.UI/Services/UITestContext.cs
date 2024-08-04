@@ -63,6 +63,11 @@ public class UITestContext
     public IWebDriver Driver => Scope.Driver;
 
     /// <summary>
+    /// Gets the <see cref="Uri"/> where the test starts, i.e. the URL provided by the setup operation.
+    /// </summary>
+    public Uri TestStartUri { get; }
+
+    /// <summary>
     /// Gets a value indicating whether a browser is currently running for the test. <see langword="false"/> means that
     /// no browser was launched (yet). Note that since the browser is only started on demand, with the first operation
     /// requiring it, a browser might not be currently running even if <see cref="IsBrowserConfigured"/> suggests it
@@ -133,14 +138,18 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    // This is a central context object, we need the data to be passed in the constructor.
+#pragma warning disable S107 // Methods should not have too many parameters
     public UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
+        Uri testStartUri,
         RunningContextContainer runningContextContainer,
         ZapManager zapManager)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         Id = id;
         TestManifest = testManifest;
@@ -148,6 +157,7 @@ public class UITestContext
         SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
+        TestStartUri = testStartUri ?? scope.BaseUri;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = zapManager;
