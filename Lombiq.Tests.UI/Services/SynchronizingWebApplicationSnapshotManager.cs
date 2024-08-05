@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-public delegate Task<(UITestContext Context, Uri ResultUri)> AppInitializer();
+public delegate Task<(UITestContext Context, Uri TestStartUri)> AppInitializer();
 
 /// <summary>
 /// Service for transparently running operations on a web application and snapshotting them just a single time, so the
@@ -25,7 +25,7 @@ public class SynchronizingWebApplicationSnapshotManager
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly string _snapshotDirectoryPath;
 
-    private Uri _resultUri;
+    private Uri _testStartUri;
     private bool _snapshotCreated;
 
     public SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath) => _snapshotDirectoryPath = snapshotDirectoryPath;
@@ -37,7 +37,7 @@ public class SynchronizingWebApplicationSnapshotManager
         await _semaphore.WaitAsync();
         try
         {
-            if (_snapshotCreated) return _resultUri;
+            if (_snapshotCreated) return _testStartUri;
 
             DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
@@ -53,7 +53,7 @@ public class SynchronizingWebApplicationSnapshotManager
             // At the end so if any exception happens above then it won' be mistakenly set to true.
             _snapshotCreated = true;
 
-            return _resultUri ??= result.ResultUri;
+            return _testStartUri ??= result.TestStartUri;
         }
         finally
         {

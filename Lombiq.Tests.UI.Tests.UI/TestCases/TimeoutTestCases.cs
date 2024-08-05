@@ -7,7 +7,7 @@ public static class TimeoutTestCases
 {
     public static Task TestRunTimeoutShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
+        Browser browser = Browser.None) =>
         Should.ThrowAsync(
             async () => await executeTestAfterSetupAsync(
                 context => Task.Delay(TimeSpan.FromSeconds(1)),

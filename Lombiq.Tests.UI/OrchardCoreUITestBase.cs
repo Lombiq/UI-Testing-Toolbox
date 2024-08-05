@@ -148,6 +148,53 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
+    protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfiguration);
+
+    protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfigurationAsync);
+
+    protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
+
+    protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, async configuration =>
+        {
+            configuration.SetupConfiguration.BeforeSetup = configuration =>
+            {
+                configuration.BrowserConfiguration.Browser = browser;
+                return Task.CompletedTask;
+            };
+
+            configuration.SetupConfiguration.AfterSetup = configuration =>
+            {
+                configuration.BrowserConfiguration.Browser = Browser.None;
+                return Task.CompletedTask;
+            };
+
+            if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        });
+
+    protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
+
+    protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
+
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>

@@ -81,6 +81,20 @@ jobs:
         evidence: ''
         evidenceRegex: false
         methods: []
+      # The Error shortcut shows an error page by design.
+      - ruleId: 90022
+        ruleName: Application Error Disclosure (90022)
+        context: ''
+        newRisk: False Positive
+        parameter: ''
+        parameterRegex: false
+        url: .*/Lombiq.Tests.UI.Shortcuts/Error/Index
+        urlRegex: true
+        attack: ''
+        attackRegex: false
+        evidence: ''
+        evidenceRegex: false
+        methods: []
     parameters:
       deleteGlobalAlerts: false
     name: alertFilter
