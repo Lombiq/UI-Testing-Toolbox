@@ -50,7 +50,7 @@ Tips on making specific features testable are under the ["Creating tests" page](
     ```
 
 - Tests should be self-contained and they shouldn't rely on any external dependencies like APIs or CDNs. It should be possible to run the app completely offline.
-  - For static resources always provide local copies and make the CDN optional. Also disable CDN usage in the setup recipe:
+  - For static resources always provide local copies and make the CDN optional. If the Shortcuts module is used then CDN usage is also disabled (you can opt out of this behavior with `IConfiguration.DontDisableUseCdn()`); otherwise, disable it in the setup recipe:
 
     ```json
     "steps": [
@@ -66,6 +66,12 @@ Tips on making specific features testable are under the ["Creating tests" page](
 
     ```json
     "steps": [
+        {
+            "name": "Feature",
+            "enable": [
+              "OrchardCore.Localization"
+            ]
+        },
         {
             "name": "settings",
             // To make sure that e.g. numbers and dates are formatted the same way on all machines we have to specify the

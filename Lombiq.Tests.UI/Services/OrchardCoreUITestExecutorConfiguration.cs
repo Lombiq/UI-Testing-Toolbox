@@ -30,6 +30,11 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
+    // These errors frequently happen during UI testing when using Azure Blob Storage for media storage.
+    // They're harmless, though.
+    private const string CacheFolderErrorPattern =
+        "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder";
+
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
         app.LogsShouldBeEmptyAsync();
 
@@ -39,12 +44,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAndCacheFolderErrorsAsync =
         app => app.LogsShouldBeEmptyAsync(
             canContainWarnings: true,
-            permittedErrorLinePatterns:
-            [
-                // These errors frequently happen during UI testing when using Azure Blob Storage for media storage.
-                // They're harmless, though.
-                "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
-            ]);
+            permittedErrorLinePatterns: [CacheFolderErrorPattern]);
 
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
@@ -248,7 +248,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLinePatterns)
     {
-        var permittedErrorLines = new List<string>
+        var permittedErrorLinePatterns = new List<string>
         {
             // The model binding will throw FormatException exception with this text during ZAP active scan, when
             // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
@@ -273,10 +273,11 @@ public class OrchardCoreUITestExecutorConfiguration
             // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
             // invalid authentication challenges.
             "System.InvalidOperationException: No authentication handler is registered for the scheme",
+            CacheFolderErrorPattern,
         };
 
-        permittedErrorLines.AddRange(additionalPermittedErrorLinePatterns);
+        permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
 
-        return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
+        return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLinePatterns);
     }
 }

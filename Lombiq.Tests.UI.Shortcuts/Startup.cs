@@ -15,6 +15,7 @@ public class Startup : StartupBase
     {
         services.AddSingleton<IInteractiveModeStatusAccessor, InteractiveModeStatusAccessor>();
         services.AddAsyncResultFilter<ApplicationInfoInjectingFilter>();
+        services.AddScoped<IModularTenantEvents, CdnDisabler>();
     }
 }
 
