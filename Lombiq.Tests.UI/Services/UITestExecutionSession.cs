@@ -77,46 +77,25 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_hasSetupOperation)
             {
-                var snapshotSubdirectory = "SQLite";
-                if (_configuration.UseSqlServer)
-                {
-                    snapshotSubdirectory = _configuration.UseAzureBlobStorage
-                        ? "SqlServer-AzureBlob"
-                        : "SqlServer";
-                }
-                else if (_configuration.UseAzureBlobStorage)
-                {
-                    snapshotSubdirectory = "SQLite-AzureBlob";
-                }
-
-                snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
-
-                _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
-
-                _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
-
-                _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
-                    _snapshotDirectoryPath,
-                    path => new SynchronizingWebApplicationSnapshotManager(path));
-
                 await SetupAsync();
             }
-
-            // In some cases, there is a temporary setup snapshot directory path but no setup operation. For example,
-            // when calling the "ExecuteTestAsync()" method without a setup operation.
             else if (_setupSnapshotDirectoryContainsApp)
             {
+                // In some cases, there is a temporary setup snapshot directory path but no setup operation. For
+                // example, when calling the "ExecuteTestAsync()" method without a setup operation.
                 _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = setupConfiguration.SetupSnapshotDirectoryPath;
             }
 
-            _context ??= await CreateContextAsync();
+            // This means there was no setup operation.
+            _context ??= await CreateContextAsync(testStartRelativeUri: null);
+
             // At this point _context definitely exists, so ensure that RetryCount is set.
             _context.RetryCount = retryCount;
 
             _context.FailureDumpContainer.Clear();
             failureDumpContainer = _context.FailureDumpContainer;
 
-            _context.SetDefaultBrowserSize();
+            if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
             await _testManifest.TestAsync(_context);
 
@@ -262,40 +241,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context == null) return;
 
-            // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they
-            // show an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
-            if (_dumpConfiguration.CaptureScreenshots) await CreateScreenshotsDumpAsync(debugInformationPath);
-
-            if (_dumpConfiguration.CaptureHtmlSource)
-            {
-                _context.RefreshCurrentAtataContext();
-                _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
-
-                var file = _context.Scope.AtataContext.Artifacts.Files.Value
-                    .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
-
-                var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
-                File.Copy(file.FullName.Value, snapshotDumpPath);
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
-                }
-            }
-
-            if (_dumpConfiguration.CaptureBrowserLog)
-            {
-                var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
-
-                await File.WriteAllLinesAsync(
-                    browserLogPath,
-                    (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
-
-                if (_configuration.ReportTeamCityMetadata)
-                {
-                    TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
-                }
-            }
+            if (_context.IsBrowserRunning) await CaptureBrowserUsingDumpsAsync(debugInformationPath);
 
             if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
 
@@ -479,13 +425,35 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var setupConfiguration = _configuration.SetupConfiguration;
 
+        var snapshotSubdirectory = "SQLite";
+        if (_configuration.UseSqlServer)
+        {
+            snapshotSubdirectory = _configuration.UseAzureBlobStorage
+                ? "SqlServer-AzureBlob"
+                : "SqlServer";
+        }
+        else if (_configuration.UseAzureBlobStorage)
+        {
+            snapshotSubdirectory = "SQLite-AzureBlob";
+        }
+
+        snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
+
+        _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
+
+        _configuration.OrchardCoreConfiguration.SnapshotDirectoryPath = _snapshotDirectoryPath;
+
+        _currentSetupSnapshotManager = UITestExecutionSessionsMeta.SetupSnapshotManagers.GetOrAdd(
+            _snapshotDirectoryPath,
+            path => new SynchronizingWebApplicationSnapshotManager(path));
+
         try
         {
             _testOutputHelper.WriteLineTimestampedAndDebug("Starting waiting for the setup operation.");
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
-            var resultUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
+            var testStartUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
             {
                 _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
@@ -500,16 +468,19 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
                 // config to be available at startup too.
-                _context = await CreateContextAsync();
+                _context = await CreateContextAsync(testStartRelativeUri: null);
 
                 SetupSqlServerSnapshot();
                 SetupAzureBlobStorageSnapshot();
 
-                _context.SetDefaultBrowserSize();
+                if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
                 var result = (_context, await setupConfiguration.SetupOperation(_context));
 
                 await _context.AssertLogsAsync();
+
+                await setupConfiguration.AfterSetup.InvokeAsync<AfterSetupHandler>(handler => handler(_configuration));
+
                 _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
 
                 return result;
@@ -524,9 +495,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 _context = null;
             }
 
-            _context = await CreateContextAsync();
-
-            await _context.GoToRelativeUrlAsync(resultUri.PathAndQuery);
+            // The host and port of the Uri will change if a new app instance is started from the setup snapshot, so
+            // only the relative part of the Uri can be used.
+            _context = await CreateContextAsync(testStartUri);
+            if (_context.IsBrowserConfigured) await _context.GoToRelativeUrlAsync(testStartUri.PathAndQuery);
         }
         catch (Exception ex) when (ex is not SetupFailedFastException)
         {
@@ -599,7 +571,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
     }
 
-    private async Task<UITestContext> CreateContextAsync()
+    private async Task<UITestContext> CreateContextAsync(Uri testStartRelativeUri)
     {
         var contextId = Guid.NewGuid().ToString();
 
@@ -634,7 +606,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeAppStart += UITestingBeforeAppStartHandlerAsync;
 
         _applicationInstance = _webApplicationInstanceFactory(_configuration, contextId);
-        var uri = await _applicationInstance.StartUpAsync();
+        var appBaseUri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
 
@@ -660,7 +632,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
         }
 
-        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, uri, _configuration);
+        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
 
         return new UITestContext(
             contextId,
@@ -668,6 +640,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration,
             _applicationInstance,
             atataScope,
+            testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
             new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
             _zapManager);
     }
@@ -786,9 +759,50 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return smtpContext;
     }
 
+    private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)
+    {
+        // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they show
+        // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
+        if (_dumpConfiguration.CaptureScreenshots)
+        {
+            await CreateScreenshotsDumpAsync(debugInformationPath);
+        }
+
+        if (_dumpConfiguration.CaptureHtmlSource)
+        {
+            _context.RefreshCurrentAtataContext();
+            _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
+
+            var file = _context.Scope.AtataContext.Artifacts.Files.Value
+                .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
+
+            var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
+            File.Copy(file.FullName.Value, snapshotDumpPath);
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "PageSource", snapshotDumpPath);
+            }
+        }
+
+        if (_dumpConfiguration.CaptureBrowserLog)
+        {
+            var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
+
+            await File.WriteAllLinesAsync(
+                browserLogPath,
+                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
+            }
+        }
+    }
+
     private Task TakeScreenshotIfEnabledAsync(UITestContext context)
     {
-        if (_context == null || !_dumpConfiguration.CaptureScreenshots) return Task.CompletedTask;
+        if (_context == null || !_dumpConfiguration.CaptureScreenshots || !_context.IsBrowserRunning) return Task.CompletedTask;
 
         var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
         FileSystemHelper.EnsureDirectoryExists(screenshotsPath);

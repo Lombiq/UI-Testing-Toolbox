@@ -63,6 +63,27 @@ public class UITestContext
     public IWebDriver Driver => Scope.Driver;
 
     /// <summary>
+    /// Gets the <see cref="Uri"/> where the test starts, i.e. the URL provided by the setup operation.
+    /// </summary>
+    public Uri TestStartUri { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether a browser is currently running for the test. <see langword="false"/> means that
+    /// no browser was launched (yet). Note that since the browser is only started on demand, with the first operation
+    /// requiring it, a browser might not be currently running even if <see cref="IsBrowserConfigured"/> suggests it
+    /// may.
+    /// </summary>
+    public bool IsBrowserRunning => Scope.IsBrowserRunning;
+
+    /// <summary>
+    /// Gets a value indicating whether a browser is configured to be used for the test. <see langword="false"/> means
+    /// that no browser will be launched. Note that since the browser is only started on demand, with the first
+    /// operation requiring it, a browser might not be currently running even if this suggests it may. Check <see
+    /// cref="IsBrowserRunning"/>" to check for that.
+    /// </summary>
+    public bool IsBrowserConfigured => Configuration.BrowserConfiguration.Browser != Browser.None;
+
+    /// <summary>
     /// Gets the context for the SMTP service running for the test, if it was requested.
     /// </summary>
     public SmtpServiceRunningContext SmtpServiceRunningContext { get; }
@@ -117,14 +138,18 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    // This is a central context object, we need the data to be passed in the constructor.
+#pragma warning disable S107 // Methods should not have too many parameters
     public UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
         IWebApplicationInstance application,
         AtataScope scope,
+        Uri testStartUri,
         RunningContextContainer runningContextContainer,
         ZapManager zapManager)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         Id = id;
         TestManifest = testManifest;
@@ -132,6 +157,7 @@ public class UITestContext
         SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
+        TestStartUri = testStartUri;
         SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
         AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = zapManager;
@@ -207,16 +233,15 @@ public class UITestContext
     /// </exception>
     public async Task TriggerAfterPageChangeEventAsync()
     {
-        if (IsNoAlert())
+        if (IsAlert()) return;
+
+        try
         {
-            try
-            {
-                await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
-            }
-            catch (Exception exception)
-            {
-                throw new PageChangeAssertionException(this, exception);
-            }
+            await Configuration.Events.AfterPageChange.InvokeAsync<PageChangeEventHandler>(eventHandler => eventHandler(this));
+        }
+        catch (Exception exception)
+        {
+            throw new PageChangeAssertionException(this, exception);
         }
     }
 
@@ -250,7 +275,7 @@ public class UITestContext
         Scope.BaseUri = new Uri(Scope.BaseUri, "/" + UrlPrefix + (string.IsNullOrEmpty(UrlPrefix) ? string.Empty : "/"));
     }
 
-    private bool IsNoAlert()
+    private bool IsAlert()
     {
         // If there's an alert (which can happen mostly after a click but also after navigating) then all other driver
         // operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need to check if
@@ -258,11 +283,11 @@ public class UITestContext
         try
         {
             Driver.SwitchTo().Alert();
-            return false;
+            return true;
         }
         catch (NoAlertPresentException)
         {
-            return true;
+            return false;
         }
     }
 }

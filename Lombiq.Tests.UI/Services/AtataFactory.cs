@@ -33,7 +33,6 @@ public static class AtataFactory
         var browserConfiguration = configuration.BrowserConfiguration;
 
         var builder = AtataContext.Configure()
-            .UseDriver(await CreateDriverAsync(browserConfiguration, timeoutConfiguration, testOutputHelper))
             .UseBaseUrl(baseUri.ToString())
             .UseCulture(browserConfiguration.AcceptLanguage.ToString())
             .UseTestName(configuration.AtataConfiguration.TestName)
@@ -41,6 +40,17 @@ public static class AtataFactory
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
             .PageSnapshots.UseCdpOrPageSourceStrategy() // #spell-check-ignore-line
             .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
+
+        if (configuration.BrowserConfiguration.Browser != Browser.None)
+        {
+            builder
+                .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
+                .UseDriver(await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper));
+        }
+        else
+        {
+            builder.UseDriverInitializationStage(AtataContextDriverInitializationStage.None);
+        }
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
@@ -55,15 +65,11 @@ public static class AtataFactory
             .UseCmdForWindows()
             .UseForOtherOS(new BashShellCliCommandFactory("-login"));
 
-    private static async Task<IWebDriver> CreateDriverAsync(
+    private static async Task<Func<IWebDriver>> CreateDriverFactoryAsync(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
         ITestOutputHelper testOutputHelper)
     {
-        Task<T> FromAsync<T>(Func<BrowserConfiguration, TimeSpan, Task<T>> factory)
-            where T : IWebDriver =>
-            factory(browserConfiguration, timeoutConfiguration.PageLoadTimeout);
-
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
         const int maxTryCount = 3;
@@ -79,12 +85,14 @@ public static class AtataFactory
         {
             try
             {
+                var pageLoadTimeout = timeoutConfiguration.PageLoadTimeout;
+
                 return browserConfiguration.Browser switch
                 {
-                    Browser.Chrome => await FromAsync(WebDriverFactory.CreateChromeDriverAsync),
-                    Browser.Edge => await FromAsync(WebDriverFactory.CreateEdgeDriverAsync),
-                    Browser.Firefox => await FromAsync(WebDriverFactory.CreateFirefoxDriverAsync),
-                    Browser.InternetExplorer => await FromAsync(WebDriverFactory.CreateInternetExplorerDriverAsync),
+                    Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, pageLoadTimeout),
+                    Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, pageLoadTimeout),
+                    Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, pageLoadTimeout),
+                    Browser.InternetExplorer => await WebDriverFactory.CreateInternetExplorerDriverAsync(browserConfiguration, pageLoadTimeout),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

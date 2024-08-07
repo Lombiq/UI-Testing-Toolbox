@@ -39,6 +39,15 @@ public static class IWebApplicationInstanceExtensions
 
         try
         {
+            // If there's no Default shell settings then the shell host hasn't been initialized yet. This can happen if
+            // no request hit the app yet.
+            var defaultShellSettingExist = shellHost.TryGetSettings("Default", out var _);
+
+            if (!defaultShellSettingExist)
+            {
+                await shellHost.InitializeAsync();
+            }
+
             // Injecting a fake HttpContext is required for many things, but it needs to happen before UsingAsync()
             // below to avoid NullReferenceExceptions in
             // OrchardCore.Recipes.Services.RecipeEnvironmentFeatureProvider.PopulateEnvironmentAsync. Migrations

@@ -17,6 +17,7 @@ public class Startup : StartupBase
     {
         services.AddSingleton<IInteractiveModeStatusAccessor, InteractiveModeStatusAccessor>();
         services.AddAsyncResultFilter<ApplicationInfoInjectingFilter>();
+        services.AddScoped<IModularTenantEvents, CdnDisabler>();
 
         // To ensure we don't encounter any concurrency issue, enable EnableThreadSafetyChecks for all tests.
         services.Configure<YesSqlOptions>(options => options.EnableThreadSafetyChecks = true);
