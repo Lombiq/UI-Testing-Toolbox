@@ -92,14 +92,25 @@ public static class EmailUITestContextExtensions
     public static Task FillEmailTestFormAsync(this UITestContext context, string subject) =>
         context.FillEmailTestFormAsync("recipient@example.com", subject, "Hi, this is a test.");
 
+    [Obsolete("Use ConfigureSmtpSettingsAsync() instead.")]
+    public static Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true) =>
+        throw new NotSupportedException("Use ConfigureSmtpSettingsAsync() instead.");
+
     /// <summary>
-    /// Goes to the Email settings and sets the SMTP port to the value of <paramref name="port"/>. If it's <see
-    /// langword="null"/> then the value in the current configuration (in <see
-    /// cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>) is used instead.
-    /// The <c>OrchardCore.Email.Smtp</c> feature must be enabled, but if the SMTP provider is not turned on, this will
-    /// automatically do it as well.
+    /// Goes to the SMTP settings page and configures the provided settings. The <c>OrchardCore.Email.Smtp</c> feature
+    /// must be enabled, but if the SMTP provider is not turned on, this will automatically do it as well.
     /// </summary>
-    public static async Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true)
+    /// <param name="host">The SMTP host to use.</param>
+    /// <param name="port">The SMTP port to use. If it's <see langword="null"/> then the value in the current
+    /// configuration (in <see cref="OrchardCoreUITestExecutorConfiguration.SmtpServiceConfiguration"/>) is used
+    /// instead.</param>
+    /// <param name="save">Whether to save the settings after configuring them.</param>
+    public static async Task ConfigureSmtpSettingsAsync(
+        this UITestContext context,
+        string defaultSender,
+        string host,
+        int? port = null,
+        bool save = true)
     {
         await context.GoToEmailSettingsAsync();
         await context.ClickReliablyOnAsync(By.CssSelector("a[href='#tab-s-m-t-p']"));
@@ -117,12 +128,13 @@ public static class EmailUITestContextExtensions
                 "The SMTP port configuration is missing. Did you forget to include \"configuration.UseSmtpService = true\"?");
         }
 
-        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Host"), "localhost");
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_DefaultSender"), defaultSender);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Host"), host);
 
         var smtpPort = port.Value.ToTechnicalString();
         await context.ClickAndFillInWithRetriesAsync(By.Id("ISite_SmtpSettings_Port"), smtpPort);
 
-        if (publish)
+        if (save)
         {
             await context.ClickReliablyOnAsync(By.ClassName("save"));
             context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
