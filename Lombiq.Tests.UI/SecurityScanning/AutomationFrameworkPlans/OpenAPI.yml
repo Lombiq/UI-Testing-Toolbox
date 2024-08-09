@@ -78,6 +78,10 @@ jobs:
           evidence: ''
           evidenceRegex: false
           methods: []
+    parameters:
+        deleteGlobalAlerts: false
+    name: alertFilter
+    type: alertFilter
   - parameters: {}
     name: openapi
     type: openapi
