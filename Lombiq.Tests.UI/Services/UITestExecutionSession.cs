@@ -747,8 +747,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
-                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
-                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
+                .AddWithValue("Lombiq_Tests_UI:EnableSmtpFeature", value: true)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:EnableSmtp", value: true)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:DefaultSender", value: "sender@example.com");
             return Task.CompletedTask;
         }
 

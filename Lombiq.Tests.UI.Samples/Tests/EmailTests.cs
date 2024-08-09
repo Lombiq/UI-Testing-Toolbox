@@ -23,9 +23,6 @@ public class EmailTests : UITestBase
                 // A shortcut to sign in without going through (and thus testing) the login screen.
                 await context.SignInDirectlyAsync();
 
-                // Set up the SMTP port. This is a dynamic value unique to each UI test so it can't come from a recipe.
-                await context.ConfigureSmtpPortAsync();
-
                 // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
                 // sender is configured in the test recipe so we can use the test feature.
                 await context.GoToEmailTestAsync();
@@ -39,8 +36,8 @@ public class EmailTests : UITestBase
                 // If the e-mail we've sent exists then it's all good.
                 context.Exists(ByHelper.SmtpInboxRow("Test message"));
             },
-            // UseSmtpService = true automatically enables the Email module too so you don't have to enable it in a
-            // recipe.
+            // UseSmtpService = true automatically enables the Email module so you don't have to enable it in a recipe,
+            // and it configures the module too.
             configuration => configuration.UseSmtpService = true);
 }
 
