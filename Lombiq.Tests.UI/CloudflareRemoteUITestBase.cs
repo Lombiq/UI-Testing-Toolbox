@@ -168,7 +168,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
     public class IpAccessRuleRequest
     {
         public string Mode { get; set; }
-        public IpAccessRuleConfiguration? Configuration { get; set; }
+        public IpAccessRuleConfiguration Configuration { get; set; }
         public string Notes { get; set; }
     }
 
