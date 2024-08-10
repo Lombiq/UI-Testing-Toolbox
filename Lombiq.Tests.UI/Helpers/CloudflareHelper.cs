@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,6 +43,25 @@ internal static class CloudflareHelper
             {
                 Debug.WriteLine("Creating an IP Access Rule for the IP {0}.", (object)_currentIp);
 
+                // Delete any pre-existing rules for the current IP first.
+                string preexistingRuleId = null;
+                await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+                    async () =>
+                    {
+                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, _currentIp);
+                        preexistingRuleId = rulesResponse.Result?.FirstOrDefault()?.Id;
+                        return rulesResponse.Success;
+                    });
+
+                // preexistingRuleId can be set in the delegate above, so it's not always null.
+#pragma warning disable S2583 // Conditionally executed code should be reachable
+                if (preexistingRuleId != null)
+                {
+                    await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, preexistingRuleId);
+                }
+#pragma warning restore S2583 // Conditionally executed code should be reachable
+
+                // Create the IP Access Rule.
                 var createResponseResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
@@ -60,15 +80,14 @@ internal static class CloudflareHelper
                 ThrowIfNotSuccess(createResponseResult, _currentIp, "didn't save properly");
 
                 // Wait for the rule to appear, to make sure that it's active.
-                var ruleRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+                var ruleCheckRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
-                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, 100);
-
+                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId);
                         return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == _ipAccessRuleId);
                     });
 
-                ThrowIfNotSuccess(ruleRequestResult, _currentIp, "didn't get activated");
+                ThrowIfNotSuccess(ruleCheckRequestResult, _currentIp, "didn't get activated");
             }
         }
         finally
@@ -87,12 +106,7 @@ internal static class CloudflareHelper
             {
                 Debug.WriteLine("Removing the IP Access Rule. Current reference count: {0}.", _referenceCount);
 
-                var deleteSucceededResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
-                    async () =>
-                    {
-                        var deleteResponse = await _cloudflareApi.DeleteIpAccessRuleAsync(cloudflareAccountId, _ipAccessRuleId);
-                        return deleteResponse.Success;
-                    });
+                var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, _ipAccessRuleId);
 
                 if (deleteSucceededResult.IsSuccess) _ipAccessRuleId = null;
 
@@ -132,6 +146,16 @@ internal static class CloudflareHelper
             result.InnerException);
     }
 
+    public static Task<(bool IsSuccess, Exception Exception)> DeleteIpAccessRuleWithRetriesAsync(
+        string cloudflareAccountId,
+        string ipAccessRuleId) =>
+        ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+            async () =>
+            {
+                var deleteResponse = await _cloudflareApi.DeleteIpAccessRuleAsync(cloudflareAccountId, ipAccessRuleId);
+                return deleteResponse.Success;
+            });
+
     [Headers("Authorization: Bearer")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "It's an API client.")]
     public interface ICloudflareApi
@@ -143,7 +167,10 @@ internal static class CloudflareHelper
         );
 
         [Get("/accounts/{accountId}/firewall/access_rules/rules")]
-        Task<ApiResponse<IpAccessRuleResponse[]>> GetIpAccessRulesAsync(string accountId, [AliasAs("per_page")] int pageSize);
+        Task<ApiResponse<IpAccessRuleResponse[]>> GetIpAccessRulesAsync(
+            string accountId,
+            [AliasAs("configuration.value")] string configurationValue = null,
+            [AliasAs("per_page")] int pageSize = 200);
 
         [Delete("/accounts/{accountId}/firewall/access_rules/rules/{ruleId}")]
         Task<ApiResponse<DeleteResponse>> DeleteIpAccessRuleAsync(string accountId, string ruleId);
