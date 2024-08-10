@@ -176,7 +176,7 @@ internal static class CloudflareHelper
         Task<ApiResponse<DeleteResponse>> DeleteIpAccessRuleAsync(string accountId, string ruleId);
     }
 
-    public class IpAccessRuleRequest
+    public sealed class IpAccessRuleRequest
     {
         public string Mode { get; set; }
         public IpAccessRuleConfiguration Configuration { get; set; }
@@ -184,25 +184,25 @@ internal static class CloudflareHelper
     }
 
     [DebuggerDisplay("{Target} <- {Value}")]
-    public class IpAccessRuleConfiguration
+    public sealed class IpAccessRuleConfiguration
     {
         public string Target { get; set; }
         public string Value { get; set; }
     }
 
     [DebuggerDisplay("{Id}: {Configuration}")]
-    public class IpAccessRuleResponse
+    public sealed class IpAccessRuleResponse
     {
         public string Id { get; set; }
         public IpAccessRuleConfiguration Configuration { get; set; }
     }
 
-    public class DeleteResponse
+    public sealed class DeleteResponse
     {
         public bool Success { get; set; }
     }
 
-    public class ApiResponse<T>
+    public sealed class ApiResponse<T>
     {
         public bool Success { get; set; }
         public T Result { get; set; }
@@ -210,7 +210,7 @@ internal static class CloudflareHelper
         public IEnumerable<ApiError> Messages { get; set; }
     }
 
-    public class ApiError
+    public sealed class ApiError
     {
         public string Code { get; set; }
         public string Message { get; set; }
