@@ -73,7 +73,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
                 "reject automated requests with HTTP 403s.");
         }
 
-        var currentIp = await GetPublicIpAsync();
+        var currentIp = cloudflareApi != null ? await GetPublicIpAsync() : string.Empty;
 
         try
         {
