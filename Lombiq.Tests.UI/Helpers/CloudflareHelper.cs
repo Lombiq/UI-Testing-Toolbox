@@ -5,76 +5,98 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Helpers;
 
 internal static class CloudflareHelper
 {
+    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private static int _referenceCount = 0;
+
+    private static string _currentIp;
+    private static string _ipAccessRuleId;
+    private static ICloudflareApi _cloudflareApi;
+
     public static async Task ExecuteWrappedInIpAccessRuleManagementAsync(
         Func<Task> testAsync,
         string cloudflareAccountId,
         string cloudflareApiToken)
     {
-        string ipAccessRuleId = null;
+        await _semaphore.WaitAsync();
+        Interlocked.Increment(ref _referenceCount);
 
-        ICloudflareApi cloudflareApi = null;
-
-        cloudflareApi = RestService.For<ICloudflareApi>("https://api.cloudflare.com/client/v4", new RefitSettings
-        {
-            AuthorizationHeaderValueGetter = (_, _) => Task.FromResult(cloudflareApiToken),
-        });
-
-        var currentIp = cloudflareApi != null ? await GetPublicIpAsync() : string.Empty;
+        Debug.WriteLine("Current reference count at the start of the test: {0}.", _referenceCount);
 
         try
         {
-            if (cloudflareApi != null)
+            _cloudflareApi ??= RestService.For<ICloudflareApi>("https://api.cloudflare.com/client/v4", new RefitSettings
             {
+                AuthorizationHeaderValueGetter = (_, _) => Task.FromResult(cloudflareApiToken),
+            });
+
+            _currentIp ??= _cloudflareApi != null ? await GetPublicIpAsync() : string.Empty;
+
+            if (_ipAccessRuleId == null)
+            {
+                Debug.WriteLine("Creating an IP Access Rule for the IP {0}.", (object)_currentIp);
+
                 var createResponseResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
-                        var createResponse = await cloudflareApi.CreateIpAccessRuleAsync(cloudflareAccountId, new IpAccessRuleRequest
+                        var createResponse = await _cloudflareApi.CreateIpAccessRuleAsync(cloudflareAccountId, new IpAccessRuleRequest
                         {
                             Mode = "whitelist",
-                            Configuration = new IpAccessRuleConfiguration { Target = "ip", Value = currentIp },
+                            Configuration = new IpAccessRuleConfiguration { Target = "ip", Value = _currentIp },
                             Notes = "Temporarily allow a remote UI test from GitHub Actions.",
                         });
 
-                        ipAccessRuleId = createResponse.Result?.Id;
+                        _ipAccessRuleId = createResponse.Result?.Id;
 
-                        return createResponse.Success && ipAccessRuleId != null;
+                        return createResponse.Success && _ipAccessRuleId != null;
                     });
 
-                ThrowIfNotSuccess(createResponseResult, currentIp, "didn't save properly");
+                ThrowIfNotSuccess(createResponseResult, _currentIp, "didn't save properly");
 
                 // Wait for the rule to appear, to make sure that it's active.
                 var ruleRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
-                        var rulesResponse = await cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, 100);
+                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, 100);
 
-                        return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == ipAccessRuleId);
+                        return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == _ipAccessRuleId);
                     });
 
-                ThrowIfNotSuccess(ruleRequestResult, currentIp, "didn't get activated");
+                ThrowIfNotSuccess(ruleRequestResult, _currentIp, "didn't get activated");
             }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
 
+        try
+        {
             await testAsync();
         }
         finally
         {
             // Clean up the IP access rule.
-            if (ipAccessRuleId != null)
+            if (_ipAccessRuleId != null && Interlocked.Decrement(ref _referenceCount) == 0)
             {
+                Debug.WriteLine("Removing the IP Access Rule. Current reference count: {0}.", _referenceCount);
+
                 var deleteSucceededResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
-                        var deleteResponse = await cloudflareApi.DeleteIpAccessRuleAsync(cloudflareAccountId, ipAccessRuleId);
+                        var deleteResponse = await _cloudflareApi.DeleteIpAccessRuleAsync(cloudflareAccountId, _ipAccessRuleId);
                         return deleteResponse.Success;
                     });
 
-                ThrowIfNotSuccess(deleteSucceededResult, currentIp, "couldn't be deleted");
+                if (deleteSucceededResult.IsSuccess) _ipAccessRuleId = null;
+
+                ThrowIfNotSuccess(deleteSucceededResult, _currentIp, "couldn't be deleted");
             }
         }
     }
