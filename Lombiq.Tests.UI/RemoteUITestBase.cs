@@ -7,6 +7,10 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI;
 
+/// <summary>
+/// Base class for UI tests that run on a remote (i.e. not locally running) app. If you're testing an app running behind
+/// Cloudflare, then consider using <see cref="CloudflareRemoteUITestBase"/> instead.
+/// </summary>
 public abstract class RemoteUITestBase : UITestBase
 {
     protected RemoteUITestBase(ITestOutputHelper testOutputHelper)
