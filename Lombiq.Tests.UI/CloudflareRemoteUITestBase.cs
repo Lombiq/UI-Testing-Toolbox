@@ -153,7 +153,8 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
 
         throw new IOException(
             $"The Cloudflare IP Access Rule for allowing requests from this runner {messagePart}. There might be a " +
-            $"leftover rule for the IP {currentIp} that needs to be deleted manually.",
+            $"leftover rule for the IP {currentIp} that needs to be deleted manually." +
+            (result.InnerException is ApiException ex ? $" Response: {ex.Content}" : string.Empty),
             result.InnerException);
     }
 
