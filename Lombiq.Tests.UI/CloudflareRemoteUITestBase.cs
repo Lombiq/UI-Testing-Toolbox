@@ -79,19 +79,25 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
         {
             if (cloudflareApi != null)
             {
-                var createResponse = await cloudflareApi.CreateIpAccessRuleAsync(CloudflareAccountId, new IpAccessRuleRequest
-                {
-                    Mode = "whitelist",
-                    Configuration = new IpAccessRuleConfiguration { Target = "ip", Value = currentIp },
-                    Notes = "Temporarily allow a remote UI test from GitHub Actions.",
-                });
+                var createResponseResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+                    async () =>
+                    {
+                        var createResponse = await cloudflareApi.CreateIpAccessRuleAsync(CloudflareAccountId, new IpAccessRuleRequest
+                        {
+                            Mode = "whitelist",
+                            Configuration = new IpAccessRuleConfiguration { Target = "ip", Value = currentIp },
+                            Notes = "Temporarily allow a remote UI test from GitHub Actions.",
+                        });
 
-                ipAccessRuleId = createResponse.Result?.Id;
+                        ipAccessRuleId = createResponse.Result?.Id;
 
-                ThrowIfNotSuccess(createResponse.Success && ipAccessRuleId != null, currentIp, "didn't save properly");
+                        return createResponse.Success && ipAccessRuleId != null;
+                    });
+
+                ThrowIfNotSuccess(createResponseResult, currentIp, "didn't save properly");
 
                 // Wait for the rule to appear, to make sure that it's active.
-                var ruleFound = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+                var ruleRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
                         var rulesResponse = await cloudflareApi.GetIpAccessRulesAsync(CloudflareAccountId, 100);
@@ -99,7 +105,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
                         return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == ipAccessRuleId);
                     });
 
-                ThrowIfNotSuccess(ruleFound, currentIp, "didn't get activated");
+                ThrowIfNotSuccess(ruleRequestResult, currentIp, "didn't get activated");
             }
 
             await base.ExecuteTestAsync(baseUri, testAsync, browser, changeConfigurationAsync);
@@ -109,14 +115,14 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             // Clean up the IP access rule.
             if (ipAccessRuleId != null)
             {
-                var deleteSucceeded = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+                var deleteSucceededResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
                         var deleteResponse = await cloudflareApi.DeleteIpAccessRuleAsync(CloudflareAccountId, ipAccessRuleId);
                         return deleteResponse.Success;
                     });
 
-                ThrowIfNotSuccess(deleteSucceeded, currentIp, "couldn't be deleted");
+                ThrowIfNotSuccess(deleteSucceededResult, currentIp, "couldn't be deleted");
             }
         }
     }
@@ -126,28 +132,29 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
         using var client = new HttpClient();
         string ip = string.Empty;
 
-        var ipRequestSucceeded = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+        var ipRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
             async () =>
             {
                 ip = await client.GetStringAsync("https://api.ipify.org");
                 return true;
             });
 
-        if (!ipRequestSucceeded)
+        if (!ipRequestResult.IsSuccess)
         {
-            throw new IOException("Couldn't get the public IP address of the runner.");
+            throw new IOException("Couldn't get the public IP address of the runner.", ipRequestResult.Exception);
         }
 
         return ip;
     }
 
-    private static void ThrowIfNotSuccess(bool isSuccess, string currentIp, string messagePart)
+    private static void ThrowIfNotSuccess((bool IsSuccess, Exception InnerException) result, string currentIp, string messagePart)
     {
-        if (isSuccess) return;
+        if (result.IsSuccess) return;
 
         throw new IOException(
             $"The Cloudflare IP Access Rule for allowing requests from this runner {messagePart}. There might be a " +
-            $"leftover rule for the IP {currentIp} that needs to be deleted manually.");
+            $"leftover rule for the IP {currentIp} that needs to be deleted manually.",
+            result.InnerException);
     }
 
     [Headers("Authorization: Bearer")]

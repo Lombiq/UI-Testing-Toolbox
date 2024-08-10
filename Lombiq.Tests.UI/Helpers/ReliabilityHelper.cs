@@ -131,27 +131,37 @@ public static class ReliabilityHelper
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
-    /// or during retries, <see langword="false"/> otherwise.
+    /// A tuple with a <see langword="bool"/> indicating if <paramref name="processAsync"/> succeeded (regardless of it
+    /// happening on the first try or during retries, <see langword="false"/> otherwise. The second element is the
+    /// <see cref="Exception"/> that was thrown by the process during the last attempt, if any.
     /// </returns>
-    public static async Task<bool> DoWithRetriesAndCatchesAsync(
+    public static async Task<(bool IsSuccess, Exception Exception)> DoWithRetriesAndCatchesAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            (await DoWithRetriesInternalAsync(
+        TimeSpan? interval = null)
+    {
+        Exception exception = null;
+
+        var isSuccess = (await DoWithRetriesInternalAsync(
                 async () =>
                 {
+                    exception = null;
+
                     try
                     {
                         return await processAsync();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        exception = ex;
                         return false;
                     }
                 },
                 timeout,
                 interval)).IsSuccess;
+
+        return (isSuccess, exception);
+    }
 
     /// <summary>
     /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>). If
