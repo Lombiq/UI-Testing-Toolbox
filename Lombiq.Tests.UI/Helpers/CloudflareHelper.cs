@@ -12,8 +12,8 @@ namespace Lombiq.Tests.UI.Helpers;
 
 internal static class CloudflareHelper
 {
-    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-    private static int _referenceCount = 0;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private static int _referenceCount;
 
     private static string _currentIp;
     private static string _ipAccessRuleId;
