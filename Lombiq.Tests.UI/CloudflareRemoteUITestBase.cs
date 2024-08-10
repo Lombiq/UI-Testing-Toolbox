@@ -19,7 +19,9 @@ namespace Lombiq.Tests.UI;
 public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
 {
     /// <summary>
-    /// Gets the Cloudflare account's ID, as indicated in the account homepage's URL on the Cloudflare dashboard.
+    /// Gets the Cloudflare account's ID, as indicated in the account homepage's URL on the Cloudflare dashboard. Note
+    /// that due to how the IP Access Rule management works, you may only have tests for apps behind a single Cloudflare
+    /// account in a given test project.
     /// </summary>
     protected abstract string CloudflareAccountId { get; }
 
