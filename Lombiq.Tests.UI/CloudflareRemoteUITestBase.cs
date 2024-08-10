@@ -49,17 +49,25 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
+        async Task ChangeConfigurationForCloudflareAsync(OrchardCoreUITestExecutorConfiguration configuration)
+        {
+            // Cloudflare's e-mail address obfuscating feature creates invalid iframes.
+            configuration.HtmlValidationConfiguration.WithRelativeConfigPath("PermitNoTitleIframes.htmlvalidate.json");
+
+            if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        }
+
         if (string.IsNullOrEmpty(CloudflareApiToken))
         {
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "No Cloudflare API token is set, thus skipping the IP Access Rule setup. Note that Cloudflare might " +
                 "reject automated requests with HTTP 403s.");
 
-            return base.ExecuteTestAsync(baseUri, testAsync, browser, changeConfigurationAsync);
+            return base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync);
         }
 
         return CloudflareHelper.ExecuteWrappedInIpAccessRuleManagementAsync(
-            () => base.ExecuteTestAsync(baseUri, testAsync, browser, changeConfigurationAsync),
+            () => base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync),
             CloudflareAccountId,
             CloudflareApiToken);
     }
