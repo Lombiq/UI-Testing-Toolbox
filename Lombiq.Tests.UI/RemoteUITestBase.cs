@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
@@ -69,8 +70,8 @@ public abstract class RemoteUITestBase : UITestBase
             BrowserConfiguration = { Browser = browser },
         };
 
-        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = (_) => true;
-        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = (_) => true;
+        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.FailureDumpConfiguration.CaptureAppSnapshot = false;
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
