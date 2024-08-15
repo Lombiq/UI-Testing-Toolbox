@@ -115,6 +115,55 @@ public static class ReliabilityHelper
             (await DoWithRetriesInternalAsync(processAsync, timeout, interval)).IsSuccess;
 
     /// <summary>
+    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals.
+    /// Exceptions thrown by the process are caught and treated as failures.
+    /// </summary>
+    /// <param name="processAsync">
+    /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
+    /// <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to the default of <see
+    /// cref="SafeWaitAsync{T}.Timeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+    /// cref="SafeWaitAsync{T}.PollingInterval"/>.
+    /// </param>
+    /// <returns>
+    /// A tuple with a <see langword="bool"/> indicating if <paramref name="processAsync"/> succeeded (regardless of it
+    /// happening on the first try or during retries, <see langword="false"/> otherwise. The second element is the
+    /// <see cref="Exception"/> that was thrown by the process during the last attempt, if any.
+    /// </returns>
+    public static async Task<(bool IsSuccess, Exception Exception)> DoWithRetriesAndCatchesAsync(
+        Func<Task<bool>> processAsync,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        Exception exception = null;
+
+        var isSuccess = (await DoWithRetriesInternalAsync(
+                async () =>
+                {
+                    exception = null;
+
+                    try
+                    {
+                        return await processAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                        return false;
+                    }
+                },
+                timeout,
+                interval)).IsSuccess;
+
+        return (isSuccess, exception);
+    }
+
+    /// <summary>
     /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>). If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     ///
