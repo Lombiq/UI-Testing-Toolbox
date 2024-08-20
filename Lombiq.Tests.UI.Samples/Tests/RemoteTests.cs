@@ -16,7 +16,10 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // smoke tests on your production app (e.g.: Can people still log in? Are payments still working?). The UI Testing
 // Toolbox also supports this. Check out the example below!
 
-// Note how the test derives from RemoteUITestBase this time, not UITestBase.
+// Note how the test derives from RemoteUITestBase this time, not UITestBase. This is a generic base class for any
+// remote test. However, if you're testing an app behind Cloudflare, you might see requests rejected with an HTTP 403
+// due to Cloudflare's Bot Fight Mode; in that case, derive from CloudflareRemoteUITestBase instead after checking out
+// its documentation on how to set it up.
 public class RemoteTests : RemoteUITestBase
 {
     public RemoteTests(ITestOutputHelper testOutputHelper)
