@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "./default.htmlvalidate.json"
+  ],
+
+  "elements": [
+    "html5",
+    {
+      "iframe": {
+        "attributes": {
+          "title": {
+            "required": false
+          }
+        }
+      }
+    }
+  ],
+
+  "root": true
+}
