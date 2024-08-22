@@ -85,6 +85,9 @@ public static class SecurityScanningUITestContextExtensions
                 // There is no need to security scan the admin dashboard.
                 configuration.ExcludeUrlWithRegex(@".*/Admin/.*");
 
+                // There is no need to security scan anything in Lombiq.Tests.UI.Shortcuts.
+                configuration.ExcludeUrlWithRegex(@".*/Lombiq.Tests.UI.Shortcuts/.*");
+
                 // Active scan takes a very long time, this is not practical in CI.
                 configuration.ModifyZapPlan(plan => plan
                     .SetActiveScanMaxDuration(maxActiveScanDurationInMinutes, maxRuleDurationInMinutes));
