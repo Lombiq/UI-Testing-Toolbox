@@ -89,10 +89,16 @@ public static class SecurityScanningUITestContextExtensions
                 configuration.ExcludeUrlWithRegex(@".*/Lombiq.Tests.UI.Shortcuts/.*");
 
                 configuration.MarkScanRuleAsFalsePositiveForUrlWithRegex(
-                    ".*/(Login|ChangePassword)([?].*)?",
+                    ".*/(Login|ChangePassword)[?][rR]eturnUrl=.*",
                     6,
                     "Path Traversal",
-                    "Setting the returnUrl attribute to a itself yields a false positive");
+                    "Setting the ReturnUrl query parameter to a itself yields a false positive");
+
+                configuration.MarkScanRuleAsFalsePositiveForUrlWithRegex(
+                    ".*/(Login|ChangePassword)[?][rR]eturnUrl=.*",
+                    40018,
+                    "SQL Injection",
+                    "Setting the ReturnUrl query parameter to an SQL expression can't actually cause SQL Injection.");
 
                 // Active scan takes a very long time, this is not practical in CI.
                 configuration.ModifyZapPlan(plan => plan
