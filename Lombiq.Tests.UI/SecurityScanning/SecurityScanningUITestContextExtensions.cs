@@ -92,7 +92,7 @@ public static class SecurityScanningUITestContextExtensions
                     ".*/(Login|ChangePassword)[?][rR]eturnUrl=.*", // #spell-check-ignore-line
                     6,
                     "Path Traversal",
-                    "Setting the ReturnUrl query parameter to a itself yields a false positive");
+                    "Setting the ReturnUrl query parameter to itself yields a false positive");
 
                 configuration.MarkScanRuleAsFalsePositiveForUrlWithRegex(
                     ".*/(Login|ChangePassword)[?][rR]eturnUrl=.*", // #spell-check-ignore-line
