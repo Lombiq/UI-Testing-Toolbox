@@ -104,17 +104,25 @@ internal static class CloudflareHelper
         }
         finally
         {
+            testOutputHelper.WriteLineTimestampedAndDebug(
+                "Current Cloudflare IP Access Rule reference count after the test (including this test): {0}.", _referenceCount);
+
             // Clean up the IP access rule.
             if (_ipAccessRuleId != null && Interlocked.Decrement(ref _referenceCount) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Removing the Cloudflare IP Access Rule for the IP {0} since the current reference count is 0.", _currentIp);
+                    "Removing the Cloudflare IP Access Rule for the IP {0} since this test had the last reference to it.", _currentIp);
 
                 var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, _ipAccessRuleId);
 
                 if (deleteSucceededResult.IsSuccess) _ipAccessRuleId = null;
 
                 ThrowIfNotSuccess(deleteSucceededResult, _currentIp, "couldn't be deleted");
+            }
+            else
+            {
+                testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Not removing the Cloudflare IP Access Rule for the IP {0} since the current reference count is NOT 0.", _currentIp);
             }
         }
     }
