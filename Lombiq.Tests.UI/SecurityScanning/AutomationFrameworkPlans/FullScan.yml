@@ -4,7 +4,10 @@ env:
     - name: Default Context
       urls:
         - <start URL>
-      excludePaths: []
+      excludePaths:
+        # Don't inspect any part of the Admin dashboard or the testing-exclusive Lombiq.Tests.UI.Shortcuts module.
+        - .*/Admin/.*
+        - .*/Lombiq.Tests.UI.Shortcuts/.*
       authentication:
         parameters: {}
         verification:
