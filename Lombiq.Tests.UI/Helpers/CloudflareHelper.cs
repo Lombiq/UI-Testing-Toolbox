@@ -28,10 +28,13 @@ internal static class CloudflareHelper
         ITestOutputHelper testOutputHelper)
     {
         testOutputHelper.WriteLineTimestampedAndDebug(
-            "Current Cloudflare IP Access Rule reference count before the start of the test: {0}.", _referenceCount);
+            "Current Cloudflare IP Access Rule reference count before entering semaphore: {0}.", _referenceCount);
 
         await _semaphore.WaitAsync();
         Interlocked.Increment(ref _referenceCount);
+
+        testOutputHelper.WriteLineTimestampedAndDebug(
+            "Current Cloudflare IP Access Rule reference count after entering semaphore: {0}.", _referenceCount);
 
         try
         {
