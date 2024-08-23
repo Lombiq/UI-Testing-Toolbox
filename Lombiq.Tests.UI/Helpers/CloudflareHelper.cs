@@ -91,6 +91,9 @@ internal static class CloudflareHelper
                     });
 
                 ThrowIfNotSuccess(ruleCheckRequestResult, _currentIp, "didn't get activated");
+
+                testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Created a Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}).", _currentIp, _ipAccessRuleId);
             }
         }
         finally
@@ -111,18 +114,29 @@ internal static class CloudflareHelper
             if (_ipAccessRuleId != null && Interlocked.Decrement(ref _referenceCount) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Removing the Cloudflare IP Access Rule for the IP {0} since this test had the last reference to it.", _currentIp);
+                    "Removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test has the last reference to it.",
+                    _currentIp,
+                    _ipAccessRuleId);
+
+                var oldIpAccessRuleId = _ipAccessRuleId;
 
                 var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, _ipAccessRuleId);
 
                 if (deleteSucceededResult.IsSuccess) _ipAccessRuleId = null;
 
                 ThrowIfNotSuccess(deleteSucceededResult, _currentIp, "couldn't be deleted");
+
+                testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Removed the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test had the last reference to it.",
+                    _currentIp,
+                    oldIpAccessRuleId);
             }
             else
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Not removing the Cloudflare IP Access Rule for the IP {0} since the current reference count is NOT 0.", _currentIp);
+                    "Not removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since the current reference count is NOT 0.",
+                    _currentIp,
+                    _ipAccessRuleId);
             }
         }
     }
