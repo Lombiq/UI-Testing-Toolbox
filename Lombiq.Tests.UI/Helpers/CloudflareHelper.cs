@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Helpers;
 
@@ -23,12 +24,14 @@ internal static class CloudflareHelper
     public static async Task ExecuteWrappedInIpAccessRuleManagementAsync(
         Func<Task> testAsync,
         string cloudflareAccountId,
-        string cloudflareApiToken)
+        string cloudflareApiToken,
+        ITestOutputHelper testOutputHelper)
     {
+        testOutputHelper.WriteLineTimestampedAndDebug(
+            "Current Cloudflare IP Access Rule reference count before the start of the test: {0}.", _referenceCount);
+
         await _semaphore.WaitAsync();
         Interlocked.Increment(ref _referenceCount);
-
-        Debug.WriteLine("Current reference count at the start of the test: {0}.", _referenceCount);
 
         try
         {
@@ -41,7 +44,7 @@ internal static class CloudflareHelper
 
             if (_ipAccessRuleId == null)
             {
-                Debug.WriteLine("Creating an IP Access Rule for the IP {0}.", (object)_currentIp);
+                testOutputHelper.WriteLineTimestampedAndDebug("Creating a Cloudflare IP Access Rule for the IP {0}.", _currentIp);
 
                 // Delete any pre-existing rules for the current IP first.
                 string preexistingRuleId = null;
@@ -104,7 +107,8 @@ internal static class CloudflareHelper
             // Clean up the IP access rule.
             if (_ipAccessRuleId != null && Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                Debug.WriteLine("Removing the IP Access Rule. Current reference count: {0}.", _referenceCount);
+                testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Removing the Cloudflare IP Access Rule for the IP {0} since the current reference count is 0.", _currentIp);
 
                 var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, _ipAccessRuleId);
 

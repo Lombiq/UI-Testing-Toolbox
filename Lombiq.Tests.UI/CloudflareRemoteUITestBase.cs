@@ -75,6 +75,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
         return CloudflareHelper.ExecuteWrappedInIpAccessRuleManagementAsync(
             () => base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync),
             CloudflareAccountId,
-            CloudflareApiToken);
+            CloudflareApiToken,
+            _testOutputHelper);
     }
 }
