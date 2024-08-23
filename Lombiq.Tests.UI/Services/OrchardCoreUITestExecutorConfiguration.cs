@@ -59,7 +59,10 @@ public class OrchardCoreUITestExecutorConfiguration
             !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
             // under a different URL.
-            !logEntry.IsNotFoundLogEntry("/favicon.ico");
+            !logEntry.IsNotFoundLogEntry("/favicon.ico") &&
+            // Workaround for https://github.com/OrchardCMS/OrchardCore/issues/16606.
+            !(logEntry.Message.ContainsOrdinalIgnoreCase("/Settings/general") &&
+                logEntry.Message.ContainsOrdinalIgnoreCase("A em tag was parsed inside of a <select> which was not inserted into the document."));
 
     /// <summary>
     /// Gets the global events available during UI test execution.
