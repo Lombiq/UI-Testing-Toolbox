@@ -4,7 +4,10 @@ env:
     - name: Default Context
       urls:
         - <start URL>
-      excludePaths: []
+      excludePaths:
+        # Don't inspect any part of the Admin dashboard or the testing-exclusive Lombiq.Tests.UI.Shortcuts module.
+        - .*/Admin/.*
+        - .*/Lombiq.Tests.UI.Shortcuts/.*
       authentication:
         parameters: {}
         verification:
@@ -66,6 +69,34 @@ jobs:
     name: passiveScan-config
     type: passiveScan-config
   - alertFilters:
+      # Setting the ReturnUrl query parameter to itself yields a false positive.
+      - ruleId: 6
+        ruleName: Path Traversal (6)
+        context: ''
+        newRisk: False Positive
+        parameter: ''
+        parameterRegex: false
+        url: .*/(Login|ChangePassword)[?][rR]eturnUrl=.*
+        urlRegex: true
+        attack: ''
+        attackRegex: false
+        evidence: ''
+        evidenceRegex: false
+        methods: []
+      # Setting the ReturnUrl query parameter to an SQL expression can't actually cause SQL Injection.
+      - ruleId: 40018
+        ruleName: SQL Injection (40018)
+        context: ''
+        newRisk: False Positive
+        parameter: ''
+        parameterRegex: false
+        url: .*/(Login|ChangePassword)[?][rR]eturnUrl=.*
+        urlRegex: true
+        attack: ''
+        attackRegex: false
+        evidence: ''
+        evidenceRegex: false
+        methods: []
       # Mistakes a system-property('xsl:vendor') XSLT injection attempt as successful due to Microsoft being there on
       # the login screen at all times for External Login. Might happen in similar cases with other brand names too.
       - ruleId: 90017
@@ -74,7 +105,7 @@ jobs:
         newRisk: False Positive
         parameter: ''
         parameterRegex: false
-        url: .*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff).*
+        url: .*/(ChangePassword|Account/LinkLogin|Account/ExternalLogin|Users/LogOff|api/content).*
         urlRegex: true
         attack: ''
         attackRegex: false
