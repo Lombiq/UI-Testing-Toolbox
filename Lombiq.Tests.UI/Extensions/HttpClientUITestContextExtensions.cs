@@ -19,10 +19,14 @@ namespace Lombiq.Tests.UI.Extensions;
         Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
+    /// <summary>
+    /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
+    /// <paramref name="clientId"/> and <paramref name="clientSecret"/>.
+    /// </summary>
     public static async Task<HttpClient> CreateAndAuthorizeClientAsync(
         this UITestContext context,
-        string clientId = null,
-        string clientSecret = null)
+        string clientId = "UITest",
+        string clientSecret = "Password")
     {
         var handler = new HttpClientHandler
         {
@@ -35,8 +39,6 @@ public static class HttpClientUITestContextExtensions
             BaseAddress = context.Scope.BaseUri,
         };
 
-        clientId ??= "UITest";
-        clientSecret ??= "Password";
         using var requestBody = new FormUrlEncodedContent(
         [
             new KeyValuePair<string, string>("grant_type", "client_credentials"),
@@ -59,13 +61,24 @@ public static class HttpClientUITestContextExtensions
         return client;
     }
 
-    // add some documentation
-    public static async Task<string> GetAndReadResponseContentAsync(this UITestContext context, HttpClient client, string requestUri)
+    /// <summary>
+    /// Issues a GET request to the given <paramref name="requestUri"/> using the provided <paramref name="client"/>.
+    /// </summary>
+    /// <returns>The response's <see cref="HttpContent"/> as a string.</returns>
+    public static async Task<string> GetAndReadResponseContentAsync(
+        this UITestContext context,
+        HttpClient client,
+        string requestUri)
     {
         var response = await client.GetAsync(requestUri);
         return await response.Content.ReadAsStringAsync();
     }
 
+    /// <summary>
+    /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> and
+    /// <paramref name="client"/>.
+    /// </summary>
+    /// <returns>The response's <see cref="HttpContent"/> as a string.</returns>
     public static async Task<string> PostAndReadResponseContentAsync(
         this UITestContext context,
         HttpClient client,
@@ -73,8 +86,8 @@ public static class HttpClientUITestContextExtensions
         string json)
     {
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
-        var newCustomer = await client.PostAsync(requestUri, stringContent);
+        var response = await client.PostAsync(requestUri, stringContent);
 
-        return await newCustomer.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync();
     }
 }
