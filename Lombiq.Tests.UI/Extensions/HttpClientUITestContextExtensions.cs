@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -58,9 +59,22 @@ public static class HttpClientUITestContextExtensions
         return client;
     }
 
-    public static async Task<string> GetResponseContentAsync(this UITestContext context, HttpClient client, string requestUri)
+    // add some documentation
+    public static async Task<string> GetAndReadResponseContentAsync(this UITestContext context, HttpClient client, string requestUri)
     {
         var response = await client.GetAsync(requestUri);
         return await response.Content.ReadAsStringAsync();
+    }
+
+    public static async Task<string> PostAndReadResponseContentAsync(
+        this UITestContext context,
+        HttpClient client,
+        string requestUri,
+        string json)
+    {
+        var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+        var newCustomer = await client.PostAsync(requestUri, stringContent);
+
+        return await newCustomer.Content.ReadAsStringAsync();
     }
 }
