@@ -32,7 +32,22 @@ public class FrontendServer
         Name = name;
     }
 
-    public void Configure(string program, IEnumerable<string>? arguments = null, Func<Command, Command>? configureCommand = null)
+    /// <summary>
+    /// Configures the Orchard Core startup and shutdown events to manage the frontend server's lifecycle. Also
+    /// redirects the standard output and error streams to the <see cref="ITestOutputHelper"/>.
+    /// </summary>
+    /// <param name="program">The path of the frontend server application.</param>
+    /// <param name="arguments">Additional command line arguments to be passed to <paramref name="program"/>.</param>
+    /// <param name="configureCommand">Additional <c>Cli.Wrap</c> configuration for <paramref name="program"/>.</param>
+    /// <param name="checkProgramReady">
+    /// If not <see langword="null"/>, it checks every line from the standard output or error streams and waits until
+    /// this function returns <see langword="true"/>.
+    /// </param>
+    public void Configure(
+        string program,
+        IEnumerable<string>? arguments = null,
+        Func<Command, Command>? configureCommand = null,
+        Func<string, bool>? checkProgramReady = null)
     {
         ArgumentNullException.ThrowIfNull(program);
 
@@ -40,14 +55,24 @@ public class FrontendServer
         {
             var frontendPort = await context.PortLeaseManager.LeaseAvailableRandomPortAsync();
 
+            var cancellationTokenSource = new CancellationTokenSource();
+            var waitCompletionSource = new TaskCompletionSource();
+            var waiting = checkProgramReady != null;
+
+            var pipe = PipeTarget.ToDelegate(line =>
+            {
+                _testOutputHelper.WriteLineTimestamped("{0}: {1}", Name, line);
+                if (waiting && checkProgramReady!(line)) waitCompletionSource.SetResult();
+            });
+
             var cli = Cli.Wrap(program)
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(HandleLine))
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(HandleLine));
+                .WithStandardOutputPipe(pipe)
+                .WithStandardOutputPipe(pipe);
             if (arguments != null) cli = cli.WithArguments(arguments);
             if (configureCommand != null) cli = configureCommand(cli);
-
-            var cancellationTokenSource = new CancellationTokenSource();
             var task = cli.ExecuteAsync(cancellationTokenSource.Token);
+
+            if (waiting) await waitCompletionSource.Task;
 
             _configuration.CustomConfiguration[GetKey(context)] = new FrontendServerContext
             {
@@ -69,8 +94,6 @@ public class FrontendServer
                 ? stopAsync()
                 : Task.CompletedTask;
     }
-
-    private void HandleLine(string line) => _testOutputHelper.WriteLineTimestamped("{0}: {1}", Name, line);
 
     private string GetKey(OrchardCoreAppStartContext context) =>
         StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{context.Url.Port}");
