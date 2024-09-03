@@ -158,6 +158,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         {
             ContentRootPath = _contentRootPath,
             Url = _url,
+            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
         };
 
         await _configuration.BeforeAppStart
@@ -217,6 +218,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         {
             ContentRootPath = _contentRootPath,
             Url = _url,
+            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
         };
 
         await _configuration.BeforeTakeSnapshot
