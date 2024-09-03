@@ -1,4 +1,3 @@
-using Atata;
 using Atata.HtmlValidation;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
@@ -8,6 +7,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using Newtonsoft.Json.Linq;
@@ -413,7 +413,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             GitHubHelper.IsGitHubEnvironment)
         {
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
-                Microsoft.Extensions.Logging.LogLevel.Warning,
+                LogLevel.Warning,
                 "UI test may be flaky",
                 $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
                     "retried. This may indicate it being flaky.",
@@ -519,7 +519,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (!_configuration.UseSqlServer) return;
 
         // This is only necessary for the setup snapshot.
-        Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
+        Task SqlServerManagerBeforeTakeSnapshotHandlerAsync(OrchardCoreAppStartContext context, string snapshotDirectoryPath)
         {
             ArgumentNullException.ThrowIfNull(snapshotDirectoryPath);
 
@@ -560,7 +560,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (!_configuration.UseAzureBlobStorage) return;
 
         // This is only necessary for the setup snapshot.
-        Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(string contentRootPath, string snapshotDirectoryPath)
+        Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(OrchardCoreAppStartContext context, string snapshotDirectoryPath)
         {
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
             return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
@@ -587,7 +587,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         _zapManager = new ZapManager(_testOutputHelper);
 
-        Task UITestingBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
+        Task UITestingBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
@@ -657,7 +657,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _sqlServerManager = new SqlServerManager(_configuration.SqlServerDatabaseConfiguration);
         var sqlServerContext = await _sqlServerManager.CreateDatabaseAsync();
 
-        async Task SqlServerManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
+        async Task SqlServerManagerBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SqlServerManagerBeforeAppStartHandlerAsync;
 
@@ -673,7 +673,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
 
-            var sitesDirectoryPath = Path.Combine(contentRootPath, "App_Data", "Sites");
+            var sitesDirectoryPath = Path.Combine(context.ContentRootPath, "App_Data", "Sites");
             var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
 
             foreach (var tenantDirectoryPath in tenantDirectoryPaths)
@@ -706,7 +706,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _azureBlobStorageManager = new AzureBlobStorageManager(_configuration.AzureBlobStorageConfiguration);
         var azureBlobStorageContext = await _azureBlobStorageManager.SetupBlobStorageAsync();
 
-        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
+        async Task AzureBlobStorageManagerBeforeAppStartHandlerAsync(
+            OrchardCoreAppStartContext context,
+            InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= AzureBlobStorageManagerBeforeAppStartHandlerAsync;
 
@@ -742,7 +744,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
 
-        Task SmtpServiceBeforeAppStartHandlerAsync(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments)
+        Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments

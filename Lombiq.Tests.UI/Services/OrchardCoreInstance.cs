@@ -18,9 +18,9 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
-public delegate Task BeforeAppStartHandler(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments);
+public delegate Task BeforeAppStartHandler(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments);
 
-public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
+public delegate Task BeforeTakeSnapshotHandler(OrchardCoreAppStartContext context, string snapshotDirectoryPath);
 
 public class OrchardCoreConfiguration
 {
@@ -54,7 +54,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
-    private string _url;
+    private Uri _url;
     private TestReverseProxy _reverseProxy;
 
     public IServiceProvider Services => _orchardApplication?.Services;
@@ -69,8 +69,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     public async Task<Uri> StartUpAsync()
     {
         var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
-        _url = OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString();
-        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
+        _url = new(OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString());
+        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url.AbsoluteUri);
 
         CreateContentRootFolder();
 
@@ -88,13 +88,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     _contentRootPath);
         }
 
-        _reverseProxy = new TestReverseProxy(_url);
+        _reverseProxy = new TestReverseProxy(_url.AbsoluteUri);
 
         await _reverseProxy.StartAsync();
 
         await StartOrchardAppAsync();
 
-        return new Uri(_url);
+        return _url;
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
@@ -154,8 +154,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         var arguments = new InstanceCommandLineArgumentsBuilder();
 
+        var context = new OrchardCoreAppStartContext
+        {
+            ContentRootPath = _contentRootPath,
+            Url = _url,
+        };
+
         await _configuration.BeforeAppStart
-            .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
+            .InvokeAsync<BeforeAppStartHandler>(handler => handler(context, arguments));
 
         // This is to avoid adding Razor runtime view compilation.
         DirectoryHelper.SafelyDeleteDirectoryIfExists(
@@ -190,8 +196,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _orchardApplication = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
-
-        return;
     }
 
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
@@ -209,8 +213,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         Directory.CreateDirectory(snapshotDirectoryPath);
 
+        var context = new OrchardCoreAppStartContext
+        {
+            ContentRootPath = _contentRootPath,
+            Url = _url,
+        };
+
         await _configuration.BeforeTakeSnapshot
-            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
+            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(context, snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
