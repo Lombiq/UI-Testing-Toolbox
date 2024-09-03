@@ -19,6 +19,7 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services;
 
 public delegate Task BeforeAppStartHandler(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments);
+public delegate Task AfterAppStopHandler(OrchardCoreAppStartContext context);
 
 public delegate Task BeforeTakeSnapshotHandler(OrchardCoreAppStartContext context, string snapshotDirectoryPath);
 
@@ -26,6 +27,7 @@ public class OrchardCoreConfiguration
 {
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
+    public AfterAppStopHandler AfterAppStop { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
 }
 
@@ -154,13 +156,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         var arguments = new InstanceCommandLineArgumentsBuilder();
 
-        var context = new OrchardCoreAppStartContext
-        {
-            ContentRootPath = _contentRootPath,
-            Url = _url,
-            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
-        };
-
+        var context = CreateAppStartContext();
         await _configuration.BeforeAppStart
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(context, arguments));
 
@@ -197,6 +193,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _orchardApplication = null;
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
+
+        var context = CreateAppStartContext();
+        await _configuration.AfterAppStop
+            .InvokeAsync<AfterAppStopHandler>(handler => handler(context));
     }
 
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
@@ -214,18 +214,20 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         Directory.CreateDirectory(snapshotDirectoryPath);
 
-        var context = new OrchardCoreAppStartContext
-        {
-            ContentRootPath = _contentRootPath,
-            Url = _url,
-            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
-        };
-
+        var context = CreateAppStartContext();
         await _configuration.BeforeTakeSnapshot
             .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(context, snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
+
+    private OrchardCoreAppStartContext CreateAppStartContext() =>
+        new()
+        {
+            ContentRootPath = _contentRootPath,
+            Url = _url,
+            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
+        };
 
     private sealed class ApplicationLog : IApplicationLog
     {
