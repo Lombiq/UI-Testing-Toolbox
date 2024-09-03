@@ -1,5 +1,6 @@
 ﻿using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -21,12 +22,15 @@ public static class HttpClientUITestContextExtensions
 {
     /// <summary>
     /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
-    /// <paramref name="clientId"/> and <paramref name="clientSecret"/>.
+    /// parameters.
     /// </summary>
     public static async Task<HttpClient> CreateAndAuthorizeClientAsync(
         this UITestContext context,
+        string grantType = "client_credentials",
         string clientId = "UITest",
-        string clientSecret = "Password")
+        string clientSecret = "Password",
+        string userName = null,
+        string password = null)
     {
         var handler = new HttpClientHandler
         {
@@ -39,12 +43,20 @@ public static class HttpClientUITestContextExtensions
             BaseAddress = context.Scope.BaseUri,
         };
 
-        using var requestBody = new FormUrlEncodedContent(
-        [
-            new KeyValuePair<string, string>("grant_type", "client_credentials"),
-            new KeyValuePair<string, string>("client_id", clientId),
-            new KeyValuePair<string, string>("client_secret", clientSecret),
-        ]);
+        var parameters = new List<KeyValuePair<string, string>>
+        {
+            new("grant_type", grantType),
+            new("client_id", clientId),
+            new("client_secret", clientSecret),
+        };
+
+        if (string.Equals(grantType, "password", StringComparison.OrdinalIgnoreCase))
+        {
+            parameters.Add(new KeyValuePair<string, string>("username", userName));
+            parameters.Add(new KeyValuePair<string, string>("password", password));
+        }
+
+        using var requestBody = new FormUrlEncodedContent(parameters);
 
         var tokenUrl = context.Scope.BaseUri.AbsoluteUri + "connect/token";
         var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
