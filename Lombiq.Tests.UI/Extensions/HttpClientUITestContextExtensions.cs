@@ -126,6 +126,7 @@ public static class HttpClientUITestContextExtensions
     /// </summary>
     /// <returns>The deserialized <typeparamref name="TObject"/> object.</returns>
     public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
+        this UITestContext context,
         HttpClient client,
         string requestUri,
         string json)
