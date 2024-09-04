@@ -82,14 +82,16 @@ public class FrontendServer
 
             if (waiting) await waitCompletionSource.Task;
 
-            _configuration.CustomConfiguration[GetKey(context)] = new FrontendServerContext
+            _configuration.CustomConfiguration[GetKey(context.Url.Port)] = new FrontendServerContext
             {
                 Port = frontendPort,
                 Task = task,
                 Stop = async () =>
                 {
+                    // This cancellation token forcefully closes the frontend server (i.e. SIGTERM, Ctrl+C), which is
+                    // the only way to shut down most of these servers anyway. For this reason there is no need to await
+                    // the task, and trying to do so would throw OperationCanceledException.
                     await cancellationTokenSource.CancelAsync();
-                    await task; // Wait for this process to stop cleanly.
                     cancellationTokenSource.Dispose();
 
                     await context.PortLeaseManager.StopLeaseAsync(frontendPort);
