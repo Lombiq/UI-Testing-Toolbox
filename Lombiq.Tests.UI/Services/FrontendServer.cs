@@ -100,13 +100,18 @@ public class FrontendServer
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>
-            _configuration.CustomConfiguration[GetKey(context)] is FrontendServerContext { Stop: { } stopAsync }
+            GetContext(context.Url.Port) is { Stop: { } stopAsync }
                 ? stopAsync()
                 : Task.CompletedTask;
     }
 
-    private string GetKey(OrchardCoreAppStartContext context) =>
-        StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{context.Url.Port}");
+    public FrontendServerContext? GetContext(int orchardPort) =>
+        _configuration.CustomConfiguration[GetKey(orchardPort)] as FrontendServerContext;
+
+    public FrontendServerContext? GetContext(UITestContext context) => GetContext(context.TestStartUri.Port);
+
+    private string GetKey(int orchardPort) =>
+        StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{orchardPort}");
 
     public record Context(
         string ContentRootPath,

@@ -156,9 +156,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         var arguments = new InstanceCommandLineArgumentsBuilder();
 
-        var context = CreateAppStartContext();
         await _configuration.BeforeAppStart
-            .InvokeAsync<BeforeAppStartHandler>(handler => handler(context, arguments));
+            .InvokeAsync<BeforeAppStartHandler>(handler => handler(CreateAppStartContext(), arguments));
 
         // This is to avoid adding Razor runtime view compilation.
         DirectoryHelper.SafelyDeleteDirectoryIfExists(
@@ -194,9 +193,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
-        var context = CreateAppStartContext();
         await _configuration.AfterAppStop
-            .InvokeAsync<AfterAppStopHandler>(handler => handler(context));
+            .InvokeAsync<AfterAppStopHandler>(handler => handler(CreateAppStartContext()));
     }
 
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
@@ -214,9 +212,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         Directory.CreateDirectory(snapshotDirectoryPath);
 
-        var context = CreateAppStartContext();
         await _configuration.BeforeTakeSnapshot
-            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(context, snapshotDirectoryPath));
+            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(CreateAppStartContext(), snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
