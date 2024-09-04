@@ -43,17 +43,25 @@ public class FrontendServer
     /// If not <see langword="null"/>, it checks every line from the standard output or error streams and waits until
     /// this function returns <see langword="true"/>.
     /// </param>
+    /// <param name="thenAsync">If not <see langword="null"/>, it's executed at the end </param>
     public void Configure(
         string program,
         IEnumerable<string>? arguments = null,
-        Func<Command, Command>? configureCommand = null,
-        Func<string, bool>? checkProgramReady = null)
+        Func<Command, Context, Command>? configureCommand = null,
+        Func<string, Context, bool>? checkProgramReady = null,
+        Func<Context, Task>? thenAsync = null)
     {
         ArgumentNullException.ThrowIfNull(program);
 
-        _configuration.OrchardCoreConfiguration.BeforeAppStart += async (context, _) =>
+        _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
-            var frontendPort = await context.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var context = new Context(
+                orchardContext.ContentRootPath,
+                orchardContext.Url,
+                orchardContext.PortLeaseManager,
+                frontendPort,
+                orchardArguments);
 
             var cancellationTokenSource = new CancellationTokenSource();
             var waitCompletionSource = new TaskCompletionSource();
@@ -62,14 +70,14 @@ public class FrontendServer
             var pipe = PipeTarget.ToDelegate(line =>
             {
                 _testOutputHelper.WriteLineTimestamped("{0}: {1}", Name, line);
-                if (waiting && checkProgramReady!(line)) waitCompletionSource.SetResult();
+                if (waiting && checkProgramReady!(line, context)) waitCompletionSource.SetResult();
             });
 
             var cli = Cli.Wrap(program)
                 .WithStandardOutputPipe(pipe)
                 .WithStandardOutputPipe(pipe);
             if (arguments != null) cli = cli.WithArguments(arguments);
-            if (configureCommand != null) cli = configureCommand(cli);
+            if (configureCommand != null) cli = configureCommand(cli, context);
             var task = cli.ExecuteAsync(cancellationTokenSource.Token);
 
             if (waiting) await waitCompletionSource.Task;
@@ -97,4 +105,12 @@ public class FrontendServer
 
     private string GetKey(OrchardCoreAppStartContext context) =>
         StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{context.Url.Port}");
+
+    public record Context(
+        string ContentRootPath,
+        Uri Url,
+        PortLeaseManager PortLeaseManager,
+        int FrontendPort,
+        InstanceCommandLineArgumentsBuilder OrchardCoreArguments)
+        : OrchardCoreAppStartContext(ContentRootPath, Url, PortLeaseManager);
 }

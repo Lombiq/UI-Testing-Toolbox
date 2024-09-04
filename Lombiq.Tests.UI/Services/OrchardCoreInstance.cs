@@ -201,7 +201,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
     {
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
         return await streamReader.ReadToEndAsync(cancellationToken);
     }
@@ -222,12 +222,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     }
 
     private OrchardCoreAppStartContext CreateAppStartContext() =>
-        new()
-        {
-            ContentRootPath = _contentRootPath,
-            Url = _url,
-            PortLeaseManager = OrchardCoreInstanceCounter.PortLeases,
-        };
+        new(_contentRootPath, _url, OrchardCoreInstanceCounter.PortLeases);
 
     private sealed class ApplicationLog : IApplicationLog
     {
