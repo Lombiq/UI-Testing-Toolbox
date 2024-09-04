@@ -1,5 +1,6 @@
 ﻿using Lombiq.Tests.UI.Services;
 using Microsoft.SqlServer.Management.Dmf;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -91,6 +92,23 @@ public static class HttpClientUITestContextExtensions
     }
 
     /// <summary>
+    /// Issues a GET request to the given <paramref name="requestUri"/> using the provided <paramref name="client"/> then
+    /// deserializes the response content to the given <typeparamref name="TObject"/>.
+    /// </summary>
+    /// <returns>The response's <see cref="HttpContent"/> as a string.</returns>
+    public static async Task<TObject> GetAndReadResponseContentAsync<TObject>(
+        this UITestContext context,
+        HttpClient client,
+        string requestUri)
+        where TObject : class
+    {
+        var response = await client.GetAsync(requestUri);
+        var content = await response.Content.ReadAsStringAsync();
+        var parsed = JToken.Parse(content);
+        return parsed.ToObject<TObject>();
+    }
+
+    /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> and
     /// <paramref name="client"/>.
     /// </summary>
@@ -101,6 +119,23 @@ public static class HttpClientUITestContextExtensions
         string requestUri,
         string json) =>
         await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+
+    /// <summary>
+    /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> then
+    /// deserializes the response content to the given <typeparamref name="TObject"/>.
+    /// </summary>
+    /// <returns>The deserialized <typeparamref name="TObject"/> object.</returns>
+    public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
+        HttpClient client,
+        string requestUri,
+        string json)
+        where TObject : class
+    {
+        var content = await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+        var parsed = JToken.Parse(content);
+
+        return parsed.ToObject<TObject>();
+    }
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
