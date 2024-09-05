@@ -102,8 +102,7 @@ public static class HttpClientUITestContextExtensions
         string requestUri)
         where TObject : class
     {
-        var response = await client.GetAsync(requestUri);
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await GetAndReadResponseContentAsync(context, client, requestUri);
         var parsed = JToken.Parse(content);
         return parsed.ToObject<TObject>();
     }
