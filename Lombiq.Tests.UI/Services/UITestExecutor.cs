@@ -47,12 +47,6 @@ public static class UITestExecutor
 
         var dumpRootPath = PrepareDumpFolder(testManifest, configuration);
 
-        if (configuration.AccessibilityCheckingConfiguration.CreateReportAlways)
-        {
-            var directoryPath = configuration.AccessibilityCheckingConfiguration.AlwaysCreatedAccessibilityReportsDirectoryPath;
-            FileSystemHelper.EnsureDirectoryExists(directoryPath);
-        }
-
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
         // This is our property.
