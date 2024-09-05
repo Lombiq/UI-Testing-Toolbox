@@ -12,24 +12,7 @@ public class SecurityScanningConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether to save a report to the test dump for every scan, even passing ones.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Won't work until https://github.com/Lombiq/UI-Testing-Toolbox/issues/323 is implemented, hence it's internal.
-    /// </para>
-    /// </remarks>
-    internal bool CreateReportAlways { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to save a report to the test dump for every scan if the test fails,
-    /// even if the security scan itself passes.
-    /// </summary>
-    // This is just a temporary solution until CreateReportAlways will work in
-    // https://github.com/Lombiq/UI-Testing-Toolbox/issues/323. Then it needs to be deprecated.
-    public bool CreateReportOnTestFailAlways
-    {
-        get => CreateReportAlways;
-        set => CreateReportAlways = value;
-    }
+    public bool CreateReportAlways { get; set; }
 
     /// <summary>
     /// Gets or sets a delegate that may modify the deserialized representation of the ZAP Automation Framework plan in
