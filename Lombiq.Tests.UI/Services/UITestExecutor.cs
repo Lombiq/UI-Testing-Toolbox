@@ -126,7 +126,7 @@ public static class UITestExecutor
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
     {
-        var dumpConfiguration = configuration.FailureDumpConfiguration;
+        var dumpConfiguration = configuration.TestDumpConfiguration;
         var dumpFolderNameBase = testManifest.Name;
         if (dumpConfiguration.UseShortNames)
         {

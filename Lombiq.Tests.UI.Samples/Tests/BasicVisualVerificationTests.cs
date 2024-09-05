@@ -25,7 +25,7 @@ public class BasicVisualVerificationTests : UITestBase
     // same, the test will fail. One more trap is the changes between browser versions, e.g. there was a change between
     // the Chrome version 67 and 68 in the image rendering. This caused that the rendered image looked similar, but
     // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
-    // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
+    // generated diff images under the path TestDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
     // To update your baseline images after making changes to a visually checked element, remove the previous images
     // and run the test with maxRetryCount set to 0.
     [Fact]

@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public class SecurityScanningConfiguration
 {
     /// <summary>
-    /// Gets or sets a value indicating whether to save a report to the failure dump for every scan, even passing ones.
+    /// Gets or sets a value indicating whether to save a report to the test dump for every scan, even passing ones.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -20,7 +20,7 @@ public class SecurityScanningConfiguration
     internal bool CreateReportAlways { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to save a report to the failure dump for every scan if the test fails,
+    /// Gets or sets a value indicating whether to save a report to the test dump for every scan if the test fails,
     /// even if the security scan itself passes.
     /// </summary>
     // This is just a temporary solution until CreateReportAlways will work in

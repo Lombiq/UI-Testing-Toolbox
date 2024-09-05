@@ -28,7 +28,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private readonly WebApplicationInstanceFactory _webApplicationInstanceFactory;
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
-    private readonly UITestExecutorFailureDumpConfiguration _dumpConfiguration;
+    private readonly UITestExecutorTestDumpConfiguration _dumpConfiguration;
     private readonly ITestOutputHelper _testOutputHelper;
 
     private int _screenshotCount;
@@ -52,7 +52,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _webApplicationInstanceFactory = webApplicationInstanceFactory;
         _testManifest = testManifest;
         _configuration = configuration;
-        _dumpConfiguration = configuration.FailureDumpConfiguration;
+        _dumpConfiguration = configuration.TestDumpConfiguration;
         _testOutputHelper = configuration.TestOutputHelper;
     }
 
@@ -61,7 +61,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
         var startTime = DateTime.UtcNow;
-        IDictionary<string, IFailureDumpItem> failureDumpContainer = null;
+        IDictionary<string, ITestDumpItem> testDumpContainer = null;
         // At this point _context may not exist yet.
         if (_context != null) _context.RetryCount = retryCount;
 
@@ -92,8 +92,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             // At this point _context definitely exists, so ensure that RetryCount is set.
             _context.RetryCount = retryCount;
 
-            _context.FailureDumpContainer.Clear();
-            failureDumpContainer = _context.FailureDumpContainer;
+            _context.TestDumpContainer.Clear();
+            testDumpContainer = _context.TestDumpContainer;
 
             if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
@@ -109,7 +109,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (ex is SetupFailedFastException) throw;
 
-            await CreateFailureDumpAsync(ex, dumpRootPath, retryCount, failureDumpContainer);
+            await CreateTestDumpAsync(ex, dumpRootPath, retryCount, testDumpContainer);
 
             if (_context?.IsFinalTry == true || retryCount >= _configuration.MaxRetryCount)
             {
@@ -117,7 +117,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
-                        "on why it's failing in the FailureDumps folder: {1}",
+                        "on why it's failing in the TestDumps folder: {1}",
                     retryCount + 1,
                     dumpFolderAbsolutePath);
 
@@ -156,8 +156,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             contextId = _context.Id;
             _context.Scope?.Dispose();
 
-            _context.FailureDumpContainer.Values.ForEach(value => value.Dispose());
-            _context.FailureDumpContainer.Clear();
+            _context.TestDumpContainer.Values.ForEach(value => value.Dispose());
+            _context.TestDumpContainer.Clear();
         }
 
         if (_sqlServerManager is not null)
@@ -221,13 +221,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return ex;
     }
 
-    private async Task CreateFailureDumpAsync(
+    private async Task CreateTestDumpAsync(
         Exception ex,
         string dumpRootPath,
         int retryCount,
-        IDictionary<string, IFailureDumpItem> failureDumpContainer)
+        IDictionary<string, ITestDumpItem> testDumpContainer)
     {
-        if (!_dumpConfiguration.CreateFailureDump) return;
+        if (!_dumpConfiguration.CreateTestDump) return;
 
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
         var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
@@ -247,18 +247,18 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             CaptureMarkupValidationResults(ex, debugInformationPath);
 
-            if (failureDumpContainer != null)
+            if (testDumpContainer != null)
             {
-                foreach (var toDump in failureDumpContainer)
+                foreach (var toDump in testDumpContainer)
                 {
-                    await SaveFailureDumpFromContextAsync(debugInformationPath, toDump.Key, toDump.Value);
+                    await SaveTestDumpFromContextAsync(debugInformationPath, toDump.Key, toDump.Value);
                 }
             }
         }
         catch (Exception dumpException)
         {
             _testOutputHelper.WriteLineTimestampedAndDebug(
-                $"Creating the failure dump of the test failed with the following exception: {dumpException}");
+                $"Creating the test dump of the test failed with the following exception: {dumpException}");
         }
         finally
         {
@@ -266,10 +266,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private async Task SaveFailureDumpFromContextAsync(
+    private async Task SaveTestDumpFromContextAsync(
         string debugInformationPath,
         string dumpRelativePath,
-        IFailureDumpItem item)
+        ITestDumpItem item)
     {
         try
         {
@@ -362,7 +362,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private void CaptureMarkupValidationResults(Exception ex, string debugInformationPath)
     {
         // Saving the accessibility and HTML validation reports to files should happen here and can't earlier since at
-        // that point there's no FailureDumps folder yet.
+        // that point there's no TestDumps folder yet.
 
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
@@ -770,10 +770,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_dumpConfiguration.CaptureHtmlSource)
         {
             _context.RefreshCurrentAtataContext();
-            _context.Scope.AtataContext.TakePageSnapshot("FailureDumpPageSnapshot");
+            _context.Scope.AtataContext.TakePageSnapshot("TestDumpPageSnapshot");
 
             var file = _context.Scope.AtataContext.Artifacts.Files.Value
-                .Single(file => file.Name.Value.Contains("FailureDumpPageSnapshot"));
+                .Single(file => file.Name.Value.Contains("TestDumpPageSnapshot"));
 
             var snapshotDumpPath = Path.Combine(debugInformationPath, "PageSource" + Path.GetExtension(file.Name.Value));
             File.Copy(file.FullName.Value, snapshotDumpPath);
