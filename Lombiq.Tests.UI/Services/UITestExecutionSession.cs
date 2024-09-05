@@ -101,6 +101,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _context.AssertLogsAsync();
 
+            await CreateTestDumpAsync(dumpRootPath, retryCount, testDumpContainer);
+
             return true;
         }
         catch (Exception ex)
@@ -109,7 +111,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (ex is SetupFailedFastException) throw;
 
-            await CreateTestDumpAsync(ex, dumpRootPath, retryCount, testDumpContainer);
+            await CreateTestDumpAsync(
+                dumpRootPath,
+                retryCount,
+                testDumpContainer,
+                dumpContainerPath => FailureTestDumpProcessAsync(dumpContainerPath, ex));
 
             if (_context?.IsFinalTry == true || retryCount >= _configuration.MaxRetryCount)
             {
@@ -221,16 +227,33 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return ex;
     }
 
+    private async Task FailureTestDumpProcessAsync(string dumpContainerPath, Exception ex)
+    {
+        if (_context == null) return;
+
+        var debugInformationPath = GetDebugInformationPath(dumpContainerPath);
+
+        if (_context.IsBrowserRunning) await CaptureBrowserUsingDumpsAsync(debugInformationPath);
+
+        if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
+
+        CaptureMarkupValidationResults(ex, debugInformationPath);
+    }
+
     private async Task CreateTestDumpAsync(
-        Exception ex,
         string dumpRootPath,
         int retryCount,
-        IDictionary<string, ITestDumpItem> testDumpContainer)
+        IDictionary<string, ITestDumpItem> testDumpContainer,
+        Func<string, Task> additionalDumpProcess = null)
     {
-        if (!_dumpConfiguration.CreateTestDump) return;
+        if (!_dumpConfiguration.CreateTestDump ||
+            ((testDumpContainer == null || !testDumpContainer.Any()) && additionalDumpProcess == null))
+        {
+            return;
+        }
 
         var dumpContainerPath = Path.Combine(dumpRootPath, $"Attempt {retryCount.ToTechnicalString()}");
-        var debugInformationPath = Path.Combine(dumpContainerPath, "DebugInformation");
+        var debugInformationPath = GetDebugInformationPath(dumpContainerPath);
 
         try
         {
@@ -239,13 +262,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), _testManifest.Name);
 
-            if (_context == null) return;
-
-            if (_context.IsBrowserRunning) await CaptureBrowserUsingDumpsAsync(debugInformationPath);
-
-            if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
-
-            CaptureMarkupValidationResults(ex, debugInformationPath);
+            if (additionalDumpProcess != null) await additionalDumpProcess(dumpContainerPath);
 
             if (testDumpContainer != null)
             {
@@ -847,6 +864,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private static string GetScreenshotPath(string parentDirectoryPath, int index) =>
         Path.Combine(parentDirectoryPath, index.ToTechnicalString() + ".png");
+
+    private static string GetDebugInformationPath(string dumpContainerPath) =>
+        Path.Combine(dumpContainerPath, "DebugInformation");
 }
 
 internal static class UITestExecutionSessionsMeta
