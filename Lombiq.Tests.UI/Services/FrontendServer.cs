@@ -69,7 +69,7 @@ public class FrontendServer
 
             var pipe = PipeTarget.ToDelegate(line =>
             {
-                _testOutputHelper.WriteLineTimestamped("{0}: {1}", Name, line);
+                _testOutputHelper.WriteOutputTimestampedAndDebug(Name, line);
                 if (waiting && checkProgramReady!(line, context)) waitCompletionSource.SetResult();
             });
 
