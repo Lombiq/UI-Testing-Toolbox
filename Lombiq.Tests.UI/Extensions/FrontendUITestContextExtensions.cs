@@ -39,7 +39,7 @@ public static class FrontendUITestContextExtensions
         try
         {
             await Cli.Wrap(command)
-                .WithArguments([scriptPath, driver.SessionId.ToString(), remoteServerUri.AbsoluteUri])
+                .WithArguments([scriptPath, driver.SessionId.ToString(), remoteServerUri.Host, remoteServerUri.Port.ToTechnicalString()])
                 .WithStandardOutputPipe(pipe)
                 .WithStandardOutputPipe(pipe)
                 .ExecuteAsync();
