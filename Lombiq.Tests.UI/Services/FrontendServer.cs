@@ -97,6 +97,8 @@ public class FrontendServer
                     await context.PortLeaseManager.StopLeaseAsync(frontendPort);
                 },
             };
+
+            if (thenAsync != null) await thenAsync(context);
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>
