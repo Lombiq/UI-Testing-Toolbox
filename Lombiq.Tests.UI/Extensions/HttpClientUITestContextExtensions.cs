@@ -1,5 +1,4 @@
 ﻿using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.Management.Dmf;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -67,7 +66,7 @@ public static class HttpClientUITestContextExtensions
 
         if (!tokenResponse.IsSuccessStatusCode)
         {
-            throw new InvalidOperandException(
+            throw new InvalidOperationException(
                 $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}. TokenResponse: {tokenResponse}");
         }
 
