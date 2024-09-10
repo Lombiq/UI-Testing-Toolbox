@@ -7,6 +7,12 @@ namespace Lombiq.Tests.UI.Helpers;
 public static class UrlCheckHelper
 {
     /// <summary>
+    /// Checks if the current page is NOT driven by Orchard, i.e. excludes admin pages or frontend pages that come from
+    /// built-in modules.
+    /// </summary>
+    public static bool IsNotOrchardPage(UITestContext context) => !IsOrchardPage(context);
+
+    /// <summary>
     /// Checks if the current page is driven by Orchard, i.e. admin pages or frontend pages that come from built-in
     /// modules.
     /// </summary>
@@ -53,7 +59,7 @@ public static class UrlCheckHelper
             url.ContainsOrdinalIgnoreCase("://localhost:") &&
             !url.StartsWithOrdinalIgnoreCase(context.SmtpServiceRunningContext?.WebUIUri.ToString() ?? "dummy://") &&
             !url.ContainsOrdinalIgnoreCase("Lombiq.Tests.UI.Shortcuts") &&
-            !IsOrchardPage(context) &&
+            IsNotOrchardPage(context) &&
             context.Driver.Title != "Setup";
     }
 

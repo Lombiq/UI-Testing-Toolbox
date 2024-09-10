@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
@@ -7,6 +8,10 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI;
 
+/// <summary>
+/// Base class for UI tests that run on a remote (i.e. not locally running) app. If you're testing an app running behind
+/// Cloudflare, then consider using <see cref="CloudflareRemoteUITestBase"/> instead.
+/// </summary>
 public abstract class RemoteUITestBase : UITestBase
 {
     protected RemoteUITestBase(ITestOutputHelper testOutputHelper)
@@ -65,8 +70,8 @@ public abstract class RemoteUITestBase : UITestBase
             BrowserConfiguration = { Browser = browser },
         };
 
-        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = (_) => true;
-        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = (_) => true;
+        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.FailureDumpConfiguration.CaptureAppSnapshot = false;
 
         if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
