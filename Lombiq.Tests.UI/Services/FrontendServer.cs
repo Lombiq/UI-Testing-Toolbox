@@ -75,7 +75,7 @@ public class FrontendServer
 
             var cli = Cli.Wrap(program)
                 .WithStandardOutputPipe(pipe)
-                .WithStandardOutputPipe(pipe);
+                .WithStandardErrorPipe(pipe);
             if (arguments != null) cli = cli.WithArguments(arguments);
             if (configureCommand != null) cli = configureCommand(cli, context);
             var task = cli.ExecuteAsync(cancellationTokenSource.Token);
