@@ -40,8 +40,8 @@ public static class FrontendUITestContextExtensions
         {
             await Cli.Wrap(command)
                 .WithArguments([
+                    "--inspect",
                     scriptPath,
-                    driver.SessionId.ToString(),
                     remoteServerUri.Host,
                     remoteServerUri.Port.ToTechnicalString(),
                     context.Driver.Url,
