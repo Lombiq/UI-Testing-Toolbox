@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
@@ -50,8 +51,6 @@ public static class AccessUITestContextExtensions
         await context.SignInDirectlyAsync(userName);
         await context.GoToContentItemByIdAsync(contentItemId);
 
-        context.CheckExistence(
-            By.XPath("//h1[contains(., 'You do not have access to this resource.')]"),
-            !hasAccess);
+        context.CheckExistence(ByHelper.TextContains("You do not have access to this resource.", "h1"), !hasAccess);
     }
 }

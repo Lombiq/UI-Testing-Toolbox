@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public static class MediaLibraryUITestContextExtensions
                 By.XPath($"//a[@class='folder-menu-item']//div[contains(., '{folderName}')]"));
         }
 
-        await context.ClickReliablyOnAsync(By.XPath($"//span[contains(., '{fileName}')]"));
+        await context.ClickReliablyOnAsync(ByHelper.TextContains(fileName, "span"));
         await context.ClickReliablyOnAsync(By.XPath("//button[@class='btn btn-primary mediaFieldSelectButton']"));
     }
 }
