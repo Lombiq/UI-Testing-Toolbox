@@ -401,13 +401,17 @@ public static class ShortcutsUITestContextExtensions
     public static Task GoToErrorPageDirectlyAsync(this UITestContext context) =>
         context.GoToAsync<ErrorController>(controller => controller.Index());
 
-    private static IShortcutsApi GetApi(this UITestContext context) =>
-        _apis.GetOrAdd(
-            context.Scope.BaseUri.ToString(),
+    private static IShortcutsApi GetApi(this UITestContext context)
+    {
+        // If there is a subdirectory-like URL prefix (e.g. for tenants) in the scope base URI, the requests will have
+        // double slashes that results in 404 error. So the trailing slash has to be trimmed out.
+        var baseUri = new Uri(context.Scope.BaseUri.ToString().TrimEnd('/'));
+
+        return _apis.GetOrAdd(
+            baseUri.AbsoluteUri,
             _ =>
             {
                 // To allow self-signed development certificates.
-
                 var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
@@ -415,13 +419,11 @@ public static class ShortcutsUITestContextExtensions
                     CheckCertificateRevocationList = true,
                 };
 
-                var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler)
-                {
-                    BaseAddress = context.Scope.BaseUri,
-                };
+                var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler) { BaseAddress = baseUri };
 
                 return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
             });
+    }
 
     /// <summary>
     /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
