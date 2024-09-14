@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -61,13 +62,14 @@ public static class HttpClientUITestContextExtensions
 
         using var requestBody = new FormUrlEncodedContent(parameters);
 
-        var tokenUrl = context.Scope.BaseUri.AbsoluteUri + "connect/token";
-        var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
+        var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
+        using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
 
         if (!tokenResponse.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(
-                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}. TokenResponse: {tokenResponse}");
+                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.\nTokenResponse: " +
+                $"{tokenResponse}\nContent: {await tokenResponse.Content.ReadAsStringAsync()}");
         }
 
         var responseContent = await tokenResponse.Content.ReadAsStringAsync();
