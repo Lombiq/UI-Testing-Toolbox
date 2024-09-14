@@ -69,8 +69,9 @@ public static class HttpClientUITestContextExtensions
         if (!tokenResponse.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(
-                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.\nTokenResponse: " +
-                $"{tokenResponse}\nContent: {await tokenResponse.Content.ReadAsStringAsync()}");
+                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.\nResponse: " +
+                $"{tokenResponse}\nnResponse Content: {await tokenResponse.Content.ReadAsStringAsync()}\nRequest " +
+                $"Content: {await requestBody.ReadAsStringAsync()}");
         }
 
         var responseContent = await tokenResponse.Content.ReadAsStringAsync();
