@@ -1,5 +1,6 @@
 ﻿using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json.Linq;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -117,8 +118,11 @@ public static class HttpClientUITestContextExtensions
         this UITestContext context,
         HttpClient client,
         string requestUri,
-        string json) =>
-        await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+        string json)
+    {
+        using var response = await PostAndGetResponseAsync(client, requestUri, json);
+        return await response.Content.ReadAsStringAsync();
+    }
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> then
@@ -132,7 +136,8 @@ public static class HttpClientUITestContextExtensions
         string json)
         where TObject : class
     {
-        var content = await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+        using var response = await PostAndGetResponseAsync(client, requestUri, json);
+        var content = await response.Content.ReadAsStringAsync();
         var parsed = JToken.Parse(content);
 
         return parsed.ToObject<TObject>();
@@ -181,5 +186,16 @@ public static class HttpClientUITestContextExtensions
         var response = await client.PostAsync(requestUri, stringContent);
 
         return response;
+    }
+
+    public static async Task PostAndResponseStatusCodeShouldBeAsync(
+        this UITestContext context,
+        HttpClient client,
+        object objectToSerialize,
+        string requestUri,
+        HttpStatusCode expected)
+    {
+        using var response = await context.PostAndGetResponseAsync(client, objectToSerialize, requestUri);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }
