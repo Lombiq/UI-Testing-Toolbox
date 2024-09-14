@@ -11,6 +11,20 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FrontendUITestContextExtensions
 {
+    public static Uri GetDriverRemoteUri(this UITestContext context)
+    {
+        if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor } driver)
+        {
+            throw new InvalidOperationException(
+                $"The {nameof(GetDriverRemoteUri)} method requires a driver that inherits from {nameof(WebDriver)} " +
+                $"and a command executor of type {nameof(DriverServiceCommandExecutor)}.");
+        }
+
+        return (Uri)typeof(HttpCommandExecutor)
+            .GetField("remoteServerUri", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(executor.HttpExecutor) ?? throw new InvalidOperationException("Couldn't get driver executor URI.");
+    }
+
     /// <summary>
     /// Executes the provided file via <c>node</c> with command line arguments containing the necessary information for
     /// Selenium JS to take over the browser.
@@ -22,19 +36,10 @@ public static class FrontendUITestContextExtensions
         string scriptPath,
         ITestOutputHelper testOutputHelper)
     {
-        if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor } driver)
-        {
-            throw new InvalidOperationException(
-                $"The {nameof(ExecuteJavascriptTestAsync)} requires a driver that inherits from {nameof(WebDriver)} " +
-                $"and a command executor of type {nameof(DriverServiceCommandExecutor)}.");
-        }
-
         const string command = "node";
         var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavascriptTestAsync)}({command})");
 
-        var remoteServerUri = (Uri)typeof(HttpCommandExecutor)
-            .GetField("remoteServerUri", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .GetValue(executor.HttpExecutor) ?? throw new InvalidOperationException("Couldn't get driver executor URI.");
+        var remoteServerUri = context.GetDriverRemoteUri();
 
         try
         {
