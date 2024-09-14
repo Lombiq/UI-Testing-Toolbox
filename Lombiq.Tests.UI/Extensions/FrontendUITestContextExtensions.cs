@@ -13,7 +13,7 @@ public static class FrontendUITestContextExtensions
 {
     public static Uri GetDriverRemoteUri(this UITestContext context)
     {
-        if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor } driver)
+        if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor })
         {
             throw new InvalidOperationException(
                 $"The {nameof(GetDriverRemoteUri)} method requires a driver that inherits from {nameof(WebDriver)} " +

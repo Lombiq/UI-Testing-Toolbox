@@ -43,7 +43,8 @@ public class FrontendServer
     /// If not <see langword="null"/>, it checks every line from the standard output or error streams and waits until
     /// this function returns <see langword="true"/>.
     /// </param>
-    /// <param name="thenAsync">If not <see langword="null"/>, it's executed at the end </param>
+    /// <param name="thenAsync">If not <see langword="null"/>, it's executed at the end of the <see
+    /// cref="OrchardCoreConfiguration.BeforeAppStart"/> handler that this method adds.</param>
     public void Configure(
         string program,
         IEnumerable<string>? arguments = null,
@@ -74,18 +75,22 @@ public class FrontendServer
             });
 
             var cli = Cli.Wrap(program)
+                .WithArguments(arguments ?? [])
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe);
-            if (arguments != null) cli = cli.WithArguments(arguments);
-            if (configureCommand != null) cli = configureCommand(cli, context);
-            var task = cli.ExecuteAsync(cancellationTokenSource.Token);
+            cli = configureCommand?.Invoke(cli, context) ?? cli;
+            var cliTask = cli.ExecuteAsync(cancellationTokenSource.Token);
 
-            if (waiting) await waitCompletionSource.Task;
+            if (waiting)
+            {
+                // Use WhenAny in case the CLI task fails before the wait task completes. This prevents hangs.
+                await Task.WhenAny(waitCompletionSource.Task, cliTask).Unwrap();
+            }
 
             _configuration.CustomConfiguration[GetKey(context.Url.Port)] = new FrontendServerContext
             {
                 Port = frontendPort,
-                Task = task,
+                Task = cliTask,
                 Stop = async () =>
                 {
                     // This cancellation token forcefully closes the frontend server (i.e. SIGTERM, Ctrl+C), which is
