@@ -1,4 +1,8 @@
 <style at="Head">
+    html, body {
+        overflow: hidden;
+    }
+
     .interactive__container {
         position: fixed;
         top: 0;
@@ -9,14 +13,31 @@
         align-items: center;
         justify-content: center;
         background: white;
-        z-index: 9999999;
+        z-index: 9999998;
+    }
+
+    .interactive, .message {
+        border: 1px solid black;
+        padding: 2rem;
+        text-align: center;
+        box-sizing: border-box;
     }
 
     .interactive {
-        border: 1px solid black;
-        padding: 2rem;
         width: 30vw;
-        text-align: center;
+    }
+
+    .message {
+        width: 100%;
+    }
+
+    .layoutMain__messages {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999999;
+        margin: 1rem;
+        width: calc(100vw - 2rem);
     }
 </style>
 

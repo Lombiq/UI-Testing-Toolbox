@@ -632,9 +632,13 @@ public static class ShortcutsUITestContextExtensions
     /// ordinary user from the browser or access its web APIs. To switch back to the test, click the button
     /// that'll be displayed in the browser, or open <see cref="InteractiveModeController.Continue"/>.
     /// </summary>
-    public static async Task SwitchToInteractiveAsync(this UITestContext context)
+    /// <param name="notificationHtml">
+    /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
+    /// HTML content.
+    /// </param>
+    public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
     {
-        await context.EnterInteractiveModeAsync();
+        await context.EnterInteractiveModeAsync(notificationHtml);
         await context.WaitInteractiveModeAsync();
 
         context.Driver.Close();
@@ -646,12 +650,12 @@ public static class ShortcutsUITestContextExtensions
     /// page. Visiting this page enables the interactive mode flag so it can be awaited with the <see
     /// cref="WaitInteractiveModeAsync"/> extension method.
     /// </summary>
-    internal static Task EnterInteractiveModeAsync(this UITestContext context)
+    internal static Task EnterInteractiveModeAsync(this UITestContext context, string notificationHtml)
     {
         context.Driver.SwitchTo().NewWindow(WindowType.Tab);
         context.Driver.SwitchTo().Window(context.Driver.WindowHandles[^1]);
 
-        return context.GoToAsync<InteractiveModeController>(controller => controller.Index());
+        return context.GoToAsync<InteractiveModeController>(controller => controller.Index(notificationHtml));
     }
 
     /// <summary>

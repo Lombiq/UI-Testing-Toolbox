@@ -2,7 +2,9 @@ using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Localization;
+using OrchardCore.DisplayManagement.Notify;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
@@ -11,13 +13,26 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 public class InteractiveModeController : Controller
 {
     private readonly IInteractiveModeStatusAccessor _interactiveModeStatusAccessor;
+    private readonly INotifier _notifier;
 
-    public InteractiveModeController(IInteractiveModeStatusAccessor interactiveModeStatusAccessor) =>
+    public InteractiveModeController(
+        IInteractiveModeStatusAccessor interactiveModeStatusAccessor,
+        INotifier notifier)
+    {
         _interactiveModeStatusAccessor = interactiveModeStatusAccessor;
+        _notifier = notifier;
+    }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index(string notificationHtml)
     {
         _interactiveModeStatusAccessor.Enabled = true;
+
+        if (!string.IsNullOrWhiteSpace(notificationHtml))
+        {
+            var message = new LocalizedHtmlString(notificationHtml, notificationHtml);
+            await _notifier.InformationAsync(message);
+        }
+
         return View();
     }
 
