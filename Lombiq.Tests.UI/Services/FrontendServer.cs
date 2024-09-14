@@ -103,7 +103,7 @@ public class FrontendServer
                 },
             };
 
-            if (thenAsync != null) await thenAsync(context);
+            await thenAsync.InvokeFuncAsync(context);
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>

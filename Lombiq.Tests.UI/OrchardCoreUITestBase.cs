@@ -182,7 +182,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
                 return Task.CompletedTask;
             };
 
-            if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+            await changeConfigurationAsync.InvokeFuncAsync(configuration);
         });
 
     protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
@@ -281,7 +281,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             async configuration =>
             {
                 configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder;
-                if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+                await changeConfigurationAsync.InvokeFuncAsync(configuration);
             });
     }
 
@@ -378,7 +378,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             SetupConfiguration = { SetupOperation = setupOperation },
         };
 
-        if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        await changeConfigurationAsync.InvokeFuncAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync(
             (configuration, contextId) =>

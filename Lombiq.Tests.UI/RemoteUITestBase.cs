@@ -73,8 +73,7 @@ public abstract class RemoteUITestBase : UITestBase
         configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.FailureDumpConfiguration.CaptureAppSnapshot = false;
-
-        if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        await changeConfigurationAsync.InvokeFuncAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync((_, _) => new RemoteInstance(baseUri), testManifest, configuration);
     }
