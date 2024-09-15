@@ -197,6 +197,6 @@ public static class HttpClientUITestContextExtensions
         HttpStatusCode expected)
     {
         using var response = await context.PostAndGetResponseAsync(client, objectToSerialize, requestUri);
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(expected);
     }
 }
