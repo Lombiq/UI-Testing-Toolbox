@@ -4,21 +4,22 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class FailureDumpItemGeneric<TContent> : IFailureDumpItem
+public class TestDumpItemGeneric<TContent> : ITestDumpItem
 {
     private readonly TContent _content;
     private readonly Func<TContent, Task<Stream>> _getStream;
     private readonly Action<TContent> _dispose;
     private bool _disposed;
 
-    public FailureDumpItemGeneric(
+    public TestDumpItemGeneric(
         TContent content,
         Func<TContent, Task<Stream>> getStream = null,
         Action<TContent> dispose = null)
     {
         if (content is not Stream && getStream == null)
         {
-            throw new ArgumentException($"{nameof(content)} is not a Stream, {nameof(getStream)} can't be null");
+            throw new ArgumentException(
+                $"{nameof(content)} must be of type {nameof(Stream)} or {nameof(getStream)} must not be null.");
         }
 
         _content = content;
