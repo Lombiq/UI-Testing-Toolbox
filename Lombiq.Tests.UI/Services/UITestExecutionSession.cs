@@ -123,7 +123,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
-                        "on why it's failing in the TestDumps folder: {1}",
+                        "on why it's failing in the test dump folder: {1}",
                     retryCount + 1,
                     dumpFolderAbsolutePath);
 
@@ -234,9 +234,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var debugInformationPath = GetDebugInformationPath(dumpContainerPath);
 
         if (_context.IsBrowserRunning) await CaptureBrowserUsingDumpsAsync(debugInformationPath);
-
         if (_dumpConfiguration.CaptureAppSnapshot) await CaptureAppSnapshotAsync(dumpContainerPath);
-
         CaptureMarkupValidationResults(ex, debugInformationPath);
     }
 
@@ -247,7 +245,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Func<string, Task> additionalDumpProcess = null)
     {
         if (!_dumpConfiguration.CreateTestDump ||
-            ((testDumpContainer == null || !testDumpContainer.Any()) && additionalDumpProcess == null))
+            (testDumpContainer?.Any() != true && additionalDumpProcess == null))
         {
             return;
         }

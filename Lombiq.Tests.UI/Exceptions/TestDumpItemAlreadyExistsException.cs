@@ -24,7 +24,7 @@ public class TestDumpItemAlreadyExistsException : Exception
 
     public TestDumpItemAlreadyExistsException(string fileName, string customMessage, Exception innerException)
         : base(
-            $"A Test dump item with the same file name already exists. File name: {fileName}."
+            $"A test dump item with the same file name already exists. File name: {fileName}."
             + Environment.NewLine
             + (customMessage ?? string.Empty),
             innerException)

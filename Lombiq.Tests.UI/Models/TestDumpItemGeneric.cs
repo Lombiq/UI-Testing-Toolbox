@@ -18,7 +18,8 @@ public class TestDumpItemGeneric<TContent> : ITestDumpItem
     {
         if (content is not Stream && getStream == null)
         {
-            throw new ArgumentException($"{nameof(content)} is not a Stream and {nameof(getStream)} can't be null.");
+            throw new ArgumentException(
+                $"{nameof(content)} must be of type {nameof(Stream)} or {nameof(getStream)} must not be null.");
         }
 
         _content = content;
