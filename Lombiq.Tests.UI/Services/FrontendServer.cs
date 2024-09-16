@@ -137,13 +137,25 @@ public class FrontendServer
     private string GetKey(int orchardPort) =>
         StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{orchardPort}");
 
-    private static Task WaitForStartupAsync(Task mainTask, Task waitTask, TimeSpan? timeout)
+    private static async Task WaitForStartupAsync(Task mainTask, Task waitTask, TimeSpan? timeout)
     {
         var tasks = new List<Task>(capacity: 3) { mainTask, waitTask };
-        if (timeout.HasValue) tasks.Add(Task.Delay(timeout.Value, default(CancellationToken)));
+
+        Task? timeoutTask = null;
+        if (timeout.HasValue)
+        {
+            timeoutTask = Task.Delay(timeout.Value, default(CancellationToken));
+            tasks.Add(timeoutTask);
+        }
 
         // Use WhenAny in case the CLI task fails before the wait task completes. This prevents hangs.
-        return Task.WhenAny(tasks).Unwrap();
+        await Task.WhenAny(tasks).Unwrap();
+
+        if (timeoutTask?.IsCompleted == true)
+        {
+            throw new TimeoutException(StringHelper.CreateInvariant(
+                $"The timeout of {nameof(FrontendServer)} ({timeout}) is exceeded."));
+        }
     }
 
     public record Context(
