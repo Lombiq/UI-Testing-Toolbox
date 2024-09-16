@@ -33,6 +33,9 @@ public abstract class UITestBase
             configuration.TestOutputHelper = _testOutputHelper;
         }
 
+        // Used by many utilities to turn off ANSI escape sequences.
+        Environment.SetEnvironmentVariable("NO_COLOR", "true");
+
         try
         {
             var testTask = UITestExecutor.ExecuteOrchardCoreTestAsync(
