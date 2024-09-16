@@ -132,8 +132,6 @@ public class FrontendServer
     public FrontendServerContext? GetContext(int orchardPort) =>
         _configuration.CustomConfiguration.GetMaybe(GetKey(orchardPort)) as FrontendServerContext;
 
-    public FrontendServerContext? GetContext(UITestContext context) => GetContext(context.TestStartUri.Port);
-
     private string GetKey(int orchardPort) =>
         StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{orchardPort}");
 
