@@ -61,7 +61,8 @@ public class FrontendServer
         Func<Command, Context, Command>? configureCommand = null,
         Func<string, Context, bool>? checkProgramReady = null,
         Func<Context, Task>? thenAsync = null,
-        Func<Context, bool>? skipStartup = null)
+        Func<Context, bool>? skipStartup = null,
+        TimeSpan? startupTimeout = null)
     {
         ArgumentNullException.ThrowIfNull(program);
         skipStartup ??= _ => false;
@@ -101,11 +102,7 @@ public class FrontendServer
                 .WithStandardErrorPipe(pipe)
                 .ExecuteAsync(cancellationTokenSource.Token);
 
-            if (waiting)
-            {
-                // Use WhenAny in case the CLI task fails before the wait task completes. This prevents hangs.
-                await Task.WhenAny(waitCompletionSource.Task, cliTask).Unwrap();
-            }
+            if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
 
             _configuration.CustomConfiguration[GetKey(context.Url.Port)] = new FrontendServerContext
             {
@@ -139,6 +136,15 @@ public class FrontendServer
 
     private string GetKey(int orchardPort) =>
         StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{orchardPort}");
+
+    private static Task WaitForStartupAsync(Task mainTask, Task waitTask, TimeSpan? timeout)
+    {
+        var tasks = new List<Task>(capacity: 3) { mainTask, waitTask };
+        if (timeout.HasValue) tasks.Add(Task.Delay(timeout.Value, default(CancellationToken)));
+
+        // Use WhenAny in case the CLI task fails before the wait task completes. This prevents hangs.
+        return Task.WhenAny(tasks).Unwrap();
+    }
 
     public record Context(
         string ContentRootPath,
