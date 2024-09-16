@@ -43,16 +43,30 @@ public class FrontendServer
     /// If not <see langword="null"/>, it checks every line from the standard output or error streams and waits until
     /// this function returns <see langword="true"/>.
     /// </param>
-    /// <param name="thenAsync">If not <see langword="null"/>, it's executed at the end of the <see
-    /// cref="OrchardCoreConfiguration.BeforeAppStart"/> handler that this method adds.</param>
+    /// <param name="thenAsync">
+    /// If not <see langword="null"/>, it's executed at the end of the <see
+    /// cref="OrchardCoreConfiguration.BeforeAppStart"/> handler that this method adds.
+    /// </param>
+    /// <param name="skipStartup">
+    /// If not <see langword="null"/> and returns <see langword="true"/>, the <see
+    /// cref="OrchardCoreConfiguration.BeforeAppStart"/> event handler won't start up the specified program (and so
+    /// <paramref name="configureCommand"/> and <paramref name="checkProgramReady"/> are ignored as well). This is
+    /// useful if you don't need the frontend server during setup. Note that if <paramref name="thenAsync"/> is
+    /// specified, it will be invoked regardless. This way configuration changes are still provided but the performance
+    /// impact of an unnecessary additional process is mitigated.
+    /// </param>
     public void Configure(
         string program,
         IEnumerable<string>? arguments = null,
         Func<Command, Context, Command>? configureCommand = null,
         Func<string, Context, bool>? checkProgramReady = null,
-        Func<Context, Task>? thenAsync = null)
+        Func<Context, Task>? thenAsync = null,
+        Func<Context, bool>? skipStartup = null)
     {
         ArgumentNullException.ThrowIfNull(program);
+        skipStartup ??= _ => false;
+
+        var cli = Cli.Wrap(program).WithArguments(arguments ?? []);
 
         _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
@@ -66,7 +80,8 @@ public class FrontendServer
 
             var cancellationTokenSource = new CancellationTokenSource();
             var waitCompletionSource = new TaskCompletionSource();
-            var waiting = checkProgramReady != null;
+            var execute = !skipStartup(context);
+            var waiting = execute && checkProgramReady != null;
 
             var pipe = PipeTarget.ToDelegate(line =>
             {
@@ -74,12 +89,17 @@ public class FrontendServer
                 if (waiting && checkProgramReady!(line, context)) waitCompletionSource.SetResult();
             });
 
-            var cli = Cli.Wrap(program)
-                .WithArguments(arguments ?? [])
-                .WithStandardOutputPipe(pipe)
-                .WithStandardErrorPipe(pipe);
+            if (!execute)
+            {
+                await thenAsync.InvokeFuncAsync(context);
+                return;
+            }
+
             cli = configureCommand?.Invoke(cli, context) ?? cli;
-            var cliTask = cli.ExecuteAsync(cancellationTokenSource.Token);
+            var cliTask = cli
+                .WithStandardOutputPipe(pipe)
+                .WithStandardErrorPipe(pipe)
+                .ExecuteAsync(cancellationTokenSource.Token);
 
             if (waiting)
             {
@@ -91,7 +111,7 @@ public class FrontendServer
             {
                 Port = frontendPort,
                 Task = cliTask,
-                Stop = async () =>
+                StopAsync = async () =>
                 {
                     // This cancellation token forcefully closes the frontend server (i.e. SIGTERM, Ctrl+C), which is
                     // the only way to shut down most of these servers anyway. For this reason there is no need to await
@@ -107,13 +127,13 @@ public class FrontendServer
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>
-            GetContext(context.Url.Port) is { Stop: { } stopAsync }
+            GetContext(context.Url.Port) is { StopAsync: { } stopAsync }
                 ? stopAsync()
                 : Task.CompletedTask;
     }
 
     public FrontendServerContext? GetContext(int orchardPort) =>
-        _configuration.CustomConfiguration[GetKey(orchardPort)] as FrontendServerContext;
+        _configuration.CustomConfiguration.GetMaybe(GetKey(orchardPort)) as FrontendServerContext;
 
     public FrontendServerContext? GetContext(UITestContext context) => GetContext(context.TestStartUri.Port);
 

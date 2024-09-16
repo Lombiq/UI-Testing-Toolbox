@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
@@ -29,19 +30,21 @@ public class OrchardCoreConfiguration
     public BeforeAppStartHandler BeforeAppStart { get; set; }
     public AfterAppStopHandler AfterAppStop { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
+    public int StartCount { get; internal set; }
 }
 
 internal static class OrchardCoreInstanceCounter
 {
-    public const string UrlPrefix = "https://localhost:";
+    public static PortLeaseManager PortLeases { get; }
 
     static OrchardCoreInstanceCounter()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-        PortLeases = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
+        PortLeases = new(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
 
-    public static PortLeaseManager PortLeases { get; private set; }
+    public static Uri GetUri(int port) => new(StringHelper.CreateInvariant($"https://localhost:{port}"));
+    public static async Task<Uri> GetNewUriAsync() => GetUri(await PortLeases.LeaseAvailableRandomPortAsync());
 }
 
 /// <summary>
@@ -70,8 +73,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public async Task<Uri> StartUpAsync()
     {
-        var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
-        _url = new(OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString());
+        _url = await OrchardCoreInstanceCounter.GetNewUriAsync();
         _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url.AbsoluteUri);
 
         CreateContentRootFolder();
@@ -94,6 +96,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         await _reverseProxy.StartAsync();
 
+        _configuration.StartCount++;
         await StartOrchardAppAsync();
 
         return _url;

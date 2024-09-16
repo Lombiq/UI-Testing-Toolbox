@@ -8,5 +8,5 @@ public class FrontendServerContext
 {
     public int Port { get; set; }
     public CommandTask<CommandResult> Task { get; set; }
-    public Func<Task> Stop { get; set; }
+    public Func<Task> StopAsync { get; set; }
 }
