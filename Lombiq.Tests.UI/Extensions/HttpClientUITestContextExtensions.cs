@@ -25,6 +25,18 @@ namespace Lombiq.Tests.UI.Extensions;
         Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
+    public static HttpClient CreateClient(this UITestContext context)
+    {
+
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+            CheckCertificateRevocationList = true,
+        };
+
+        return new(handler) { BaseAddress = context.Scope.BaseUri };
+    }
+
     /// <summary>
     /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
     /// parameters.
@@ -37,17 +49,6 @@ public static class HttpClientUITestContextExtensions
         string userName = null,
         string password = null)
     {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-            CheckCertificateRevocationList = true,
-        };
-
-        var client = new HttpClient(handler)
-        {
-            BaseAddress = context.Scope.BaseUri,
-        };
-
         var parameters = new List<KeyValuePair<string, string>>
         {
             new("grant_type", grantType),
@@ -63,16 +64,12 @@ public static class HttpClientUITestContextExtensions
 
         using var requestBody = new FormUrlEncodedContent(parameters);
 
+        var client = context.CreateClient();
         var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
         using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
 
-        if (!tokenResponse.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(
-                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.\nResponse: " +
-                $"{tokenResponse}\nnResponse Content: {await tokenResponse.Content.ReadAsStringAsync()}\nRequest " +
-                $"Content: {await requestBody.ReadAsStringAsync()}");
-        }
+        await tokenResponse.ThrowIfNotSuccessAsync(
+            $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.", requestBody);
 
         var responseContent = await tokenResponse.Content.ReadAsStringAsync();
         var token = JsonNode.Parse(responseContent)?["access_token"]?.ToString();
