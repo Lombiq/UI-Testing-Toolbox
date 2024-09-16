@@ -27,7 +27,6 @@ public static class HttpClientUITestContextExtensions
 {
     public static HttpClient CreateClient(this UITestContext context)
     {
-
         var handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
