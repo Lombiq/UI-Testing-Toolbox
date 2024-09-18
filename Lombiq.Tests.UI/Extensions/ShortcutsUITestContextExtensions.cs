@@ -59,6 +59,8 @@ public static class ShortcutsUITestContextExtensions
     private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
     private static readonly SemaphoreSlim _recipeHarvesterSemaphore = new(1, 1);
 
+    public static bool InteractiveModeHasBeenUsed { get; private set; }
+
     /// <summary>
     /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
     /// anything else happening on the login page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
@@ -638,6 +640,7 @@ public static class ShortcutsUITestContextExtensions
     /// </param>
     public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
     {
+        InteractiveModeHasBeenUsed = true;
         await context.EnterInteractiveModeAsync(notificationHtml);
         await context.WaitInteractiveModeAsync();
 
