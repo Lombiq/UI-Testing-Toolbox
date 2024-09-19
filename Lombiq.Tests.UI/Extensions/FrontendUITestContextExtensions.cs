@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -11,18 +12,20 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FrontendUITestContextExtensions
 {
-    public static Uri GetDriverRemoteUri(this UITestContext context)
+    public static string GetDriverPath(this UITestContext context)
     {
         if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor })
         {
             throw new InvalidOperationException(
-                $"The {nameof(GetDriverRemoteUri)} method requires a driver that inherits from {nameof(WebDriver)} " +
-                $"and a command executor of type {nameof(DriverServiceCommandExecutor)}.");
+                $"The {nameof(GetDriverPath)} method requires a driver that inherits from {nameof(WebDriver)} and a " +
+                $"command executor of type {nameof(DriverServiceCommandExecutor)}.");
         }
 
-        return (Uri)typeof(HttpCommandExecutor)
-            .GetField("remoteServerUri", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .GetValue(executor.HttpExecutor) ?? throw new InvalidOperationException("Couldn't get driver executor URI.");
+        var service = (DriverService)typeof(DriverServiceCommandExecutor)
+            .GetField("service", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(executor) ?? throw new InvalidOperationException("Couldn't get driver service.");
+
+        return Path.Join(service.DriverServicePath, service.DriverServiceExecutableName);
     }
 
     /// <summary>
@@ -39,16 +42,13 @@ public static class FrontendUITestContextExtensions
         const string command = "node";
         var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavascriptTestAsync)}({command})");
 
-        var remoteServerUri = context.GetDriverRemoteUri();
-
         try
         {
             await Cli.Wrap(command)
                 .WithArguments([
                     "--inspect",
                     scriptPath,
-                    remoteServerUri.Host,
-                    remoteServerUri.Port.ToTechnicalString(),
+                    context.GetDriverPath(),
                     context.Driver.Url,
                 ])
                 .WithStandardOutputPipe(pipe)
