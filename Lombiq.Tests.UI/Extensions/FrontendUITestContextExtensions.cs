@@ -1,4 +1,5 @@
 using CliWrap;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -50,6 +51,7 @@ public static class FrontendUITestContextExtensions
                     scriptPath,
                     context.GetDriverPath(),
                     context.Driver.Url,
+                    DirectoryPaths.GetTempSubDirectoryPath(context.Id),
                 ])
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
