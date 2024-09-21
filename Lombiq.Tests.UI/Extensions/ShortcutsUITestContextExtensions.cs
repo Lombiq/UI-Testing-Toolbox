@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -411,20 +412,7 @@ public static class ShortcutsUITestContextExtensions
 
         return _apis.GetOrAdd(
             baseUri.AbsoluteUri,
-            _ =>
-            {
-                // To allow self-signed development certificates.
-                var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-                    // Revoked certificates shouldn't be used though.
-                    CheckCertificateRevocationList = true,
-                };
-
-                var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler) { BaseAddress = baseUri };
-
-                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
-            });
+            _ => RefitHelper.WithNewtonsoftJson<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
     }
 
     /// <summary>
