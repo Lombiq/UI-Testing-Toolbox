@@ -128,7 +128,7 @@ public class ErrorHandlingTests : UITestBase
                     };
 
                     // No need to create a failure dump folder for this test, since it'll always fail.
-                    configuration.FailureDumpConfiguration.CreateFailureDump = false;
+                    configuration.TestDumpConfiguration.CreateTestDump = false;
                 }));
 }
 

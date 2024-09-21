@@ -4,27 +4,27 @@ namespace Lombiq.Tests.UI.Exceptions;
 
 // Here we only need fileName and customMessage.
 #pragma warning disable CA1032 // Implement standard exception constructors
-public class FailureDumpItemAlreadyExistsException : Exception
+public class TestDumpItemAlreadyExistsException : Exception
 #pragma warning restore CA1032 // Implement standard exception constructors
 {
-    public FailureDumpItemAlreadyExistsException(string fileName)
+    public TestDumpItemAlreadyExistsException(string fileName)
         : this(fileName, customMessage: null, innerException: null)
     {
     }
 
-    public FailureDumpItemAlreadyExistsException(string fileName, Exception innerException)
+    public TestDumpItemAlreadyExistsException(string fileName, Exception innerException)
         : this(fileName, customMessage: null, innerException)
     {
     }
 
-    public FailureDumpItemAlreadyExistsException(string fileName, string customMessage)
+    public TestDumpItemAlreadyExistsException(string fileName, string customMessage)
         : this(fileName, customMessage, innerException: null)
     {
     }
 
-    public FailureDumpItemAlreadyExistsException(string fileName, string customMessage, Exception innerException)
+    public TestDumpItemAlreadyExistsException(string fileName, string customMessage, Exception innerException)
         : base(
-            $"A failure dump item with the same file name already exists. fileName: {fileName}"
+            $"A test dump item with the same file name already exists. File name: {fileName}."
             + Environment.NewLine
             + (customMessage ?? string.Empty),
             innerException)

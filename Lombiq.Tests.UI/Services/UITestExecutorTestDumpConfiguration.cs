@@ -2,7 +2,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Services;
 
-public class UITestExecutorFailureDumpConfiguration
+public class UITestExecutorTestDumpConfiguration
 {
     /// <summary>
     /// Gets or sets a value indicating whether the subfolder of each test's dumps will use a shortened name, only
@@ -12,8 +12,8 @@ public class UITestExecutorFailureDumpConfiguration
     /// </summary>
     public bool UseShortNames { get; set; } = OperatingSystem.IsWindows();
 
-    public string DumpsDirectoryPath { get; set; } = "FailureDumps";
-    public bool CreateFailureDump { get; set; } = true;
+    public string DumpsDirectoryPath { get; set; } = "TestDumps";
+    public bool CreateTestDump { get; set; } = true;
     public bool CaptureAppSnapshot { get; set; } = true;
     public bool CaptureScreenshots { get; set; } = true;
     public bool CaptureHtmlSource { get; set; } = true;
