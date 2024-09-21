@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -9,7 +11,6 @@ public static class HttpClientHelper
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by the returned client.")]
     public static HttpClient CreateCertificateIgnoringHttpClient(Uri? baseUri = null) =>
         new(CreateCertificateIgnoringHttpClientHandler()) { BaseAddress = baseUri };
-
 
     /// <summary>
     /// Creates a normally dangerous HTTP client handler that accepts any certificate, to allow working with self-signed
