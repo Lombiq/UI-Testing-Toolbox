@@ -128,9 +128,9 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// For this to properly work the build artifacts should be configured to contain the FailureDumps folder (it can
-    /// also contain other folders but it must contain a folder called "FailureDumps", e.g.: <c>+:FailureDumps =&gt;
-    /// FailureDumps</c>.
+    /// For this to properly work the build artifacts should be configured to contain the TestDumps folder (it can
+    /// also contain other folders but it must contain a folder called "TestDumps", e.g.: <c>+:TestDumps =&gt;
+    /// TestDumps</c>.
     /// </para>
     /// </remarks>
     public bool ReportTeamCityMetadata { get; set; } =
@@ -149,7 +149,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     public OrchardCoreSetupConfiguration SetupConfiguration { get; set; } = new();
 
-    public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new();
+    public UITestExecutorTestDumpConfiguration TestDumpConfiguration { get; set; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether to launch and use a local SMTP service to test sending out e-mails. When
