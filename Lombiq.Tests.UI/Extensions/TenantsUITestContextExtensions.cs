@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
@@ -52,6 +53,6 @@ public static class TenantsUITestContextExtensions
             await context.ClickReliablyOnAsync(By.XPath($"//option[@value='{featureProfile}']"));
         }
 
-        await context.ClickReliablyOnAsync(By.XPath("//button[contains(., 'Create')]"));
+        await context.ClickReliablyOnAsync(ByHelper.ButtonText("Create"));
     }
 }

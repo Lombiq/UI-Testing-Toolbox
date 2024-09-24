@@ -1,6 +1,7 @@
 using AngleSharp.Text;
 using Atata;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
@@ -289,7 +290,7 @@ public static class FormUITestContextExtensions
     public static async Task SetDropdownByTextAsync(this UITestContext context, By selectBy, string value)
     {
         await context.ClickReliablyOnAsync(selectBy);
-        context.Get(selectBy).Get(By.XPath($".//option[contains(., '{value}')]")).Click();
+        context.Get(selectBy).Get(ByHelper.TextContains(value, "option")).Click();
     }
 
     /// <summary>
@@ -316,7 +317,7 @@ public static class FormUITestContextExtensions
     /// Finds the "Add New" button.
     /// </summary>
     public static IWebElement GetAddNewButton(this UITestContext context) =>
-        context.Get(By.XPath("//button[contains(.,'Add New')]"));
+        context.Get(ByHelper.ButtonText("Add New"));
 
     /// <summary>
     /// Opens the dropdown belonging to the "Add New" button. If <paramref name="byLocalMenuItem"/> is not <see

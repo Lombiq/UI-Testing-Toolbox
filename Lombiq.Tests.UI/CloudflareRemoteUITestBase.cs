@@ -60,7 +60,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             // Cloudflare's e-mail address obfuscating feature creates invalid iframes.
             configuration.HtmlValidationConfiguration.WithRelativeConfigPath("PermitNoTitleIframes.htmlvalidate.json");
 
-            if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+            await changeConfigurationAsync.InvokeFuncAsync(configuration);
         }
 
         if (string.IsNullOrEmpty(CloudflareApiToken))

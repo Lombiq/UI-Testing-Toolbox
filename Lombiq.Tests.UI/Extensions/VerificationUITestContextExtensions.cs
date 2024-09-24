@@ -24,7 +24,7 @@ public static class VerificationUITestContextExtensions
 
         try
         {
-            if (configuration.AssertAppLogsAsync != null) await configuration.AssertAppLogsAsync(context.Application);
+            await configuration.AssertAppLogsAsync.InvokeFuncAsync(context.Application);
         }
         catch (Exception)
         {
