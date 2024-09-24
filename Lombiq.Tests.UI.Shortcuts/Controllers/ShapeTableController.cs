@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
-public class ShapeTableController : Controller
+public sealed class ShapeTableController : Controller
 {
     /// <summary>
     /// Prepares the shape table for the current site and admin themes.

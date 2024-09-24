@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [Feature(ShortcutsFeatureIds.FeatureToggleTestBench)]
-public class FeatureToggleTestBenchController : Controller
+public sealed class FeatureToggleTestBenchController : Controller
 {
     // While the warning doesn't show up in VS it does with dotnet build.
 #pragma warning disable IDE0079 // Remove unnecessary suppression

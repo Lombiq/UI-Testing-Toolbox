@@ -11,7 +11,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Shortcuts;
 
-public class Startup : StartupBase
+public sealed class Startup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services)
     {
@@ -28,7 +28,7 @@ public class Startup : StartupBase
 }
 
 [Feature("Lombiq.Tests.UI.Shortcuts.Swagger")]
-public class SwaggerStartup : StartupBase
+public sealed class SwaggerStartup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services) =>
         services.AddSwaggerGen(swaggerGenOptions =>

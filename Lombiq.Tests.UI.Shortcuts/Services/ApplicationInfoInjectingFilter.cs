@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Shortcuts.Services;
 
-public class ApplicationInfoInjectingFilter : IAsyncResultFilter
+public sealed class ApplicationInfoInjectingFilter : IAsyncResultFilter
 {
     private static readonly JsonSerializerOptions _indentedJsonSerializerOptions = new() { WriteIndented = true };
 
