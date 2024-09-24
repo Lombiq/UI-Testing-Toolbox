@@ -28,7 +28,7 @@ public static class ByHelper
         By.XPath($"//{element}[normalize-space(.) = {JsonSerializer.Serialize(innerText)}]");
 
     /// <summary>
-    /// Same as <see cref="Text"/> but for <c>button</c> element.
+    /// Same as <see cref="Text"/> but for <c>button</c> elements.
     /// </summary>
     public static By ButtonText(string innerText) => Text(innerText, "button");
 
