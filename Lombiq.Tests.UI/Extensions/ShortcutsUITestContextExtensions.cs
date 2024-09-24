@@ -584,8 +584,7 @@ public static class ShortcutsUITestContextExtensions
                         tokenLifeSpan == 0 ? HttpWorkflowController.NoExpiryTokenLifespan : tokenLifeSpan));
 
                 // LinkGenerator.GetPathByAction(...) and UrlHelper.Action(...) doesn't resolve the URL for the
-                // HttpWorkflowController.Invoke action.
-                // https://github.com/OrchardCMS/OrchardCore/issues/11764.
+                // HttpWorkflowController.Invoke action since they rely on IActionContextAccessor.ActionContext.
                 eventUrl = $"/workflows/Invoke?token={Uri.EscapeDataString(token)}";
             },
             tenant,
