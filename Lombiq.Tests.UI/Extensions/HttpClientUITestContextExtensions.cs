@@ -1,8 +1,10 @@
 ﻿using Lombiq.Tests.UI.Services;
 using Newtonsoft.Json.Linq;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -23,6 +25,17 @@ namespace Lombiq.Tests.UI.Extensions;
         Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
+    public static HttpClient CreateClient(this UITestContext context)
+    {
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+            CheckCertificateRevocationList = true,
+        };
+
+        return new(handler) { BaseAddress = context.Scope.BaseUri };
+    }
+
     /// <summary>
     /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
     /// parameters.
@@ -35,17 +48,6 @@ public static class HttpClientUITestContextExtensions
         string userName = null,
         string password = null)
     {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-            CheckCertificateRevocationList = true,
-        };
-
-        var client = new HttpClient(handler)
-        {
-            BaseAddress = context.Scope.BaseUri,
-        };
-
         var parameters = new List<KeyValuePair<string, string>>
         {
             new("grant_type", grantType),
@@ -61,14 +63,12 @@ public static class HttpClientUITestContextExtensions
 
         using var requestBody = new FormUrlEncodedContent(parameters);
 
-        var tokenUrl = context.Scope.BaseUri.AbsoluteUri + "connect/token";
-        var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
+        var client = context.CreateClient();
+        var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
+        using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
 
-        if (!tokenResponse.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(
-                $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}. TokenResponse: {tokenResponse}");
-        }
+        await tokenResponse.ThrowIfNotSuccessAsync(
+            $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.", requestBody);
 
         var responseContent = await tokenResponse.Content.ReadAsStringAsync();
         var token = JsonNode.Parse(responseContent)?["access_token"]?.ToString();
@@ -115,8 +115,11 @@ public static class HttpClientUITestContextExtensions
         this UITestContext context,
         HttpClient client,
         string requestUri,
-        string json) =>
-        await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+        string json)
+    {
+        using var response = await PostAndGetResponseAsync(client, requestUri, json);
+        return await response.Content.ReadAsStringAsync();
+    }
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> then
@@ -130,7 +133,8 @@ public static class HttpClientUITestContextExtensions
         string json)
         where TObject : class
     {
-        var content = await (await PostAndGetResponseAsync(client, requestUri, json)).Content.ReadAsStringAsync();
+        using var response = await PostAndGetResponseAsync(client, requestUri, json);
+        var content = await response.Content.ReadAsStringAsync();
         var parsed = JToken.Parse(content);
 
         return parsed.ToObject<TObject>();
@@ -179,5 +183,16 @@ public static class HttpClientUITestContextExtensions
         var response = await client.PostAsync(requestUri, stringContent);
 
         return response;
+    }
+
+    public static async Task PostAndResponseStatusCodeShouldBeAsync(
+        this UITestContext context,
+        HttpClient client,
+        object objectToSerialize,
+        string requestUri,
+        HttpStatusCode expected)
+    {
+        using var response = await context.PostAndGetResponseAsync(client, objectToSerialize, requestUri);
+        response.StatusCode.ShouldBe(expected);
     }
 }

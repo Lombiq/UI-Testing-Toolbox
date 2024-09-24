@@ -25,7 +25,12 @@ public static class ByHelper
     /// element name restriction.
     /// </summary>
     public static By Text(string innerText, string element = "*") =>
-        By.XPath($"//{element}[. = {JsonSerializer.Serialize(innerText)}]");
+        By.XPath($"//{element}[normalize-space(.) = {JsonSerializer.Serialize(innerText)}]");
+
+    /// <summary>
+    /// Same as <see cref="Text"/> but for <c>button</c> element.
+    /// </summary>
+    public static By ButtonText(string innerText) => Text(innerText, "button");
 
     /// <summary>
     /// Returns an XPath selector that looks up elements whose text contains <paramref name="innerText"/> with optional

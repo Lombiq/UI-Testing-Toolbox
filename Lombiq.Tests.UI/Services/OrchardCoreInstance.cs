@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
@@ -18,28 +19,32 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 
-public delegate Task BeforeAppStartHandler(string contentRootPath, InstanceCommandLineArgumentsBuilder arguments);
+public delegate Task BeforeAppStartHandler(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments);
+public delegate Task AfterAppStopHandler(OrchardCoreAppStartContext context);
 
-public delegate Task BeforeTakeSnapshotHandler(string contentRootPath, string snapshotDirectoryPath);
+public delegate Task BeforeTakeSnapshotHandler(OrchardCoreAppStartContext context, string snapshotDirectoryPath);
 
 public class OrchardCoreConfiguration
 {
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
+    public AfterAppStopHandler AfterAppStop { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
+    public int StartCount { get; internal set; }
 }
 
 internal static class OrchardCoreInstanceCounter
 {
-    public const string UrlPrefix = "https://localhost:";
+    public static PortLeaseManager PortLeases { get; }
 
     static OrchardCoreInstanceCounter()
     {
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
-        PortLeases = new PortLeaseManager(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
+        PortLeases = new(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
 
-    public static PortLeaseManager PortLeases { get; private set; }
+    public static Uri GetUri(int port) => new(StringHelper.CreateInvariant($"https://localhost:{port}"));
+    public static async Task<Uri> GetNewUriAsync() => GetUri(await PortLeases.LeaseAvailableRandomPortAsync());
 }
 
 /// <summary>
@@ -54,7 +59,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
-    private string _url;
+    private Uri _url;
     private TestReverseProxy _reverseProxy;
 
     public IServiceProvider Services => _orchardApplication?.Services;
@@ -68,9 +73,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public async Task<Uri> StartUpAsync()
     {
-        var port = await OrchardCoreInstanceCounter.PortLeases.LeaseAvailableRandomPortAsync();
-        _url = OrchardCoreInstanceCounter.UrlPrefix + port.ToTechnicalString();
-        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url);
+        _url = await OrchardCoreInstanceCounter.GetNewUriAsync();
+        _testOutputHelper.WriteLineTimestampedAndDebug("The generated URL for the Orchard Core instance is \"{0}\".", _url.AbsoluteUri);
 
         CreateContentRootFolder();
 
@@ -88,13 +92,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     _contentRootPath);
         }
 
-        _reverseProxy = new TestReverseProxy(_url);
+        _reverseProxy = new TestReverseProxy(_url.AbsoluteUri);
 
         await _reverseProxy.StartAsync();
 
+        _configuration.StartCount++;
         await StartOrchardAppAsync();
 
-        return new Uri(_url);
+        return _url;
     }
 
     public Task PauseAsync() => StopOrchardAppAsync();
@@ -155,7 +160,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         var arguments = new InstanceCommandLineArgumentsBuilder();
 
         await _configuration.BeforeAppStart
-            .InvokeAsync<BeforeAppStartHandler>(handler => handler(_contentRootPath, arguments));
+            .InvokeAsync<BeforeAppStartHandler>(handler => handler(CreateAppStartContext(), arguments));
 
         // This is to avoid adding Razor runtime view compilation.
         DirectoryHelper.SafelyDeleteDirectoryIfExists(
@@ -191,12 +196,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
-        return;
+        await _configuration.AfterAppStop
+            .InvokeAsync<AfterAppStopHandler>(handler => handler(CreateAppStartContext()));
     }
 
     private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
     {
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
         return await streamReader.ReadToEndAsync(cancellationToken);
     }
@@ -210,10 +216,13 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         Directory.CreateDirectory(snapshotDirectoryPath);
 
         await _configuration.BeforeTakeSnapshot
-            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(_contentRootPath, snapshotDirectoryPath));
+            .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(CreateAppStartContext(), snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
     }
+
+    private OrchardCoreAppStartContext CreateAppStartContext() =>
+        new(_contentRootPath, _url, OrchardCoreInstanceCounter.PortLeases);
 
     private sealed class ApplicationLog : IApplicationLog
     {
