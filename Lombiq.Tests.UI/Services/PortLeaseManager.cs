@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -57,4 +58,6 @@ public class PortLeaseManager
 
         _portAcquisitionLock.Release();
     }
+
+    public Func<Task> CreateStopLeaseDelegate(int port) => () => StopLeaseAsync(port);
 }

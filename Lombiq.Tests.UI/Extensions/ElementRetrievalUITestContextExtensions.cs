@@ -30,6 +30,11 @@ public static class ElementRetrievalUITestContextExtensions
         context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().FindElement(by));
 
     /// <summary>
+    /// Retrieves the matching element's trimmed text content with retries within the configured timeout.
+    /// </summary>
+    public static string GetText(this UITestContext context, By by) => context.Get(by)?.GetTextTrimmed();
+
+    /// <summary>
     /// Retrieves all the matching elements with retries within the configured timeout. Don't use this for existence
     /// check, use <see cref="CheckExistence(UITestContext, By, bool)"/>, <see cref="Exists(UITestContext, By)"/>, and
     /// <see cref="Missing(UITestContext, By)"/> instead.
@@ -108,8 +113,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     /// <param name="errorMessage">Error message to look for.</param>
     public static void ErrorMessageExists(this UITestContext context, string errorMessage) =>
-        context.Get(By.CssSelector(".validation-summary-errors li"))
-            .Text
+        context.GetText(By.CssSelector(".validation-summary-errors li"))
             .ShouldBe(errorMessage);
 
     /// <summary>
