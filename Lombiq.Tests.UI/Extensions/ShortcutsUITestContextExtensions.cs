@@ -411,7 +411,7 @@ public static class ShortcutsUITestContextExtensions
 
         return _apis.GetOrAdd(
             baseUri.AbsoluteUri,
-            _ => RefitHelper.WithNewtonsoftJson<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
+            _ => RestService.For<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
     }
 
     /// <summary>
