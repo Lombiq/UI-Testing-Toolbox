@@ -106,7 +106,7 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="3.0.0" />
+    <PackageReference Include="Lombiq.Tests" Version="3.1.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="11.0.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="11.0.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="11.0.0" />
