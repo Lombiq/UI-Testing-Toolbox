@@ -27,9 +27,9 @@ public class AccessibilityCheckingConfiguration
     /// Gets or sets a configuration delegate for the <see cref="AxeBuilder"/> instance used for accessibility checking.
     /// For more information on the various options see <see
     /// href="https://troywalshprof.github.io/SeleniumAxeDotnet/#/?id=axebuilder-reference"/>. Defaults to <see
-    /// cref="ConfigureWcag21aa"/>.
+    /// cref="ConfigureWcag22aa"/>.
     /// </summary>
-    public Action<AxeBuilder> AxeBuilderConfigurator { get; set; } = axeBuilder => ConfigureWcag21aa(axeBuilder);
+    public Action<AxeBuilder> AxeBuilderConfigurator { get; set; } = axeBuilder => ConfigureWcag22aa(axeBuilder);
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run accessibility checks every time a page changes
@@ -55,6 +55,9 @@ public class AccessibilityCheckingConfiguration
     // Returns AxeBuilder so it can be chained.
     public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag21aa = axeBuilder =>
         axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa");
+
+    public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag22aa = axeBuilder =>
+        axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa");
 
     public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
     {
