@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
@@ -33,6 +34,9 @@ public abstract class UITestBase
             configuration.TestOutputHelper = _testOutputHelper;
         }
 
+        // Used by many utilities to turn off ANSI escape sequences.
+        Environment.SetEnvironmentVariable("NO_COLOR", "true");
+
         try
         {
             var testTask = UITestExecutor.ExecuteOrchardCoreTestAsync(
@@ -45,7 +49,15 @@ public abstract class UITestBase
 
             if (timeoutTask.IsCompleted)
             {
-                throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
+                // If the EnterInteractiveModeAsync() extension method has been used, then timeout should be ignored to
+                // make the debugging experience smoother. Note that EnterInteractiveModeAsync() should never be used in
+                // committed tests.
+                if (!ShortcutsUITestContextExtensions.InteractiveModeHasBeenUsed)
+                {
+                    throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
+                }
+
+                await testTask;
             }
 
             // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in

@@ -266,7 +266,7 @@ public sealed class ZapManager : IAsyncDisposable
                 "The supplied ZAP Automation Framework YAML file should contain exactly one SARIF report job.");
         }
 
-        if (modifyPlan != null) await modifyPlan(yamlDocument);
+        await modifyPlan.InvokeFuncAsync(yamlDocument);
 
         using var streamWriter = new StreamWriter(yamlFilePath);
         var yamlStream = new YamlStream(yamlDocument);

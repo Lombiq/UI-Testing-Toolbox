@@ -2,6 +2,7 @@ using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -41,7 +42,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +58,8 @@ public static class ShortcutsUITestContextExtensions
 
     private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
     private static readonly SemaphoreSlim _recipeHarvesterSemaphore = new(1, 1);
+
+    public static bool InteractiveModeHasBeenUsed { get; private set; }
 
     /// <summary>
     /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
@@ -108,7 +110,7 @@ public static class ShortcutsUITestContextExtensions
     public static async Task<string> GetCurrentUserNameAsync(this UITestContext context)
     {
         await context.GoToAsync<CurrentUserController>(controller => controller.Index());
-        var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+        var userNameContainer = context.GetText(By.CssSelector("pre"));
         if (userNameContainer == "Unauthenticated") return string.Empty;
         return userNameContainer["UserName: ".Length..];
     }
@@ -401,27 +403,16 @@ public static class ShortcutsUITestContextExtensions
     public static Task GoToErrorPageDirectlyAsync(this UITestContext context) =>
         context.GoToAsync<ErrorController>(controller => controller.Index());
 
-    private static IShortcutsApi GetApi(this UITestContext context) =>
-        _apis.GetOrAdd(
-            context.Scope.BaseUri.ToString(),
-            _ =>
-            {
-                // To allow self-signed development certificates.
+    private static IShortcutsApi GetApi(this UITestContext context)
+    {
+        // If there is a subdirectory-like URL prefix (e.g. for tenants) in the scope base URI, the requests will have
+        // double slashes that results in 404 error. So the trailing slash has to be trimmed out.
+        var baseUri = new Uri(context.Scope.BaseUri.ToString().TrimEnd('/'));
 
-                var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-                    // Revoked certificates shouldn't be used though.
-                    CheckCertificateRevocationList = true,
-                };
-
-                var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler)
-                {
-                    BaseAddress = context.Scope.BaseUri,
-                };
-
-                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
-            });
+        return _apis.GetOrAdd(
+            baseUri.AbsoluteUri,
+            _ => RefitHelper.WithNewtonsoftJson<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
+    }
 
     /// <summary>
     /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
@@ -630,9 +621,14 @@ public static class ShortcutsUITestContextExtensions
     /// ordinary user from the browser or access its web APIs. To switch back to the test, click the button
     /// that'll be displayed in the browser, or open <see cref="InteractiveModeController.Continue"/>.
     /// </summary>
-    public static async Task SwitchToInteractiveAsync(this UITestContext context)
+    /// <param name="notificationHtml">
+    /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
+    /// HTML content.
+    /// </param>
+    public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
     {
-        await context.EnterInteractiveModeAsync();
+        InteractiveModeHasBeenUsed = true;
+        await context.EnterInteractiveModeAsync(notificationHtml);
         await context.WaitInteractiveModeAsync();
 
         context.Driver.Close();
@@ -644,12 +640,12 @@ public static class ShortcutsUITestContextExtensions
     /// page. Visiting this page enables the interactive mode flag so it can be awaited with the <see
     /// cref="WaitInteractiveModeAsync"/> extension method.
     /// </summary>
-    internal static Task EnterInteractiveModeAsync(this UITestContext context)
+    internal static Task EnterInteractiveModeAsync(this UITestContext context, string notificationHtml)
     {
         context.Driver.SwitchTo().NewWindow(WindowType.Tab);
         context.Driver.SwitchTo().Window(context.Driver.WindowHandles[^1]);
 
-        return context.GoToAsync<InteractiveModeController>(controller => controller.Index());
+        return context.GoToAsync<InteractiveModeController>(controller => controller.Index(notificationHtml));
     }
 
     /// <summary>
