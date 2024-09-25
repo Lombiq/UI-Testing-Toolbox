@@ -29,14 +29,14 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Event']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'ContentPublishedEvent')]"));
 
-                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_Title"), "Content Published Trigger");
+                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
                 await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
 
-                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_Title"), "Content Published Notification");
+                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Notification");
                 await context.ClickAndFillInWithRetriesAsync(By.Id("NotifyTask_Message"), contentItemPublishTestSuccessMessage);
                 await context.ClickReliablyOnSubmitAsync();
 
@@ -54,7 +54,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync();
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
-                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']"));
+                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup event']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 context.ShouldBeSuccess("Workflow has been saved.");

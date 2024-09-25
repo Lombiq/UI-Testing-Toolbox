@@ -18,7 +18,7 @@ public sealed class FakeStore : IStore
 
     public ITypeService TypeNames => _store.TypeNames;
 
-    public ISession CreateSession()
+    public ISession CreateSession(bool withTracking = true)
     {
         var session = _store.CreateSession();
         _createdSessions.Add(session);

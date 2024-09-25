@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [Feature(ShortcutsFeatureIds.MediaCachePurge)]
-public class MediaCachePurgeController : Controller
+public sealed class MediaCachePurgeController : Controller
 {
     private readonly IMediaFileStoreCache _mediaFileStoreCache;
 

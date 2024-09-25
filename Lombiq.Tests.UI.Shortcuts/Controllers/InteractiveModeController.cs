@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [AllowAnonymous]
 [DevelopmentAndLocalhostOnly]
-public class InteractiveModeController : Controller
+public sealed class InteractiveModeController : Controller
 {
     private readonly IInteractiveModeStatusAccessor _interactiveModeStatusAccessor;
     private readonly INotifier _notifier;

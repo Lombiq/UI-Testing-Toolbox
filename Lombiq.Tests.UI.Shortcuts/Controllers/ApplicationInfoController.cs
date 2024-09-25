@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 [ApiController]
 [Route("api/ApplicationInfo")]
 [DevelopmentAndLocalhostOnly]
-public class ApplicationInfoController : ControllerBase
+public sealed class ApplicationInfoController : ControllerBase
 {
     private readonly IApplicationContext _applicationContext;
 

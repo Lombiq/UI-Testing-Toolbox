@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -416,8 +417,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
-                registrationPage.ShouldStayOnRegistrationPage().ValidationMessages.Should.Not.BeEmpty();
+                await registrationPage.RegisterWithAsync(context, parameters);
+                context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
 
@@ -446,11 +447,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                await registrationPage.RegisterWithAsync(context, parameters);
                 context.RefreshCurrentAtataContext();
-                registrationPage
-                    .ShouldStayOnRegistrationPage()
-                    .ValidationMessages[page => page.Email].Should.BeVisible();
+
+                context
+                    .Get(By.CssSelector(".text-danger.field-validation-error"))
+                    .Text
+                    .ShouldContain("A user with the same username already exists.");
             });
     }
 
@@ -544,22 +547,23 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
                 context.RefreshCurrentAtataContext();
 
+                featuresPage.SearchForFeature(featureName).IsEnabled.Get(out var originalEnabledState);
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
+
                 featuresPage
-                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
-                    .Features[featureName].CheckBox.Check()
-                    .BulkActions.Toggle.Click()
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState));
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
 
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
-                .Features[featureName].CheckBox.Check()
-                .BulkActions.Toggle.Click()
-
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                featuresPage
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
             });
 
     /// <summary>

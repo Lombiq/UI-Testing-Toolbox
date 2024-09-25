@@ -10,12 +10,12 @@ using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using TWP.Selenium.Axe.Html;
 using Xunit.Abstractions;
@@ -703,7 +703,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JObject.Parse(await File.ReadAllTextAsync(appSettingsPath));
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath))!;
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
                 await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
             }
@@ -758,13 +758,18 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         _smtpService = new SmtpService(_configuration.SmtpServiceConfiguration);
         var smtpContext = await _smtpService.StartAsync();
+        _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
-                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Port", value: smtpContext.Port)
-                .AddWithValue("Lombiq_Tests_UI:SmtpSettings:Host", value: "localhost");
+                .AddWithValue("Lombiq_Tests_UI:EnableSmtpFeature", value: true)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:EnableSmtp", value: true)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:DefaultSender", value: "sender@example.com");
             return Task.CompletedTask;
         }
 

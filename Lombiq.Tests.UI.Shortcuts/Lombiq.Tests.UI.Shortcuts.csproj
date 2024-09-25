@@ -33,18 +33,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Module.Targets" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Tenants" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Themes" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Users" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="1.8.0" />
-    <PackageReference Include="OrchardCore.Workflows" Version="1.8.0" />
-    <!-- With 6.6.2 and possible earlier versions we'd get an exception that the Tenants API doesn't comply with the
-    recommendations, see https://github.com/OrchardCMS/OrchardCore/issues/16430. -->
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Tenants" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Themes" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Users" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="2.0.0" />
+    <PackageReference Include="OrchardCore.Workflows" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
@@ -52,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="10.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="11.0.0" />
   </ItemGroup>
 
 </Project>

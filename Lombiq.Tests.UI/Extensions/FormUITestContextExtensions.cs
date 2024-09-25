@@ -3,11 +3,11 @@ using Atata;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 // Using the Atata namespace because that'll surely be among the using declarations of the test. OpenQA.Selenium not
@@ -96,7 +96,7 @@ public static class FormUITestContextExtensions
                 autoDownloadFontAwesome: false,
             }});
             /* Finally set the value programmatically. */
-            mde.codemirror.setValue({JsonConvert.SerializeObject(text)});";
+            mde.codemirror.setValue({JsonSerializer.Serialize(text)});";
 
         context.ExecuteScript(script);
     }
@@ -113,7 +113,7 @@ public static class FormUITestContextExtensions
 
         var script = $@"
             monaco.editor.getEditors().find((element) =>
-                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).setValue({JsonConvert.SerializeObject(text)});";
+                element.getContainerDomNode().id == {JsonSerializer.Serialize(editorId)}).setValue({JsonSerializer.Serialize(text)});";
 
         context.ExecuteScript(script);
     }
@@ -129,7 +129,7 @@ public static class FormUITestContextExtensions
 
         var script = $@"
             return monaco.editor.getEditors().find((element) =>
-                element.getContainerDomNode().id == {JsonConvert.SerializeObject(editorId)}).getValue();";
+                element.getContainerDomNode().id == {JsonSerializer.Serialize(editorId)}).getValue();";
 
         return context.ExecuteScript(script) as string;
     }
