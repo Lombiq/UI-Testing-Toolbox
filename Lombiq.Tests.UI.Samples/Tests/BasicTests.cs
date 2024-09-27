@@ -50,8 +50,8 @@ public class BasicTests : UITestBase
                 // Let's fill out the login form. In UI tests, nothing is certain. If you fill out a form it's not
                 // actually sure that the values are indeed there! To make things more reliable, we've added a lot of
                 // useful methods like FillInWithRetriesAsync().
-                await context.FillInWithRetriesAsync(By.Id("UserName"), DefaultUser.UserName);
-                await context.FillInWithRetriesAsync(By.Id("Password"), DefaultUser.Password);
+                await context.FillInWithRetriesAsync(By.Id("LoginForm_UserName"), DefaultUser.UserName);
+                await context.FillInWithRetriesAsync(By.Id("LoginForm_Password"), DefaultUser.Password);
 
                 // Even clicking can be unreliable thus we have a helper for that too.
                 await context.ClickReliablyOnSubmitAsync();

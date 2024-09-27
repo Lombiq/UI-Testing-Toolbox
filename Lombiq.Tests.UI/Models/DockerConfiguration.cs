@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Lombiq.Tests.UI.Models;
 
@@ -6,6 +6,6 @@ public class DockerConfiguration
 {
     public string ContainerName { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string ContainerSnapshotPath { get; set; } = "/data/Snapshots";
 }

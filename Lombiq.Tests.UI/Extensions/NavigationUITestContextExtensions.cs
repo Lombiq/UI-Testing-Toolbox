@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -266,7 +266,7 @@ public static class NavigationUITestContextExtensions
             async response =>
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
+                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
                 return result.IndexOf(result.First(item => item.DisplayText == text));
             });
 

@@ -198,12 +198,19 @@ public static class WebDriverFactory
             AutoSetup(browserName);
             return await driverFactory();
         }
-        catch (Exception ex)
+        catch (InvalidDataException exception) when (exception.Message.Contains("End of Central Directory record could not be found."))
         {
             throw new WebDriverException(
-                $"Creating the web driver failed with the message \"{ex.Message}\". This can mean that there is a " +
-                $"leftover web driver process that you have to kill manually. Full exception: {ex}",
-                ex);
+                $"The web driver extraction failed with the message \"{exception.Message}\". This can indicate the " +
+                $"problem with the server that hosts the driver, or with the download URL. Full exception: {exception}",
+                exception);
+        }
+        catch (Exception exception)
+        {
+            throw new WebDriverException(
+                $"Creating the web driver failed with the message \"{exception.Message}\". This can mean that there is a " +
+                $"leftover web driver process that you have to kill manually. Full exception: {exception}",
+                exception);
         }
     }
 

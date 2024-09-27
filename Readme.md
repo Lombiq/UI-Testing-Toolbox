@@ -1,6 +1,6 @@
 # Lombiq UI Testing Toolbox for Orchard Core
 
-[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/) [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/) [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/)
+[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/) [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/) [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/) [![Latest version of 'Lombiq.Tests.UI' @ Cloudsmith](https://api-prd.cloudsmith.io/v1/badges/version/lombiq/open-source-orchard-core-extensions/nuget/Lombiq.Tests.UI/latest/xsp=True/?render=true&show_latest=true)](https://cloudsmith.io/~lombiq/repos/open-source-orchard-core-extensions/packages/detail/nuget/Lombiq.Tests.UI/latest/xsp=True/)
 
 ## About
 

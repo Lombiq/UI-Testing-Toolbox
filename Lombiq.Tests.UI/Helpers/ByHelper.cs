@@ -1,9 +1,9 @@
 using Atata;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Lombiq.Tests.UI.Helpers;
 
@@ -17,7 +17,7 @@ public static class ByHelper
     /// </summary>
     public static By SmtpInboxRow(string text) =>
         By
-            .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonConvert.SerializeObject(text)})]")
+            .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonSerializer.Serialize(text)})]")
             .Within(TimeSpan.FromMinutes(2));
 
     /// <summary>
@@ -25,10 +25,10 @@ public static class ByHelper
     /// element name restriction.
     /// </summary>
     public static By Text(string innerText, string element = "*") =>
-        By.XPath($"//{element}[normalize-space(.) = {JsonConvert.SerializeObject(innerText)}]");
+        By.XPath($"//{element}[normalize-space(.) = {JsonSerializer.Serialize(innerText)}]");
 
     /// <summary>
-    /// Same as <see cref="Text"/> but for <c>button</c> element.
+    /// Same as <see cref="Text"/> but for <c>button</c> elements.
     /// </summary>
     public static By ButtonText(string innerText) => Text(innerText, "button");
 
@@ -37,7 +37,7 @@ public static class ByHelper
     /// element name restriction.
     /// </summary>
     public static By TextContains(string innerText, string element = "*") =>
-        By.XPath($"//{element}[contains(., {JsonConvert.SerializeObject(innerText)})]");
+        By.XPath($"//{element}[contains(., {JsonSerializer.Serialize(innerText)})]");
 
     /// <summary>
     /// Creates a <see langword="string"/> from an interpolated string with the invariant culture. This prevents culture-

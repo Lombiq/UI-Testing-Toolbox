@@ -1,5 +1,4 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
-using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
@@ -43,6 +42,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -411,7 +411,7 @@ public static class ShortcutsUITestContextExtensions
 
         return _apis.GetOrAdd(
             baseUri.AbsoluteUri,
-            _ => RefitHelper.WithNewtonsoftJson<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
+            _ => RestService.For<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
     }
 
     /// <summary>
@@ -584,8 +584,7 @@ public static class ShortcutsUITestContextExtensions
                         tokenLifeSpan == 0 ? HttpWorkflowController.NoExpiryTokenLifespan : tokenLifeSpan));
 
                 // LinkGenerator.GetPathByAction(...) and UrlHelper.Action(...) doesn't resolve the URL for the
-                // HttpWorkflowController.Invoke action.
-                // https://github.com/OrchardCMS/OrchardCore/issues/11764.
+                // HttpWorkflowController.Invoke action since they rely on IActionContextAccessor.ActionContext.
                 eventUrl = $"/workflows/Invoke?token={Uri.EscapeDataString(token)}";
             },
             tenant,
@@ -685,4 +684,34 @@ public static class ShortcutsUITestContextExtensions
         string tenant,
         bool activateShell) =>
         context.Application.UsingScopeAsync(execute, tenant ?? context.TenantName, activateShell);
+
+    /// <summary>
+    /// Places the provided <paramref name="steps"/> into a recipe and executes it with JSON Import.
+    /// </summary>
+    public static async Task ExecuteJsonRecipeAsync(this UITestContext context, params object[] steps)
+    {
+        await context.GoToAdminRelativeUrlAsync("/DeploymentPlan/Import/Json");
+
+        var json = JsonSerializer.Serialize(new { steps });
+        await context.FillInCodeMirrorEditorWithRetriesAsync(By.ClassName("CodeMirror"), json);
+        await context.ClickReliablyOnAsync(By.CssSelector(".ta-content button[type='submit']"));
+        context.ShouldBeSuccess();
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="settingsContent"/> which may include multiple named site settings.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingsAsync(this UITestContext context, IDictionary<string, object> settingsContent)
+    {
+        settingsContent["name"] = "settings";
+        return context.ExecuteJsonRecipeAsync(settingsContent);
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="setting"/>.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingAsync<T>(this UITestContext context, T setting) =>
+        context.ExecuteJsonRecipeSiteSettingsAsync(new Dictionary<string, object> { [typeof(T).Name] = setting });
 }

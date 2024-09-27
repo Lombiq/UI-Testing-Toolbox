@@ -6,7 +6,7 @@ using System;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [DevelopmentAndLocalhostOnly]
-public class ErrorController : Controller
+public sealed class ErrorController : Controller
 {
     public const string ExceptionMessage = "This action intentionally causes an exception!";
 

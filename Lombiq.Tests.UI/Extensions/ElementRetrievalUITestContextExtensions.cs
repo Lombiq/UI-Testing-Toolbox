@@ -124,7 +124,8 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch)
     {
-        context.Exists(by); // Ensure content is loaded first.
+        // Ensure content is loaded first.
+        context.DoWithRetriesOrFail(() => !string.IsNullOrEmpty(context.Get(by).Text.Trim()));
 
         var dontCare = toMatch
             .Select((item, index) => item == null ? index : -1)
