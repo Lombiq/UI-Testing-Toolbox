@@ -31,8 +31,6 @@ public static class UrlCheckHelper
                path.StartsWithOrdinalIgnoreCase("/Register") ||
                path.StartsWithOrdinalIgnoreCase("/Login") ||
                path.StartsWithOrdinalIgnoreCase("/ChangePassword") ||
-               path.StartsWithOrdinalIgnoreCase("/ExternalAuthentications") ||
-               path.StartsWithOrdinalIgnoreCase("/ExternalLogins") ||
                path.StartsWithOrdinalIgnoreCase("/ExternalLogin") ||
                context.IsSetupPage();
     }
