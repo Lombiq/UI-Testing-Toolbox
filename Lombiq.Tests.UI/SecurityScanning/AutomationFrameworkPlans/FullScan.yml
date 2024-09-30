@@ -105,7 +105,7 @@ jobs:
         newRisk: False Positive
         parameter: ''
         parameterRegex: false
-        url: .*/(ChangePassword|ExternalAuthentication/LinkExternalLogin|ExternalAuthentication/ExternalLogin|Users/LogOff|api/content).*
+        url: .*/(ChangePassword|ExternalAuthentications/LinkExternalLogin|ExternalAuthentications/ExternalLogin|Users/LogOff|api/content).*
         urlRegex: true
         attack: ''
         attackRegex: false
