@@ -1,5 +1,4 @@
 ﻿using Lombiq.Tests.UI.Services;
-using Newtonsoft.Json.Linq;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -102,8 +101,7 @@ public static class HttpClientUITestContextExtensions
         where TObject : class
     {
         var content = await GetAndReadResponseContentAsync(context, client, requestUri);
-        var parsed = JToken.Parse(content);
-        return parsed.ToObject<TObject>();
+        return Deserialize<TObject>(content);
     }
 
     /// <summary>
@@ -117,7 +115,7 @@ public static class HttpClientUITestContextExtensions
         string requestUri,
         string json)
     {
-        using var response = await PostAndGetResponseAsync(client, requestUri, json);
+        using var response = await PostAndGetResponseAsync(client, json, requestUri);
         return await response.Content.ReadAsStringAsync();
     }
 
@@ -129,16 +127,29 @@ public static class HttpClientUITestContextExtensions
     public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
         this UITestContext context,
         HttpClient client,
-        string requestUri,
-        string json)
-        where TObject : class
-    {
-        using var response = await PostAndGetResponseAsync(client, requestUri, json);
-        var content = await response.Content.ReadAsStringAsync();
-        var parsed = JToken.Parse(content);
+        string json,
+        string requestUri)
+        where TObject : class =>
+        Deserialize<TObject>(await context.PostAndReadResponseContentAsync(
+            client,
+            requestUri,
+            json));
 
-        return parsed.ToObject<TObject>();
-    }
+    /// <summary>
+    /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
+    /// <paramref name="objectToSerialize"/>, that will be serialized as JSON, then the response content is deserialized
+    /// to the given <typeparamref name="TObject"/> and returned.
+    /// </summary>
+    public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
+        this UITestContext context,
+        HttpClient client,
+        object objectToSerialize,
+        string requestUri)
+        where TObject : class =>
+        Deserialize<TObject>(await context.PostAndReadResponseContentAsync(
+            client,
+            requestUri,
+            Serialize(objectToSerialize)));
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
@@ -149,11 +160,8 @@ public static class HttpClientUITestContextExtensions
         this UITestContext context,
         HttpClient client,
         object objectToSerialize,
-        string requestUri)
-    {
-        var json = JsonSerializer.Serialize(objectToSerialize);
-        return PostAndReadResponseContentAsync(context, client, requestUri, json);
-    }
+        string requestUri) =>
+        PostAndReadResponseContentAsync(context, client, requestUri, Serialize(objectToSerialize));
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
@@ -164,11 +172,8 @@ public static class HttpClientUITestContextExtensions
         this UITestContext context,
         HttpClient client,
         object objectToSerialize,
-        string requestUri)
-    {
-        var json = JsonSerializer.Serialize(objectToSerialize);
-        return PostAndGetResponseAsync(client, requestUri, json);
-    }
+        string requestUri) =>
+        PostAndGetResponseAsync(client, Serialize(objectToSerialize), requestUri);
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/>.
@@ -176,8 +181,8 @@ public static class HttpClientUITestContextExtensions
     /// <returns>The <see cref="HttpResponseMessage"/>.</returns>
     public static async Task<HttpResponseMessage> PostAndGetResponseAsync(
         HttpClient client,
-        string requestUri,
-        string json)
+        string json,
+        string requestUri)
     {
         var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
         var response = await client.PostAsync(requestUri, stringContent);
@@ -185,6 +190,11 @@ public static class HttpClientUITestContextExtensions
         return response;
     }
 
+    /// <summary>
+    /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
+    /// <paramref name="objectToSerialize"/>, that will be serialized as JSON, then the response is checked if it's the
+    /// <paramref name="expected"/> status code.
+    /// </summary>
     public static async Task PostAndResponseStatusCodeShouldBeAsync(
         this UITestContext context,
         HttpClient client,
@@ -195,4 +205,18 @@ public static class HttpClientUITestContextExtensions
         using var response = await context.PostAndGetResponseAsync(client, objectToSerialize, requestUri);
         response.StatusCode.ShouldBe(expected);
     }
+
+    /// <summary>
+    /// Returns the serialized object as JSON using the default <see cref="JOptions"/> settings.
+    /// </summary>
+    public static string Serialize(object objectToSerialize) =>
+        JsonSerializer.Serialize(objectToSerialize, JOptions.Default);
+
+    /// <summary>
+    /// Deserializes the provided <paramref name="content"/> to the given <typeparamref name="TObject"/> using the
+    /// default <see cref="JOptions"/> settings.
+    /// </summary>
+    public static TObject Deserialize<TObject>(string content)
+        where TObject : class =>
+        JsonSerializer.Deserialize<TObject>(content, JOptions.Default);
 }
