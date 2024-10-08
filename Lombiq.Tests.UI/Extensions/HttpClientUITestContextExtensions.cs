@@ -24,6 +24,8 @@ namespace Lombiq.Tests.UI.Extensions;
         Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
     public static HttpClient CreateClient(this UITestContext context)
     {
         var handler = new HttpClientHandler
@@ -210,7 +212,7 @@ public static class HttpClientUITestContextExtensions
     /// Returns the serialized object as JSON using the default <see cref="JOptions"/> settings.
     /// </summary>
     public static string Serialize(object objectToSerialize) =>
-        JsonSerializer.Serialize(objectToSerialize, JOptions.Default);
+        JsonSerializer.Serialize(objectToSerialize, JsonSerializerOptions);
 
     /// <summary>
     /// Deserializes the provided <paramref name="content"/> to the given <typeparamref name="TObject"/> using the
@@ -218,5 +220,5 @@ public static class HttpClientUITestContextExtensions
     /// </summary>
     public static TObject Deserialize<TObject>(string content)
         where TObject : class =>
-        JsonSerializer.Deserialize<TObject>(content, JOptions.Default);
+        JsonSerializer.Deserialize<TObject>(content, JsonSerializerOptions);
 }
