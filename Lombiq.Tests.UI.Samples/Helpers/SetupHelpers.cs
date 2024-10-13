@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Samples.Tests;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -66,6 +67,15 @@ public static class SetupHelpers
         await context.GoToHomePageAsync();
         AssertSetupSuccessful(context);
         return context.GetCurrentUri();
+    }
+
+    /// <summary>
+    /// This helper contains additional configuration used to set up a separate frontend server, used in <see
+    /// cref="FrontendTests"/>.
+    /// </summary>
+    public static async Task ConfigureFrontendSetupAsync(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+
     }
 
     private static void AssertSetupSuccessful(UITestContext context)
