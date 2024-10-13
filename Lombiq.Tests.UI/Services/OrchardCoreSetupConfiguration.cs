@@ -13,6 +13,9 @@ public delegate Task AfterSetupHandler(OrchardCoreUITestExecutorConfiguration co
 /// </summary>
 public class OrchardCoreSetupConfiguration
 {
+    public static Func<Func<UITestContext, Task<Uri>>, string> DefaultSetupOperationIdentifierCalculator =
+        setupOperation => setupOperation.GetHashCode().ToTechnicalString();
+
     /// <summary>
     /// Gets or sets the Orchard setup operation so the result can be snapshot and used in subsequent tests.
     /// WARNING: It's highly recommended to put assertions at the end to detect setup issues and fail tests early (since
@@ -28,7 +31,7 @@ public class OrchardCoreSetupConfiguration
     /// property to a custom function. Otherwise, it's safe to leave it as-is.
     /// </summary>
     public Func<Func<UITestContext, Task<Uri>>, string> SetupOperationIdentifierCalculator { get; set; } =
-        setupOperation => setupOperation.GetHashCode().ToTechnicalString();
+        DefaultSetupOperationIdentifierCalculator;
 
     /// <summary>
     /// Gets or sets a value indicating whether if a specific setup operations fails and exhausts <see

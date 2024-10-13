@@ -99,6 +99,17 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                             "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
                         ]);
 
+                // Strictly speaking this is not necessary here, because we always use the same static method for setup.
+                // However, if you used a dynamic setup operation (e.g. `context => SetupHelpers.RunSetupAsync(context,
+                // someOtherVariable)` then the default setup identifier calculator would always return a new random
+                // value, because it uses `setupOperation.GetHashCode()` under the hood. A custom calculator would fix
+                // that. But in this example we just safely replace it with a human-readable name so the setup snapshot
+                // directory is easier to find.
+                configuration.SetupConfiguration.SetupOperationIdentifierCalculator = setupOperation =>
+                    setupOperation == SetupHelpers.RunSetupAsync
+                        ? "Sample Setup"
+                        : OrchardCoreSetupConfiguration.DefaultSetupOperationIdentifierCalculator(setupOperation);
+
                 if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
             });
 }
