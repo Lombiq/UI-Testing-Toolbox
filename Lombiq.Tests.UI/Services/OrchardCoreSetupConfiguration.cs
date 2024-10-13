@@ -24,8 +24,8 @@ public class OrchardCoreSetupConfiguration
     /// <summary>
     /// Gets or sets a function that calculates a unique ID which represents the setup operation. This is used when
     /// generating the setup snapshot path. If you set the <see cref="SetupOperation"/> to a dynamic value (e.g. using a
-    /// method that returns a new <see cref="Func{T,TResult}"/> instance) then you must set this property to a custom
-    /// function. Otherwise, it's safe to leave it as-is.
+    /// lambda expression or a method that returns a new <see cref="Func{T,TResult}"/> instance) then you must set this
+    /// property to a custom function. Otherwise, it's safe to leave it as-is.
     /// </summary>
     public Func<Func<UITestContext, Task<Uri>>, string> SetupOperationIdentifierCalculator { get; set; } =
         setupOperation => setupOperation.GetHashCode().ToTechnicalString();
