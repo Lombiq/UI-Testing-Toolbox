@@ -1,4 +1,5 @@
 using Atata.HtmlValidation;
+using Cysharp.Text;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -452,7 +453,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             snapshotSubdirectory = "SQLite-AzureBlob";
         }
 
-        snapshotSubdirectory += "-" + setupConfiguration.SetupOperation!.GetHashCode().ToTechnicalString();
+        snapshotSubdirectory += "-" + setupConfiguration.CalculateSetupOperationIdentifier();
 
         _snapshotDirectoryPath = Path.Combine(setupConfiguration.SetupSnapshotDirectoryPath, snapshotSubdirectory);
 
@@ -661,9 +662,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     }
 
     private string GetSetupHashCode() =>
-        _configuration.SetupConfiguration.SetupOperation.GetHashCode().ToTechnicalString() +
-        _configuration.UseSqlServer +
-        _configuration.UseAzureBlobStorage;
+        ZString.Concat(
+            _configuration.SetupConfiguration.CalculateSetupOperationIdentifier(),
+            _configuration.UseSqlServer,
+            _configuration.UseAzureBlobStorage);
 
     private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 

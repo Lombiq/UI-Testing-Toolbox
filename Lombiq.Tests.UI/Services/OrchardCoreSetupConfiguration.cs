@@ -22,6 +22,15 @@ public class OrchardCoreSetupConfiguration
     public Func<UITestContext, Task<Uri>> SetupOperation { get; set; }
 
     /// <summary>
+    /// Gets or sets a function that calculates a unique ID which represents the setup operation. This is used when
+    /// generating the setup snapshot path. If you set the <see cref="SetupOperation"/> to a dynamic value (e.g. using a
+    /// method that returns a new <see cref="Func{T,TResult}"/> instance) then you must set this property to a custom
+    /// function. Otherwise, it's safe to leave it as-is.
+    /// </summary>
+    public Func<Func<UITestContext, Task<Uri>>, string> SetupOperationIdentifierCalculator { get; set; } =
+        setupOperation => setupOperation.GetHashCode().ToTechnicalString();
+
+    /// <summary>
     /// Gets or sets a value indicating whether if a specific setup operations fails and exhausts <see
     /// cref="OrchardCoreUITestExecutorConfiguration.MaxRetryCount"/> globally then all tests using the same operation
     /// should fail immediately, without attempting to run it again. If set to <see langword="false"/> then every test
@@ -37,4 +46,11 @@ public class OrchardCoreSetupConfiguration
 
     public BeforeSetupHandler BeforeSetup { get; set; }
     public AfterSetupHandler AfterSetup { get; set; }
+
+    /// <summary>
+    /// If <see cref="SetupOperation"/> is not <see langword="null"/>, it invokes <see
+    /// cref="SetupOperationIdentifierCalculator"/> with the <see cref="SetupOperation"/> and returns the result.
+    /// </summary>
+    public string CalculateSetupOperationIdentifier() =>
+        SetupOperation is null ? null : SetupOperationIdentifierCalculator(SetupOperation);
 }
