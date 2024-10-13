@@ -13,7 +13,7 @@ public delegate Task AfterSetupHandler(OrchardCoreUITestExecutorConfiguration co
 /// </summary>
 public class OrchardCoreSetupConfiguration
 {
-    public static Func<Func<UITestContext, Task<Uri>>, string> DefaultSetupOperationIdentifierCalculator =
+    public static readonly Func<Func<UITestContext, Task<Uri>>, string> DefaultSetupOperationIdentifierCalculator =
         setupOperation => setupOperation.GetHashCode().ToTechnicalString();
 
     /// <summary>
