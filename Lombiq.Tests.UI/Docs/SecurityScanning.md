@@ -33,7 +33,7 @@ This is because the Docker installation is configured to use Windows images, whi
     # See https://github.com/Lombiq/GitHub-Actions/blob/dev/.github/workflows/build-and-test-orchard-core.yml.
     uses: Lombiq/GitHub-Actions/.github/workflows/build-and-test-orchard-core.yml@dev
     with:
-      machine-types: '["windows-latest"]'
+      machine-types: '["windows-2022"]'
       test-filter: "FullyQualifiedName!~SecurityScanningTests"
 ```
 
