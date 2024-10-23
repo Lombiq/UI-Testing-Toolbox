@@ -13,6 +13,9 @@ public delegate Task AfterSetupHandler(OrchardCoreUITestExecutorConfiguration co
 /// </summary>
 public class OrchardCoreSetupConfiguration
 {
+    public static readonly Func<Func<UITestContext, Task<Uri>>, string> DefaultSetupOperationIdentifierCalculator =
+        setupOperation => setupOperation.GetHashCode().ToTechnicalString();
+
     /// <summary>
     /// Gets or sets the Orchard setup operation so the result can be snapshot and used in subsequent tests.
     /// WARNING: It's highly recommended to put assertions at the end to detect setup issues and fail tests early (since
@@ -20,6 +23,15 @@ public class OrchardCoreSetupConfiguration
     /// the setup operation too. Also see <see cref="FastFailSetup"/>.
     /// </summary>
     public Func<UITestContext, Task<Uri>> SetupOperation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a function that calculates a unique ID which represents the setup operation. This is used when
+    /// generating the setup snapshot path. If you set the <see cref="SetupOperation"/> to a dynamic value (e.g. using a
+    /// lambda expression or a method that returns a new <see cref="Func{T,TResult}"/> instance) then you must set this
+    /// property to a custom function. Otherwise, it's safe to leave it as-is.
+    /// </summary>
+    public Func<Func<UITestContext, Task<Uri>>, string> SetupOperationIdentifierCalculator { get; set; } =
+        DefaultSetupOperationIdentifierCalculator;
 
     /// <summary>
     /// Gets or sets a value indicating whether if a specific setup operations fails and exhausts <see
@@ -37,4 +49,11 @@ public class OrchardCoreSetupConfiguration
 
     public BeforeSetupHandler BeforeSetup { get; set; }
     public AfterSetupHandler AfterSetup { get; set; }
+
+    /// <summary>
+    /// If <see cref="SetupOperation"/> is not <see langword="null"/>, it invokes <see
+    /// cref="SetupOperationIdentifierCalculator"/> with the <see cref="SetupOperation"/> and returns the result.
+    /// </summary>
+    public string CalculateSetupOperationIdentifier() =>
+        SetupOperation is null ? null : SetupOperationIdentifierCalculator(SetupOperation);
 }
