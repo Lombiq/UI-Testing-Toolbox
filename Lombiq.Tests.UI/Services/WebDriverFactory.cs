@@ -32,8 +32,6 @@ public static class WebDriverFactory
 
                 chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
-                chromeConfig.Options.AddArgument("--no-sandbox"); // #spell-check-ignore-line
-
                 // Linux-specific setting, may be necessary for running in containers, see
                 // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
                 chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
@@ -146,6 +144,7 @@ public static class WebDriverFactory
         BrowserConfiguration configuration)
         where TDriverOptions : ChromiumOptions
     {
+        options.AddArgument("--no-sandbox"); // #spell-check-ignore-line
         options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
