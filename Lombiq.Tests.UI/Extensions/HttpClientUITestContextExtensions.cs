@@ -205,7 +205,20 @@ public static class HttpClientUITestContextExtensions
         HttpStatusCode expected)
     {
         using var response = await context.PostAndGetResponseAsync(client, objectToSerialize, requestUri);
-        response.StatusCode.ShouldBe(expected);
+        if (response.StatusCode == expected) return;
+
+        string additionalContext;
+
+        try
+        {
+            additionalContext = await response.Content?.ReadAsStringAsync();
+        }
+        catch (Exception exception)
+        {
+            additionalContext = "Couldn't read the response body.\n" + exception;
+        }
+
+        response.StatusCode.ShouldBe(expected, additionalContext);
     }
 
     /// <summary>
