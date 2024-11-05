@@ -18,4 +18,12 @@ public class ShiftTimeClock : IClock
 
     public DateTimeOffset ConvertToTimeZone(DateTimeOffset dateTimeOffset, ITimeZone timeZone) =>
         _inner.ConvertToTimeZone(dateTimeOffset, timeZone);
+
+    public static double? UpdateClock(IClock clock, Func<TimeSpan, TimeSpan> edit)
+    {
+        if (clock is not ShiftTimeClock shiftTimeClock) return null;
+
+        shiftTimeClock.Shift = edit(shiftTimeClock.Shift);
+        return shiftTimeClock.Shift.TotalSeconds;
+    }
 }

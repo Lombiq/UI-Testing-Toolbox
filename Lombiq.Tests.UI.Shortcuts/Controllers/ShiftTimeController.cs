@@ -22,11 +22,8 @@ public class ShiftTimeController : Controller
     public IActionResult Add(double days, double seconds) =>
         SetInner(current => current + TimeSpan.FromDays(days) + TimeSpan.FromSeconds(seconds));
 
-    private IActionResult SetInner(Func<TimeSpan, TimeSpan> edit)
-    {
-        if (_clock is not ShiftTimeClock clock) return BadRequest();
-
-        clock.Shift = edit(clock.Shift);
-        return Ok((long)clock.Shift.TotalSeconds);
-    }
+    private IActionResult SetInner(Func<TimeSpan, TimeSpan> edit) =>
+        ShiftTimeClock.UpdateClock(_clock, edit) is { } totalSeconds
+            ? Ok(totalSeconds)
+            : BadRequest($"The clock is {_clock.GetType().FullName} instead of {nameof(ShiftTimeClock)}.");
 }
