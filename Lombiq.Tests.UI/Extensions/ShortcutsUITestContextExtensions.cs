@@ -45,6 +45,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -305,10 +306,10 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     public static async Task ExecuteAndAssertTestFeatureToggleAsync(this UITestContext context)
     {
-        await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+        await context.EnableFeatureDirectlyAsync(FeatureToggleTestBench);
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
         context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
-        await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+        await context.DisableFeatureDirectlyAsync(FeatureToggleTestBench);
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl, onlyIfNotAlreadyThere: false);
         context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
     }
@@ -325,14 +326,14 @@ public static class ShortcutsUITestContextExtensions
     {
         if (toggleTheFeature)
         {
-            await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            await context.EnableFeatureDirectlyAsync(MediaCachePurge);
         }
 
         await context.GoToAsync<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
         if (toggleTheFeature)
         {
-            await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            await context.DisableFeatureDirectlyAsync(MediaCachePurge);
         }
     }
 

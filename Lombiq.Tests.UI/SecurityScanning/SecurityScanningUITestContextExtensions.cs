@@ -137,7 +137,7 @@ public static class SecurityScanningUITestContextExtensions
     {
         if (apiDefinitionUri == null)
         {
-            await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.Swagger");
+            await context.EnableFeatureDirectlyAsync(Shortcuts.ShortcutsFeatureIds.Swagger);
         }
 
         await context.RunAndAssertSecurityScanAsync(
