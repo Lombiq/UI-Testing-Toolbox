@@ -715,4 +715,23 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     public static Task ExecuteJsonRecipeSiteSettingAsync<T>(this UITestContext context, T setting) =>
         context.ExecuteJsonRecipeSiteSettingsAsync(new Dictionary<string, object> { [typeof(T).Name] = setting });
+
+    /// <summary>
+    /// Enabled the "Shift Time - Shortcuts - Lombiq UI Testing Toolbox" feature directly.
+    /// </summary>
+    public static Task EnableTimeShiftingAsync(this UITestContext context) => context.EnableFeatureDirectlyAsync(ShiftTime);
+
+    /// <summary>
+    /// Sets the time shift to a specific value. If both <paramref name="days"/> and <paramref name="seconds"/> are
+    /// provided, then the <see cref="TimeSpan"/> values are added together.
+    /// </summary>
+    public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0) =>
+        context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+
+    /// <summary>
+    /// Adds the specified value to the time shift. If both <paramref name="days"/> and <paramref name="seconds"/> are
+    /// provided, then the <see cref="TimeSpan"/> values for both are added. Negative values are supported as well
+    /// </summary>
+    public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0) =>
+        context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
 }

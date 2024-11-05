@@ -7,7 +7,7 @@ public class ShiftTimeClock : IClock
 {
     private readonly Clock _inner = new();
 
-    public TimeSpan Shift { get; set; }
+    public TimeSpan Shift { get; set; } = TimeSpan.Zero;
     public DateTime UtcNow => _inner.UtcNow + Shift;
 
     public ITimeZone[] GetTimeZones() => _inner.GetTimeZones();
