@@ -30,6 +30,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Interactive mode](Tests/InteractiveModeTests.cs)
 - [Security scanning](Tests/SecurityScanningTests.cs)
 - [Testing remote apps](Tests/RemoteTests.cs)
+- [Testing time-dependent functionality](Tests/ShiftTimeTests.cs)
 
 ## Adding new tutorials
 
