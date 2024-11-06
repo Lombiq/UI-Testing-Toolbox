@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
@@ -56,6 +58,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
+
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
@@ -172,7 +175,14 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             builder => builder
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment(Environments.Development),
+                .UseEnvironment(Environments.Development)
+                .ConfigureLogging(loggingBuilder => loggingBuilder.AddFakeLogging(options =>
+                {
+                    options.CollectRecordsForDisabledLogLevels = false;
+                    options.FilteredLevels.Add(LogLevel.Warning);
+                    options.FilteredLevels.Add(LogLevel.Error);
+                    options.OutputSink += message => _testOutputHelper.WriteLine(message);
+                })),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 
