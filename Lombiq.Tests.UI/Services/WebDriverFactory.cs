@@ -25,9 +25,6 @@ public static class WebDriverFactory
         Task<Func<ChromeDriver>> CreateDriverInnerAsync(string driverPath = null) =>
             Task.FromResult(() =>
             {
-                // Note that no-sandbox should NOT be used, because it causes Chrome processes to remain open, see
-                // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356.
-
                 var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
                 chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
@@ -159,6 +156,12 @@ public static class WebDriverFactory
 
         // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
         options.AddArgument("disable-smooth-scrolling");
+
+        // Previously this switch caused Chrome processes to remain open after test execution, see
+        // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356, but it doesn't seem to be case anymore.
+        // Additionally, Ubuntu 2024-based GitHub Actions runners seem to require this flag to be set, see
+        // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
+        options.AddArgument("--no-sandbox");
 
         if (configuration.FakeVideoSource is not null)
         {
