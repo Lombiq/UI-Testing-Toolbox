@@ -130,9 +130,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             : [];
     }
 
-    public TService GetRequiredService<TService>() =>
-        _orchardApplication.Services.GetRequiredService<TService>();
-
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;

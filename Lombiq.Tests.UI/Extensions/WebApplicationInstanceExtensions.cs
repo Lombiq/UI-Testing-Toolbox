@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -62,4 +63,15 @@ public static class WebApplicationInstanceExtensions
             Environment.NewLine + Environment.NewLine,
             await webApplicationInstance.GetLogs(cancellationToken).ToFormattedStringAsync());
     }
+
+    /// <summary>
+    /// Get service of type <typeparamref name="TService"/>.
+    /// </summary>
+    /// <typeparam name="TService">The type of service object to get.</typeparam>
+    /// <returns>A service object of type <typeparamref name="TService"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// There is no service of type <typeparamref name="TService"/>.
+    /// </exception>
+    public static TService GetRequiredService<TService>(this IWebApplicationInstance webApplicationInstance) =>
+        webApplicationInstance.Services.GetRequiredService<TService>();
 }
