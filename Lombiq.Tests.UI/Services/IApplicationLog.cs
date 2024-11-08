@@ -1,0 +1,69 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Lombiq.Tests.UI.Services;
+
+/// <summary>
+/// An abstraction over a log, be it in the form of a file or something else.
+/// </summary>
+public interface IApplicationLog
+{
+    /// <summary>
+    /// Gets the name of the log, such as the file name.
+    /// </summary>
+    string Name { get; }
+
+    /// <summary>
+    /// Gets the number of messages in the log.
+    /// </summary>
+    int MessageCount { get; }
+
+    /// <summary>
+    /// Returns the content of the log, in case of log files reads the file contents.
+    /// </summary>
+    /// <returns>The contents.</returns>
+    Task<IEnumerable<IApplicationLogMessage>> GetContentAsync();
+
+    /// <summary>
+    /// Removes the log if possible.
+    /// </summary>
+    void Remove();
+}
+
+/// <summary>
+/// An abstraction over a log message.
+/// </summary>
+public interface IApplicationLogMessage
+{
+    /// <summary>
+    /// Gets the level of the log message, like <see cref="LogLevel.Error"/> or <see cref="LogLevel.Warning"/>.
+    /// </summary>
+    LogLevel Level { get; }
+
+    /// <summary>
+    /// Gets the ID that uniquely identifies the log message.
+    /// </summary>
+    EventId Id { get; }
+
+    /// <summary>
+    /// Gets the exception associated with the log message, if any.
+    /// </summary>
+    Exception Exception { get; }
+
+    /// <summary>
+    /// Gets the human-readable formatted log message.
+    /// </summary>
+    string Message { get; }
+
+    /// <summary>
+    /// Gets the category of the log message. This is the type parameter of <see cref="ILogger{TCategoryName}"/>.
+    /// </summary>
+    string Category { get; }
+
+    /// <summary>
+    /// Gets the timestamp of when the log message was created.
+    /// </summary>
+    DateTimeOffset Timestamp { get; }
+}

@@ -53,6 +53,12 @@ public static class WebApplicationInstanceExtensions
     /// <summary>
     /// Retrieves all the logs and concatenates them into a single formatted string.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogs(CancellationToken)"/> directly instead.
+    /// </para>
+    /// </remarks>
     public static async Task<string> GetLogOutputAsync(
         this IWebApplicationInstance webApplicationInstance,
         CancellationToken cancellationToken = default)

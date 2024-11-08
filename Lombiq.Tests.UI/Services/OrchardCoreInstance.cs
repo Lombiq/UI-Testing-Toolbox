@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
@@ -117,17 +118,17 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
     {
-        var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
-        return Directory.Exists(logFolderPath)
-            ? Directory
-                .EnumerateFiles(logFolderPath, "*.log")
-                .Select(filePath => (IApplicationLog)new ApplicationLog
+        if (Services.GetService<FakeLogCollector>() is { } logCollector)
+        {
+            return [
+                new ApplicationLog
                 {
-                    Name = Path.GetFileName(filePath),
-                    FullName = Path.GetFullPath(filePath),
-                    ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
-                })
-            : [];
+                    LogCollector = logCollector,
+                },
+            ];
+        }
+
+        return [];
     }
 
     public async ValueTask DisposeAsync()
@@ -206,13 +207,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<AfterAppStopHandler>(handler => handler(CreateAppStartContext()));
     }
 
-    private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
-    {
-        await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var streamReader = new StreamReader(fileStream);
-        return await streamReader.ReadToEndAsync(cancellationToken);
-    }
-
     private async Task TakeSnapshotInnerAsync(string snapshotDirectoryPath)
     {
         await PauseAsync();
@@ -232,15 +226,41 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private sealed class ApplicationLog : IApplicationLog
     {
-        public string Name { get; init; }
-        public string FullName { get; init; }
-        public Func<Task<string>> ContentLoader { get; init; }
+        public string Name => "FakeLog";
+        public FakeLogCollector LogCollector { get; init; }
+        public int MessageCount => LogCollector.Count;
 
-        public Task<string> GetContentAsync() => ContentLoader();
-
-        public void Remove()
+        public Task<IEnumerable<IApplicationLogMessage>> GetContentAsync()
         {
-            if (File.Exists(FullName)) File.Delete(FullName);
+            var records = LogCollector.GetSnapshot();
+
+            return Task.FromResult(records.Select(record => (IApplicationLogMessage)new ApplicationLogMessage
+            {
+                Level = record.Level,
+                Id = record.Id,
+                Exception = record.Exception,
+                Message = record.Message,
+                Category = record.Category,
+                Timestamp = record.Timestamp,
+                LogRecord = record,
+            }));
         }
+
+        public void Remove() => LogCollector.Clear();
+    }
+
+    private sealed class ApplicationLogMessage : IApplicationLogMessage
+    {
+        public LogLevel Level { get; init; }
+        public EventId Id { get; init; }
+        public Exception Exception { get; init; }
+        public string Message { get; init; }
+        public string Category { get; init; }
+        public DateTimeOffset Timestamp { get; init; }
+        public FakeLogRecord LogRecord { get; init; }
+
+        public override string ToString() =>
+            $"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Category}: {Message}" +
+            (Exception != null ? Exception.ToString() : string.Empty);
     }
 }
