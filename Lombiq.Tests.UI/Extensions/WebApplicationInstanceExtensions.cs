@@ -1,10 +1,8 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,37 +14,40 @@ public static class WebApplicationInstanceExtensions
     /// Asserting that the logs should be empty. When they aren't the Shouldly exception will contain the logs'
     /// contents.
     /// </summary>
-    /// <param name="permittedErrorLinePatterns">
-    /// If not <see langword="null"/> or empty, each line is split and any lines containing <c>|ERROR|</c> will be
-    /// ignored if they regex match any string from this collection (case-insensitive).
-    /// </param>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// </para>
+    /// </remarks>
     public static async Task LogsShouldBeEmptyAsync(
         this IWebApplicationInstance webApplicationInstance,
-        bool canContainWarnings = false,
-        ICollection<string> permittedErrorLinePatterns = null,
         CancellationToken cancellationToken = default)
     {
-        permittedErrorLinePatterns ??= [];
+        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+        logs.ShouldNotContain(log => log.MessageCount > 0, await logs.ToFormattedStringAsync());
+    }
 
-        var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
+    /// <summary>
+    /// Asserting that the logs should not contain messages with the <see cref="LogLevel"/> greater than or equal to
+    /// <see cref="LogLevel.Error"/>. When they do, the Shouldly exception will contain the logs' contents.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// </para>
+    /// </remarks>
+    public static async Task LogsShouldNotContainErrorsAsync(
+        this IWebApplicationInstance webApplicationInstance,
+        CancellationToken cancellationToken = default)
+    {
+        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
 
-        logOutput.ShouldNotContain("|FATAL|");
-
-        var lines = logOutput.SplitByNewLines();
-
-        var errorLines = lines.Where(line => line.Contains("|ERROR|"));
-
-        if (permittedErrorLinePatterns.Count != 0)
+        foreach (var log in logs)
         {
-            errorLines = errorLines.Where(line =>
-                !permittedErrorLinePatterns.Any(pattern => Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)));
-        }
-
-        errorLines.ShouldBeEmpty();
-
-        if (!canContainWarnings)
-        {
-            lines.Where(line => line.Contains("|WARNING|")).ShouldBeEmpty();
+            (await log.GetContentAsync())
+                .ShouldNotContain(logMessage => logMessage.Level > LogLevel.Warning, await logs.ToFormattedStringAsync());
         }
     }
 
@@ -56,7 +57,7 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogs(CancellationToken)"/> directly instead.
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
     /// </para>
     /// </remarks>
     public static async Task<string> GetLogOutputAsync(
@@ -65,9 +66,7 @@ public static class WebApplicationInstanceExtensions
     {
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
 
-        return string.Join(
-            Environment.NewLine + Environment.NewLine,
-            await webApplicationInstance.GetLogs(cancellationToken).ToFormattedStringAsync());
+        return await (await webApplicationInstance.GetLogsAsync(cancellationToken)).ToFormattedStringAsync();
     }
 
     /// <summary>
