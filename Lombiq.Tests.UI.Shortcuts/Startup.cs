@@ -27,7 +27,7 @@ public sealed class Startup : StartupBase
         app.UseMiddleware<ExceptionContextLoggingMiddleware>();
 }
 
-[Feature("Lombiq.Tests.UI.Shortcuts.Swagger")]
+[Feature(ShortcutsFeatureIds.Swagger)]
 public sealed class SwaggerStartup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services) =>
@@ -36,4 +36,14 @@ public sealed class SwaggerStartup : StartupBase
 
     public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider) =>
         app.UseSwagger();
+}
+
+[Feature(ShortcutsFeatureIds.ShiftTime)]
+public sealed class SetTimeStartup : StartupBase
+{
+    public override void ConfigureServices(IServiceCollection services)
+    {
+        services.RemoveImplementationsOf<IClock>();
+        services.AddSingleton<IClock, ShiftTimeClock>();
+    }
 }

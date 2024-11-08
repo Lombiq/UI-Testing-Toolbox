@@ -63,7 +63,7 @@ public static class NavigationUITestContextExtensions
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
             });
 
-    public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
+    public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver?.Url ?? context.TestStartUri.AbsoluteUri);
 
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
