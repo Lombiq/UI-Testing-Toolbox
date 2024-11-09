@@ -43,5 +43,5 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// Reads all the application logs.
     /// </summary>
     /// <returns>The collection of log names and their contents.</returns>
-    IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default);
+    Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default);
 }

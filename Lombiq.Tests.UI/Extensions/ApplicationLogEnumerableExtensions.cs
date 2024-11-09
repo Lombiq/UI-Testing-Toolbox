@@ -13,8 +13,8 @@ public static class ApplicationLogEnumerableExtensions
             Environment.NewLine + Environment.NewLine,
             await Task.WhenAll(
                 logs.Select(async log =>
-                    log.Name +
+                    $"# Log name: {log.Name}" +
                     Environment.NewLine +
                     Environment.NewLine +
-                    (await log.GetContentAsync()).Select(logMessage => logMessage.ToString()))));
+                    string.Join(Environment.NewLine, (await log.GetEntriesAsync()).Select(logEntry => logEntry.ToString())))));
 }

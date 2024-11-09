@@ -87,17 +87,9 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // up) are checked and if there are any errors, the test will fail. You can also enable the checking of
                 // accessibility rules as we'll see later. Maybe not all of the default checks are suitable for you.
                 // Then it's simple to override them; here we change which log entries cause the tests to fail, and
-                // allow warnings and certain errors.
-                // Note that this is just for demonstration; you could use
-                // OrchardCoreUITestExecutorConfiguration.AssertAppLogsCanContainWarningsAndCacheFolderErrorsAsync which
-                // provides this configuration built-in.
+                // allow certain log entries.
                 configuration.AssertAppLogsAsync = webApplicationInstance =>
-                    webApplicationInstance.LogsShouldBeEmptyAsync(
-                        canContainWarnings: true,
-                        permittedErrorLinePatterns:
-                        [
-                            "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
-                        ]);
+                    webApplicationInstance.LogsShouldNotContainAsync(logEntry => logEntry.Message != "My permitted message.");
 
                 // Strictly speaking this is not necessary here, because we always use the same static method for setup.
                 // However, if you used a dynamic setup operation (e.g. `context => SetupHelpers.RunSetupAsync(context,

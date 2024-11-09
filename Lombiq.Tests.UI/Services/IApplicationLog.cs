@@ -24,18 +24,18 @@ public interface IApplicationLog
     /// Returns the content of the log, in case of log files reads the file contents.
     /// </summary>
     /// <returns>The contents.</returns>
-    Task<IEnumerable<IApplicationLogMessage>> GetContentAsync();
+    Task<IEnumerable<IApplicationLogEntry>> GetEntriesAsync();
 
     /// <summary>
     /// Removes the log if possible.
     /// </summary>
-    void Remove();
+    Task RemoveAsync();
 }
 
 /// <summary>
 /// An abstraction over a log message.
 /// </summary>
-public interface IApplicationLogMessage
+public interface IApplicationLogEntry
 {
     /// <summary>
     /// Gets the level of the log message, like <see cref="LogLevel.Error"/> or <see cref="LogLevel.Warning"/>.

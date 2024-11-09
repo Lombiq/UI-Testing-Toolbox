@@ -116,19 +116,21 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
-    public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
     {
         if (Services.GetService<FakeLogCollector>() is { } logCollector)
         {
-            return [
-                new ApplicationLog
+            return Task.FromResult(
+                new IApplicationLog[]
                 {
-                    LogCollector = logCollector,
-                },
-            ];
+                    new FakeLoggerLogApplicationLog
+                    {
+                        LogCollector = logCollector,
+                    },
+                }.AsEnumerable());
         }
 
-        return [];
+        return Task.FromResult(Enumerable.Empty<IApplicationLog>());
     }
 
     public async ValueTask DisposeAsync()
@@ -176,7 +178,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 .ConfigureLogging(loggingBuilder => loggingBuilder.AddFakeLogging(options =>
                 {
                     options.CollectRecordsForDisabledLogLevels = false;
-                    options.FilteredLevels.Add(LogLevel.Warning);
                     options.FilteredLevels.Add(LogLevel.Error);
                     options.OutputSink += message => _testOutputHelper.WriteLine(message);
                 })),
@@ -223,44 +224,4 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private OrchardCoreAppStartContext CreateAppStartContext() =>
         new(_contentRootPath, _url, OrchardCoreInstanceCounter.PortLeases);
-
-    private sealed class ApplicationLog : IApplicationLog
-    {
-        public string Name => "FakeLog";
-        public FakeLogCollector LogCollector { get; init; }
-        public int MessageCount => LogCollector.Count;
-
-        public Task<IEnumerable<IApplicationLogMessage>> GetContentAsync()
-        {
-            var records = LogCollector.GetSnapshot();
-
-            return Task.FromResult(records.Select(record => (IApplicationLogMessage)new ApplicationLogMessage
-            {
-                Level = record.Level,
-                Id = record.Id,
-                Exception = record.Exception,
-                Message = record.Message,
-                Category = record.Category,
-                Timestamp = record.Timestamp,
-                LogRecord = record,
-            }));
-        }
-
-        public void Remove() => LogCollector.Clear();
-    }
-
-    private sealed class ApplicationLogMessage : IApplicationLogMessage
-    {
-        public LogLevel Level { get; init; }
-        public EventId Id { get; init; }
-        public Exception Exception { get; init; }
-        public string Message { get; init; }
-        public string Category { get; init; }
-        public DateTimeOffset Timestamp { get; init; }
-        public FakeLogRecord LogRecord { get; init; }
-
-        public override string ToString() =>
-            $"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Category}: {Message}" +
-            (Exception != null ? Exception.ToString() : string.Empty);
-    }
 }

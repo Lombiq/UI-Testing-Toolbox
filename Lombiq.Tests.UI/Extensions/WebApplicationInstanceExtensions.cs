@@ -1,8 +1,8 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,26 +28,16 @@ public static class WebApplicationInstanceExtensions
         logs.ShouldNotContain(log => log.MessageCount > 0, await logs.ToFormattedStringAsync());
     }
 
-    /// <summary>
-    /// Asserting that the logs should not contain messages with the <see cref="LogLevel"/> greater than or equal to
-    /// <see cref="LogLevel.Error"/>. When they do, the Shouldly exception will contain the logs' contents.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
-    /// </para>
-    /// </remarks>
-    public static async Task LogsShouldNotContainErrorsAsync(
+    public static async Task LogsShouldNotContainAsync(
         this IWebApplicationInstance webApplicationInstance,
+        Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
         CancellationToken cancellationToken = default)
     {
         var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
 
         foreach (var log in logs)
         {
-            (await log.GetContentAsync())
-                .ShouldNotContain(logMessage => logMessage.Level > LogLevel.Warning, await logs.ToFormattedStringAsync());
+            (await log.GetEntriesAsync()).ShouldNotContain(logEntryPredicate, await logs.ToFormattedStringAsync());
         }
     }
 
