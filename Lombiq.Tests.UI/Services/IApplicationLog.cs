@@ -16,9 +16,9 @@ public interface IApplicationLog
     string Name { get; }
 
     /// <summary>
-    /// Gets the number of messages in the log.
+    /// Gets the number of log entries in the log.
     /// </summary>
-    int MessageCount { get; }
+    int EntryCount { get; }
 
     /// <summary>
     /// Returns the content of the log, in case of log files reads the file contents.
@@ -33,22 +33,22 @@ public interface IApplicationLog
 }
 
 /// <summary>
-/// An abstraction over a log message.
+/// An abstraction over a log entries.
 /// </summary>
 public interface IApplicationLogEntry
 {
     /// <summary>
-    /// Gets the level of the log message, like <see cref="LogLevel.Error"/> or <see cref="LogLevel.Warning"/>.
+    /// Gets the level of the log entry, like <see cref="LogLevel.Error"/> or <see cref="LogLevel.Warning"/>.
     /// </summary>
     LogLevel Level { get; }
 
     /// <summary>
-    /// Gets the ID that uniquely identifies the log message.
+    /// Gets the ID that uniquely identifies the log entry.
     /// </summary>
     EventId Id { get; }
 
     /// <summary>
-    /// Gets the exception associated with the log message, if any.
+    /// Gets the exception associated with the log entry, if any.
     /// </summary>
     Exception Exception { get; }
 
@@ -58,12 +58,12 @@ public interface IApplicationLogEntry
     string Message { get; }
 
     /// <summary>
-    /// Gets the category of the log message. This is the type parameter of <see cref="ILogger{TCategoryName}"/>.
+    /// Gets the category of the log entry. This is the type parameter of <see cref="ILogger{TCategoryName}"/>.
     /// </summary>
     string Category { get; }
 
     /// <summary>
-    /// Gets the timestamp of when the log message was created.
+    /// Gets the timestamp of when the log entry was created.
     /// </summary>
     DateTimeOffset Timestamp { get; }
 }

@@ -29,7 +29,7 @@ public static class VerificationUITestContextExtensions
         catch (Exception)
         {
             testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-            testOutputHelper.WriteLine(await context.Application.GetLogOutputAsync());
+            testOutputHelper.WriteLine(await context.Application.GetLogContentsAsync());
 
             throw;
         }

@@ -200,7 +200,7 @@ public class OrchardCoreUITestExecutorConfiguration
         catch (Exception)
         {
             log("Application logs: " + Environment.NewLine);
-            log(await instance.GetLogOutputAsync());
+            log(await instance.GetLogContentsAsync());
 
             throw;
         }

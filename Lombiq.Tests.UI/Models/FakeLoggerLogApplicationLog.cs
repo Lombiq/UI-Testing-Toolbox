@@ -12,7 +12,7 @@ public sealed class FakeLoggerLogApplicationLog : IApplicationLog
 {
     public string Name => "FakeLog";
     public FakeLogCollector LogCollector { get; init; }
-    public int MessageCount => LogCollector.Count;
+    public int EntryCount => LogCollector.Count;
 
     public Task<IEnumerable<IApplicationLogEntry>> GetEntriesAsync()
     {
