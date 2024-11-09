@@ -105,10 +105,11 @@ public static class ScreenshotUITestContextExtensions
     {
         using var screenshot = context.TakeFullPageScreenshot();
 
-        var elementLocation = element.Location;
-        var elementSize = element.Size;
+        var elementLocation = element?.Location ?? default;
+        var elementWidth = element?.Size.Width ?? screenshot.Size.Width;
+        var elementHeight = element?.Size.Height ?? screenshot.Size.Height;
 
-        var expectedSize = new Size(elementLocation.X + elementSize.Width, elementLocation.Y + elementSize.Height);
+        var expectedSize = new Size(elementLocation.X + elementWidth, elementLocation.Y + elementHeight);
 
         var widthDifference = expectedSize.Width - screenshot.Width;
         var heightDifference = expectedSize.Height - screenshot.Height;
@@ -134,7 +135,7 @@ public static class ScreenshotUITestContextExtensions
             }
         }
 
-        var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementSize.Width, elementSize.Height);
+        var cropRectangle = new Rectangle(elementLocation.X, elementLocation.Y, elementWidth, elementHeight);
         return screenshot.Clone(image => image.Crop(cropRectangle));
     }
 

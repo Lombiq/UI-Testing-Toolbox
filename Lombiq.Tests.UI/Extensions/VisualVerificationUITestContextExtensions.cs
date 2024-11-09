@@ -157,7 +157,10 @@ to customize the name of the dump item.";
     /// <see cref="AssertVisualVerificationApproved(UITestContext, IWebElement, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="elementSelector">Selector for the target element.</param>
+    /// <param name="elementSelector">
+    /// Selector for the target element. If <see langword="null" />, the current viewport (visible screen) will be
+    /// captured and the <c>viewport</c> text will be used instead of a selector description.
+    /// </param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
@@ -341,7 +344,7 @@ to customize the name of the dump item.";
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
         context.AssertVisualVerificationApproved(
-            context.Get(elementSelector),
+            elementSelector is null ? null : context.Get(elementSelector),
             comparator,
             regionOfInterest,
             configuration =>
@@ -350,7 +353,7 @@ to customize the name of the dump item.";
                 configuration.WithFileNameSuffix(
                     new[]
                     {
-                        elementSelector.ToString().MakeFileSystemFriendly(),
+                        elementSelector?.ToString().MakeFileSystemFriendly() ?? "viewport",
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")

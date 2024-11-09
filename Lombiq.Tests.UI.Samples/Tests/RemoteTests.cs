@@ -46,3 +46,4 @@ public class RemoteTests : RemoteUITestBase
 }
 
 // END OF TRAINING SECTION: Remote tests.
+// NEXT STATION: Head over to Tests/ShiftTimeTests.cs.

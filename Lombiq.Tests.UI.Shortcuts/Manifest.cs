@@ -12,8 +12,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = Default,
     Name = "Lombiq UI Testing Toolbox - Shortcuts",
     Category = "Development",
-    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcuts for common " +
-        "operations that UI tests might want to do or check.",
+    Description = DescriptionUiTestWarning + "Provides shortcuts for common operations that UI tests might want to do or check.",
     Dependencies =
     [
         "OrchardCore.ContentManagement",
@@ -36,7 +35,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = MediaCachePurge,
     Name = "Media Cache Purge - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Media Cache Purge.",
+    Description = DescriptionUiTestWarning + "Provides shortcut for Media Cache Purge.",
     Dependencies =
     [
         "OrchardCore.Media.Cache",
@@ -47,7 +46,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = Workflows,
     Name = "Workflows - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = "WARNING: Only enable this feature in the UI testing environment. Provides shortcut for Workflows.",
+    Description = DescriptionUiTestWarning + "Provides shortcut for Workflows.",
     Dependencies =
     [
         "OrchardCore.Workflows.Http",
@@ -58,6 +57,14 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = Swagger,
     Name = "Swagger - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = "WARNING: Only enable this feature in the UI testing environment. Provides a Swagger endpoint to " +
-        "generate a JSON OpenAPI definition for the web APIs available in the app. Used in security scanning."
+    Description = DescriptionUiTestWarning + "Provides a Swagger endpoint to generate a JSON OpenAPI definition for " +
+                  "the web APIs available in the app. Used in security scanning."
+)]
+
+[assembly: Feature(
+    Id = ShiftTime,
+    Name = "Shift Time - Shortcuts - Lombiq UI Testing Toolbox",
+    Category = "Development",
+    Description = DescriptionUiTestWarning + "Adds a custom IClock implementation where the clock can be shifted by " +
+                  "a specified value."
 )]
