@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.AspNetCore.Mvc;
 using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Modules;
@@ -10,6 +11,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
     "Major Code Smell",
     "S6967:ModelState.IsValid should be called in controller actions",
     Justification = "Not relevant in a test-only controller.")]
+[DevelopmentAndLocalhostOnly]
 public class ShiftTimeController : Controller
 {
     private readonly IClock _clock;
