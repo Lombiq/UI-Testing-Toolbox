@@ -48,7 +48,7 @@ public static class WebApplicationInstanceExtensions
         this IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
         CancellationToken cancellationToken = default) =>
-        AssertLogsAsyn(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldContain, cancellationToken);
+        AssertLogsAsync(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldContain, cancellationToken);
 
     /// <summary>
     /// Asserts that the logs should NOT contain any entries matching the given predicate. If the assertion fails, the
@@ -68,7 +68,7 @@ public static class WebApplicationInstanceExtensions
         this IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
         CancellationToken cancellationToken = default) =>
-        AssertLogsAsyn(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldNotContain, cancellationToken);
+        AssertLogsAsync(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldNotContain, cancellationToken);
 
     /// <summary>
     /// Retrieves all the logs and concatenates them into a single formatted string.
@@ -100,7 +100,7 @@ public static class WebApplicationInstanceExtensions
     public static TService GetRequiredService<TService>(this IWebApplicationInstance webApplicationInstance) =>
         webApplicationInstance.Services.GetRequiredService<TService>();
 
-    private static async Task AssertLogsAsyn(
+    private static async Task AssertLogsAsync(
         IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
         Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
