@@ -22,14 +22,15 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services;
 
 public delegate Task BeforeAppStartHandler(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments);
+public delegate void AfterFakeLoggingConfigurationHandler(OrchardCoreAppStartContext context, FakeLogCollectorOptions fakeLogCollectorOptions);
 public delegate Task AfterAppStopHandler(OrchardCoreAppStartContext context);
-
 public delegate Task BeforeTakeSnapshotHandler(OrchardCoreAppStartContext context, string snapshotDirectoryPath);
 
 public class OrchardCoreConfiguration
 {
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
+    public AfterFakeLoggingConfigurationHandler AfterFakeLoggingConfiguration { get; set; }
     public AfterAppStopHandler AfterAppStop { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
     public int StartCount { get; internal set; }
@@ -180,6 +181,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     options.CollectRecordsForDisabledLogLevels = false;
                     options.FilteredLevels.Add(LogLevel.Error);
                     options.OutputSink += message => _testOutputHelper.WriteLine(message);
+
+                    _configuration.AfterFakeLoggingConfiguration?.Invoke(CreateAppStartContext(), options);
                 })),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
