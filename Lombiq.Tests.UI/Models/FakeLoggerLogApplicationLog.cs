@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -20,12 +21,6 @@ public sealed class FakeLoggerLogApplicationLog : IApplicationLog
 
         return Task.FromResult(records.Select(record => (IApplicationLogEntry)new FakeLoggerApplicationLogEntry
         {
-            Level = record.Level,
-            Id = record.Id,
-            Exception = record.Exception,
-            Message = record.Message,
-            Category = record.Category,
-            Timestamp = record.Timestamp,
             LogRecord = record,
         }));
     }
@@ -39,15 +34,17 @@ public sealed class FakeLoggerLogApplicationLog : IApplicationLog
 
 public sealed class FakeLoggerApplicationLogEntry : IApplicationLogEntry
 {
-    public LogLevel Level { get; init; }
-    public EventId Id { get; init; }
-    public Exception Exception { get; init; }
-    public string Message { get; init; }
-    public string Category { get; init; }
-    public DateTimeOffset Timestamp { get; init; }
+    public LogLevel Level => LogRecord.Level;
+    public EventId Id => LogRecord.Id;
+    public Exception Exception => LogRecord.Exception;
+    public string Message => LogRecord.Message;
+    public string Category => LogRecord.Category;
+    public DateTimeOffset Timestamp => LogRecord.Timestamp;
     public FakeLogRecord LogRecord { get; init; }
 
-    public override string ToString() =>
-        $"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Category}: {Message}" +
-        (Exception != null ? Exception.ToString() : string.Empty);
+    public override string ToString() => FormatLogRecord(LogRecord);
+
+    public static string FormatLogRecord(FakeLogRecord record) =>
+        StringHelper.CreateInvariant($"{record.Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{record.Level}] {record.Category}: {record.Message}") +
+        (record.Exception != null ? record.Exception.ToString() : string.Empty);
 }

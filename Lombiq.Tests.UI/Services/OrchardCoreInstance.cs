@@ -180,6 +180,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                 {
                     options.CollectRecordsForDisabledLogLevels = false;
                     options.FilteredLevels.Add(LogLevel.Error);
+                    options.FilteredLevels.Add(LogLevel.Critical);
+                    options.OutputFormatter = FakeLoggerApplicationLogEntry.FormatLogRecord;
                     options.OutputSink += message => _testOutputHelper.WriteLine(message);
 
                     _configuration.AfterFakeLoggingConfiguration?.Invoke(CreateAppStartContext(), options);
