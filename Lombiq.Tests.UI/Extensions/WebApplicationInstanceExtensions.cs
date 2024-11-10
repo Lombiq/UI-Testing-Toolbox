@@ -18,7 +18,9 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
@@ -37,7 +39,9 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
@@ -57,7 +61,9 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
@@ -76,7 +82,9 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead.
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
