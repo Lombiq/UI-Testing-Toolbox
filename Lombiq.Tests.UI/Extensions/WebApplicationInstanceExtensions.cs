@@ -103,14 +103,14 @@ public static class WebApplicationInstanceExtensions
     private static async Task AssertLogsAsync(
         IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
-        Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
+        Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod, // #spell-check-ignore-line
         CancellationToken cancellationToken = default)
     {
         var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
 
         foreach (var log in logs)
         {
-            shouldlyMethod(await log.GetEntriesAsync(), logEntryPredicate, await logs.ToFormattedStringAsync());
+            shouldlyMethod(await log.GetEntriesAsync(), logEntryPredicate, await logs.ToFormattedStringAsync()); // #spell-check-ignore-line
         }
     }
 }
