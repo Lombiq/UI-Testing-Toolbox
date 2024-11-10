@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.Extensions.Logging;
@@ -57,9 +58,6 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
             // invalid authentication challenges.
             "System.InvalidOperationException: No authentication handler is registered for the scheme",
-            // These errors frequently happen during UI testing when using Azure Blob Storage for media storage. They're
-            // harmless, though.
-            "Error deleting cache folder",
         };
 
         permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
@@ -67,6 +65,7 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
         return app =>
             app.LogsShouldNotContainAsync(logEntry =>
                 !permittedErrorLinePatterns.Any(pattern =>
-                    Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)));
+                    Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
+                AppLogAssertionHelper.NotMediaCacheEntries(logEntry));
     }
 }

@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium;
@@ -33,11 +34,7 @@ public class OrchardCoreUITestExecutorConfiguration
         app.LogsShouldBeEmptyAsync();
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
-        app => app.LogsShouldNotContainAsync(logEntry =>
-            // These errors frequently happen during UI testing when using Azure Blob Storage for media storage. They're
-            // harmless, though.
-            logEntry.Category != "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider" ||
-            !logEntry.Message.StartsWithOrdinalIgnoreCase("Error deleting cache folder"));
+        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
 
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
