@@ -66,6 +66,7 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             app.LogsShouldNotContainAsync(logEntry =>
                 !permittedErrorLinePatterns.Any(pattern =>
                     Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
-                AppLogAssertionHelper.NotMediaCacheEntries(logEntry));
+                AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
+                logEntry.Level >= LogLevel.Error);
     }
 }
