@@ -7,7 +7,7 @@
   - Browser logs, i.e. the developer console output.
   - Screenshots of each page in order the test visited them, as well as when the test failed (Windows Photo Viewer won't be able to open it though, use something else like the Windows 10 Photos app).
   - The HTML output on the page the test failed.
-  - Any direct output of the test (like the exception thrown) as well as a log of the operations it completed.
+  - Any direct output of the test (like the exception thrown) as well as a log of the operations it completed (including browser interactions and corresponding Orchard Core log entries).
   - If accessibility was checked and asserting it failed then an accessibility report will be included too.
   - If HTML validation was done and asserting it failed then an HTML validation report will be included too.
 - Run tests with the debugger attached to stop where the test fails. This way you can take a good look at what's in the driven browser window so you can examine the web page and you can debug the web app under test at the same time.
