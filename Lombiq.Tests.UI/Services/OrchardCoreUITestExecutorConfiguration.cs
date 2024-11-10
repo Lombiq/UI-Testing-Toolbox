@@ -185,38 +185,4 @@ public class OrchardCoreUITestExecutorConfiguration
     /// enabled in the app for these to work.
     /// </summary>
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
-
-    public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
-    {
-        if (instance == null || AssertAppLogsAsync == null) return;
-
-        try
-        {
-            await AssertAppLogsAsync(instance);
-        }
-        catch (Exception)
-        {
-            log("Application logs: " + Environment.NewLine);
-            log(await instance.GetLogContentsAsync());
-
-            throw;
-        }
-    }
-
-    public void AssertBrowserLogMaybe(IList<LogEntry> browserLogs, Action<string> log)
-    {
-        if (AssertBrowserLog == null) return;
-
-        try
-        {
-            AssertBrowserLog(browserLogs);
-        }
-        catch (Exception)
-        {
-            log("Browser logs: " + Environment.NewLine);
-            log(browserLogs.ToFormattedString());
-
-            throw;
-        }
-    }
 }
