@@ -46,7 +46,6 @@ public class SynchronizingWebApplicationSnapshotManager
 
             var result = await appInitializer();
             await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);
-            await result.Context.Application.ResumeAsync();
 
             DebugHelper.WriteLineTimestamped("Finished snapshot.");
 

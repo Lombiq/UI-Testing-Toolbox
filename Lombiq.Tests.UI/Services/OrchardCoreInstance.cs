@@ -223,6 +223,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(CreateAppStartContext(), snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
+
+        await ResumeAsync();
     }
 
     private OrchardCoreAppStartContext CreateAppStartContext() =>
