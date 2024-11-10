@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,28 @@ public static class WebApplicationInstanceExtensions
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
         CancellationToken cancellationToken = default) =>
         AssertLogsAsync(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldContain, cancellationToken);
+
+    /// <summary>
+    /// Asserts that the logs should NOT contain any entries with <see cref="LogLevel.Error"/> and above. If the
+    /// assertion fails, the Shouldly exception will contain all log entries.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
+    public static Task LogsShouldNotContainErrorsAsync(
+        this IWebApplicationInstance webApplicationInstance,
+        CancellationToken cancellationToken = default) =>
+        AssertLogsAsync(
+            webApplicationInstance,
+            logEntry => logEntry.Level > LogLevel.Error,
+            ShouldBeEnumerableTestExtensions.ShouldNotContain,
+            cancellationToken);
 
     /// <summary>
     /// Asserts that the logs should NOT contain any entries matching the given predicate. If the assertion fails, the
