@@ -36,8 +36,8 @@ public class OrchardCoreUITestExecutorConfiguration
         app => app.LogsShouldNotContainAsync(logEntry =>
             // These errors frequently happen during UI testing when using Azure Blob Storage for media storage. They're
             // harmless, though.
-            logEntry.Category == "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider" &&
-            logEntry.Message.StartsWithOrdinalIgnoreCase("Error deleting cache folder"));
+            logEntry.Category != "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider" ||
+            !logEntry.Message.StartsWithOrdinalIgnoreCase("Error deleting cache folder"));
 
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
