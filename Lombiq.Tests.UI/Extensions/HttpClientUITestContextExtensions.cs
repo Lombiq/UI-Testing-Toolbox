@@ -10,6 +10,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -24,7 +25,7 @@ namespace Lombiq.Tests.UI.Extensions;
         Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
+    public static JsonSerializerOptions JsonSerializerOptions { get; set; } = new(JsonSerializerDefaults.Web);
 
     public static HttpClient CreateClient(this UITestContext context)
     {
