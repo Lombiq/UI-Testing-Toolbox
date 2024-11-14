@@ -47,7 +47,7 @@ public static class AccessibilityCheckingUITestContextExtensions
         if (accessibilityConfiguration.CreateReportAlways)
         {
             var reportDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
-                DirectoryPaths.GetTempSubDirectoryPath(context.Id, "AxeHtmlReport"));
+                context.GetTempSubDirectoryPath("AxeHtmlReport"));
 
             var reportPath = Path.Combine(
                     reportDirectoryPath,

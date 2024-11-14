@@ -80,7 +80,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Each attempt will have it's own "ZapN" directory inside the temp, starting with "Zap1".
         var mountedDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
-            DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap"));
+            context.GetTempSubDirectoryPath("Zap"));
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
 
         Directory.CreateDirectory(reportsDirectoryPath);

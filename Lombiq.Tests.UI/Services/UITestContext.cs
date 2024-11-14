@@ -139,6 +139,12 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    /// <summary>
+    /// Gets the absolute path of the <see cref="DirectoryPaths.Screenshots"/> subdirectory inside the current test
+    /// instance's <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string ScreenshotsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Screenshots);
+
     // This is a central context object, we need the data to be passed in the constructor.
 #pragma warning disable S107 // Methods should not have too many parameters
     public UITestContext(
@@ -275,6 +281,13 @@ public class UITestContext
         UrlPrefix = urlPrefix;
         Scope.BaseUri = new Uri(Scope.BaseUri, "/" + UrlPrefix + (string.IsNullOrEmpty(UrlPrefix) ? string.Empty : "/"));
     }
+
+    /// <summary>
+    /// Returns the subdirectory described by <paramref name="subDirectoryNames"/> inside the current test instance's
+    /// <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
+        DirectoryPaths.GetTempDirectoryPath([Id, ..subDirectoryNames]);
 
     private bool IsAlert()
     {
