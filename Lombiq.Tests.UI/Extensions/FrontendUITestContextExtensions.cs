@@ -66,7 +66,8 @@ public static class FrontendUITestContextExtensions
     public static async Task ExecuteJavascriptTestAsync(
         this UITestContext context,
         string scriptPath,
-        ITestOutputHelper testOutputHelper)
+        ITestOutputHelper testOutputHelper,
+        string workingDirectory = null)
     {
         const string command = "node";
         var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavascriptTestAsync)}({command})");
@@ -83,6 +84,7 @@ public static class FrontendUITestContextExtensions
                 ])
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
+                .WithWorkingDirectory(workingDirectory ?? Environment.CurrentDirectory)
                 .ExecuteAsync();
         }
         catch
@@ -95,10 +97,35 @@ public static class FrontendUITestContextExtensions
     }
 
     /// <summary>
+    /// Sets up the Javascript dependencies using <see cref="SetupNodeSeleniumAsync"/> and then runs the script in the
+    /// same temp directory.
+    /// </summary>
+    /// <param name="scriptPath">
+    /// The path of the Javascript file to execute with <c>node</c>. Before passing it to <see
+    /// cref="ExecuteJavascriptTestAsync"/>, it's transformed into a relative path based on the temp directory to
+    /// conserve path length because long paths can be a problem in some operating systems.
+    /// </param>
+    public static async Task SetupSeleniumAndExecuteJavascriptTestAsync(
+        this UITestContext context,
+        string scriptPath,
+        ITestOutputHelper testOutputHelper,
+        params string[] otherDependencies)
+    {
+        var workingDirectory = await context.SetupNodeSeleniumAsync(testOutputHelper, otherDependencies);
+        var relativePath = Path.GetRelativePath(workingDirectory, scriptPath);
+
+        await context.ExecuteJavascriptTestAsync(relativePath, testOutputHelper, workingDirectory);
+    }
+
+    /// <summary>
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory and
     /// installs the provided NPM <paramref name="dependencies"/> using <c>pnpm</c>.
     /// </summary>
-    public static async Task SetupNodeDependenciesAsync(this UITestContext context, ITestOutputHelper helper, params string[] dependencies)
+    /// <returns>The path of the directory where the project is set up.</returns>
+    public static async Task<string> SetupNodeDependenciesAsync(
+        this UITestContext context,
+        ITestOutputHelper helper,
+        params string[] dependencies)
     {
         var workingDirectory = context.GetTempSubDirectoryPath();
         var projectFilePath = Path.Join(workingDirectory, "package.json");
@@ -121,6 +148,10 @@ public static class FrontendUITestContextExtensions
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory, then
     /// installs <c>selenium-webdriver</c> and any additional NPM dependencies using <c>pnpm</c>.
     /// </summary>
-    public static Task SetupNodeSeleniumAsync(this UITestContext context, ITestOutputHelper helper, params string[] otherDependencies) =>
+    /// <returns>The path of the directory where the project is set up.</returns>
+    public static Task<string> SetupNodeSeleniumAsync(
+        this UITestContext context,
+        ITestOutputHelper helper,
+        params string[] otherDependencies) =>
         context.SetupNodeDependenciesAsync(helper, ["selenium-webdriver", ..otherDependencies]);
 }
