@@ -142,6 +142,8 @@ public static class FrontendUITestContextExtensions
             .WithStandardErrorPipe(pipe)
             .WithWorkingDirectory(workingDirectory)
             .ExecuteAsync();
+
+        return workingDirectory;
     }
 
     /// <summary>
