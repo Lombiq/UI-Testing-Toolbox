@@ -2,6 +2,7 @@
 
 using CliWrap;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
@@ -67,17 +68,26 @@ public class FrontendServer
         ArgumentNullException.ThrowIfNull(program);
         skipStartup ??= _ => false;
 
-        var cli = Cli.Wrap(program).WithArguments(arguments ?? []);
-
         _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
+            var cli = Cli
+                .Wrap(program)
+                .WithArguments(arguments ?? [])
+                .WithWorkingDirectory(orchardContext.ContentRootPath);
+
             var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var backendPort = orchardContext.Url.Port;
             var context = new Context(
                 orchardContext.ContentRootPath,
                 orchardContext.Url,
                 orchardContext.PortLeaseManager,
                 frontendPort,
                 orchardArguments);
+
+            // Initialize the default frontend and backend URLs. This may be customized in thenAsync.
+            _configuration.SetFrontendAndBackendUris(
+                frontendUrl: "https://localhost:" + frontendPort.ToTechnicalString(),
+                backendUrl: "https://localhost:" + backendPort.ToTechnicalString());
 
             var cancellationTokenSource = new CancellationTokenSource();
             var waitCompletionSource = new TaskCompletionSource();
@@ -108,7 +118,7 @@ public class FrontendServer
 
             if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
 
-            _configuration.CustomConfiguration[GetKey(context.Url.Port)] = new FrontendServerContext
+            _configuration.CustomConfiguration[GetKey(backendPort)] = new FrontendServerContext
             {
                 Port = frontendPort,
                 Task = cliTask,
@@ -159,6 +169,13 @@ public class FrontendServer
                 $"The timeout of {nameof(FrontendServer)} ({timeout}) is exceeded."));
         }
     }
+
+    /// <summary>
+    /// Returns a checker function that can be passed to <see cref="Configure"/>'s <c>skipStartup</c> parameter to skip
+    /// execution during setup and snapshot restore.
+    /// </summary>
+    public static Func<Context, bool> SkipDuringSetupAndRestore(OrchardCoreUITestExecutorConfiguration configuration) =>
+        _ => configuration.OrchardCoreConfiguration.StartCount > 2;
 
     public record Context(
         string ContentRootPath,
