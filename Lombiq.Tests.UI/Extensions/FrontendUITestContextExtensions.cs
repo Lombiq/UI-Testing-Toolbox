@@ -13,6 +13,34 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FrontendUITestContextExtensions
 {
+    public const string FrontendPseudoTenantName = "!Frontend";
+
+    /// <summary>
+    /// Navigates to the backend <see cref="Uri"/> returned by <see
+    /// cref="FrontendOrchardCoreUITestExecutorConfigurationExtensions.GetFrontendAndBackendUris"/> and presents it as
+    /// switching to the default tenant.
+    /// </summary>
+    /// <remarks><para>
+    /// If the backend URL has not been initialized to something else (e.g. using a custom URL prefix), this is
+    /// equivalent to using <see cref="UITestContext.SwitchCurrentTenantToDefault"/>. Even so, this method should be
+    /// used for clarity when applicable.
+    /// </para></remarks>
+    public static void SwitchToBackend(this UITestContext context) =>
+        context.SwitchCurrentTenant(
+            tenantName: null,
+            context.Configuration.GetFrontendAndBackendUris().BackendUri);
+
+    /// <summary>
+    /// Navigates to the frontend <see cref="Uri"/> returned by <see
+    /// cref="FrontendOrchardCoreUITestExecutorConfigurationExtensions.GetFrontendAndBackendUris"/> and presents it as
+    /// switching to a tenant named <see cref="FrontendPseudoTenantName"/> which is not a real Orchard Core tenant so
+    /// this information can only be used for information.
+    /// </summary>
+    public static void SwitchToFrontend(this UITestContext context) =>
+        context.SwitchCurrentTenant(
+            FrontendPseudoTenantName,
+            context.Configuration.GetFrontendAndBackendUris().FrontendUri);
+
     public static string GetDriverPath(this UITestContext context)
     {
         if (context.Driver is not WebDriver { CommandExecutor: DriverServiceCommandExecutor executor })
@@ -51,7 +79,7 @@ public static class FrontendUITestContextExtensions
                     scriptPath,
                     context.GetDriverPath(),
                     context.Driver.Url,
-                    DirectoryPaths.GetTempSubDirectoryPath(context.Id),
+                    context.GetTempSubDirectoryPath(),
                 ])
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
@@ -65,4 +93,34 @@ public static class FrontendUITestContextExtensions
             throw;
         }
     }
+
+    /// <summary>
+    /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory and
+    /// installs the provided NPM <paramref name="dependencies"/> using <c>pnpm</c>.
+    /// </summary>
+    public static async Task SetupNodeDependenciesAsync(this UITestContext context, ITestOutputHelper helper, params string[] dependencies)
+    {
+        var workingDirectory = context.GetTempSubDirectoryPath();
+        var projectFilePath = Path.Join(workingDirectory, "package.json");
+
+        if (!Directory.Exists(projectFilePath))
+        {
+            await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }");
+        }
+
+        var pipe = helper.ToPipeTarget(nameof(SetupNodeSeleniumAsync));
+        await Cli.Wrap("pnpm")
+            .WithArguments(["install", ..dependencies])
+            .WithStandardOutputPipe(pipe)
+            .WithStandardErrorPipe(pipe)
+            .WithWorkingDirectory(workingDirectory)
+            .ExecuteAsync();
+    }
+
+    /// <summary>
+    /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory, then
+    /// installs <c>selenium-webdriver</c> and any additional NPM dependencies using <c>pnpm</c>.
+    /// </summary>
+    public static Task SetupNodeSeleniumAsync(this UITestContext context, ITestOutputHelper helper, params string[] otherDependencies) =>
+        context.SetupNodeDependenciesAsync(helper, ["selenium-webdriver", ..otherDependencies]);
 }
