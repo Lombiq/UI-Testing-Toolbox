@@ -20,3 +20,6 @@ public class FrontendTests : UITestBase
             },
             SetupHelpers.ConfigureFrontendSetupAsync);
 }
+
+// END OF TRAINING SECTION: Test headless Orchard Core with a frontend subprocess.
+// NEXT STATION: Head over to Tests/JavascriptTests.cs.

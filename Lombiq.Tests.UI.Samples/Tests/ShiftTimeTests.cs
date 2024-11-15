@@ -61,3 +61,4 @@ public class ShiftTimeTests : UITestBase
 }
 
 // END OF TRAINING SECTION: Testing time-dependent functionality.
+// NEXT STATION: Head over to FrontendUITestBase.cs.
