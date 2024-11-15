@@ -21,14 +21,15 @@ public static class FrontendOrchardCoreUITestExecutorConfigurationExtensions
 
     /// <summary>
     /// Updates the <see cref="OrchardCoreUITestExecutorConfiguration.CustomConfiguration"/> by storing the Vite
-    /// frontend and the Orchard Core backend URLs as <see cref="Uri"/> instances.
+    /// frontend and the Orchard Core backend URLs as <see cref="Uri"/> instances. If either parameter is null, that
+    /// value is not changed.
     /// </summary>
     public static void SetFrontendAndBackendUris(
         this OrchardCoreUITestExecutorConfiguration configuration,
         string frontendUrl,
         string backendUrl)
     {
-        configuration.CustomConfiguration[FrontendUri] = new Uri(frontendUrl);
-        configuration.CustomConfiguration[BackendUri] = new Uri(backendUrl);
+        if (frontendUrl != null) configuration.CustomConfiguration[FrontendUri] = new Uri(frontendUrl);
+        if (backendUrl != null) configuration.CustomConfiguration[BackendUri] = new Uri(backendUrl);
     }
 }

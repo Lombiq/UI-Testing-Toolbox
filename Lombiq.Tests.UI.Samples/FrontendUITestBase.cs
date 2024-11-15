@@ -23,8 +23,6 @@ public abstract class FrontendUITestBase : UITestBase
     /// <summary>
     /// Executes a UI test where the frontend is served by a separate process.
     /// </summary>
-    /// <param name="changeConfigurationAsync">Additional test configurations.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the server failed to set up.</exception>
     [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for more readable comments.")]
     [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1114:Parameter list should follow declaration", Justification = "Same.")]
     protected Task ExecuteFrontendTestAfterSetupAsync(
@@ -32,10 +30,15 @@ public abstract class FrontendUITestBase : UITestBase
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null) =>
         ExecuteTestAfterSetupAsync(
-            context =>
+            async context =>
             {
+                // Before executing provided test, we switch to the frontend URL, as if we switched to a different
+                // tenant, then actually navigate to the frontend so the tests won't start in the backend home page
+                // that's probably not used anyway.
                 context.SwitchToFrontend();
-                return testAsync(context);
+                await context.GoToHomePageAsync();
+
+                await testAsync(context);
             },
             browser,
             configuration =>
@@ -55,17 +58,24 @@ public abstract class FrontendUITestBase : UITestBase
                         // needed to add the frontend and backend URLs or port numbers to the process, e.g. as arguments
                         // or environment variables. Since we set the arguments here, the parameter above is left null.
                         // If necessary, this is also where you'd set the program's working directory.
-                        configureCommand: (frontendCommand, _) =>
+                        configureCommand: (frontendCommand, context) =>
                         {
-                            // You can also get this from the second optional OrchardCoreAppStartContext parameter, but
-                            // then you have to refer to context.Url.Port, which is less readable. The values in the
-                            // configuration has been initialized shortly before this is called, so why not use them?
-                            var backendPort = configuration.GetFrontendAndBackendUris().FrontendUri.Port.ToTechnicalString();
+                            // You can also get this from the configuration using configuration
+                            // .GetFrontendAndBackendUris().FrontendUri.Port. The values in the configuration has been
+                            // initialized shortly before this function is called. but it's not worth it unless you need
+                            // both frontend and backend URLS. The frontend port is a unique, reserved number that's
+                            // guaranteed to be available during this test just as much as any Orchard Core instance,
+                            // because it's coming from the same pool of numbers.
+                            var port = context.FrontendPort.ToTechnicalString();
 
-                            // The backend URL contains a unique reserved port number that's guaranteed to be available
-                            // during this test just as much as any Orchard Core instance, because it's coming from the
-                            // same pool of numbers.
-                            return frontendCommand.WithArguments(["--yes", "http-server", "--port", backendPort]);
+                            // Here we configure NPX to automatically download http-server without prompting (--yes) and
+                            // use the provided port number. Since this server uses HTTP instead of HTTPS, you have to
+                            // set the frontend URL too. The backend URL is not changed, so pass null to leave it as-is.
+                            configuration.SetFrontendAndBackendUris(
+                                frontendUrl: $"http://localhost:" + port,
+                                backendUrl: null);
+                            return frontendCommand.WithArguments(["--yes", "http-server", "--port", port]);
+
                         },
                         // When this function is not null, test setup will call it on each output line and wait for it
                         // to return true. This can be used to look for an output that only appears when the frontend

@@ -69,15 +69,6 @@ public static class SetupHelpers
         return context.GetCurrentUri();
     }
 
-    /// <summary>
-    /// This helper contains additional configuration used to set up a separate frontend server, used in <see
-    /// cref="FrontendTests"/>.
-    /// </summary>
-    public static async Task ConfigureFrontendSetupAsync(OrchardCoreUITestExecutorConfiguration configuration)
-    {
-
-    }
-
     private static void AssertSetupSuccessful(UITestContext context)
     {
         try
