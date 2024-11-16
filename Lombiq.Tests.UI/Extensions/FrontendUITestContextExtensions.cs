@@ -125,7 +125,7 @@ public static class FrontendUITestContextExtensions
         (workingDirectory, var arguments) = context.GetExecuteJavascriptTestPats(scriptPath, workingDirectory);
 
         return context.SwitchToInteractiveAsync(
-            $"To start a Javascript test, open a command line terminal at \"{workingDirectory}\": and type the " +
+            $"To start a Javascript test, open a command line terminal at \"{workingDirectory}\" and type the " +
             $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>");
     }
 
