@@ -22,8 +22,10 @@ public class JavascriptTests : UITestBase
     [Fact]
     public Task ExampleJavascriptTestShouldWork()
     {
-        // Don't forget to mark the script files as "Copy if newer", so they are available to the test.
-        var scriptPath = Path.Join("Tests", nameof(ExampleJavascriptTestShouldWork) + ".mjs");
+        // Don't forget to mark the script files as "Copy if newer", so they are available to the
+        // test. It's best to include something like the following in your csproj file:
+        // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
+        var scriptPath = Path.Join("Tests", "test.mjs");
 
         // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the script.
         return ExecuteTestAfterSetupAsync(context => context
