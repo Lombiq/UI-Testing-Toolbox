@@ -57,6 +57,26 @@ public static class FrontendUITestContextExtensions
         return Path.Join(service.DriverServicePath, service.DriverServiceExecutableName);
     }
 
+    private static (string WorkingDirectory, string[] Arguments) GetExecuteJavascriptTestPats(
+        this UITestContext context,
+        string scriptPath,
+        string workingDirectory)
+    {
+        workingDirectory = Path.GetFullPath(workingDirectory ?? Environment.CurrentDirectory);
+
+        var relativeScriptPath = Path.GetRelativePath(workingDirectory, scriptPath);
+        var arguments = new[]
+        {
+            "--inspect",
+            relativeScriptPath.Length < scriptPath.Length ? relativeScriptPath : scriptPath,
+            context.GetDriverPath(),
+            context.Driver.Url,
+            context.GetTempSubDirectoryPath(),
+        };
+
+        return (workingDirectory, arguments);
+    }
+
     /// <summary>
     /// Executes the provided file via <c>node</c> with command line arguments containing the necessary information for
     /// Selenium JS to take over the browser.
@@ -71,17 +91,12 @@ public static class FrontendUITestContextExtensions
     {
         const string command = "node";
         var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavascriptTestAsync)}({command})");
+        (workingDirectory, var arguments) = context.GetExecuteJavascriptTestPats(scriptPath, workingDirectory);
 
         try
         {
             await Cli.Wrap(command)
-                .WithArguments([
-                    "--inspect",
-                    scriptPath,
-                    context.GetDriverPath(),
-                    context.Driver.Url,
-                    context.GetTempSubDirectoryPath(),
-                ])
+                .WithArguments(arguments)
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
                 .WithWorkingDirectory(workingDirectory ?? Environment.CurrentDirectory)
@@ -94,6 +109,24 @@ public static class FrontendUITestContextExtensions
             await context.TriggerAfterPageChangeEventAsync();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Invokes <see cref="ShortcutsUITestContextExtensions.SwitchToInteractiveAsync"/> with a custom notification
+    /// message that contains instructions to invoke the Javascript test manually with <c>node</c>.
+    /// </summary>
+    /// <param name="scriptPath">The relative or absolute path pointing to the test script file.</param>
+    /// <param name="workingDirectory">The path where the test script should be executed, will be converted to absolute.</param>
+    public static Task SwitchToInteractiveWithJavascriptTestInfoAsync(
+        this UITestContext context,
+        string scriptPath,
+        string workingDirectory = null)
+    {
+        (workingDirectory, var arguments) = context.GetExecuteJavascriptTestPats(scriptPath, workingDirectory);
+
+        return context.SwitchToInteractiveAsync(
+            $"To start a Javascript test, open a command line terminal at \"{workingDirectory}\": and type the " +
+            $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>");
     }
 
     /// <summary>

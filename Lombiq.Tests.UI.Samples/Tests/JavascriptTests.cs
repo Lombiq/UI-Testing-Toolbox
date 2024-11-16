@@ -45,13 +45,9 @@ public class JavascriptTests : UITestBase
         return ExecuteTestAfterSetupAsync(
             async context =>
             {
-                var driverPath = context.GetDriverPath();
-                var tempPath = context.GetTempSubDirectoryPath();
-
-                await context.SwitchToInteractiveAsync(
-                    $"To start a Javascript test, open a command line terminal at \"{tempPath}\": and type the " +
-                    $"following command: <code class=\"d-block\">node --inspect ../../sandbox.js {driverPath} " +
-                    $"<a href=\"{context.Driver.Url}\">{context.Driver.Url}</a></code>");
+                var scriptPath = Path.Join("Tests", "test.mjs");
+                var workingDirectory = await context.SetupNodeSeleniumAsync(_testOutputHelper);
+                await context.SwitchToInteractiveWithJavascriptTestInfoAsync(scriptPath, workingDirectory);
             },
             configuration =>
             {
