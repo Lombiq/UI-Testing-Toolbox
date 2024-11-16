@@ -19,10 +19,7 @@ public sealed class FakeLoggerLogApplicationLog : IApplicationLog
     {
         var records = LogCollector.GetSnapshot();
 
-        return Task.FromResult(records.Select(record => (IApplicationLogEntry)new FakeLoggerApplicationLogEntry
-        {
-            LogRecord = record,
-        }));
+        return Task.FromResult(records.Select(record => (IApplicationLogEntry)new FakeLoggerApplicationLogEntry(record)));
     }
 
     public Task RemoveAsync()
@@ -32,7 +29,7 @@ public sealed class FakeLoggerLogApplicationLog : IApplicationLog
     }
 }
 
-public sealed class FakeLoggerApplicationLogEntry : IApplicationLogEntry
+public record FakeLoggerApplicationLogEntry(FakeLogRecord LogRecord) : IApplicationLogEntry
 {
     public LogLevel Level => LogRecord.Level;
     public EventId Id => LogRecord.Id;
@@ -40,7 +37,6 @@ public sealed class FakeLoggerApplicationLogEntry : IApplicationLogEntry
     public string Message => LogRecord.Message;
     public string Category => LogRecord.Category;
     public DateTimeOffset Timestamp => LogRecord.Timestamp;
-    public FakeLogRecord LogRecord { get; init; }
 
     public override string ToString() => FormatLogRecord(LogRecord);
 
