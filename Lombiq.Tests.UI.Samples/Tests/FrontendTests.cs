@@ -18,7 +18,7 @@ public class FrontendTests : FrontendUITestBase
     // these directories and files. If we had a large client application that interacts with the headless OC in the
     // backend, we would be able to do something more interesting but that's outside the scope of this demo.
     [Fact]
-    public Task ServerSideErrorOnLoadedPageShouldHaltTest() =>
+    public Task FrontendServerShouldStartWithTest() =>
         ExecuteFrontendTestAfterSetupAsync(
             async context =>
             {
