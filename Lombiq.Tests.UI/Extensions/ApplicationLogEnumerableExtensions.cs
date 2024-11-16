@@ -17,14 +17,12 @@ public static class ApplicationLogEnumerableExtensions
             return Environment.NewLine + await LogLinesToFormattedStringAsync(logsArray[0]);
         }
 
-        return string.Join(
-            Environment.NewLine + Environment.NewLine,
-            await Task.WhenAll(
-                logsArray.Select(async log =>
-                    $"# Log name: {log.Name}" +
-                    Environment.NewLine +
-                    Environment.NewLine +
-                    await LogLinesToFormattedStringAsync(log))));
+        // Parallelization with Task.WhenAll() isn't really necessary for performance here but would potentially change
+        // the order of the logs in the output.
+        var logContents = logsArray.AwaitEachAsync(async log =>
+            $"# Log name: {log.Name}" + Environment.NewLine + Environment.NewLine + await LogLinesToFormattedStringAsync(log));
+
+        return string.Join(Environment.NewLine + Environment.NewLine, logContents);
     }
 
     private static async Task<string> LogLinesToFormattedStringAsync(IApplicationLog log) =>
