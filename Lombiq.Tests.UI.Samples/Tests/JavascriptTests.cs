@@ -19,18 +19,21 @@ public class JavascriptTests : UITestBase
     {
     }
 
+    // Using this approach you only have to write minimal C# boilerplate, which you can see below.
     [Fact]
-    public Task ExampleJavascriptTestShouldWork()
-    {
-        // Don't forget to mark the script files as "Copy if newer", so they are available to the
-        // test. It's best to include something like the following in your csproj file:
-        // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
-        var scriptPath = Path.Join("Tests", "test.mjs");
+    public Task ExampleJavascriptTestShouldWork() =>
+        ExecuteTestAfterSetupAsync(context =>
+        {
+            // Don't forget to mark the script files as "Copy if newer", so they are available to the test. It's best to
+            // include something like the following in your csproj file:
+            // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
+            var scriptPath = Path.Join("Tests", "test.mjs");
 
-        // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the script.
-        return ExecuteTestAfterSetupAsync(context => context
-            .SetupSeleniumAndExecuteJavascriptTestAsync(scriptPath, _testOutputHelper));
-    }
+            // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the
+            // script. This method has an additional parameter to list further NPM dependencies beyond
+            // "selenium-webdriver", if the script requires it. We will check out this script file in the next station.
+            return context.SetupSeleniumAndExecuteJavascriptTestAsync(scriptPath, _testOutputHelper);
+        });
 
     // To best debug the Javascript code, you may want to set up the site and then invoke node manually. This is not a
     // real test, but it sets up the site in interactive mode (see Tests/InteractiveModeTests.cs for more) with
@@ -58,4 +61,4 @@ public class JavascriptTests : UITestBase
     }
 }
 
-// END OF TRAINING SECTION: Executing tests written in Javascript.
+// NEXT STATION: Head over to Tests/test.mjs.
