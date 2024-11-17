@@ -62,18 +62,22 @@ public static class FrontendUITestContextExtensions
         string scriptPath,
         string workingDirectory)
     {
-        workingDirectory = Path.GetFullPath(workingDirectory ?? Environment.CurrentDirectory);
+        static string GetShorterPath(string basePath, string path)
+        {
+            var absolute = Path.GetFullPath(path);
+            var relative = Path.GetRelativePath(basePath, path);
+            return absolute.Length < relative.Length ? absolute : relative;
+        }
 
-        var absoluteScriptPath = Path.GetFullPath(scriptPath);
-        var relativeScriptPath = Path.GetRelativePath(workingDirectory, scriptPath);
+        workingDirectory = Path.GetFullPath(workingDirectory ?? Environment.CurrentDirectory);
 
         var arguments = new[]
         {
             "--inspect",
-            absoluteScriptPath.Length < relativeScriptPath.Length ? absoluteScriptPath : relativeScriptPath,
-            context.GetDriverPath(),
+            GetShorterPath(workingDirectory, scriptPath),
+            GetShorterPath(workingDirectory, context.GetDriverPath()),
             context.Driver.Url,
-            context.GetTempSubDirectoryPath(),
+            GetShorterPath(workingDirectory, context.GetTempSubDirectoryPath()),
         };
 
         return (workingDirectory, arguments);
