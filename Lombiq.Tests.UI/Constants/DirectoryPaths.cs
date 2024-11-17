@@ -11,11 +11,11 @@ public static class DirectoryPaths
     public const string Screenshots = nameof(Screenshots);
 
     public static string GetTempDirectoryPath(params string[] subDirectoryNames) =>
-        Path.Combine([Environment.CurrentDirectory, Temp, ..subDirectoryNames]);
+        Path.Combine([Environment.CurrentDirectory, Temp, .. subDirectoryNames]);
 
     [Obsolete($"Use {nameof(UITestContext)}.{nameof(UITestContext.GetTempSubDirectoryPath)}() instead.")]
     public static string GetTempSubDirectoryPath(string contextId, params string[] subDirectoryNames) =>
-        GetTempDirectoryPath([contextId, ..subDirectoryNames]);
+        GetTempDirectoryPath([contextId, .. subDirectoryNames]);
 
     [Obsolete($"Use {nameof(UITestContext)}.{nameof(UITestContext.ScreenshotsDirectoryPath)} instead.")]
     public static string GetScreenshotsDirectoryPath(string contextId) =>

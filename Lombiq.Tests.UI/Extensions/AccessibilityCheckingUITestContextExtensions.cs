@@ -1,6 +1,5 @@
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Selenium;
-using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;

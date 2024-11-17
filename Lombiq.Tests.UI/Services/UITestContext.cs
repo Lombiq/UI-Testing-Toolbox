@@ -310,7 +310,7 @@ public class UITestContext
     /// <see cref="DirectoryPaths.Temp"/> directory.
     /// </summary>
     public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
-        DirectoryPaths.GetTempDirectoryPath([Id, ..subDirectoryNames]);
+        DirectoryPaths.GetTempDirectoryPath([Id, .. subDirectoryNames]);
 
     private bool IsAlert()
     {

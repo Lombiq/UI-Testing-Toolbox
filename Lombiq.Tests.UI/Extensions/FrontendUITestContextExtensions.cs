@@ -182,7 +182,7 @@ public static class FrontendUITestContextExtensions
 
         var pipe = helper.ToPipeTarget(nameof(SetupNodeSeleniumAsync));
         await Cli.Wrap("pnpm")
-            .WithArguments(["install", ..dependencies])
+            .WithArguments(["install", .. dependencies])
             .WithStandardOutputPipe(pipe)
             .WithStandardErrorPipe(pipe)
             .WithWorkingDirectory(workingDirectory)
@@ -205,6 +205,6 @@ public static class FrontendUITestContextExtensions
             File.Copy(uiTestingToolkitScript, Path.Join(workingDirectory, uiTestingToolkitScript), overwrite: true);
         }
 
-        return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", ..otherDependencies]);
+        return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", .. otherDependencies]);
     }
 }
