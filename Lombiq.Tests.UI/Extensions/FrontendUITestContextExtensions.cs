@@ -149,8 +149,9 @@ public static class FrontendUITestContextExtensions
     /// </summary>
     /// <param name="scriptPath">
     /// The path of the Javascript file to execute with <c>node</c>. Before passing it to <see
-    /// cref="ExecuteJavascriptTestAsync"/>, it's transformed into a relative path based on the temp directory to
-    /// conserve path length because long paths can be a problem in some operating systems.
+    /// cref="ExecuteJavascriptTestAsync(UITestContext,ITestOutputHelper,string,string)"/>, it's transformed into a
+    /// relative path based on the temp directory to conserve path length because long paths can be a problem in some
+    /// operating systems.
     /// </param>
     public static async Task SetupSeleniumAndExecuteJavascriptTestAsync(
         this UITestContext context,
