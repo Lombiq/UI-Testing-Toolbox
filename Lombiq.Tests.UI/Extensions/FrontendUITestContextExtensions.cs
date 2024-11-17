@@ -152,9 +152,7 @@ public static class FrontendUITestContextExtensions
         params string[] otherDependencies)
     {
         await context.SetupNodeSeleniumAsync(testOutputHelper, workingDirectory, otherDependencies);
-        var relativePath = Path.GetRelativePath(workingDirectory, scriptPath);
-
-        await context.ExecuteJavascriptTestAsync(relativePath, testOutputHelper, workingDirectory);
+        await context.ExecuteJavascriptTestAsync(scriptPath, testOutputHelper, workingDirectory);
     }
 
     /// <summary>
@@ -196,7 +194,7 @@ public static class FrontendUITestContextExtensions
         const string uiTestingToolkitScript = "ui-testing-toolkit.mjs";
         if (File.Exists(uiTestingToolkitScript))
         {
-            File.Copy(uiTestingToolkitScript, Path.Join(workingDirectory, uiTestingToolkitScript));
+            File.Copy(uiTestingToolkitScript, Path.Join(workingDirectory, uiTestingToolkitScript), overwrite: true);
         }
 
         return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", ..otherDependencies]);
