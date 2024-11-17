@@ -22,12 +22,12 @@ async function _takeScreenshot(driver, file){
  *                          element is null or empty.
  */
 async function shouldContainText(element, text) {
-    if (!element) {
-        throw new Error('The element is missing.');
+    if (element?.then) {
+        element = await element;
     }
 
-    if (element.then) {
-        element = await element;
+    if (!element) {
+        throw new Error('The element is missing.');
     }
 
     const actualText = (await element.getText())?.trim();
