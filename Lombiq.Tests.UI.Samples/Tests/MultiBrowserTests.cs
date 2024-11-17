@@ -23,7 +23,9 @@ public class MultiBrowserTests : UITestBase
 
     // First, let's see a test using Edge. While the default browser is Chrome if you don't set anything, all
     // ExecuteTest* methods can also accept a browser, if you want to use a different one.
-    [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+    [Fact(Skip = "Temporarily not running Edge until https://github.com/atata-framework/atata-webdriversetup/issues/16 is fixed.")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
     public Task AnonymousHomePageShouldExistWithEdge() =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, Browser.Edge);
 
@@ -31,7 +33,8 @@ public class MultiBrowserTests : UITestBase
     // tests. [Chrome] and [Edge] are input parameters of the test, and thus in effect, you have now two tests:
     // AnonymousHomePageShouldExistMultiBrowser once with Chrome, and once with Edge. See here for more info:
     // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
-    [Theory, Chrome, Edge]
+    // Temporarily not running Edge until https://github.com/atata-framework/atata-webdriversetup/issues/16 is fixed.
+    [Theory, Chrome]
     public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, browser);
 
