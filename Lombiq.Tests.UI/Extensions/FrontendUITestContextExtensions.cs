@@ -83,16 +83,24 @@ public static class FrontendUITestContextExtensions
         return (workingDirectory, arguments);
     }
 
+    [Obsolete($"Use the overload where the first parameter is {nameof(ITestOutputHelper)}.")]
+    public static Task ExecuteJavascriptTestAsync(
+        this UITestContext context,
+        string scriptPath,
+        ITestOutputHelper testOutputHelper) =>
+        context.ExecuteJavascriptTestAsync(testOutputHelper, scriptPath);
+
     /// <summary>
     /// Executes the provided file via <c>node</c> with command line arguments containing the necessary information for
     /// Selenium JS to take over the browser.
     /// </summary>
-    /// <param name="scriptPath">The Javascript source file to execute using <c>node</c>.</param>
     /// <param name="testOutputHelper">Needed to redirect the <c>node</c> output into the test logs.</param>
+    /// <param name="scriptPath">The Javascript source file to execute using <c>node</c>.</param>
+    /// <param name="workingDirectory">The working directory where <c>node</c> is executed from.</param>
     public static async Task ExecuteJavascriptTestAsync(
         this UITestContext context,
-        string scriptPath,
         ITestOutputHelper testOutputHelper,
+        string scriptPath,
         string workingDirectory = null)
     {
         const string command = "node";
@@ -152,7 +160,7 @@ public static class FrontendUITestContextExtensions
         params string[] otherDependencies)
     {
         await context.SetupNodeSeleniumAsync(testOutputHelper, workingDirectory, otherDependencies);
-        await context.ExecuteJavascriptTestAsync(scriptPath, testOutputHelper, workingDirectory);
+        await context.ExecuteJavascriptTestAsync(testOutputHelper, scriptPath, workingDirectory);
     }
 
     /// <summary>
