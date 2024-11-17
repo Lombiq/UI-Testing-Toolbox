@@ -75,7 +75,6 @@ public abstract class FrontendUITestBase : UITestBase
                                 frontendUrl: $"http://localhost:" + port,
                                 backendUrl: null);
                             return frontendCommand.WithArguments(["--yes", "http-server", "--port", port]);
-
                         },
                         // When this function is not null, test setup will call it on each output line and wait for it
                         // to return true. This can be used to look for an output that only appears when the frontend
