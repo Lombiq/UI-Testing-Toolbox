@@ -146,11 +146,12 @@ public static class FrontendUITestContextExtensions
     /// </param>
     public static async Task SetupSeleniumAndExecuteJavascriptTestAsync(
         this UITestContext context,
-        string scriptPath,
         ITestOutputHelper testOutputHelper,
+        string scriptPath,
+        string workingDirectory,
         params string[] otherDependencies)
     {
-        var workingDirectory = await context.SetupNodeSeleniumAsync(testOutputHelper, otherDependencies);
+        await context.SetupNodeSeleniumAsync(testOutputHelper, workingDirectory, otherDependencies);
         var relativePath = Path.GetRelativePath(workingDirectory, scriptPath);
 
         await context.ExecuteJavascriptTestAsync(relativePath, testOutputHelper, workingDirectory);
@@ -160,13 +161,12 @@ public static class FrontendUITestContextExtensions
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory and
     /// installs the provided NPM <paramref name="dependencies"/> using <c>pnpm</c>.
     /// </summary>
-    /// <returns>The path of the directory where the project is set up.</returns>
-    public static async Task<string> SetupNodeDependenciesAsync(
+    public static async Task SetupNodeDependenciesAsync(
         this UITestContext context,
         ITestOutputHelper helper,
+        string workingDirectory,
         params string[] dependencies)
     {
-        var workingDirectory = context.GetTempSubDirectoryPath();
         var projectFilePath = Path.Join(workingDirectory, "package.json");
 
         if (!Directory.Exists(projectFilePath))
@@ -181,18 +181,24 @@ public static class FrontendUITestContextExtensions
             .WithStandardErrorPipe(pipe)
             .WithWorkingDirectory(workingDirectory)
             .ExecuteAsync();
-
-        return workingDirectory;
     }
 
     /// <summary>
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory, then
     /// installs <c>selenium-webdriver</c> and any additional NPM dependencies using <c>pnpm</c>.
     /// </summary>
-    /// <returns>The path of the directory where the project is set up.</returns>
-    public static Task<string> SetupNodeSeleniumAsync(
+    public static Task SetupNodeSeleniumAsync(
         this UITestContext context,
         ITestOutputHelper helper,
-        params string[] otherDependencies) =>
-        context.SetupNodeDependenciesAsync(helper, ["selenium-webdriver", ..otherDependencies]);
+        string workingDirectory,
+        params string[] otherDependencies)
+    {
+        const string uiTestingToolkitScript = "ui-testing-toolkit.mjs";
+        if (File.Exists(uiTestingToolkitScript))
+        {
+            File.Copy(uiTestingToolkitScript, Path.Join(workingDirectory, uiTestingToolkitScript));
+        }
+
+        return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", ..otherDependencies]);
+    }
 }

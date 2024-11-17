@@ -27,12 +27,13 @@ public class JavascriptTests : UITestBase
             // Don't forget to mark the script files as "Copy if newer", so they are available to the test. It's best to
             // include something like the following in your csproj file:
             // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
-            var scriptPath = Path.Join("Tests", "test.mjs");
+            var workingDirectory = "Tests";
+            var scriptPath = Path.Join(workingDirectory, "test.mjs");
 
             // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the
             // script. This method has an additional parameter to list further NPM dependencies beyond
             // "selenium-webdriver", if the script requires it. We will check out this script file in the next station.
-            return context.SetupSeleniumAndExecuteJavascriptTestAsync(scriptPath, _testOutputHelper);
+            return context.SetupSeleniumAndExecuteJavascriptTestAsync(_testOutputHelper, scriptPath, workingDirectory);
         });
 
     // To best debug the Javascript code, you may want to set up the site and then invoke node manually. This is not a
@@ -48,8 +49,10 @@ public class JavascriptTests : UITestBase
         return ExecuteTestAfterSetupAsync(
             async context =>
             {
-                var scriptPath = Path.Join("Tests", "test.mjs");
-                var workingDirectory = await context.SetupNodeSeleniumAsync(_testOutputHelper);
+                var workingDirectory = "Tests";
+                var scriptPath = Path.Join(workingDirectory, "test.mjs");
+
+                await context.SetupNodeSeleniumAsync(_testOutputHelper, workingDirectory);
                 await context.SwitchToInteractiveWithJavascriptTestInfoAsync(scriptPath, workingDirectory);
             },
             configuration =>
