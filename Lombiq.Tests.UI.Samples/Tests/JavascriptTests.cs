@@ -7,8 +7,8 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Suppose you want to write UI tests in Javascript. Why would you want to do that? Unlikely if you are an Orchard Core
-// developer, but what if the person responsible for writing the tests is not? In the previous training section we
+// Let's suppose you want to write UI tests in Javascript. Why would you want to do that? Unlikely if you are an Orchard
+// Core developer, but what if the person responsible for writing the tests is not? In the previous training section we
 // discussed using a separate frontend server, with mention of technologies using Node.js. In that case the frontend
 // developers may be more familiar with Javascript so it makes sense to write and debug the tests in Node.js so they
 // don't have to learn different tools and tech stacks just to create some UI tests.
@@ -38,8 +38,8 @@ public class JavascriptTests : UITestBase
 
     // To best debug the Javascript code, you may want to set up the site and then invoke node manually. This is not a
     // real test, but it sets up the site in interactive mode (see Tests/InteractiveModeTests.cs for more) with
-    // information how to start up test script from your GUI. It's an example of some tooling that can improve the test
-    // developer's workflow.
+    // information on how to start up test scripts from your GUI. It's an example of some tooling that can improve the
+    // test developer's workflow.
     [Fact]
     public Task Sandbox()
     {

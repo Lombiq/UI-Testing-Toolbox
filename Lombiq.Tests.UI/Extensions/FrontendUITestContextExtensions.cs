@@ -18,7 +18,7 @@ public static class FrontendUITestContextExtensions
     /// <summary>
     /// Navigates to the backend <see cref="Uri"/> returned by <see
     /// cref="FrontendOrchardCoreUITestExecutorConfigurationExtensions.GetFrontendAndBackendUris"/> and presents it as
-    /// switching to the default tenant.
+    /// switching to the Default tenant.
     /// </summary>
     /// <remarks><para>
     /// If the backend URL has not been initialized to something else (e.g. using a custom URL prefix), this is
@@ -178,6 +178,7 @@ public static class FrontendUITestContextExtensions
 
         if (!Directory.Exists(projectFilePath))
         {
+            // lang=json
             await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }");
         }
 

@@ -61,8 +61,8 @@ public abstract class FrontendUITestBase : UITestBase
                         configureCommand: (frontendCommand, context) =>
                         {
                             // You can also get this from the configuration using configuration
-                            // .GetFrontendAndBackendUris().FrontendUri.Port. The values in the configuration has been
-                            // initialized shortly before this function is called. but it's not worth it unless you need
+                            // .GetFrontendAndBackendUris().FrontendUri.Port. The values in the configuration have been
+                            // initialized shortly before this function is called, but it's not worth it unless you need
                             // both frontend and backend URLS. The frontend port is a unique, reserved number that's
                             // guaranteed to be available during this test just as much as any Orchard Core instance,
                             // because it's coming from the same pool of numbers.

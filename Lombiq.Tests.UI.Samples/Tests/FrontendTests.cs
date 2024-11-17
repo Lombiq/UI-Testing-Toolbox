@@ -13,7 +13,7 @@ public class FrontendTests : FrontendUITestBase
     {
     }
 
-    // The interesting details were in FrontendUITestBase, here we just show that you can freely interact with the pages
+    // The interesting details are in FrontendUITestBase, here we just show that you can freely interact with the pages
     // served by frontend server the same way as usual. In this case we have an HTTP file server, so you can navigate
     // these directories and files. If we had a large client application that interacts with the headless OC in the
     // backend, we would be able to do something more interesting but that's outside the scope of this demo.
