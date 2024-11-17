@@ -64,11 +64,13 @@ public static class FrontendUITestContextExtensions
     {
         workingDirectory = Path.GetFullPath(workingDirectory ?? Environment.CurrentDirectory);
 
+        var absoluteScriptPath = Path.GetFullPath(scriptPath);
         var relativeScriptPath = Path.GetRelativePath(workingDirectory, scriptPath);
+
         var arguments = new[]
         {
             "--inspect",
-            relativeScriptPath.Length < scriptPath.Length ? relativeScriptPath : scriptPath,
+            absoluteScriptPath.Length < relativeScriptPath.Length ? absoluteScriptPath : relativeScriptPath,
             context.GetDriverPath(),
             context.Driver.Url,
             context.GetTempSubDirectoryPath(),
