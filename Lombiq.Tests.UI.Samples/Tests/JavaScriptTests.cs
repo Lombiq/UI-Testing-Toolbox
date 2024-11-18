@@ -28,7 +28,7 @@ public class JavaScriptTests : UITestBase
             // include something like the following in your csproj file:
             // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
             var workingDirectory = "Tests";
-            var scriptPath = Path.Join(workingDirectory, "test.mjs");
+            var scriptPath = Path.Join(workingDirectory, "JavaScriptTests.msj");
 
             // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the
             // script. This method has an additional parameter to list further NPM dependencies beyond
@@ -50,7 +50,7 @@ public class JavaScriptTests : UITestBase
             async context =>
             {
                 var workingDirectory = "Tests";
-                var scriptPath = Path.Join(workingDirectory, "test.mjs");
+                var scriptPath = Path.Join(workingDirectory, "JavaScriptTests.msj");
 
                 await context.SetupNodeSeleniumAsync(_testOutputHelper, workingDirectory);
                 await context.SwitchToInteractiveWithJavaScriptTestInfoAsync(scriptPath, workingDirectory);
@@ -64,4 +64,4 @@ public class JavaScriptTests : UITestBase
     }
 }
 
-// NEXT STATION: Head over to Tests/test.mjs.
+// NEXT STATION: Head over to Tests/JavaScriptTests.msj.
