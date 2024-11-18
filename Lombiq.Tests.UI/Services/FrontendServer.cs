@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
