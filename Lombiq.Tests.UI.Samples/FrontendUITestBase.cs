@@ -13,6 +13,9 @@ namespace Lombiq.Tests.UI.Samples;
 // ensure the two work together. To make this happen, you need some custom logic to initialize the frontend process
 // after setup, with a unique port number to avoid clashes. Also the frontend may need the backend URL, whose port is
 // already randomized with every test.
+// In this base class we define a custom "setup and test" method. Creating such a method is a good practice so you don't
+// have to configure the FrontendServer over and over again in every test. We placed this method into its own
+// intermediate abstract class for better organization, but you can also put it into your UITestBase as well.
 public abstract class FrontendUITestBase : UITestBase
 {
     protected FrontendUITestBase(ITestOutputHelper testOutputHelper)
