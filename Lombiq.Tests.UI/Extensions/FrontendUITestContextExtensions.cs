@@ -89,8 +89,9 @@ public static class FrontendUITestContextExtensions
         return (workingDirectory, arguments);
     }
 
-    [Obsolete($"Use the overload where the first parameter is {nameof(ITestOutputHelper)}.")]
-    public static Task ExecuteJavaScriptTestAsync(
+    // This uses a different casing of "JavaScript" to avoid breaking backwards compatibility.
+    [Obsolete($"Use {nameof(ExecuteJavaScriptTestAsync)} instead.")]
+    public static Task ExecuteJavascriptTestAsync(
         this UITestContext context,
         string scriptPath,
         ITestOutputHelper testOutputHelper) =>
