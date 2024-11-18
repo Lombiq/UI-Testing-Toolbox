@@ -1,7 +1,7 @@
 import { By, until } from 'selenium-webdriver';
 
 // This dependency is copied into the build directory by Lombiq.Tests.UI.
-import { runTest, shouldContainText, navigate } from './ui-testing-toolkit.mjs';
+import { runTest, shouldContainText, navigate } from '../ui-testing-toolkit.mjs';
 
 // This function automatically handles the command line arguments and sets up a Chrome driver.
 await runTest(async (driver, startUrl) => {

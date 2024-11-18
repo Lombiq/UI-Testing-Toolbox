@@ -64,4 +64,4 @@ public class JavaScriptTests : UITestBase
     }
 }
 
-// NEXT STATION: Head over to Tests/JavaScriptTests.msj.
+// NEXT STATION: Head over to Tests/JavaScriptTests.mjs.
