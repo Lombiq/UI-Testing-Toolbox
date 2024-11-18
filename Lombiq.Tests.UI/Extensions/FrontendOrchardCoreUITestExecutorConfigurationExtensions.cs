@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -15,8 +16,8 @@ public static class FrontendOrchardCoreUITestExecutorConfigurationExtensions
     public static (Uri FrontendUri, Uri BackendUri) GetFrontendAndBackendUris(
         this OrchardCoreUITestExecutorConfiguration configuration) =>
     (
-        (Uri)configuration.CustomConfiguration[FrontendUri],
-        (Uri)configuration.CustomConfiguration[BackendUri]
+        configuration.CustomConfiguration.GetMaybe(FrontendUri) as Uri,
+        configuration.CustomConfiguration.GetMaybe(BackendUri) as Uri
     );
 
     /// <summary>

@@ -22,9 +22,8 @@ public class FrontendTests : FrontendUITestBase
         ExecuteFrontendTestAfterSetupAsync(
             async context =>
             {
-                // Don't forget that if you want to interact with the frontend manually, you can just switch the context
-                // back to the backend and use the interactive mode extension method.
-                //// context.SwitchToBackend();
+                // Don't forget that if you want to interact with the frontend manually, you can use the interactive
+                // mode extension method.
                 //// await context.SwitchToInteractiveAsync();
 
                 await context.ClickReliablyOnAsync(By.LinkText("App_Data/"));
