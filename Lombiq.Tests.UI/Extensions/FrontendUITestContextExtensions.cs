@@ -164,7 +164,7 @@ public static class FrontendUITestContextExtensions
         this UITestContext context,
         ITestOutputHelper testOutputHelper,
         string scriptPath,
-        string workingDirectory,
+        string workingDirectory = null,
         params string[] otherDependencies)
     {
         await context.SetupNodeSeleniumAsync(testOutputHelper, workingDirectory, otherDependencies);
@@ -205,13 +205,18 @@ public static class FrontendUITestContextExtensions
     public static Task SetupNodeSeleniumAsync(
         this UITestContext context,
         ITestOutputHelper helper,
-        string workingDirectory,
+        string workingDirectory = null,
         params string[] otherDependencies)
     {
+        workingDirectory ??= Environment.CurrentDirectory;
+
+        // First, copy out helper script if the working directory isn't already the current directory.
         const string uiTestingToolkitScript = "ui-testing-toolkit.mjs";
-        if (File.Exists(uiTestingToolkitScript))
+        var copyFrom = Path.GetFullPath(uiTestingToolkitScript);
+        var copyTo = Path.GetFullPath(Path.Join(workingDirectory, uiTestingToolkitScript));
+        if (copyFrom != copyTo && File.Exists(uiTestingToolkitScript))
         {
-            File.Copy(uiTestingToolkitScript, Path.Join(workingDirectory, uiTestingToolkitScript), overwrite: true);
+            File.Copy(copyFrom, copyTo, overwrite: true);
         }
 
         return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", .. otherDependencies]);

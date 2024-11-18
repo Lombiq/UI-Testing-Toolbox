@@ -1,5 +1,4 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services.GitHub;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -24,16 +23,15 @@ public class JavaScriptTests : UITestBase
     public Task ExampleJavaScriptTestShouldWork() =>
         ExecuteTestAfterSetupAsync(context =>
         {
-            // Don't forget to mark the script files as "Copy if newer", so they are available to the test. It's best to
-            // include something like the following in your csproj file:
+            // Don't forget to mark the script files as "Copy if newer", so they are available to the test. If you
+            // include something like the following in your csproj file, then you only have to do this once:
             // <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
-            var workingDirectory = "Tests";
-            var scriptPath = Path.Join(workingDirectory, "JavaScriptTests.msj");
+            var scriptPath = Path.Join("Tests", "JavaScriptTests.mjs");
 
             // Set up the JS dependencies in the test's temp directory to ensure there are no clashes, then run the
             // script. This method has an additional parameter to list further NPM dependencies beyond
             // "selenium-webdriver", if the script requires it. We will check out this script file in the next station.
-            return context.SetupSeleniumAndExecuteJavaScriptTestAsync(_testOutputHelper, scriptPath, workingDirectory);
+            return context.SetupSeleniumAndExecuteJavaScriptTestAsync(_testOutputHelper, scriptPath);
         });
 
     // To best debug the JavaScript code, you may want to set up the site and then invoke node manually. This is not a
@@ -41,27 +39,12 @@ public class JavaScriptTests : UITestBase
     // information on how to start up test scripts from your GUI. It's an example of some tooling that can improve the
     // test developer's workflow.
     [Fact]
-    public Task Sandbox()
-    {
-        // This "test" will wait indefinitely, so it's important to skip it in CI.
-        if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
-
-        return ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                var workingDirectory = "Tests";
-                var scriptPath = Path.Join(workingDirectory, "JavaScriptTests.msj");
-
-                await context.SetupNodeSeleniumAsync(_testOutputHelper, workingDirectory);
-                await context.SwitchToInteractiveWithJavaScriptTestInfoAsync(scriptPath, workingDirectory);
-            },
-            configuration =>
-            {
-                // Since this is an interactive "test", make sure the browser is always displayed.
-                configuration.BrowserConfiguration.Headless = false;
-                return Task.CompletedTask;
-            });
-    }
+    public Task Sandbox() =>
+        SandboxAfterSetupAsync(async context =>
+        {
+            await context.SetupNodeSeleniumAsync(_testOutputHelper);
+            await context.SwitchToInteractiveWithJavaScriptTestInfoAsync(Path.Join("Tests", "JavaScriptTests.mjs"));
+        });
 }
 
 // NEXT STATION: Head over to Tests/JavaScriptTests.mjs.
