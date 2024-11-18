@@ -9,10 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NLog;
-using NLog.Web;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using YesSql;
@@ -71,20 +69,11 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(ConfigureTestServices)
-            .ConfigureLogging((context, loggingBuilder) =>
-            {
-                var environment = context.HostingEnvironment;
-                var nLogConfig = Path.Combine(environment.ContentRootPath, "NLog.config");
-                var factory = new LogFactory()
-                    .Setup()
-                    .LoadConfigurationFromFile(nLogConfig)
-                    .LogFactory;
-
-                factory.Configuration.Variables["configDir"] = environment.ContentRootPath;
-
-                loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
-            });
+        builder
+            .ConfigureTestServices(ConfigureTestServices)
+            // NLog, if used, will put log files into configDir. Not setting this would use the default, which would be
+            // App_Data/App_Data/logs.
+            .ConfigureLogging((context, _) => LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath);
 
         _configuration?.Invoke(builder);
     }
@@ -95,12 +84,13 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
                 .ImplementationInstance as OrchardCoreBuilder
                 ?? throw new InvalidOperationException(
-                    "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+                    "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs.");
         var configuration = services
                 .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
                 .ImplementationInstance as ConfigurationManager
                 ?? throw new InvalidOperationException(
-                    $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
+                    $"Please register the {nameof(ConfigurationManager)} instance in the Service Collection in your " +
+                    "Program.cs, following the documentation.");
 
         _configureOrchard?.Invoke(configuration, builder);
 

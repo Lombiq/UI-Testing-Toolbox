@@ -1,9 +1,10 @@
 using Lombiq.Tests.UI.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,54 +13,135 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class WebApplicationInstanceExtensions
 {
     /// <summary>
-    /// Asserting that the logs should be empty. When they aren't the Shouldly exception will contain the logs'
-    /// contents.
+    /// Asserts that the logs should be empty, i.e. contain no entries. If the assertion fails, the Shouldly exception
+    /// will contain all log entries.
     /// </summary>
-    /// <param name="permittedErrorLinePatterns">
-    /// If not <see langword="null"/> or empty, each line is split and any lines containing <c>|ERROR|</c> will be
-    /// ignored if they regex match any string from this collection (case-insensitive).
-    /// </param>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
     public static async Task LogsShouldBeEmptyAsync(
         this IWebApplicationInstance webApplicationInstance,
-        bool canContainWarnings = false,
-        ICollection<string> permittedErrorLinePatterns = null,
         CancellationToken cancellationToken = default)
     {
-        permittedErrorLinePatterns ??= [];
-
-        var logOutput = await webApplicationInstance.GetLogOutputAsync(cancellationToken);
-
-        logOutput.ShouldNotContain("|FATAL|");
-
-        var lines = logOutput.SplitByNewLines();
-
-        var errorLines = lines.Where(line => line.Contains("|ERROR|"));
-
-        if (permittedErrorLinePatterns.Count != 0)
-        {
-            errorLines = errorLines.Where(line =>
-                !permittedErrorLinePatterns.Any(pattern => Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)));
-        }
-
-        errorLines.ShouldBeEmpty();
-
-        if (!canContainWarnings)
-        {
-            lines.Where(line => line.Contains("|WARNING|")).ShouldBeEmpty();
-        }
+        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+        logs.ShouldNotContain(log => log.EntryCount > 0, await logs.ToFormattedStringAsync());
     }
+
+    /// <summary>
+    /// Asserts that the logs should contain any entry matching the given predicate. If the assertion fails, the
+    /// Shouldly exception will contain all log entries.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
+    /// <param name="logEntryPredicate">
+    /// A predicate that when returns <see langword="true"/>, the assertion will fail.
+    /// </param>
+    public static Task LogsShouldContainAsync(
+        this IWebApplicationInstance webApplicationInstance,
+        Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
+        CancellationToken cancellationToken = default) =>
+        AssertLogsAsync(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldContain, cancellationToken);
+
+    /// <summary>
+    /// Asserts that the logs should NOT contain any entries with <see cref="LogLevel.Error"/> and above. If the
+    /// assertion fails, the Shouldly exception will contain all log entries.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
+    public static Task LogsShouldNotContainErrorsAsync(
+        this IWebApplicationInstance webApplicationInstance,
+        CancellationToken cancellationToken = default) =>
+        AssertLogsAsync(
+            webApplicationInstance,
+            logEntry => logEntry.Level > LogLevel.Error,
+            ShouldBeEnumerableTestExtensions.ShouldNotContain,
+            cancellationToken);
+
+    /// <summary>
+    /// Asserts that the logs should NOT contain any entries matching the given predicate. If the assertion fails, the
+    /// Shouldly exception will contain all log entries.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
+    /// <param name="logEntryPredicate">
+    /// A predicate that when returns <see langword="true"/>, the assertion will fail.
+    /// </param>
+    public static Task LogsShouldNotContainAsync(
+        this IWebApplicationInstance webApplicationInstance,
+        Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
+        CancellationToken cancellationToken = default) =>
+        AssertLogsAsync(webApplicationInstance, logEntryPredicate, ShouldBeEnumerableTestExtensions.ShouldNotContain, cancellationToken);
 
     /// <summary>
     /// Retrieves all the logs and concatenates them into a single formatted string.
     /// </summary>
-    public static async Task<string> GetLogOutputAsync(
+    /// <remarks>
+    /// <para>
+    /// If you want to inspect the logs in a more structured way, message by message, consider using <see
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// configuration (see the samples).
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
+    public static async Task<string> GetLogContentsAsync(
         this IWebApplicationInstance webApplicationInstance,
         CancellationToken cancellationToken = default)
     {
         if (cancellationToken == default) cancellationToken = CancellationToken.None;
 
-        return string.Join(
-            Environment.NewLine + Environment.NewLine,
-            await webApplicationInstance.GetLogs(cancellationToken).ToFormattedStringAsync());
+        return await (await webApplicationInstance.GetLogsAsync(cancellationToken)).ToFormattedStringAsync();
+    }
+
+    /// <summary>
+    /// Get service of type <typeparamref name="TService"/>.
+    /// </summary>
+    /// <typeparam name="TService">The type of service service to get.</typeparam>
+    /// <returns>An instance of the service of type <typeparamref name="TService"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// There is no service of type <typeparamref name="TService"/>.
+    /// </exception>
+    public static TService GetRequiredService<TService>(this IWebApplicationInstance webApplicationInstance) =>
+        webApplicationInstance.Services.GetRequiredService<TService>();
+
+    private static async Task AssertLogsAsync(
+        IWebApplicationInstance webApplicationInstance,
+        Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
+        Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod, // #spell-check-ignore-line
+        CancellationToken cancellationToken = default)
+    {
+        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+
+        foreach (var log in logs)
+        {
+            shouldlyMethod(await log.GetEntriesAsync(), logEntryPredicate, await logs.ToFormattedStringAsync()); // #spell-check-ignore-line
+        }
     }
 }

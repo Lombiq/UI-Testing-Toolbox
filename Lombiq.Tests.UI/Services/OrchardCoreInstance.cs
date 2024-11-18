@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
@@ -20,14 +22,15 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Services;
 
 public delegate Task BeforeAppStartHandler(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments);
+public delegate void AfterFakeLoggingConfigurationHandler(OrchardCoreAppStartContext context, FakeLogCollectorOptions fakeLogCollectorOptions);
 public delegate Task AfterAppStopHandler(OrchardCoreAppStartContext context);
-
 public delegate Task BeforeTakeSnapshotHandler(OrchardCoreAppStartContext context, string snapshotDirectoryPath);
 
 public class OrchardCoreConfiguration
 {
     public string SnapshotDirectoryPath { get; set; }
     public BeforeAppStartHandler BeforeAppStart { get; set; }
+    public AfterFakeLoggingConfigurationHandler AfterFakeLoggingConfiguration { get; set; }
     public AfterAppStopHandler AfterAppStop { get; set; }
     public BeforeTakeSnapshotHandler BeforeTakeSnapshot { get; set; }
     public int StartCount { get; internal set; }
@@ -56,6 +59,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
+
     private string _contentRootPath;
     private bool _isDisposed;
     private OrchardApplicationFactory<TEntryPoint> _orchardApplication;
@@ -113,23 +117,22 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
-    public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
     {
-        var logFolderPath = Path.Combine(_contentRootPath, "App_Data", "logs");
-        return Directory.Exists(logFolderPath)
-            ? Directory
-                .EnumerateFiles(logFolderPath, "*.log")
-                .Select(filePath => (IApplicationLog)new ApplicationLog
+        if (Services.GetService<FakeLogCollector>() is { } logCollector)
+        {
+            return Task.FromResult(
+                new IApplicationLog[]
                 {
-                    Name = Path.GetFileName(filePath),
-                    FullName = Path.GetFullPath(filePath),
-                    ContentLoader = () => GetFileContentAsync(filePath, cancellationToken),
-                })
-            : [];
-    }
+                    new FakeLoggerLogApplicationLog
+                    {
+                        LogCollector = logCollector,
+                    },
+                }.AsEnumerable());
+        }
 
-    public TService GetRequiredService<TService>() =>
-        _orchardApplication.Services.GetRequiredService<TService>();
+        return Task.FromResult(Enumerable.Empty<IApplicationLog>());
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -172,7 +175,17 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             builder => builder
                 .UseContentRoot(_contentRootPath)
                 .UseWebRoot(Path.Combine(_contentRootPath, "wwwroot"))
-                .UseEnvironment(Environments.Development),
+                .UseEnvironment(Environments.Development)
+                .ConfigureLogging(loggingBuilder => loggingBuilder.AddFakeLogging(options =>
+                {
+                    options.CollectRecordsForDisabledLogLevels = false;
+                    options.FilteredLevels.Add(LogLevel.Error);
+                    options.FilteredLevels.Add(LogLevel.Critical);
+                    options.OutputFormatter = FakeLoggerApplicationLogEntry.FormatLogRecord;
+                    options.OutputSink += message => _testOutputHelper.WriteLine(message);
+
+                    _configuration.AfterFakeLoggingConfiguration?.Invoke(CreateAppStartContext(), options);
+                })),
             (configuration, orchardBuilder) => orchardBuilder
                 .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
 
@@ -200,13 +213,6 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<AfterAppStopHandler>(handler => handler(CreateAppStartContext()));
     }
 
-    private static async Task<string> GetFileContentAsync(string filePath, CancellationToken cancellationToken)
-    {
-        await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var streamReader = new StreamReader(fileStream);
-        return await streamReader.ReadToEndAsync(cancellationToken);
-    }
-
     private async Task TakeSnapshotInnerAsync(string snapshotDirectoryPath)
     {
         await PauseAsync();
@@ -219,22 +225,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<BeforeTakeSnapshotHandler>(handler => handler(CreateAppStartContext(), snapshotDirectoryPath));
 
         FileSystem.CopyDirectory(_contentRootPath, snapshotDirectoryPath, overwrite: true);
+
+        await ResumeAsync();
     }
 
     private OrchardCoreAppStartContext CreateAppStartContext() =>
         new(_contentRootPath, _url, OrchardCoreInstanceCounter.PortLeases);
-
-    private sealed class ApplicationLog : IApplicationLog
-    {
-        public string Name { get; init; }
-        public string FullName { get; init; }
-        public Func<Task<string>> ContentLoader { get; init; }
-
-        public Task<string> GetContentAsync() => ContentLoader();
-
-        public void Remove()
-        {
-            if (File.Exists(FullName)) File.Delete(FullName);
-        }
-    }
 }

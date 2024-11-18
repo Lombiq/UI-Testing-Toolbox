@@ -23,19 +23,19 @@ public class DatabaseSnapshotTests : UITestBase
     // "ExecuteTestFromExistingDBAsync()" to run the test on that. Finally, we test the basic Orchard features to check
     // that the application was set up correctly.
     [Fact]
-    public Task BasicOrchardFeaturesShouldWorkWithExistingDatabase() =>
-         ExecuteTestAsync(
-                async context =>
-                {
-                    var appForDatabaseTestFolder = Path.Combine("Temp", "AppForDatabaseTest");
+    public async Task BasicOrchardFeaturesShouldWorkWithExistingDatabase()
+    {
+        var appForDatabaseTestFolder = Path.Combine("Temp", "AppForDatabaseTest");
 
-                    await context.GoToSetupPageAndSetupOrchardCoreAsync(RecipeIds.BasicOrchardFeaturesTests);
-                    await context.Application.TakeSnapshotAsync(appForDatabaseTestFolder);
+        await ExecuteTestAsync(
+            async context =>
+            {
+                await context.GoToSetupPageAndSetupOrchardCoreAsync(RecipeIds.BasicOrchardFeaturesTests);
+                await context.Application.TakeSnapshotAsync(appForDatabaseTestFolder);
+            });
 
-                    await ExecuteTestFromExistingDBAsync(
-                         async context => await context.TestBasicOrchardFeaturesExceptSetupAsync(),
-                         appForDatabaseTestFolder);
-                });
+        await ExecuteTestFromExistingDBAsync(context => context.TestBasicOrchardFeaturesExceptSetupAsync(), appForDatabaseTestFolder);
+    }
 }
 
 // END OF TRAINING SECTION: Database snapshot tests.

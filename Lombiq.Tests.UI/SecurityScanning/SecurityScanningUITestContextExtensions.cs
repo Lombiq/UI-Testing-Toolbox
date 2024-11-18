@@ -57,9 +57,9 @@ public static class SecurityScanningUITestContextExtensions
     /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
     /// It changes the <see cref="UITestContext.Configuration"/> to not do any retries because this is a long running
     /// test. It also replaces the app log assertion logic with the specialized version for security scans, <see
-    /// cref="OrchardCoreUITestExecutorConfiguration.UseAssertAppLogsForSecurityScan"/>. The scan is configured t
-    /// ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the "active scan"
-    /// portion of the security scan.
+    /// cref="OrchardCoreUITestExecutorConfigurationExtensions.UseAssertAppLogsForSecurityScan"/>. The scan is
+    /// configured to ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the
+    /// "active scan" portion of the security scan.
     /// </para></remarks>
     public static Task RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync(
         this UITestContext context,

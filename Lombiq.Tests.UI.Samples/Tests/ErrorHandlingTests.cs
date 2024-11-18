@@ -38,7 +38,7 @@ public class ErrorHandlingTests : UITestBase
                 catch (PageChangeAssertionException)
                 {
                     // Remove all logs to have a clean slate.
-                    context.ClearLogs();
+                    await context.ClearLogsAsync();
                 }
             });
 

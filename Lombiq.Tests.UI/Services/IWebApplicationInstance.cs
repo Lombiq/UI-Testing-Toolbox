@@ -43,37 +43,5 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// Reads all the application logs.
     /// </summary>
     /// <returns>The collection of log names and their contents.</returns>
-    IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get service of type <typeparamref name="TService"/>.
-    /// </summary>
-    /// <typeparam name="TService">The type of service object to get.</typeparam>
-    /// <returns>A service object of type <typeparamref name="TService"/>.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// There is no service of type <typeparamref name="TService"/>.
-    /// </exception>
-    TService GetRequiredService<TService>();
-}
-
-/// <summary>
-/// An abstraction over a log, be it in the form of a file or something else.
-/// </summary>
-public interface IApplicationLog
-{
-    /// <summary>
-    /// Gets the name of the log, such as the file name.
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
-    /// Returns the content of the log, in case of log files reads the file contents.
-    /// </summary>
-    /// <returns>The contents.</returns>
-    Task<string> GetContentAsync();
-
-    /// <summary>
-    /// Removes the log if possible.
-    /// </summary>
-    void Remove();
+    Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default);
 }

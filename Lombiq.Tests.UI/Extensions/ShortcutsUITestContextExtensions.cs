@@ -733,5 +733,5 @@ public static class ShortcutsUITestContextExtensions
     /// provided, then the <see cref="TimeSpan"/> values for both are added. Negative values are supported as well.
     /// </summary>
     public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0) =>
-        context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+        context.GoToAsync<ShiftTimeController>(controller => controller.Add(days, seconds));
 }
