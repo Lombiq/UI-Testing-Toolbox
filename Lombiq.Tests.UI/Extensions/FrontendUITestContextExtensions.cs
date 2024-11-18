@@ -59,7 +59,7 @@ public static class FrontendUITestContextExtensions
         return Path.Join(service.DriverServicePath, service.DriverServiceExecutableName);
     }
 
-    private static (string WorkingDirectory, string[] Arguments) GetExecuteJavaScriptTestPats(
+    private static (string WorkingDirectory, string[] Arguments) GetExecuteJavaScriptTestPaths(
         this UITestContext context,
         string scriptPath,
         string workingDirectory)
@@ -73,6 +73,9 @@ public static class FrontendUITestContextExtensions
 
         workingDirectory = Path.GetFullPath(workingDirectory ?? Environment.CurrentDirectory);
 
+        var browser = context.Configuration.BrowserConfiguration.Browser;
+        if (browser == Browser.None) browser = default;
+
         var arguments = new[]
         {
             "--inspect",
@@ -80,6 +83,7 @@ public static class FrontendUITestContextExtensions
             GetShorterPath(workingDirectory, context.GetDriverPath()),
             context.Driver.Url,
             GetShorterPath(workingDirectory, context.GetTempSubDirectoryPath()),
+            browser.ToString(),
         };
 
         return (workingDirectory, arguments);
@@ -107,7 +111,7 @@ public static class FrontendUITestContextExtensions
     {
         const string command = "node";
         var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavaScriptTestAsync)}({command})");
-        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPats(scriptPath, workingDirectory);
+        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPaths(scriptPath, workingDirectory);
 
         try
         {
@@ -138,7 +142,7 @@ public static class FrontendUITestContextExtensions
         string scriptPath,
         string workingDirectory = null)
     {
-        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPats(scriptPath, workingDirectory);
+        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPaths(scriptPath, workingDirectory);
 
         return context.SwitchToInteractiveAsync(
             $"To start a JavaScript test, open a command line terminal at \"{workingDirectory}\" and type the " +

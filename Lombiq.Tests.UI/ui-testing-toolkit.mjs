@@ -76,8 +76,10 @@ async function navigate(driver, url, maxAttempts = 10) {
  */
 async function runTest(test, configureOptions = null) {
     const args = process.argv.slice(2);
-    if (args.length !== 3) throw new Error('Usage: node script.js driverPath startUrl tempDirectory');
-    const [driverPath, startUrl, tempDirectory] = args;
+    if (args.length !== 3) throw new Error('Usage: node script.js driverPath startUrl tempDirectory browserName');
+    const [driverPath, startUrl, tempDirectory, browserName] = args;
+
+    if (browserName !== 'Chrome') throw new Error("Only Chrome is supported at this time");
 
     let options = new chrome.Options()
         .addArguments('disable-dev-shm-usage')
