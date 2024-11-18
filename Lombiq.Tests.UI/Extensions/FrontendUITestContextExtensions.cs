@@ -57,7 +57,7 @@ public static class FrontendUITestContextExtensions
         return Path.Join(service.DriverServicePath, service.DriverServiceExecutableName);
     }
 
-    private static (string WorkingDirectory, string[] Arguments) GetExecuteJavascriptTestPats(
+    private static (string WorkingDirectory, string[] Arguments) GetExecuteJavaScriptTestPats(
         this UITestContext context,
         string scriptPath,
         string workingDirectory)
@@ -84,28 +84,28 @@ public static class FrontendUITestContextExtensions
     }
 
     [Obsolete($"Use the overload where the first parameter is {nameof(ITestOutputHelper)}.")]
-    public static Task ExecuteJavascriptTestAsync(
+    public static Task ExecuteJavaScriptTestAsync(
         this UITestContext context,
         string scriptPath,
         ITestOutputHelper testOutputHelper) =>
-        context.ExecuteJavascriptTestAsync(testOutputHelper, scriptPath);
+        context.ExecuteJavaScriptTestAsync(testOutputHelper, scriptPath);
 
     /// <summary>
     /// Executes the provided file via <c>node</c> with command line arguments containing the necessary information for
     /// Selenium JS to take over the browser.
     /// </summary>
     /// <param name="testOutputHelper">Needed to redirect the <c>node</c> output into the test logs.</param>
-    /// <param name="scriptPath">The Javascript source file to execute using <c>node</c>.</param>
+    /// <param name="scriptPath">The JavaScript source file to execute using <c>node</c>.</param>
     /// <param name="workingDirectory">The working directory where <c>node</c> is executed from.</param>
-    public static async Task ExecuteJavascriptTestAsync(
+    public static async Task ExecuteJavaScriptTestAsync(
         this UITestContext context,
         ITestOutputHelper testOutputHelper,
         string scriptPath,
         string workingDirectory = null)
     {
         const string command = "node";
-        var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavascriptTestAsync)}({command})");
-        (workingDirectory, var arguments) = context.GetExecuteJavascriptTestPats(scriptPath, workingDirectory);
+        var pipe = testOutputHelper.ToPipeTarget($"{nameof(ExecuteJavaScriptTestAsync)}({command})");
+        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPats(scriptPath, workingDirectory);
 
         try
         {
@@ -127,33 +127,33 @@ public static class FrontendUITestContextExtensions
 
     /// <summary>
     /// Invokes <see cref="ShortcutsUITestContextExtensions.SwitchToInteractiveAsync"/> with a custom notification
-    /// message that contains instructions to invoke the Javascript test manually with <c>node</c>.
+    /// message that contains instructions to invoke the JavaScript test manually with <c>node</c>.
     /// </summary>
     /// <param name="scriptPath">The relative or absolute path pointing to the test script file.</param>
     /// <param name="workingDirectory">The path where the test script should be executed, will be converted to absolute.</param>
-    public static Task SwitchToInteractiveWithJavascriptTestInfoAsync(
+    public static Task SwitchToInteractiveWithJavaScriptTestInfoAsync(
         this UITestContext context,
         string scriptPath,
         string workingDirectory = null)
     {
-        (workingDirectory, var arguments) = context.GetExecuteJavascriptTestPats(scriptPath, workingDirectory);
+        (workingDirectory, var arguments) = context.GetExecuteJavaScriptTestPats(scriptPath, workingDirectory);
 
         return context.SwitchToInteractiveAsync(
-            $"To start a Javascript test, open a command line terminal at \"{workingDirectory}\" and type the " +
+            $"To start a JavaScript test, open a command line terminal at \"{workingDirectory}\" and type the " +
             $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>");
     }
 
     /// <summary>
-    /// Sets up the Javascript dependencies using <see cref="SetupNodeSeleniumAsync"/> and then runs the script in the
+    /// Sets up the JavaScript dependencies using <see cref="SetupNodeSeleniumAsync"/> and then runs the script in the
     /// same temp directory.
     /// </summary>
     /// <param name="scriptPath">
-    /// The path of the Javascript file to execute with <c>node</c>. Before passing it to <see
-    /// cref="ExecuteJavascriptTestAsync(UITestContext,ITestOutputHelper,string,string)"/>, it's transformed into a
+    /// The path of the JavaScript file to execute with <c>node</c>. Before passing it to <see
+    /// cref="ExecuteJavaScriptTestAsync(UITestContext,ITestOutputHelper,string,string)"/>, it's transformed into a
     /// relative path based on the temp directory to conserve path length because long paths can be a problem in some
     /// operating systems.
     /// </param>
-    public static async Task SetupSeleniumAndExecuteJavascriptTestAsync(
+    public static async Task SetupSeleniumAndExecuteJavaScriptTestAsync(
         this UITestContext context,
         ITestOutputHelper testOutputHelper,
         string scriptPath,
@@ -161,7 +161,7 @@ public static class FrontendUITestContextExtensions
         params string[] otherDependencies)
     {
         await context.SetupNodeSeleniumAsync(testOutputHelper, workingDirectory, otherDependencies);
-        await context.ExecuteJavascriptTestAsync(testOutputHelper, scriptPath, workingDirectory);
+        await context.ExecuteJavaScriptTestAsync(testOutputHelper, scriptPath, workingDirectory);
     }
 
     /// <summary>
