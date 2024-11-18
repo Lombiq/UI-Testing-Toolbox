@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using OrchardCore.Environment.Shell.Scope;
 using System;
 using System.IO;
 using System.Reflection;
@@ -33,8 +34,9 @@ public static class FrontendUITestContextExtensions
     /// <summary>
     /// Navigates to the frontend <see cref="Uri"/> returned by <see
     /// cref="FrontendOrchardCoreUITestExecutorConfigurationExtensions.GetFrontendAndBackendUris"/> and presents it as
-    /// switching to a tenant named <see cref="FrontendPseudoTenantName"/> which is not a real Orchard Core tenant so
-    /// this information can only be used for information.
+    /// switching to a tenant named <see cref="FrontendPseudoTenantName"/>. This is not a real Orchard Core tenant, so
+    /// this name can only be used for information (for example can't be used with <see
+    /// cref="IWebApplicationInstanceExtensions.UsingScopeAsync(IWebApplicationInstance,System.Func{ShellScope,Task},string,bool)"/>).
     /// </summary>
     public static void SwitchToFrontend(this UITestContext context) =>
         context.SwitchCurrentTenant(
