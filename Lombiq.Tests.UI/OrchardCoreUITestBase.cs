@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
 using System.Threading.Tasks;
@@ -385,5 +386,32 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
                 new OrchardCoreInstance<TEntryPoint>(configuration.OrchardCoreConfiguration, contextId, configuration.TestOutputHelper),
             testManifest,
             configuration);
+    }
+
+    /// <summary>
+    /// Starts a "test" with configuration adjustments to make it more suitable for interactive exploration of the UI
+    /// testing setup. In a GitHub Actions environment this method does nothing.
+    /// </summary>
+    protected Task SandboxAfterSetupAsync(
+        Func<UITestContext, Task> testAsync = null,
+        Browser browser = default,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
+    {
+        // This "test" will wait indefinitely, so it's important to skip it in CI.
+        if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
+
+        testAsync ??= context => context.SwitchToInteractiveAsync();
+
+        return ExecuteTestAfterSetupAsync(
+            testAsync,
+            browser,
+            configuration =>
+            {
+                // Since this made for human interaction, make sure the browser is always displayed and disable retries.
+                configuration.BrowserConfiguration.Headless = false;
+                configuration.MaxRetryCount = 0;
+
+                return changeConfigurationAsync == null ? Task.CompletedTask : changeConfigurationAsync(configuration);
+            });
     }
 }
