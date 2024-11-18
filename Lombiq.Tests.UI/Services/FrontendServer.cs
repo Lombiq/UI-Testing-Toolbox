@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -89,7 +90,8 @@ public class FrontendServer
                 frontendUrl: "https://localhost:" + frontendPort.ToTechnicalString(),
                 backendUrl: "https://localhost:" + backendPort.ToTechnicalString());
 
-            var cancellationTokenSource = new CancellationTokenSource();
+            var gracefulCancellation = new CancellationTokenSource();
+            var forcefulCancellation = new CancellationTokenSource();
             var waitCompletionSource = new TaskCompletionSource();
             var execute = !skipStartup(context);
             var waiting = execute && checkProgramReady != null;
@@ -114,7 +116,7 @@ public class FrontendServer
             var cliTask = cli
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
-                .ExecuteAsync(cancellationTokenSource.Token);
+                .ExecuteAsync(forcefulCancellation.Token, gracefulCancellation.Token);
 
             if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
 
@@ -124,11 +126,18 @@ public class FrontendServer
                 Task = cliTask,
                 StopAsync = async () =>
                 {
-                    // This cancellation token forcefully closes the frontend server (i.e. SIGTERM, Ctrl+C), which is
-                    // the only way to shut down most of these servers anyway. For this reason there is no need to await
-                    // the task, and trying to do so would throw OperationCanceledException.
-                    await cancellationTokenSource.CancelAsync();
-                    cancellationTokenSource.Dispose();
+                    // Attempt to close the process with an interrupt signal (SIGINT, same as hitting Ctrl+C), which is
+                    // the only way to shut down most of these servers as they have an infinite main loop. If that
+                    // fails within a minute, the process is killed forcefully (SIGTERM).
+                    await gracefulCancellation.CancelAsync();
+                    forcefulCancellation.CancelAfter(TimeSpan.FromMinutes(1));
+
+                    // Using Task.WhenAny() without unwrapping its output avoids the OperationCanceledException, which
+                    // is not relevant in disposal code.
+                    await Task.WhenAny(cliTask);
+
+                    gracefulCancellation.Dispose();
+                    forcefulCancellation.Dispose();
 
                     await context.PortLeaseManager.StopLeaseAsync(frontendPort);
                 },
