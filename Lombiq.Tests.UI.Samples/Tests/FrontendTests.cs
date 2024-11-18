@@ -23,7 +23,7 @@ public class FrontendTests : FrontendUITestBase
             async context =>
             {
                 // Don't forget that if you want to interact with the frontend manually, you can just switch the context
-                // back to the back end and use the interactive mode extension method.
+                // back to the backend and use the interactive mode extension method.
                 //// context.SwitchToBackend();
                 //// await context.SwitchToInteractiveAsync();
 
