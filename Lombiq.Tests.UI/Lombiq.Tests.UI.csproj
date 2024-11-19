@@ -77,6 +77,7 @@
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.9.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.2.111" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />

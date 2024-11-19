@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -87,7 +87,7 @@ public static class BrowserUITestContextExtensions
         }
         catch
         {
-            context.ClearLogs();
+            await context.ClearLogsAsync();
             return true;
         }
 

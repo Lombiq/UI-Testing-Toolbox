@@ -10,11 +10,11 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// When you enable the "Shift Time - Shortcuts - Lombiq UI Testing Toolbox" feature, it replaces OC's stock ICLock
-// implementation with the custom ShiftTimeClock class. You can use the ~/Lombiq.Tests.UI.Samples/ShiftTime/Set?days=...
-// action to update the ShiftTimeClock.Shift property for the current tenant, which will trick any service that uses
-// IClock into thinking you are in the future. This can be used to test features that can expire, such as a limited-time
-// product discount in a web store.
+// When you enable the "Shift Time - Shortcuts - Lombiq UI Testing Toolbox" feature, it replaces Orchard Core's stock
+// ICLock implementation with the custom ShiftTimeClock class. You can use the
+// ~/Lombiq.Tests.UI.Samples/ShiftTime/Set?days=... action to update the ShiftTimeClock.Shift property for the current
+// tenant, which will trick any service that uses IClock into thinking you are in the future. This can be used to test
+// features that can expire, such as a limited-time product discount in a web store, without having to wait.
 public class ShiftTimeTests : UITestBase
 {
     public ShiftTimeTests(ITestOutputHelper testOutputHelper)

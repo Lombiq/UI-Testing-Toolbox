@@ -227,9 +227,9 @@ public class UITestContext
     /// Clears the application and historic browser logs.
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
-    public void ClearLogs(CancellationToken cancellationToken = default)
+    public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var log in Application.GetLogs(cancellationToken)) log.Remove();
+        foreach (var log in await Application.GetLogsAsync(cancellationToken)) await log.RemoveAsync();
         ClearHistoricBrowserLog();
     }
 
