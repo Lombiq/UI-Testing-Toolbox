@@ -118,8 +118,11 @@ public static class WebDriverFactory
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
 
+                // For some reason FirefoxOptions does not expose the argument list like the Chromium-based driver
+                // options classes do.
+                const string argumentsFieldName = "firefoxArguments"; // #spell-check-ignore-line
                 var arguments = typeof(FirefoxOptions)
-                    .GetField("firefoxArguments", BindingFlags.Instance | BindingFlags.NonPublic)? // #spell-check-ignore-line
+                    .GetField(argumentsFieldName, BindingFlags.Instance | BindingFlags.NonPublic)?
                     .GetValue(options) as IList<string> ?? [];
                 configuration.Arguments.SetItems(arguments);
 

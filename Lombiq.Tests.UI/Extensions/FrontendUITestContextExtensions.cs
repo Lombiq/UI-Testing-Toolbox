@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using OrchardCore.Environment.Shell.Scope;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -13,6 +14,10 @@ using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Extensions;
 
+[SuppressMessage(
+    "Naming",
+    "CA1708:Identifiers should differ by more than case",
+    Justification = "Needed for backwards compatibility, remove after the next major release.")]
 public static class FrontendUITestContextExtensions
 {
     public const string FrontendPseudoTenantName = "!Frontend";
