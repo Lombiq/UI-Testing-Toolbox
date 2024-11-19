@@ -84,7 +84,7 @@ async function runTest(test, configureOptions = null) {
     if (args.length !== 4) throw new Error('Usage: node script.js driverPath startUrl tempDirectory browserName');
     const [driverPath, startUrl, tempDirectory, browserName] = args;
 
-    if (browserName !== 'Chrome') throw new Error("Only Chrome is supported at this time");
+    if (browserName !== 'Chrome') throw new Error('Only Chrome is supported at this time.');
 
     let options = new chrome.Options().addArguments('ignore-certificate-errors');
 
