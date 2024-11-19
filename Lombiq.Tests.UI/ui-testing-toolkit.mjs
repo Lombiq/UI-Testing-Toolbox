@@ -1,8 +1,13 @@
 import path from 'path';
 import process from 'process';
+import fs from 'node:fs/promises';
 import { By, WebDriver, WebElement } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import { writeFile } from 'node:fs/promises'
+
+function _exists(path) {
+    return fs.stat(path).then(() => true, () => false);
+}
 
 async function _logSource(driver) {
     const html = await driver.getPageSource();
@@ -81,21 +86,15 @@ async function runTest(test, configureOptions = null) {
 
     if (browserName !== 'Chrome') throw new Error("Only Chrome is supported at this time");
 
-    let options = new chrome.Options()
-        .addArguments('disable-dev-shm-usage')
-        .addArguments('unsafely-disable-devtools-self-xss-warnings')
-        .addArguments('disable-search-engine-choice-screen')
-        .addArguments('--lang=en-US')
-        .addArguments('disable-accelerated-2d-canvas')
-        .addArguments('disable-gpu')
-        .addArguments('force-color-profile=sRGB')
-        .addArguments('force-device-scale-factor=1')
-        .addArguments('high-dpi-support=1')
-        .addArguments('disable-smooth-scrolling')
-        .addArguments('ignore-certificate-errors')
-        .addArguments('--ignore-certificate-errors')
-        .addArguments('--no-sandbox')
-        ;
+    let options = new chrome.Options();
+
+    const argumentsPath = path.join(tempDirectory, 'BrowserArguments.json');
+    if (await _exists(argumentsPath)) {
+        JSON.parse(await fs.readFile(argumentsPath, { encoding: 'utf8' }))
+            .forEach(argument => {
+                options = options.addArguments(argument);
+            });
+    }
 
     if (process.env.GITHUB_ENV) options = options.addArguments('headless');
     if (configureOptions) options = configureOptions(options) ?? options;

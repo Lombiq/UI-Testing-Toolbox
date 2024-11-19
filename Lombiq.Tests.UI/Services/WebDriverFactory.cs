@@ -8,8 +8,10 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -55,6 +57,8 @@ public static class WebDriverFactory
                 // Helps with misconfigured hosts.
                 if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
+                configuration.Arguments.SetItems(chromeConfig.Options.Arguments);
+
                 return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
                     .SetCommonTimeouts(pageLoadTimeout);
             });
@@ -89,6 +93,8 @@ public static class WebDriverFactory
             var service = EdgeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
 
+            configuration.Arguments.SetItems(options.Arguments);
+
             return () => new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
         });
 
@@ -111,6 +117,11 @@ public static class WebDriverFactory
                 if (configuration.Headless) options.AddArgument("--headless");
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
+
+                var arguments = typeof(FirefoxOptions)
+                    .GetField("firefoxArguments", BindingFlags.Instance | BindingFlags.NonPublic)?
+                    .GetValue(options) as IList<string> ?? [];
+                configuration.Arguments.SetItems(arguments);
 
                 return new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout);
             }));

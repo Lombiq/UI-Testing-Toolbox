@@ -7,6 +7,7 @@ using OrchardCore.Environment.Shell.Scope;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -116,6 +117,11 @@ public static class FrontendUITestContextExtensions
 
         try
         {
+            var browserArguments = context.Configuration.BrowserConfiguration.Arguments;
+            await File.WriteAllTextAsync(
+                context.GetTempSubDirectoryPath("BrowserArguments.json"),
+                JsonSerializer.Serialize(browserArguments));
+
             await Cli.Wrap(command)
                 .WithArguments(arguments)
                 .WithStandardOutputPipe(pipe)
