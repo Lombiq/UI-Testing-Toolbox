@@ -28,7 +28,7 @@ Highlights:
 - Interactive mode for debugging the app while the test is paused. [Here's a demo of the feature](Lombiq.Tests.UI.Samples/Tests/InteractiveModeTests.cs), and a [demo video here](https://www.youtube.com/watch?v=ItNltaruWTY).
 - Security scanning with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/), the world's most widely used web app security scanner, right from UI tests. See a demo video [here](https://www.youtube.com/watch?v=iUYivLkFbY4).
 
-See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
+See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). We also had an Orchard Harvest 2024 talk about security scanning [here](https://www.youtube.com/watch?v=FsOpo8EA4wE). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
 Looking not just for dynamic testing but also static code analysis? Check out our [.NET Analyzers project](https://github.com/Lombiq/.NET-Analyzers).
 
