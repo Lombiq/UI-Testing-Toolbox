@@ -5,7 +5,7 @@ import { runTest, shouldContainText, navigate } from '../ui-testing-toolkit.mjs'
 
 // This function automatically handles the command line arguments and sets up a Chrome driver.
 await runTest(async (driver, startUrl) => {
-    // Inside you can use all normal Selenium Javascript code, e.g.:
+    // Inside you can use all normal Selenium JavaScript code, e.g.:
     // - https://www.selenium.dev/selenium/docs/api/javascript/WebDriver.html
     // - https://www.selenium.dev/selenium/docs/api/javascript/By.html
     await driver.findElement(By.xpath("//a[@href = '/blog/post-1']")).click();
@@ -23,4 +23,4 @@ await runTest(async (driver, startUrl) => {
     await driver.findElement(By.xpath("id('footer')//a[@href='https://lombiq.com/']"));
 });
 
-// END OF TRAINING SECTION: Executing tests written in Javascript.
+// END OF TRAINING SECTION: Executing tests written in JavaScript.

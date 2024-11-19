@@ -32,7 +32,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Testing remote apps](Tests/RemoteTests.cs)
 - [Testing time-dependent functionality](Tests/ShiftTimeTests.cs)
 - [Test headless Orchard Core with a frontend subprocess](FrontendUITestBase.cs)
-- [Executing tests written in Javascript](Tests/JavascriptTests.cs)
+- [Executing tests written in JavaScript](Tests/JavaScriptTests.cs)
 
 ## Adding new tutorials
 
