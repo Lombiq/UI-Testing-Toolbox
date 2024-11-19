@@ -119,7 +119,7 @@ public static class WebDriverFactory
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
 
                 var arguments = typeof(FirefoxOptions)
-                    .GetField("firefoxArguments", BindingFlags.Instance | BindingFlags.NonPublic)?
+                    .GetField("firefoxArguments", BindingFlags.Instance | BindingFlags.NonPublic)? // #spell-check-ignore-line
                     .GetValue(options) as IList<string> ?? [];
                 configuration.Arguments.SetItems(arguments);
 
