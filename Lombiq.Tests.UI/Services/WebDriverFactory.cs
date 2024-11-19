@@ -132,6 +132,7 @@ public static class WebDriverFactory
         where TDriverOptions : DriverOptions
     {
         driverOptions.AcceptInsecureCertificates = true;
+        driverOptions.UnhandledPromptBehavior = UnhandledPromptBehavior.Ignore;
         driverOptions.PageLoadStrategy = PageLoadStrategy.Normal;
         return driverOptions;
     }
