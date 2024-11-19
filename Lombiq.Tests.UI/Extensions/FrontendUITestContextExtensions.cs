@@ -42,7 +42,7 @@ public static class FrontendUITestContextExtensions
     /// cref="FrontendOrchardCoreUITestExecutorConfigurationExtensions.GetFrontendAndBackendUris"/> and presents it as
     /// switching to a tenant named <see cref="FrontendPseudoTenantName"/>. This is not a real Orchard Core tenant, so
     /// this name can only be used for information (for example can't be used with <see
-    /// cref="IWebApplicationInstanceExtensions.UsingScopeAsync(IWebApplicationInstance,System.Func{ShellScope,Task},string,bool)"/>).
+    /// cref="IWebApplicationInstanceExtensions.UsingScopeAsync(IWebApplicationInstance,Func{ShellScope,Task},string,bool)"/>).
     /// </summary>
     public static void SwitchToFrontend(this UITestContext context) =>
         context.SwitchCurrentTenant(
