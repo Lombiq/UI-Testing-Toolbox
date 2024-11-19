@@ -392,7 +392,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     /// Starts a "test" with configuration adjustments to make it more suitable for interactive exploration of the UI
     /// testing setup. In a GitHub Actions environment this method does nothing.
     /// </summary>
-    protected Task SandboxAfterSetupAsync(
+    protected Task OpenSandboxAfterSetupAsync(
         Func<UITestContext, Task> testAsync = null,
         Browser browser = default,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)

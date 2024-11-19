@@ -40,7 +40,7 @@ public class JavaScriptTests : UITestBase
     // test developer's workflow.
     [Fact]
     public Task Sandbox() =>
-        SandboxAfterSetupAsync(async context =>
+        OpenSandboxAfterSetupAsync(async context =>
         {
             await context.SetupNodeSeleniumAsync(_testOutputHelper);
             await context.SwitchToInteractiveWithJavaScriptTestInfoAsync(Path.Join("Tests", "JavaScriptTests.mjs"));
