@@ -746,23 +746,23 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Sets the time shift to a specific value.
     /// </summary>
-    public static Task SetShiftTimeAsync(this UITestContext context, TimeSpan timeSpan)
+    public static Task SetShiftTimeAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return timeSpan.TotalDays >= 1.0
-            ? context.GoToAsync<TimeShiftController>(controller => controller.Set(timeSpan.TotalDays, 0))
-            : context.GoToAsync<TimeShiftController>(controller => controller.Set(0, timeSpan.TotalSeconds));
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Set(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Set(0, time.TotalSeconds));
     }
 
     /// <summary>
     /// Adds the specified value to the time shift.
     /// </summary>
-    public static Task AddShiftTimeAsync(this UITestContext context, TimeSpan timeSpan)
+    public static Task AddShiftTimeAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return timeSpan.TotalDays >= 1.0
-            ? context.GoToAsync<TimeShiftController>(controller => controller.Add(timeSpan.TotalDays, 0))
-            : context.GoToAsync<TimeShiftController>(controller => controller.Add(0, timeSpan.TotalSeconds));
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Add(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Add(0, time.TotalSeconds));
     }
 
     /// <summary>
