@@ -43,9 +43,9 @@ public class TimeShiftingClock : IClock
     /// </returns>
     public static double? UpdateClock(IClock clock, Func<TimeSpan, TimeSpan> edit)
     {
-        if (clock is not TimeShiftingClock shiftTimeClock) return null;
+        if (clock is not TimeShiftingClock timeShiftingClock) return null;
 
-        shiftTimeClock.Shift = edit(shiftTimeClock.Shift);
-        return shiftTimeClock.Shift.TotalSeconds;
+        timeShiftingClock.Shift = edit(timeShiftingClock.Shift);
+        return timeShiftingClock.Shift.TotalSeconds;
     }
 }
