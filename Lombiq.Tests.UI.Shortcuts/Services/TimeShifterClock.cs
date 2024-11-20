@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.Shortcuts.Services;
 /// cref="IClock"/> into believing it's the future or past. This service is registered as singleton, so setting <see
 /// cref="Shift"/> will persist in the tenant across requests.
 /// </summary>
-public class ShiftTimeClock : IClock
+public class TimeShifterClock : IClock
 {
     private readonly Clock _inner = new();
 
@@ -34,16 +34,16 @@ public class ShiftTimeClock : IClock
     /// Use this to safely update the <see cref="Shift"/> value.
     /// </summary>
     /// <param name="clock">
-    /// The injected service, if it's <see cref="ShiftTimeClock"/> then its <see cref="Shift"/> property is updated.
+    /// The injected service, if it's <see cref="TimeShifterClock"/> then its <see cref="Shift"/> property is updated.
     /// </param>
     /// <param name="edit">Input is the current value of <see cref="Shift"/>, output is the new value.</param>
     /// <returns>
     /// The total seconds of the new value of <see cref="Shift"/>, or <see langword="null"/> if <paramref name="clock"/>
-    /// is not <see cref="ShiftTimeClock"/>.
+    /// is not <see cref="TimeShifterClock"/>.
     /// </returns>
     public static double? UpdateClock(IClock clock, Func<TimeSpan, TimeSpan> edit)
     {
-        if (clock is not ShiftTimeClock shiftTimeClock) return null;
+        if (clock is not TimeShifterClock shiftTimeClock) return null;
 
         shiftTimeClock.Shift = edit(shiftTimeClock.Shift);
         return shiftTimeClock.Shift.TotalSeconds;

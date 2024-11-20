@@ -20,7 +20,7 @@ public class ShiftTimeController : Controller
         SetInner(current => current + TimeSpan.FromDays(days) + TimeSpan.FromSeconds(seconds));
 
     private IActionResult SetInner(Func<TimeSpan, TimeSpan> edit) =>
-        ShiftTimeClock.UpdateClock(_clock, edit) is { } totalSeconds
+        TimeShifterClock.UpdateClock(_clock, edit) is { } totalSeconds
             ? Ok(totalSeconds)
-            : BadRequest($"The clock is {_clock.GetType().FullName} instead of {nameof(ShiftTimeClock)}.");
+            : BadRequest($"The clock is {_clock.GetType().FullName} instead of {nameof(TimeShifterClock)}.");
 }
