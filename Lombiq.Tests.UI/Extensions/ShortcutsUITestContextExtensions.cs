@@ -750,7 +750,7 @@ public static class ShortcutsUITestContextExtensions
     public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+        return context.GoToAsync<TimeShiftController>(controller => controller.Set(days, seconds));
     }
 
     /// <summary>
@@ -760,7 +760,7 @@ public static class ShortcutsUITestContextExtensions
     public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<ShiftTimeController>(controller => controller.Add(days, seconds));
+        return context.GoToAsync<TimeShiftController>(controller => controller.Add(days, seconds));
     }
 
     /// <summary>

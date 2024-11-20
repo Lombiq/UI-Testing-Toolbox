@@ -7,11 +7,11 @@ using System;
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
 [DevelopmentAndLocalhostOnly]
-public class ShiftTimeController : Controller
+public class TimeShiftController : Controller
 {
     private readonly IClock _clock;
 
-    public ShiftTimeController(IClock clock) => _clock = clock;
+    public TimeShiftController(IClock clock) => _clock = clock;
 
     public IActionResult Set(double days, double seconds) =>
         SetInner(_ => TimeSpan.FromDays(days) + TimeSpan.FromSeconds(seconds));
