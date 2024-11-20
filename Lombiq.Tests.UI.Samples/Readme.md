@@ -31,6 +31,8 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Security scanning](Tests/SecurityScanningTests.cs)
 - [Testing remote apps](Tests/RemoteTests.cs)
 - [Testing time-dependent functionality](Tests/ShiftTimeTests.cs)
+- [Test headless Orchard Core with a frontend subprocess](FrontendUITestBase.cs)
+- [Executing tests written in JavaScript](Tests/JavaScriptTests.cs)
 
 ## Adding new tutorials
 

@@ -9,6 +9,7 @@
     <None Remove=".htmlvalidate.json" />
     <None Remove="Tests\CustomZapAutomationFrameworkPlan.yml" />
     <None Remove="xunit.runner.json" />
+    <None Update="Tests\*.mjs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

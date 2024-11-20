@@ -182,7 +182,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+                DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempDirectoryPath(contextId));
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
@@ -591,7 +591,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var contextId = Guid.NewGuid().ToString();
 
-        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempSubDirectoryPath(contextId));
+        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
 
         SqlServerRunningContext sqlServerContext = null;
         AzureBlobStorageRunningContext azureBlobStorageContext = null;
@@ -827,7 +827,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         if (_context == null || !_dumpConfiguration.CaptureScreenshots || !_context.IsBrowserRunning) return Task.CompletedTask;
 
-        var screenshotsPath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        var screenshotsPath = _context.ScreenshotsDirectoryPath;
         FileSystemHelper.EnsureDirectoryExists(screenshotsPath);
 
         try
@@ -853,7 +853,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         await TakeScreenshotIfEnabledAsync(_context);
 
-        var screenshotsSourcePath = DirectoryPaths.GetScreenshotsDirectoryPath(_context.Id);
+        var screenshotsSourcePath = _context.ScreenshotsDirectoryPath;
         if (Directory.Exists(screenshotsSourcePath))
         {
             var screenshotsDestinationPath = Path.Combine(debugInformationPath, DirectoryPaths.Screenshots);

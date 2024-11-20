@@ -1,6 +1,5 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
-using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
@@ -78,9 +77,9 @@ public sealed class ZapManager : IAsyncDisposable
             automationFrameworkYamlPath = AutomationFrameworkPlanPaths.BaselinePlanPath;
         }
 
-        // Each attempt will have it's own "ZapN" directory inside the temp, starting with "Zap1".
+        // Each attempt will have its own "ZapN" directory inside the temp, starting with "Zap1".
         var mountedDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
-            DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap"));
+            context.GetTempSubDirectoryPath("Zap"));
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
 
         Directory.CreateDirectory(reportsDirectoryPath);
