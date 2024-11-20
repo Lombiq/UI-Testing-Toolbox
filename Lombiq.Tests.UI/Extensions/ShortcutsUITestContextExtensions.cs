@@ -67,8 +67,11 @@ public static class ShortcutsUITestContextExtensions
     /// anything else happening on the login page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
     /// enabled.
     /// </summary>
-    public static Task SignInDirectlyAsync(this UITestContext context, string userName = DefaultUser.UserName) =>
-        context.GoToAsync<AccountController>(controller => controller.SignInDirectly(userName));
+    public static Task SignInDirectlyAsync(this UITestContext context, string userName = DefaultUser.UserName)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<AccountController>(controller => controller.SignInDirectly(userName));
+    }
 
     /// <summary>
     /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
@@ -78,8 +81,8 @@ public static class ShortcutsUITestContextExtensions
     public static Task SignInDirectlyAndGoToRelativeUrlAsync(
         this UITestContext context,
         string relativeUrl,
-        bool onlyIfNotAlreadyThere = true)
-        => context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
+        bool onlyIfNotAlreadyThere = true) =>
+        context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
 
     /// <summary>
     /// Authenticates the client with the given user account and navigates to the given URL. Note that this will execute
@@ -100,8 +103,11 @@ public static class ShortcutsUITestContextExtensions
     /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the logoff
     /// page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
-    public static Task SignOutDirectlyAsync(this UITestContext context) =>
-        context.GoToAsync<AccountController>(controller => controller.SignOutDirectly());
+    public static Task SignOutDirectlyAsync(this UITestContext context)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<AccountController>(controller => controller.SignOutDirectly());
+    }
 
     /// <summary>
     /// Retrieves the currently authenticated user's name, if any. The target app needs to have
@@ -110,6 +116,7 @@ public static class ShortcutsUITestContextExtensions
     /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
     public static async Task<string> GetCurrentUserNameAsync(this UITestContext context)
     {
+        context.EnsureValidOrchardCoreTenantScope();
         await context.GoToAsync<CurrentUserController>(controller => controller.Index());
         var userNameContainer = context.GetText(By.CssSelector("pre"));
         if (userNameContainer == "Unauthenticated") return string.Empty;
@@ -306,6 +313,7 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     public static async Task ExecuteAndAssertTestFeatureToggleAsync(this UITestContext context)
     {
+        context.EnsureValidOrchardCoreTenantScope();
         await context.EnableFeatureDirectlyAsync(FeatureToggleTestBench);
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
         context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
@@ -329,6 +337,7 @@ public static class ShortcutsUITestContextExtensions
             await context.EnableFeatureDirectlyAsync(MediaCachePurge);
         }
 
+        context.EnsureValidOrchardCoreTenantScope();
         await context.GoToAsync<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
         if (toggleTheFeature)
@@ -401,11 +410,16 @@ public static class ShortcutsUITestContextExtensions
     /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET Core
     /// to display an error page.
     /// </summary>
-    public static Task GoToErrorPageDirectlyAsync(this UITestContext context) =>
-        context.GoToAsync<ErrorController>(controller => controller.Index());
+    public static Task GoToErrorPageDirectlyAsync(this UITestContext context)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<ErrorController>(controller => controller.Index());
+    }
 
     private static IShortcutsApi GetApi(this UITestContext context)
     {
+        context.EnsureValidOrchardCoreTenantScope();
+
         // If there is a subdirectory-like URL prefix (e.g. for tenants) in the scope base URI, the requests will have
         // double slashes that results in 404 error. So the trailing slash has to be trimmed out.
         var baseUri = new Uri(context.Scope.BaseUri.ToString().TrimEnd('/'));
@@ -627,6 +641,8 @@ public static class ShortcutsUITestContextExtensions
     /// </param>
     public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
     {
+        context.EnsureValidOrchardCoreTenantScope();
+
         InteractiveModeHasBeenUsed = true;
         await context.EnterInteractiveModeAsync(notificationHtml);
         await context.WaitInteractiveModeAsync();
@@ -683,14 +699,20 @@ public static class ShortcutsUITestContextExtensions
         UITestContext context,
         Func<IServiceProvider, Task> execute,
         string tenant,
-        bool activateShell) =>
-        context.Application.UsingScopeAsync(execute, tenant ?? context.TenantName, activateShell);
+        bool activateShell)
+    {
+        tenant ??= context.TenantName;
+        if (tenant.StartsWith('!')) tenant = ShellSettings.DefaultShellName;
+
+        return context.Application.UsingScopeAsync(execute, tenant, activateShell);
+    }
 
     /// <summary>
     /// Places the provided <paramref name="steps"/> into a recipe and executes it with JSON Import.
     /// </summary>
     public static async Task ExecuteJsonRecipeAsync(this UITestContext context, params object[] steps)
     {
+        context.EnsureValidOrchardCoreTenantScope();
         await context.GoToAdminRelativeUrlAsync("/DeploymentPlan/Import/Json");
 
         var json = JsonSerializer.Serialize(new { steps });
@@ -725,13 +747,42 @@ public static class ShortcutsUITestContextExtensions
     /// Sets the time shift to a specific value. If both <paramref name="days"/> and <paramref name="seconds"/> are
     /// provided, then the <see cref="TimeSpan"/> values are added together.
     /// </summary>
-    public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0) =>
-        context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+    public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+    }
 
     /// <summary>
     /// Adds the specified value to the time shift. If both <paramref name="days"/> and <paramref name="seconds"/> are
     /// provided, then the <see cref="TimeSpan"/> values for both are added. Negative values are supported as well.
     /// </summary>
-    public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0) =>
-        context.GoToAsync<ShiftTimeController>(controller => controller.Add(days, seconds));
+    public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<ShiftTimeController>(controller => controller.Add(days, seconds));
+    }
+
+    /// <summary>
+    /// Switches the current tenant to <see cref="ShellSettings.DefaultShellName"/> if it's not a real Orchard Core
+    /// tenant but some other technical scope.
+    /// </summary>
+    /// <remarks><para>
+    /// Real Orchard Core tenant names can't contain the <c>!</c> character. So if the <see
+    /// cref="UITestContext.TenantName"/> starts with it, this indicates we are in some other non-OC scope, like the
+    /// frontend of <see cref="FrontendServer"/>.
+    /// </para></remarks>
+    public static void EnsureValidOrchardCoreTenantScope(this UITestContext context)
+    {
+        if (!context.TenantName.StartsWith('!')) return;
+
+        if (context.Configuration.GetFrontendAndBackendUris().BackendUri is { })
+        {
+            context.SwitchToBackend();
+        }
+        else
+        {
+            context.SwitchCurrentTenantToDefault();
+        }
+    }
 }

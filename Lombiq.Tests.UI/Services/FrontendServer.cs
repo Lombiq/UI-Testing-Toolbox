@@ -2,6 +2,7 @@
 
 using CliWrap;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
@@ -67,11 +68,15 @@ public class FrontendServer
         ArgumentNullException.ThrowIfNull(program);
         skipStartup ??= _ => false;
 
-        var cli = Cli.Wrap(program).WithArguments(arguments ?? []);
-
         _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
+            var cli = Cli
+                .Wrap(program)
+                .WithArguments(arguments ?? [])
+                .WithWorkingDirectory(orchardContext.ContentRootPath);
+
             var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var backendPort = orchardContext.Url.Port;
             var context = new Context(
                 orchardContext.ContentRootPath,
                 orchardContext.Url,
@@ -79,7 +84,13 @@ public class FrontendServer
                 frontendPort,
                 orchardArguments);
 
-            var cancellationTokenSource = new CancellationTokenSource();
+            // Initialize the default frontend and backend URLs. This may be customized in thenAsync.
+            _configuration.SetFrontendAndBackendUris(
+                frontendUrl: "https://localhost:" + frontendPort.ToTechnicalString(),
+                backendUrl: "https://localhost:" + backendPort.ToTechnicalString());
+
+            var gracefulCancellation = new CancellationTokenSource();
+            var forcefulCancellation = new CancellationTokenSource();
             var waitCompletionSource = new TaskCompletionSource();
             var execute = !skipStartup(context);
             var waiting = execute && checkProgramReady != null;
@@ -104,21 +115,28 @@ public class FrontendServer
             var cliTask = cli
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
-                .ExecuteAsync(cancellationTokenSource.Token);
+                .ExecuteAsync(forcefulCancellation.Token, gracefulCancellation.Token);
 
             if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
 
-            _configuration.CustomConfiguration[GetKey(context.Url.Port)] = new FrontendServerContext
+            _configuration.CustomConfiguration[GetKey(backendPort)] = new FrontendServerContext
             {
                 Port = frontendPort,
                 Task = cliTask,
                 StopAsync = async () =>
                 {
-                    // This cancellation token forcefully closes the frontend server (i.e. SIGTERM, Ctrl+C), which is
-                    // the only way to shut down most of these servers anyway. For this reason there is no need to await
-                    // the task, and trying to do so would throw OperationCanceledException.
-                    await cancellationTokenSource.CancelAsync();
-                    cancellationTokenSource.Dispose();
+                    // Attempt to close the process with an interrupt signal (SIGINT, same as hitting Ctrl+C), which is
+                    // the only way to shut down most of these servers as they have an infinite main loop. If that
+                    // fails within a minute, the process is killed forcefully (SIGTERM).
+                    await gracefulCancellation.CancelAsync();
+                    forcefulCancellation.CancelAfter(TimeSpan.FromMinutes(1));
+
+                    // Using Task.WhenAny() without unwrapping its output avoids the OperationCanceledException, which
+                    // is not relevant in disposal code.
+                    await Task.WhenAny(cliTask);
+
+                    gracefulCancellation.Dispose();
+                    forcefulCancellation.Dispose();
 
                     await context.PortLeaseManager.StopLeaseAsync(frontendPort);
                 },
@@ -159,6 +177,13 @@ public class FrontendServer
                 $"The timeout of {nameof(FrontendServer)} ({timeout}) is exceeded."));
         }
     }
+
+    /// <summary>
+    /// Returns a checker function that can be passed to <see cref="Configure"/>'s <c>skipStartup</c> parameter to skip
+    /// execution during setup and snapshot restore.
+    /// </summary>
+    public static Func<Context, bool> SkipDuringSetupAndRestore(OrchardCoreUITestExecutorConfiguration configuration) =>
+        _ => configuration.OrchardCoreConfiguration.StartCount > 2;
 
     public record Context(
         string ContentRootPath,

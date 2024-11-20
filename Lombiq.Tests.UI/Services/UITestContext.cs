@@ -1,8 +1,10 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
+using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -139,6 +141,12 @@ public class UITestContext
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
+    /// <summary>
+    /// Gets the absolute path of the <see cref="DirectoryPaths.Screenshots"/> subdirectory inside the current test
+    /// instance's <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string ScreenshotsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Screenshots);
+
     // This is a central context object, we need the data to be passed in the constructor.
 #pragma warning disable S107 // Methods should not have too many parameters
     public UITestContext(
@@ -265,16 +273,44 @@ public class UITestContext
     /// <summary>
     /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
     /// </summary>
-    /// <param name="tenantName">The technical name of the tenant to change to.</param>
+    /// <param name="tenantName">
+    /// The technical name of the tenant to change to. If <see langword="null"/>, then <see
+    /// cref="ShellSettings.DefaultShellName"/> is used instead.
+    /// </param>
     /// <param name="urlPrefix">
-    /// The URL prefix configured for the tenant. It should neither start nor end with a slash.
+    /// The URL prefix configured for the tenant. Any leading or trailing slashes are trimmed out.
     /// </param>
     public void SwitchCurrentTenant(string tenantName, string urlPrefix)
     {
-        TenantName = tenantName;
-        UrlPrefix = urlPrefix;
+        TenantName = tenantName ?? ShellSettings.DefaultShellName;
+        UrlPrefix = urlPrefix.Trim('/');
         Scope.BaseUri = new Uri(Scope.BaseUri, "/" + UrlPrefix + (string.IsNullOrEmpty(UrlPrefix) ? string.Empty : "/"));
     }
+
+    /// <summary>
+    /// Changes the current tenant context to the provided one. Note that this doesn't navigate the browser.
+    /// </summary>
+    /// <param name="tenantName">
+    /// The technical name of the tenant to change to. If <see langword="null"/>, then <see
+    /// cref="ShellSettings.DefaultShellName"/> is used instead.
+    /// </param>
+    /// <param name="baseUri">
+    /// The new value of <see cref="Scope"/>.<see cref="AtataScope.BaseUri"/>/ Additionally, <see cref="UrlPrefix"/> is
+    /// set to its <see cref="Uri.AbsolutePath"/> (without leading or trailing slashes).
+    /// </param>
+    public void SwitchCurrentTenant(string tenantName, Uri baseUri)
+    {
+        TenantName = tenantName ?? ShellSettings.DefaultShellName;
+        UrlPrefix = baseUri.AbsolutePath.Trim('/');
+        Scope.BaseUri = baseUri;
+    }
+
+    /// <summary>
+    /// Returns the subdirectory described by <paramref name="subDirectoryNames"/> inside the current test instance's
+    /// <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
+        DirectoryPaths.GetTempDirectoryPath([Id, .. subDirectoryNames]);
 
     private bool IsAlert()
     {
