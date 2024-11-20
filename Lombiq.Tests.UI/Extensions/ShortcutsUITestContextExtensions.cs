@@ -744,23 +744,25 @@ public static class ShortcutsUITestContextExtensions
     public static Task EnableTimeShiftingAsync(this UITestContext context) => context.EnableFeatureDirectlyAsync(ShiftTime);
 
     /// <summary>
-    /// Sets the time shift to a specific value. If both <paramref name="days"/> and <paramref name="seconds"/> are
-    /// provided, then the <see cref="TimeSpan"/> values are added together.
+    /// Sets the time shift to a specific value.
     /// </summary>
-    public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    public static Task SetShiftTimeAsync(this UITestContext context, TimeSpan timeSpan)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<TimeShiftController>(controller => controller.Set(days, seconds));
+        return timeSpan.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Set(timeSpan.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Set(0, timeSpan.TotalSeconds));
     }
 
     /// <summary>
-    /// Adds the specified value to the time shift. If both <paramref name="days"/> and <paramref name="seconds"/> are
-    /// provided, then the <see cref="TimeSpan"/> values for both are added. Negative values are supported as well.
+    /// Adds the specified value to the time shift.
     /// </summary>
-    public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    public static Task AddShiftTimeAsync(this UITestContext context, TimeSpan timeSpan)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<TimeShiftController>(controller => controller.Add(days, seconds));
+        return timeSpan.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Add(timeSpan.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Add(0, timeSpan.TotalSeconds));
     }
 
     /// <summary>
