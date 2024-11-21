@@ -744,23 +744,25 @@ public static class ShortcutsUITestContextExtensions
     public static Task EnableTimeShiftingAsync(this UITestContext context) => context.EnableFeatureDirectlyAsync(ShiftTime);
 
     /// <summary>
-    /// Sets the time shift to a specific value. If both <paramref name="days"/> and <paramref name="seconds"/> are
-    /// provided, then the <see cref="TimeSpan"/> values are added together.
+    /// Sets the time shift to a specific value.
     /// </summary>
-    public static Task SetShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    public static Task SetTimeShiftAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<ShiftTimeController>(controller => controller.Set(days, seconds));
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Set(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Set(0, time.TotalSeconds));
     }
 
     /// <summary>
-    /// Adds the specified value to the time shift. If both <paramref name="days"/> and <paramref name="seconds"/> are
-    /// provided, then the <see cref="TimeSpan"/> values for both are added. Negative values are supported as well.
+    /// Adds the specified value to the time shift.
     /// </summary>
-    public static Task AddShiftTimeAsync(this UITestContext context, double days = 0, double seconds = 0)
+    public static Task AddTimeShiftAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
-        return context.GoToAsync<ShiftTimeController>(controller => controller.Add(days, seconds));
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Add(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Add(0, time.TotalSeconds));
     }
 
     /// <summary>
