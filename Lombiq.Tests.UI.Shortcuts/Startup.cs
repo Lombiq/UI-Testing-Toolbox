@@ -44,6 +44,6 @@ public sealed class SetTimeStartup : StartupBase
     public override void ConfigureServices(IServiceCollection services)
     {
         services.RemoveImplementationsOf<IClock>();
-        services.AddSingleton<IClock, ShiftTimeClock>();
+        services.AddSingleton<IClock, TimeShiftingClock>();
     }
 }

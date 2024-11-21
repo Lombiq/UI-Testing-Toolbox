@@ -11,8 +11,8 @@ using Xunit.Abstractions;
 namespace Lombiq.Tests.UI.Samples.Tests;
 
 // When you enable the "Shift Time - Shortcuts - Lombiq UI Testing Toolbox" feature, it replaces Orchard Core's stock
-// ICLock implementation with the custom ShiftTimeClock class. You can use the
-// ~/Lombiq.Tests.UI.Samples/ShiftTime/Set?days=... action to update the ShiftTimeClock.Shift property for the current
+// ICLock implementation with the custom TimeShiftingClock class. You can use the
+// ~/Lombiq.Tests.UI.Samples/TimeShift/Set?days=... action to update the TimeShiftingClock.Shift property for the current
 // tenant, which will trick any service that uses IClock into thinking you are in the future. This can be used to test
 // features that can expire, such as a limited-time product discount in a web store, without having to wait.
 public class ShiftTimeTests : UITestBase
@@ -46,7 +46,7 @@ public class ShiftTimeTests : UITestBase
                 // This extension method navigates to the action which sets the time offset. You can set it in terms of
                 // days or seconds. Both accept fractions and negative values. If both days and seconds are set, they
                 // are added together.
-                await context.SetShiftTimeAsync(days: 10);
+                await context.SetTimeShiftAsync(TimeSpan.FromDays(10));
 
                 // Let's verify the date!
                 var tenDaysFromNow = await GetNowAsync(context);
