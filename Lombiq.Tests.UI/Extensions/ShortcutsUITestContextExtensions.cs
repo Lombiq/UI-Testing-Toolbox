@@ -746,7 +746,7 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Sets the time shift to a specific value.
     /// </summary>
-    public static Task SetShiftTimeAsync(this UITestContext context, TimeSpan time)
+    public static Task SetTimeShiftAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
         return time.TotalDays >= 1.0
@@ -757,7 +757,7 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Adds the specified value to the time shift.
     /// </summary>
-    public static Task AddShiftTimeAsync(this UITestContext context, TimeSpan time)
+    public static Task AddTimeShiftAsync(this UITestContext context, TimeSpan time)
     {
         context.EnsureValidOrchardCoreTenantScope();
         return time.TotalDays >= 1.0

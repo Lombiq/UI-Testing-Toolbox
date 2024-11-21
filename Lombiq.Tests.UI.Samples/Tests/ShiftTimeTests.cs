@@ -46,7 +46,7 @@ public class ShiftTimeTests : UITestBase
                 // This extension method navigates to the action which sets the time offset. You can set it in terms of
                 // days or seconds. Both accept fractions and negative values. If both days and seconds are set, they
                 // are added together.
-                await context.SetShiftTimeAsync(TimeSpan.FromDays(10));
+                await context.SetTimeShiftAsync(TimeSpan.FromDays(10));
 
                 // Let's verify the date!
                 var tenDaysFromNow = await GetNowAsync(context);
