@@ -55,8 +55,7 @@ public class BasicVisualVerificationTests : UITestBase
     // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
     // in 2022.
-    // Temporarily not running Edge until https://github.com/atata-framework/atata-webdriversetup/issues/16 is fixed.
-    [Theory, Chrome]
+    [Theory, Chrome, Edge]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
