@@ -156,9 +156,9 @@ public static class ShortcutsUITestContextExtensions
     /// <returns>The <see cref="IUser"/> instance of the user just created.</returns>
     public static async Task<IUser> CreateUserAsync(
         this UITestContext context,
-        string userName,
-        string password,
-        string email,
+        string userName = TestUser.UserName,
+        string password = TestUser.Password,
+        string email = TestUser.Email,
         string tenant = null,
         bool activateShell = true)
     {
