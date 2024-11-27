@@ -151,6 +151,15 @@ public static class WebApplicationInstanceExtensions
     public static TService GetRequiredService<TService>(this IWebApplicationInstance webApplicationInstance) =>
         webApplicationInstance.Services.GetRequiredService<TService>();
 
+    /// <summary>
+    /// Restarts, i.e. pauses and resumes, the web application instance.
+    /// </summary>
+    public static async Task RestartAsync(this IWebApplicationInstance webApplicationInstance)
+    {
+        await webApplicationInstance.PauseAsync();
+        await webApplicationInstance.ResumeAsync();
+    }
+
     private static async Task AssertLogsAsync(
         IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
