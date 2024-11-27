@@ -153,24 +153,20 @@ public static class ShortcutsUITestContextExtensions
     /// <exception cref="CreateUserFailedException">
     /// If creating the user with the given parameters was not successful.
     /// </exception>
-    /// <returns>The <see cref="IUser"/> instance of the user just created.</returns>
-    public static async Task<IUser> CreateUserAsync(
+    public static Task CreateUserAsync(
         this UITestContext context,
         string userName,
         string password,
         string email,
         string tenant = null,
-        bool activateShell = true)
-    {
-        IUser user = null;
-
-        await UsingScopeAsync(
+        bool activateShell = true) =>
+        UsingScopeAsync(
             context,
             async serviceProvider =>
             {
                 var userService = serviceProvider.GetRequiredService<IUserService>();
                 var errors = new Dictionary<string, string>();
-                user = await userService.CreateUserAsync(
+                var user = await userService.CreateUserAsync(
                     new User
                     {
                         UserName = userName,
@@ -192,9 +188,6 @@ public static class ShortcutsUITestContextExtensions
             },
             tenant,
             activateShell);
-
-        return user;
-    }
 
     /// <summary>
     /// Adds a user to a role.

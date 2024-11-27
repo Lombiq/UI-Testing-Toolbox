@@ -19,9 +19,8 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> or <see
-    /// cref="GetLogEntriesFromAllLogsAsync(IWebApplicationInstance, CancellationToken)"/> instead. Alternatively, set
-    /// log filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
     /// configuration (see the samples).
     /// </para>
     /// </remarks>
@@ -41,9 +40,8 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> or <see
-    /// cref="GetLogEntriesFromAllLogsAsync(IWebApplicationInstance, CancellationToken)"/> instead. Alternatively, set
-    /// log filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
     /// configuration (see the samples).
     /// </para>
     /// </remarks>
@@ -64,9 +62,8 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> or <see
-    /// cref="GetLogEntriesFromAllLogsAsync(IWebApplicationInstance, CancellationToken)"/> instead. Alternatively, set
-    /// log filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
     /// configuration (see the samples).
     /// </para>
     /// </remarks>
@@ -87,9 +84,8 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> or <see
-    /// cref="GetLogEntriesFromAllLogsAsync(IWebApplicationInstance, CancellationToken)"/> instead. Alternatively, set
-    /// log filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
     /// configuration (see the samples).
     /// </para>
     /// </remarks>
@@ -109,35 +105,19 @@ public static class WebApplicationInstanceExtensions
     /// <remarks>
     /// <para>
     /// If you want to inspect the logs in a more structured way, message by message, consider using <see
-    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> or <see
-    /// cref="GetLogEntriesFromAllLogsAsync(IWebApplicationInstance, CancellationToken)"/> instead. Alternatively, set
-    /// log filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
+    /// cref="IWebApplicationInstance.GetLogsAsync(CancellationToken)"/> directly instead. Alternatively, set log
+    /// filtering options to not log unwanted messages in first place with the standard Logging:LogLevel app
     /// configuration (see the samples).
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
     public static async Task<string> GetLogContentsAsync(
         this IWebApplicationInstance webApplicationInstance,
-        CancellationToken cancellationToken = default) =>
-        await (await webApplicationInstance.GetLogsAsync(cancellationToken)).ToFormattedStringAsync();
-
-    /// <summary>
-    /// Retrieves the log entries from all application logs.
-    /// </summary>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the log retrieval.</param>
-    public static async Task<IEnumerable<IApplicationLogEntry>> GetLogEntriesFromAllLogsAsync(
-        this IWebApplicationInstance webApplicationInstance,
         CancellationToken cancellationToken = default)
     {
-        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
-        var logEntries = new List<IApplicationLogEntry>();
+        if (cancellationToken == default) cancellationToken = CancellationToken.None;
 
-        foreach (var log in logs)
-        {
-            logEntries.AddRange(await log.GetEntriesAsync());
-        }
-
-        return logEntries;
+        return await (await webApplicationInstance.GetLogsAsync(cancellationToken)).ToFormattedStringAsync();
     }
 
     /// <summary>
@@ -151,15 +131,6 @@ public static class WebApplicationInstanceExtensions
     public static TService GetRequiredService<TService>(this IWebApplicationInstance webApplicationInstance) =>
         webApplicationInstance.Services.GetRequiredService<TService>();
 
-    /// <summary>
-    /// Restarts, i.e. pauses and resumes, the web application instance.
-    /// </summary>
-    public static async Task RestartAsync(this IWebApplicationInstance webApplicationInstance)
-    {
-        await webApplicationInstance.PauseAsync();
-        await webApplicationInstance.ResumeAsync();
-    }
-
     private static async Task AssertLogsAsync(
         IWebApplicationInstance webApplicationInstance,
         Expression<Func<IApplicationLogEntry, bool>> logEntryPredicate,
@@ -167,11 +138,10 @@ public static class WebApplicationInstanceExtensions
         CancellationToken cancellationToken = default)
     {
         var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
-        var logContents = await logs.ToFormattedStringAsync();
 
         foreach (var log in logs)
         {
-            shouldlyMethod(await log.GetEntriesAsync(), logEntryPredicate, logContents); // #spell-check-ignore-line
+            shouldlyMethod(await log.GetEntriesAsync(), logEntryPredicate, await logs.ToFormattedStringAsync()); // #spell-check-ignore-line
         }
     }
 }
