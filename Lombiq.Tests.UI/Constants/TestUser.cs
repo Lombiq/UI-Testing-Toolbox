@@ -5,7 +5,7 @@ namespace Lombiq.Tests.UI.Constants;
 /// </summary>
 public static class TestUser
 {
-    public const string UserName = "TestUser";
-    public const string Email = "testuser@example.com";
+    public const string UserName = "TestUser"; // #spell-check-ignore-line
+    public const string Email = "testuser@example.com"; // #spell-check-ignore-line
     public const string Password = DefaultUser.Password;
 }
