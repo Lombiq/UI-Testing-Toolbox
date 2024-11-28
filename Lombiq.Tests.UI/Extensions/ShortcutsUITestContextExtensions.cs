@@ -15,7 +15,6 @@ using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
 using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
-using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
@@ -24,7 +23,6 @@ using OrchardCore.Modules.Manifest;
 using OrchardCore.Recipes.Services;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
-using OrchardCore.Settings;
 using OrchardCore.Setup.Services;
 using OrchardCore.Themes.Services;
 using OrchardCore.Users;
@@ -122,30 +120,6 @@ public static class ShortcutsUITestContextExtensions
         if (userNameContainer == "Unauthenticated") return string.Empty;
         return userNameContainer["UserName: ".Length..];
     }
-
-    /// <summary>
-    /// Sets the registration type in site settings.
-    /// </summary>
-    public static Task SetUserRegistrationTypeAsync(
-        this UITestContext context,
-        UserRegistrationType type,
-        string tenant = null,
-        bool activateShell = true) =>
-        UsingScopeAsync(
-            context,
-            async serviceProvider =>
-            {
-                var siteService = serviceProvider.GetRequiredService<ISiteService>();
-                var settings = await siteService.LoadSiteSettingsAsync();
-
-                settings.Alter<RegistrationSettings>(
-                    nameof(RegistrationSettings),
-                    registrationSettings => registrationSettings.UsersCanRegister = type);
-
-                await siteService.UpdateSiteSettingsAsync(settings);
-            },
-            tenant,
-            activateShell);
 
     /// <summary>
     /// Creates a user with the given parameters.
