@@ -15,7 +15,6 @@ using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
 using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
-using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
@@ -24,7 +23,6 @@ using OrchardCore.Modules.Manifest;
 using OrchardCore.Recipes.Services;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
-using OrchardCore.Settings;
 using OrchardCore.Setup.Services;
 using OrchardCore.Themes.Services;
 using OrchardCore.Users;
@@ -124,49 +122,29 @@ public static class ShortcutsUITestContextExtensions
     }
 
     /// <summary>
-    /// Sets the registration type in site settings.
-    /// </summary>
-    public static Task SetUserRegistrationTypeAsync(
-        this UITestContext context,
-        UserRegistrationType type,
-        string tenant = null,
-        bool activateShell = true) =>
-        UsingScopeAsync(
-            context,
-            async serviceProvider =>
-            {
-                var siteService = serviceProvider.GetRequiredService<ISiteService>();
-                var settings = await siteService.LoadSiteSettingsAsync();
-
-                settings.Alter<RegistrationSettings>(
-                    nameof(RegistrationSettings),
-                    registrationSettings => registrationSettings.UsersCanRegister = type);
-
-                await siteService.UpdateSiteSettingsAsync(settings);
-            },
-            tenant,
-            activateShell);
-
-    /// <summary>
     /// Creates a user with the given parameters.
     /// </summary>
     /// <exception cref="CreateUserFailedException">
     /// If creating the user with the given parameters was not successful.
     /// </exception>
-    public static Task CreateUserAsync(
+    /// <returns>The <see cref="IUser"/> instance of the user just created.</returns>
+    public static async Task<IUser> CreateUserAsync(
         this UITestContext context,
-        string userName,
-        string password,
-        string email,
+        string userName = TestUser.UserName,
+        string password = TestUser.Password,
+        string email = TestUser.Email,
         string tenant = null,
-        bool activateShell = true) =>
-        UsingScopeAsync(
+        bool activateShell = true)
+    {
+        IUser user = null;
+
+        await UsingScopeAsync(
             context,
             async serviceProvider =>
             {
                 var userService = serviceProvider.GetRequiredService<IUserService>();
                 var errors = new Dictionary<string, string>();
-                var user = await userService.CreateUserAsync(
+                user = await userService.CreateUserAsync(
                     new User
                     {
                         UserName = userName,
@@ -188,6 +166,9 @@ public static class ShortcutsUITestContextExtensions
             },
             tenant,
             activateShell);
+
+        return user;
+    }
 
     /// <summary>
     /// Adds a user to a role.

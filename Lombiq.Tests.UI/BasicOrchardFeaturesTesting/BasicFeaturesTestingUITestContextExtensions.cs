@@ -366,7 +366,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
     {
-        parameters ??= UserRegistrationParameters.CreateDefault();
+        parameters ??= UserRegistrationParameters.CreateTest();
 
         return context.ExecuteTestAsync(
             "Test registration",
@@ -440,7 +440,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         UserRegistrationParameters parameters = null)
     {
-        parameters ??= UserRegistrationParameters.CreateDefault();
+        parameters ??= UserRegistrationParameters.CreateTest();
 
         return context.ExecuteTestAsync(
             "Test registration with already registered email",

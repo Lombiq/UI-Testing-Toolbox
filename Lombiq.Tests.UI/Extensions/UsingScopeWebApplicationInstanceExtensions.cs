@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
-public static class IWebApplicationInstanceExtensions
+public static class UsingScopeWebApplicationInstanceExtensions
 {
     /// <summary>
     /// Executes a delegate using the shell scope given by <paramref name="tenant"/> in an isolated async flow, while
