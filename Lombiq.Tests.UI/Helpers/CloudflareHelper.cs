@@ -21,6 +21,17 @@ internal static class CloudflareHelper
     private static string _ipAccessRuleId;
     private static ICloudflareApi _cloudflareApi;
 
+    /// <summary>
+    /// Executes a while maintaining a Cloudflare IP Access Rule allowing the current IP address to access the site
+    /// without getting an anti-bot challenge.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Maintaining references is necessary because a) we want to create only the minimally necessary Rules (i.e. no
+    /// separate rule per test, to keep API communication to a minimum) and b) we can't know when the whole test suite
+    /// starts and ends, only when individual tests do.
+    /// </para>
+    /// </remarks>
     public static async Task ExecuteWrappedInIpAccessRuleManagementAsync(
         Func<Task> testAsync,
         string cloudflareAccountId,
