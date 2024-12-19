@@ -168,8 +168,11 @@ internal static class CloudflareHelper
         var ipRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
             async () =>
             {
-                ip = await client.GetStringAsync("https://api.ipify.org");
-                return true;
+                var response = await client.GetStringAsync("https://cloudflare.com/cdn-cgi/trace");
+                var lines = response.Split('\n');
+                var ipLine = Array.Find(lines, line => line.StartsWithOrdinalIgnoreCase("ip="));
+                ip = ipLine?.Split('=')[1];
+                return !string.IsNullOrEmpty(ip);
             });
 
         if (!ipRequestResult.IsSuccess)
