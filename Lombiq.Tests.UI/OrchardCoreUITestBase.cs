@@ -8,7 +8,7 @@ using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 
@@ -369,7 +369,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
+        var testManifest = new UITestManifest { TestAsync = testAsync };
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {

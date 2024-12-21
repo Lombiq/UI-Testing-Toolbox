@@ -7,7 +7,6 @@ using Shouldly;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;

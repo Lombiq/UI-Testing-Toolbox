@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 using Lombiq.Tests.UI.Samples.Constants;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 

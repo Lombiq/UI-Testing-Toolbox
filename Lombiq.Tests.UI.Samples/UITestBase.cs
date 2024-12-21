@@ -5,7 +5,7 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Samples;
 

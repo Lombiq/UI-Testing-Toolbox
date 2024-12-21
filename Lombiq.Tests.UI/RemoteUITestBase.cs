@@ -4,7 +4,7 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 
@@ -61,7 +61,7 @@ public abstract class RemoteUITestBase : UITestBase
             await testAsync(context);
         }
 
-        var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = BaseUriVisitingTest };
+        var testManifest = new UITestManifest { TestAsync = BaseUriVisitingTest };
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {

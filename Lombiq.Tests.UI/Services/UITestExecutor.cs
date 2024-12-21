@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -16,9 +15,6 @@ public delegate IWebApplicationInstance WebApplicationInstanceFactory(
 
 public static class UITestExecutor
 {
-    private static readonly object _numberOfTestsLimitLock = new();
-    private static SemaphoreSlim _numberOfTestsLimit;
-
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
@@ -49,17 +45,6 @@ public static class UITestExecutor
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        // This is our property.
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
-        {
-            lock (_numberOfTestsLimitLock)
-            {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
-            }
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
-
         return ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
     }
 
@@ -75,11 +60,6 @@ public static class UITestExecutor
         {
             try
             {
-                if (_numberOfTestsLimit != null)
-                {
-                    await _numberOfTestsLimit.WaitAsync();
-                }
-
                 await using var instance = new UITestExecutionSession(webApplicationInstanceFactory, testManifest, configuration);
                 passed = await instance.ExecuteAsync(retryCount, dumpRootPath);
             }
@@ -108,8 +88,6 @@ public static class UITestExecutor
                 {
                     TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
-
-                _numberOfTestsLimit?.Release();
             }
 
             retryCount++;

@@ -4,7 +4,7 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -79,33 +79,6 @@ public class OrchardCoreUITestExecutorConfiguration
         TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration(
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
-
-    /// <summary>
-    /// Gets or sets how many tests should run at the same time. Use a value of 0 to indicate that you would like the
-    /// default behavior. Use a value of -1 to indicate that you do not wish to limit the number of tests running at the
-    /// same time. The default behavior and 0 uses the <see cref="Environment.ProcessorCount"/> property. Set any other
-    /// positive integer to limit to the exact number.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The XUnit MaxParallelThreads property controls only the threads, not the actual processes started. See <see
-    /// href="https://github.com/xunit/xunit/issues/2003"></see>.
-    /// </para>
-    /// <para>
-    /// This is important only for UI tests as there will be a running instance of the site for each UI test, which can
-    /// cause performance issues, like running out of memory.
-    /// </para>
-    /// </remarks>
-    [Obsolete("As of xUnit v2.8, the \"conservative\" parallelism algorithm is used by default, which limits the " +
-        "number of tests started (not currently running, as before) parallel tests. This feature is no longer needed " +
-        "and will be removed in a future version. Set maxParallelThreads in your test project's xunit.runner.json " +
-        "instead (see https://xunit.net/docs/running-tests-in-parallel).")]
-    // When removing this property, also remove the "ui-test-parallelism" config from Lombiq GitHub Actions.
-    public int MaxParallelTests { get; set; } =
-        TestConfigurationManager.GetIntConfiguration(
-            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
-            ? intValue
-            : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
     public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;

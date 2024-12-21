@@ -9,7 +9,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 using LogLevel = OpenQA.Selenium.LogLevel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;

@@ -4,7 +4,6 @@ using Shouldly;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -55,14 +54,16 @@ public class InteractiveModeTests : UITestBase
 
                 await Task.WhenAll(
                     context.SwitchToInteractiveAsync(),
-                    Task.Run(async () =>
-                    {
-                        // Ensure that the interactive mode polls for status at least once, so the arbitrary waiting
-                        // actually works in a real testing scenario.
-                        await Task.Delay(5000);
+                    Task.Run(
+                        async () =>
+                        {
+                            // Ensure that the interactive mode polls for status at least once, so the arbitrary waiting
+                            // actually works in a real testing scenario.
+                            await Task.Delay(5000, TestContext.Current.CancellationToken);
 
-                        await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
-                    }));
+                            await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
+                        },
+                        TestContext.Current.CancellationToken));
 
                 // Ensure that the info tab is closed and the control handed back to the last tab.
                 context.Driver.Url.ShouldBe(currentUrl);
