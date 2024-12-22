@@ -114,11 +114,12 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // JavaScript errors show up) are checked and if there are any errors, the test will fail. You can also
                 // enable the checking of accessibility rules as we'll see later. Maybe not all of the default checks
                 // are suitable for you. Then it's simple to override them; here we change which log entries cause the
-                // tests to fail, and allow certain log entries.
+                // tests to fail, and allow certain log entries: info-level log entries for ShellHost are allowed, see
+                // above.
                 configuration.AssertAppLogsAsync = webApplicationInstance =>
-                    webApplicationInstance.LogsShouldNotContainAsync(logEntry =>
-                    // Allowing info-level log entries for ShellHost, see above.
-                    logEntry.Message != "My permitted message." && logEntry.Level != LogLevel.Information);
+                    webApplicationInstance.LogsShouldNotContainAsync(
+                        logEntry => logEntry.Message != "My permitted message." && logEntry.Level != LogLevel.Information,
+                        configuration.TestCancellationToken);
 
                 // Strictly speaking this is not necessary here, because we always use the same static method for setup.
                 // However, if you used a dynamic setup operation (e.g. `context => SetupHelpers.RunSetupAsync(context,

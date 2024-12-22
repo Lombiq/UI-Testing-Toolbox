@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -31,10 +32,10 @@ public enum Browser
 public class OrchardCoreUITestExecutorConfiguration
 {
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
-        app.LogsShouldBeEmptyAsync();
+        app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
-        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
+        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
@@ -158,4 +159,17 @@ public class OrchardCoreUITestExecutorConfiguration
     /// enabled in the app for these to work.
     /// </summary>
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
+
+    private CancellationToken _testCancellationToken;
+
+    /// <summary>
+    /// Gets or sets a <see cref="CancellationToken"/> that cancels the test execution.
+    /// </summary>
+    // TestContext.Current shouldn't be cached, it always needs to be accessed as needed. So, we can't use a simple
+    // property here.
+    public CancellationToken TestCancellationToken
+    {
+        get => _testCancellationToken == default ? TestContext.Current.CancellationToken : _testCancellationToken;
+        set => _testCancellationToken = value;
+    }
 }

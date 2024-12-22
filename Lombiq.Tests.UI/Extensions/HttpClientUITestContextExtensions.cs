@@ -1,4 +1,4 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -66,12 +66,12 @@ public static class HttpClientUITestContextExtensions
 
         var client = context.CreateClient();
         var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
-        using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
+        using var tokenResponse = await client.PostAsync(tokenUrl, requestBody, context.Configuration.TestCancellationToken);
 
         await tokenResponse.ThrowIfNotSuccessAsync(
             $"Failed to get token for user in {nameof(CreateAndAuthorizeClientAsync)}.", requestBody);
 
-        var responseContent = await tokenResponse.Content.ReadAsStringAsync();
+        var responseContent = await tokenResponse.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
         var token = JsonNode.Parse(responseContent)?["access_token"]?.ToString();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -87,8 +87,8 @@ public static class HttpClientUITestContextExtensions
         HttpClient client,
         string requestUri)
     {
-        var response = await client.GetAsync(requestUri);
-        return await response.Content.ReadAsStringAsync();
+        var response = await client.GetAsync(requestUri, context.Configuration.TestCancellationToken);
+        return await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ public static class HttpClientUITestContextExtensions
         string json)
     {
         using var response = await PostAndGetResponseAsync(client, json, requestUri);
-        return await response.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
     }
 
     /// <summary>
@@ -211,7 +211,7 @@ public static class HttpClientUITestContextExtensions
 
         try
         {
-            additionalContext = await response.Content?.ReadAsStringAsync();
+            additionalContext = await response.Content?.ReadAsStringAsync(context.Configuration.TestCancellationToken);
         }
         catch (Exception exception)
         {

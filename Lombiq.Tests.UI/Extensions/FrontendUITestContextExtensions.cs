@@ -125,14 +125,15 @@ public static class FrontendUITestContextExtensions
             var browserArguments = context.Configuration.BrowserConfiguration.Arguments;
             await File.WriteAllTextAsync(
                 context.GetTempSubDirectoryPath("BrowserArguments.json"),
-                JsonSerializer.Serialize(browserArguments));
+                JsonSerializer.Serialize(browserArguments),
+                context.Configuration.TestCancellationToken);
 
             await Cli.Wrap(command)
                 .WithArguments(arguments)
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
                 .WithWorkingDirectory(workingDirectory ?? Environment.CurrentDirectory)
-                .ExecuteAsync();
+                .ExecuteAsync(context.Configuration.TestCancellationToken);
         }
         catch
         {
@@ -197,7 +198,7 @@ public static class FrontendUITestContextExtensions
         if (!Directory.Exists(projectFilePath))
         {
             // lang=json
-            await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }");
+            await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }", context.Configuration.TestCancellationToken);
         }
 
         var pipe = helper.ToPipeTarget(nameof(SetupNodeSeleniumAsync));
@@ -206,7 +207,7 @@ public static class FrontendUITestContextExtensions
             .WithStandardOutputPipe(pipe)
             .WithStandardErrorPipe(pipe)
             .WithWorkingDirectory(workingDirectory)
-            .ExecuteAsync();
+            .ExecuteAsync(context.Configuration.TestCancellationToken);
     }
 
     /// <summary>

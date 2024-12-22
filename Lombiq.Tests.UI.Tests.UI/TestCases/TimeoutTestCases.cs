@@ -10,7 +10,7 @@ public static class TimeoutTestCases
         Browser browser = Browser.None) =>
         Should.ThrowAsync(
             async () => await executeTestAfterSetupAsync(
-                context => Task.Delay(TimeSpan.FromSeconds(1)),
+                context => Task.Delay(TimeSpan.FromSeconds(1), context.Configuration.TestCancellationToken),
                 browser,
                 configuration =>
                 {

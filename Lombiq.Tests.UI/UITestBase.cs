@@ -43,7 +43,7 @@ public abstract class UITestBase
                 webApplicationInstanceFactory,
                 testManifest,
                 configuration);
-            var timeoutTask = Task.Delay(timeout);
+            var timeoutTask = Task.Delay(timeout, configuration.TestCancellationToken);
 
             await Task.WhenAny(testTask, timeoutTask);
 

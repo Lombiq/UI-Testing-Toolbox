@@ -355,7 +355,7 @@ public static class ShortcutsUITestContextExtensions
             {
                 try
                 {
-                    await _recipeHarvesterSemaphore.WaitAsync();
+                    await _recipeHarvesterSemaphore.WaitAsync(context.Configuration.TestCancellationToken);
 
                     var recipeHarvesters = serviceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
                     var recipeCollections = await recipeHarvesters
@@ -377,7 +377,7 @@ public static class ShortcutsUITestContextExtensions
                         .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
 
                     var recipeExecutor = serviceProvider.GetRequiredService<IRecipeExecutor>();
-                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
+                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, context.Configuration.TestCancellationToken);
                 }
                 finally
                 {
@@ -652,9 +652,9 @@ public static class ShortcutsUITestContextExtensions
     internal static async Task WaitInteractiveModeAsync(this UITestContext context)
     {
         var client = context.GetApi();
-        while (await client.IsInteractiveModeEnabledAsync())
+        while (await client.IsInteractiveModeEnabledAsync() && !context.Configuration.TestCancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(TimeSpan.FromMilliseconds(500), context.Configuration.TestCancellationToken);
         }
     }
 

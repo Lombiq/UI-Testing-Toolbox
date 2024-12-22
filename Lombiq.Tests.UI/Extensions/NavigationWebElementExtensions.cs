@@ -49,7 +49,7 @@ public static class NavigationWebElementExtensions
                             context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                 "\"move target out of bounds\" exception, retrying the click.");
 
-                            await Task.Delay(RetrySettings.Interval);
+                            await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
                         }
                     }
 

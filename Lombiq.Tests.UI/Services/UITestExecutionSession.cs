@@ -62,6 +62,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
+        _configuration.TestCancellationToken.Register(() =>
+        {
+            _testOutputHelper.WriteLine("Test execution was cancelled. Shutting down the test execution session.");
+            ShutdownAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+        });
+
         var startTime = DateTime.UtcNow;
         IDictionary<string, ITestDumpItem> testDumpContainer = null;
         // At this point _context may not exist yet.
@@ -134,7 +140,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             LogRetry(retryCount);
 
-            await Task.Delay(_configuration.RetryInterval);
+            await Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
         }
         finally
         {
@@ -260,7 +266,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             Directory.CreateDirectory(dumpContainerPath);
             Directory.CreateDirectory(debugInformationPath);
 
-            await File.WriteAllTextAsync(Path.Combine(dumpRootPath, "TestName.txt"), _testManifest.Name);
+            await File.WriteAllTextAsync(
+                Path.Combine(dumpRootPath, "TestName.txt"),
+                _testManifest.Name,
+                _configuration.TestCancellationToken);
 
             if (additionalDumpProcess != null) await additionalDumpProcess(dumpContainerPath);
 
@@ -298,7 +307,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 filePath,
                 FileMode.Create,
                 FileAccess.Write);
-            await dumpStream.CopyToAsync(dumpFile);
+            await dumpStream.CopyToAsync(dumpFile, _configuration.TestCancellationToken);
         }
         catch (Exception dumpException)
         {
@@ -320,7 +329,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 // otherwise the message saved there wouldn't be included.
 
                 var testOutputPath = Path.Combine(debugInformationPath, "TestOutput.log");
-                await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output);
+                await File.WriteAllTextAsync(testOutputPath, concreteTestOutputHelper.Output, _configuration.TestCancellationToken);
 
                 if (_configuration.ReportTeamCityMetadata)
                 {
@@ -706,9 +715,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath))!;
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken))!;
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
-                await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString());
+                await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString(), _configuration.TestCancellationToken);
             }
         }
 
@@ -815,7 +824,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllLinesAsync(
                 browserLogPath,
-                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
+                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()),
+                _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
             {
