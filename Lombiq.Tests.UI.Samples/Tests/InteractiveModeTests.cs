@@ -59,11 +59,11 @@ public class InteractiveModeTests : UITestBase
                         {
                             // Ensure that the interactive mode polls for status at least once, so the arbitrary waiting
                             // actually works in a real testing scenario.
-                            await Task.Delay(5000, TestContext.Current.CancellationToken);
+                            await Task.Delay(5000, context.Configuration.TestCancellationToken);
 
                             await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
                         },
-                        TestContext.Current.CancellationToken));
+                        context.Configuration.TestCancellationToken));
 
                 // Ensure that the info tab is closed and the control handed back to the last tab.
                 context.Driver.Url.ShouldBe(currentUrl);
