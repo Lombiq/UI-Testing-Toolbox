@@ -155,6 +155,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async ValueTask ShutdownAsync()
     {
+        _testOutputHelper.WriteLineTimestampedAndDebug("Shutting down the test execution session.");
+
         if (_configuration.RunAssertLogsOnAllPageChanges)
         {
             _configuration.CustomConfiguration.Remove("LogsAssertionOnPageChangeWasSetUp");
@@ -204,6 +206,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _screenshotCount = 0;
 
         _context = null;
+
+        _testOutputHelper.WriteLineTimestampedAndDebug("Finished shutting down the test execution session.");
     }
 
     private Exception PrepareAndLogException(Exception ex)
