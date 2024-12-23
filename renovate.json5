@@ -1,11 +1,11 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": ["github>Lombiq/renovate-config:default-orchard-core-submodule.json5"],
+    '$schema': 'https://docs.renovatebot.com/renovate-schema.json',
+    'extends': ['github>Lombiq/renovate-config:default-orchard-core-submodule.json5'],
     packageRules: [
         {
-            groupName: "Deque.AxeCore packages",
+            groupName: 'Deque.AxeCore packages',
             matchPackageNames: [
-                "Deque.AxeCore.*",
+                'Deque.AxeCore.*',
             ],
         },
     ],
