@@ -8,26 +8,5 @@
                 "Deque.AxeCore.*",
             ],
         },
-        {
-            // These packages are tightly related to .NET versions. We update .NET, and these packages, by hand, when
-            // it comes to major versions. Minor or patch versions may be updated automatically.
-            groupName: ".NET monorepo packages",
-            // This list needs to be kept up-to-date with the one here (search for "dotnet", with quotes):
-            // https://github.com/renovatebot/renovate/blob/main/lib/data/monorepo.json.
-            matchSourceUrls: [
-                "https://github.com/dotnet/aspnetcore",
-                "https://github.com/dotnet/efcore",
-                "https://github.com/dotnet/extensions",
-                "https://github.com/dotnet/fsharp",
-                "https://github.com/dotnet/maui",
-                "https://github.com/dotnet/roslyn",
-                "https://github.com/dotnet/runtime",
-                "https://github.com/dotnet/scaffolding",
-                "https://github.com/dotnet/sdk",
-            ],
-            "matchUpdateTypes": ["major"],
-            enabled: false
-        },
     ],
 }
-
