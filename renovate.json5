@@ -3,19 +3,19 @@
     'extends': ['github>Lombiq/renovate-config:default-orchard-core-submodule.json5'],
     packageRules: [
         {
-            groupName: 'Atata packages',
+            groupName: 'Atata',
             matchPackageNames: [
                 'Atata*',
             ],
         },
         {
-            groupName: 'Deque.AxeCore packages',
+            groupName: 'Deque.AxeCore',
             matchPackageNames: [
                 'Deque.AxeCore.*',
             ],
         },
         {
-            groupName: 'Microsoft.Extensions packages',
+            groupName: 'Microsoft.Extensions',
             matchPackageNames: [
                 'Microsoft.Extensions.*',
             ],
