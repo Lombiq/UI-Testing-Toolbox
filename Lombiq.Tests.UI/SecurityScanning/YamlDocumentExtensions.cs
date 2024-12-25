@@ -346,11 +346,7 @@ public static class YamlDocumentExtensions
     /// </summary>
     public static void SetMappingChild(this YamlMappingNode node, YamlNode key, YamlNode value)
     {
-        if (node.Children.ContainsKey(key))
-        {
-            node.Children.Remove(key);
-        }
-
+        node.Children.Remove(key);
         node.Add(key, value);
     }
 
