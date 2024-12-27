@@ -130,16 +130,15 @@ internal static class CloudflareHelper
                 _referenceCounts[currentIp]);
 
             // Clean up the IP access rule.
-            if (_ipAccessRuleIds.TryGetValue(currentIp, out string value) && _referenceCounts.AddOrUpdate(currentIp, 0, (_, count) => count - 1) == 0)
+            if (_ipAccessRuleIds.TryGetValue(currentIp, out string oldIpAccessRuleId) &&
+                _referenceCounts.AddOrUpdate(currentIp, 0, (_, count) => count - 1) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "Removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test has the last reference to it.",
                     currentIp,
-                    value);
+                    oldIpAccessRuleId);
 
-                var oldIpAccessRuleId = value;
-
-                var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, value);
+                var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, oldIpAccessRuleId);
 
                 if (deleteSucceededResult.IsSuccess) _ipAccessRuleIds.TryRemove(currentIp, out _);
 
