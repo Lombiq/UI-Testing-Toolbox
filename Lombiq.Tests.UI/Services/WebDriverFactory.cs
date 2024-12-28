@@ -6,7 +6,6 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
-using OpenQA.Selenium.IE;
 using System;
 using System.Collections.Generic;
 using System.IO;
