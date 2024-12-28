@@ -21,23 +21,23 @@ public class MultiBrowserTests : UITestBase
     // Remember that back in BasicTests we had AnonymousHomePageShouldExist()? We have similar super-simple tests here,
     // just demonstrating how to drive different browsers.
 
-    // First, let's see a test using Edge. While the default browser is Chrome if you don't set anything, all
+    // First, let's see a test using Firefox. While the default browser is Chrome if you don't set anything, all
     // ExecuteTest* methods can also accept a browser, if you want to use a different one.
     [Fact]
-    public Task AnonymousHomePageShouldExistWithEdge() =>
-        ExecuteTestAfterSetupAsync(NavbarIsCorrect, Browser.Edge);
+    public Task AnonymousHomePageShouldExistWithFirefox() =>
+        ExecuteTestAfterSetupAsync(NavbarIsCorrect, Browser.Firefox);
 
     // This test is now marked not with the [Fact] attribute but [Theory]. With it, you can create so-called data-driven
-    // tests. [Chrome] and [Edge] are input parameters of the test, and thus in effect, you have now two tests:
-    // AnonymousHomePageShouldExistMultiBrowser once with Chrome, and once with Edge. See here for more info:
+    // tests. [Chrome] and [Firefox] are input parameters of the test, and thus in effect, you have now two tests:
+    // AnonymousHomePageShouldExistMultiBrowser once with Chrome, and once with Firefox. See here for more info:
     // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
-    [Theory, Chrome, Edge]
+    [Theory, Chrome, Firefox]
     public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, browser);
 
     // You can also set the browser for all tests at once in UITestBase. Check it out: Where there's some default config
     // now, you could also have the following code, for example:
-    //// configuration.BrowserConfiguration.Browser = Browser.Edge;
+    //// configuration.BrowserConfiguration.Browser = Browser.Firefox;
 
     private static void NavbarIsCorrect(UITestContext context) =>
         context.Get(By.ClassName("navbar-brand")).Text.ShouldBe("Lombiq's OSOCE - UI Testing");
