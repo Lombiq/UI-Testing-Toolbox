@@ -53,8 +53,8 @@ public class BasicVisualVerificationTests : UITestBase
     // text content on different platforms (like Windows or Linux) or browsers, it can cause surprises too. The reason
     // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
-    // in 2022.
-    [Theory, Chrome, Edge]
+    // today.
+    [Theory, Chrome, Firefox]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
