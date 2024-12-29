@@ -17,7 +17,10 @@ public static class ByHelper
     /// </summary>
     public static By SmtpInboxRow(string text) =>
         By
-            .XPath($"//tr[contains(@class,'el-table__row')]//div[contains(@class,'cell')][contains(text(), {JsonSerializer.Serialize(text)})]")
+            .XPath(
+                "//tr[contains(@class,'el-table__row')]" +
+                "//div[contains(@class,'cell')]" +
+                $"[contains(normalize-space(), {JsonSerializer.Serialize(text)})]")
             .Within(TimeSpan.FromMinutes(2));
 
     /// <summary>
