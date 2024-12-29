@@ -1,0 +1,28 @@
+{
+    '$schema': 'https://docs.renovatebot.com/renovate-schema.json',
+    'extends': ['github>Lombiq/renovate-config:default-orchard-core-submodule.json5'],
+    packageRules: [
+        {
+            groupName: 'Atata',
+            matchPackageNames: [
+                'Atata*',
+            ],
+        },
+        {
+            groupName: 'Deque.AxeCore',
+            matchPackageNames: [
+                'Deque.AxeCore.*',
+            ],
+        },
+        {
+            groupName: 'Microsoft.Extensions',
+            matchPackageNames: [
+                'Microsoft.Extensions.*',
+            ],
+        },
+        {
+            groupName: 'All packages',
+            matchUpdateTypes: ['*'],
+        },
+    ],
+}
