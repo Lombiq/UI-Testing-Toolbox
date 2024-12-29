@@ -20,5 +20,9 @@
                 'Microsoft.Extensions.*',
             ],
         },
+        {
+            groupName: 'All packages',
+            matchUpdateTypes: ['*'],
+        },
     ],
 }
