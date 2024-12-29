@@ -24,8 +24,7 @@ public enum Browser
     /// No browser will be used. Useful for testing things that don't require a browser, like API endpoints or running
     /// security scans.
     /// </summary>
-    /// Due to removal of one browser, None needs to keep value of 4.
-    None = 4,
+    None,
 }
 
 public class OrchardCoreUITestExecutorConfiguration
