@@ -8,7 +8,6 @@
     projects would need to add the packages too. -->
     <PublishChromeDriver>true</PublishChromeDriver>
     <PublishGeckoDriver>true</PublishGeckoDriver>
-    <PublishIEDriver>true</PublishIEDriver>
     <PublishMsEdgeDriver>true</PublishMsEdgeDriver>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

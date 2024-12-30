@@ -6,7 +6,6 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
-using OpenQA.Selenium.IE;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -128,19 +127,6 @@ public static class WebDriverFactory
 
                 return new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout);
             }));
-
-    public static Task<Func<InternetExplorerDriver>> CreateInternetExplorerDriverAsync(
-        BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(BrowserNames.InternetExplorer, () => Task.FromResult(() =>
-        {
-            var options = new InternetExplorerOptions().SetCommonOptions();
-
-            // IE doesn't support this.
-            options.AcceptInsecureCertificates = false;
-            configuration.BrowserOptionsConfigurator?.Invoke(options);
-
-            return new InternetExplorerDriver(options).SetCommonTimeouts(pageLoadTimeout);
-        }));
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
