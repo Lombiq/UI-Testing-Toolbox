@@ -36,12 +36,16 @@ public static class VerificationUITestContextExtensions
         {
             try
             {
+                configuration.AssertResponseLog?.Invoke(context.CumulativeResponseLog);
                 configuration.AssertBrowserLog?.Invoke(context.CumulativeBrowserLog);
             }
             catch (Exception)
             {
                 testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
                 testOutputHelper.WriteLine(context.CumulativeBrowserLog.ToFormattedString());
+
+                testOutputHelper.WriteLine("Response logs: " + Environment.NewLine);
+                testOutputHelper.WriteLine(context.CumulativeResponseLog.ToFormattedString());
 
                 throw;
             }

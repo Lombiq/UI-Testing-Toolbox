@@ -821,6 +821,20 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
             }
         }
+
+        if (_dumpConfiguration.CaptureResponseLog)
+        {
+            var responseLogPath = Path.Combine(debugInformationPath, "ResponseLog.log");
+
+            await File.WriteAllLinesAsync(
+                responseLogPath,
+                _context.CumulativeResponseLog.Select(response => response.ToString()));
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "ResponseLog", responseLogPath);
+            }
+        }
     }
 
     private Task TakeScreenshotIfEnabledAsync(UITestContext context)

@@ -3,11 +3,11 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Modules.Network;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -37,19 +37,22 @@ public class OrchardCoreUITestExecutorConfiguration
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
 
     public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
-        logEntries => logEntries.ShouldNotContain(
-            logEntry => IsValidBrowserLogEntry(logEntry),
-            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
+        logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<Entry, bool> IsValidBrowserLogEntry =
+    public static readonly Func<Entry, bool> IsNonSuccessBrowserLogEntry =
         entry =>
             entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
-            // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
-            // under a different URL.
-            !entry.IsNotFoundLogEntry("/favicon.ico");
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated");
+
+    // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
+    // different URL.
+    public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
+        e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+
+    public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
+        responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
     /// <summary>
     /// Gets the global events available during UI test execution.
@@ -108,7 +111,21 @@ public class OrchardCoreUITestExecutorConfiguration
             : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
+
+    /// <summary>
+    /// Selects which response data get saved to <see cref="UITestContext.CumulativeBrowserLog"/>.
+    /// </summary>
+    public Func<Entry, bool> BrowserLogFilter = IsNonSuccessBrowserLogEntry;
+
     public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+
+    /// <summary>
+    /// Selects which response data get saved to <see cref="UITestContext.CumulativeResponseLog"/>.
+    /// </summary>
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter = IsNonSuccessResponse;
+
+    public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
+
     public ITestOutputHelper TestOutputHelper { get; set; }
 
     /// <summary>

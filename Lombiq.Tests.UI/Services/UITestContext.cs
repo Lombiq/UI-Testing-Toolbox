@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
@@ -6,8 +7,10 @@ using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Modules.Network;
 using OrchardCore.Environment.Shell;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -17,7 +20,10 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestContext
 {
-    private readonly List<Entry> _cumulativeBrowserLog = [];
+    // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
+    // preserve the insertion order.
+    private readonly ConcurrentQueue<Entry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -105,9 +111,19 @@ public class UITestContext
     public ZapManager ZapManager { get; }
 
     /// <summary>
-    /// Gets a cumulative log of browser console entries, containing all entries since the start of the test.
+    /// Gets a cumulative log of browser console entries, containing all entries since the start of the test. This can
+    /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
+    /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog;
+    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+
+    /// <summary>
+    /// Gets a cumulative log of browser HTTP responses filtered by <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.ResponseLogFilter"/>, containing all items since the start of the
+    /// test. This can be used to assert on response details. Note that
+    /// since the log is updated asynchronously by the browser, entries might appear with some delay.
+    /// </summary>
+    public IReadOnlyList<ResponseData> CumulativeResponseLog => _cumulativeResponseLog.ToReadOnly();
 
     /// <summary>
     /// Gets a dictionary storing some custom contextual data.
@@ -180,6 +196,11 @@ public class UITestContext
     public void ClearCumulativeBrowserLog() => _cumulativeBrowserLog.Clear();
 
     /// <summary>
+    /// Clears accumulated browser log messages from <see cref="CumulativeResponseLog"/>.
+    /// </summary>
+    public void ClearCumulativeResponseLog() => _cumulativeResponseLog.Clear();
+
+    /// <summary>
     /// Clears the application and cumulative browser logs.
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
@@ -187,6 +208,7 @@ public class UITestContext
     {
         foreach (var log in await Application.GetLogsAsync(cancellationToken)) await log.RemoveAsync();
         ClearCumulativeBrowserLog();
+        ClearCumulativeResponseLog();
     }
 
     /// <summary>
@@ -287,7 +309,16 @@ public class UITestContext
         if (context.IsBrowserConfigured)
         {
             var biDi = await scope.Driver.AsBiDiAsync();
-            await biDi.Log.OnEntryAddedAsync(context._cumulativeBrowserLog.Add);
+
+            await biDi.Log.OnEntryAddedAsync(entry =>
+            {
+                if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
+            });
+
+            await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+            {
+                if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+            });
         }
 
         return context;

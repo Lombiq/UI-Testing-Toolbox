@@ -1,7 +1,10 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Samples.Helpers;
+using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium.BiDi.Modules.Log;
 using Shouldly;
 using System;
 using System.Linq;
@@ -59,8 +62,8 @@ public class ErrorHandlingTests : UITestBase
                 }
                 catch (PageChangeAssertionException)
                 {
-                    // Remove browser logs to have a clean slate.
-                    context.ClearCumulativeBrowserLog();
+                    // Remove response logs to have a clean slate.
+                    context.ClearCumulativeResponseLog();
                 }
             });
 
@@ -89,10 +92,21 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
                 WriteConsoleLog();
 
-                context
+                // Since the browser log is updated asynchronously, we have to wait for most recent entries to appear.
+                ReliabilityHelper.DoWithRetriesOrFail(() =>
+                    context
                     .CumulativeBrowserLog
-                    .Count(entry => entry.Text.Contains(testLog))
-                    .ShouldBe(6);
+                    .Count(entry => entry.Text.Contains(testLog)) == 6);
+            },
+            configuration =>
+            {
+                // By default, anything below warning is not logged to the browser log. So, to allow the info messages
+                // of the test, we change the filter.
+                configuration.BrowserLogFilter = logEntry =>
+                    OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(logEntry) || logEntry.Level == Level.Info;
+
+                // By default, the test will fail if the browser log is not empty. We allow info entries here.
+                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(entry => entry.Level > Level.Info);
             });
 
     [Fact]
