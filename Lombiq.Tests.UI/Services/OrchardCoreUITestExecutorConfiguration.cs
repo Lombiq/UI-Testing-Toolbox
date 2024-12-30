@@ -2,7 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
-using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Log;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -36,20 +36,20 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
 
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldNotContain(
             logEntry => IsValidBrowserLogEntry(logEntry),
             logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
 
-    public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
-        logEntry =>
-            logEntry.Level >= LogLevel.Warning &&
+    public static readonly Func<Entry, bool> IsValidBrowserLogEntry =
+        entry =>
+            entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
             // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
             // under a different URL.
-            !logEntry.IsNotFoundLogEntry("/favicon.ico");
+            !entry.IsNotFoundLogEntry("/favicon.ico");
 
     /// <summary>
     /// Gets the global events available during UI test execution.
@@ -108,7 +108,7 @@ public class OrchardCoreUITestExecutorConfiguration
             : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
-    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
     public ITestOutputHelper TestOutputHelper { get; set; }
 
     /// <summary>

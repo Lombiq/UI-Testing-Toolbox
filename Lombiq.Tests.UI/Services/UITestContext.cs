@@ -4,6 +4,8 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi;
+using OpenQA.Selenium.BiDi.Modules.Log;
 using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestContext
 {
-    private readonly List<LogEntry> _historicBrowserLog = [];
+    private readonly List<Entry> _cumulativeBrowserLog = [];
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -103,9 +105,9 @@ public class UITestContext
     public ZapManager ZapManager { get; }
 
     /// <summary>
-    /// Gets a cumulative log of browser console entries.
+    /// Gets a cumulative log of browser console entries, containing all entries since the start of the test.
     /// </summary>
-    public IReadOnlyList<LogEntry> HistoricBrowserLog => _historicBrowserLog;
+    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog;
 
     /// <summary>
     /// Gets a dictionary storing some custom contextual data.
@@ -149,7 +151,7 @@ public class UITestContext
 
     // This is a central context object, we need the data to be passed in the constructor.
 #pragma warning disable S107 // Methods should not have too many parameters
-    public UITestContext(
+    private UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
@@ -173,64 +175,18 @@ public class UITestContext
     }
 
     /// <summary>
-    /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.
+    /// Clears accumulated browser log messages from <see cref="CumulativeBrowserLog"/>.
     /// </summary>
-    public Task<IReadOnlyList<LogEntry>> UpdateHistoricBrowserLogAsync()
-    {
-        var windowHandles = Driver.WindowHandles;
-
-        if (windowHandles.Count > 1)
-        {
-            var currentWindowHandle = Driver.CurrentWindowHandle;
-
-            foreach (var windowHandle in windowHandles)
-            {
-                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                Driver.SwitchTo().Window(windowHandle);
-                _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
-            }
-
-            try
-            {
-                Driver.SwitchTo().Window(currentWindowHandle);
-            }
-            catch (NoSuchWindowException)
-            {
-                // This can happen in rare instances if the current window/tab was just closed.
-                Driver.SwitchTo().Window(Driver.WindowHandles[^1]);
-            }
-        }
-        else
-        {
-            _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
-        }
-
-        return Task.FromResult<IReadOnlyList<LogEntry>>(_historicBrowserLog);
-    }
+    public void ClearCumulativeBrowserLog() => _cumulativeBrowserLog.Clear();
 
     /// <summary>
-    /// Clears accumulated historic browser log messages from <see cref="HistoricBrowserLog"/>.
-    /// </summary>
-    public void ClearHistoricBrowserLog() => _historicBrowserLog.Clear();
-
-    /// <summary>
-    /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
-    /// cref="Configuration"/>. This doesn't use <see cref="HistoricBrowserLog"/>.
-    /// </summary>
-    public Task AssertCurrentBrowserLogAsync()
-    {
-        Configuration.AssertBrowserLog?.Invoke(Scope.Driver.GetAndEmptyBrowserLog());
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Clears the application and historic browser logs.
+    /// Clears the application and cumulative browser logs.
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
     public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
     {
         foreach (var log in await Application.GetLogsAsync(cancellationToken)) await log.RemoveAsync();
-        ClearHistoricBrowserLog();
+        ClearCumulativeBrowserLog();
     }
 
     /// <summary>
@@ -303,6 +259,35 @@ public class UITestContext
         TenantName = tenantName ?? ShellSettings.DefaultShellName;
         UrlPrefix = baseUri.AbsolutePath.Trim('/');
         Scope.BaseUri = baseUri;
+    }
+
+    // This is a central context object, we need the data to be passed in the constructor.
+#pragma warning disable S107 // Methods should not have too many parameters
+    public static async Task<UITestContext> CreateAsync(
+        string id,
+        UITestManifest testManifest,
+        OrchardCoreUITestExecutorConfiguration configuration,
+        IWebApplicationInstance application,
+        AtataScope scope,
+        Uri testStartUri,
+        RunningContextContainer runningContextContainer,
+        ZapManager zapManager)
+#pragma warning restore S107 // Methods should not have too many parameters
+    {
+        var context = new UITestContext(
+            id,
+            testManifest,
+            configuration,
+            application,
+            scope,
+            testStartUri,
+            runningContextContainer,
+            zapManager);
+
+        var biDi = await scope.Driver.AsBiDiAsync();
+        await biDi.Log.OnEntryAddedAsync(context._cumulativeBrowserLog.Add);
+
+        return context;
     }
 
     /// <summary>

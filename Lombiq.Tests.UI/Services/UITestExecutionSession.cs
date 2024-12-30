@@ -650,7 +650,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
 
-        return new UITestContext(
+        return await UITestContext.CreateAsync(
             contextId,
             _testManifest,
             _configuration,
@@ -814,7 +814,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllLinesAsync(
                 browserLogPath,
-                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()));
+                _context.CumulativeBrowserLog.Select(entry => entry.ToString()));
 
             if (_configuration.ReportTeamCityMetadata)
             {

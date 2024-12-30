@@ -3,14 +3,13 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Log;
 using Shouldly;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using LogLevel = OpenQA.Selenium.LogLevel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -96,13 +95,13 @@ public class MonkeyTests : UITestBase
             configuration => configuration.AssertBrowserLog = (logEntries) => logEntries
                 .Where(logEntry =>
                     !logEntry
-                        .Message
+                        .Text
                         .Contains("An invalid form control with name='LockTimeout' is not focusable.")
                     && !logEntry
-                        .Message
+                        .Text
                         .Contains("An invalid form control with name='LockExpiration' is not focusable.")
                     && !logEntry.IsNotFoundLogEntry("/favicon.ico")
-                    && logEntry.Level != LogLevel.Info)
+                    && logEntry.Level != Level.Info)
                 .ShouldBeEmpty());
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
@@ -112,11 +111,11 @@ public class MonkeyTests : UITestBase
             PageTestTime = TimeSpan.FromSeconds(5),
         };
 
-    private static bool IsValidAdminBrowserLogEntry(LogEntry logEntry) =>
+    private static bool IsValidAdminBrowserLogEntry(Entry logEntry) =>
         OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry(logEntry) &&
         // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
         // parameters are required.
-        !logEntry.Message.ContainsOrdinalIgnoreCase("/api/graphql - Failed to load resource: the server responded with a status of 400");
+        !logEntry.Text.ContainsOrdinalIgnoreCase("/api/graphql - Failed to load resource: the server responded with a status of 400");
 }
 
 // END OF TRAINING SECTION: Monkey tests.

@@ -60,7 +60,7 @@ public class ErrorHandlingTests : UITestBase
                 catch (PageChangeAssertionException)
                 {
                     // Remove browser logs to have a clean slate.
-                    context.ClearHistoricBrowserLog();
+                    context.ClearCumulativeBrowserLog();
                 }
             });
 
@@ -89,11 +89,9 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
                 WriteConsoleLog();
 
-                await context.UpdateHistoricBrowserLogAsync();
-
                 context
-                    .HistoricBrowserLog
-                    .Count(entry => entry.Message.Contains(testLog))
+                    .CumulativeBrowserLog
+                    .Count(entry => entry.Text.Contains(testLog))
                     .ShouldBe(6);
             });
 
