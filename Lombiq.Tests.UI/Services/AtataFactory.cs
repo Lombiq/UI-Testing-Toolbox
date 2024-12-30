@@ -92,7 +92,6 @@ public static class AtataFactory
                     Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, pageLoadTimeout),
-                    Browser.InternetExplorer => await WebDriverFactory.CreateInternetExplorerDriverAsync(browserConfiguration, pageLoadTimeout),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }
