@@ -82,7 +82,7 @@ public class UITestContext
     /// <summary>
     /// Gets a value indicating whether a browser is configured to be used for the test. <see langword="false"/> means
     /// that no browser will be launched. Note that since the browser is only started on demand, with the first
-    /// operation requiring it, a browser might not be currently running even if this suggests it may. Check <see
+    /// operation requiring it, a browser might not be currently running even if this suggests it may. Use <see
     /// cref="IsBrowserRunning"/>" to check for that.
     /// </summary>
     public bool IsBrowserConfigured => Configuration.BrowserConfiguration.Browser != Browser.None;
@@ -284,8 +284,11 @@ public class UITestContext
             runningContextContainer,
             zapManager);
 
-        var biDi = await scope.Driver.AsBiDiAsync();
-        await biDi.Log.OnEntryAddedAsync(context._cumulativeBrowserLog.Add);
+        if (context.IsBrowserConfigured)
+        {
+            var biDi = await scope.Driver.AsBiDiAsync();
+            await biDi.Log.OnEntryAddedAsync(context._cumulativeBrowserLog.Add);
+        }
 
         return context;
     }
