@@ -5,7 +5,6 @@ using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Services;
 

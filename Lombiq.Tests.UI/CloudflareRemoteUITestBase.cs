@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI;
 

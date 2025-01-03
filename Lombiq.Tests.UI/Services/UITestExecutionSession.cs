@@ -20,7 +20,6 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using TWP.Selenium.Axe.Html;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.v3;
 
 namespace Lombiq.Tests.UI.Services;

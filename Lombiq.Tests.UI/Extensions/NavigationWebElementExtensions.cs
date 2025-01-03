@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
