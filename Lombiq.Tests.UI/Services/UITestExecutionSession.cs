@@ -14,7 +14,6 @@ using Mono.Unix;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -108,7 +107,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
             var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
-            Debug.WriteLine("Timeout task created: " + timeoutTask.GetHashCode());
             var testTask = _testManifest.TestAsync(_context);
 
             await Task.WhenAny(testTask, timeoutTask);
