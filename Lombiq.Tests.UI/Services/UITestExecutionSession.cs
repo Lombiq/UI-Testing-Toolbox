@@ -14,6 +14,7 @@ using Mono.Unix;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -104,7 +105,31 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
-            await _testManifest.TestAsync(_context);
+            var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
+
+            var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
+            Debug.WriteLine("Timeout task created: " + timeoutTask.GetHashCode());
+            var testTask = _testManifest.TestAsync(_context);
+
+            await Task.WhenAny(testTask, timeoutTask);
+
+            if (timeoutTask.IsCompleted)
+            {
+                // If the EnterInteractiveModeAsync() extension method has been used, then timeout should be ignored to
+                // make the debugging experience smoother. Note that EnterInteractiveModeAsync() should never be used in
+                // committed tests.
+                if (!ShortcutsUITestContextExtensions.InteractiveModeHasBeenUsed)
+                {
+                    throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
+                }
+
+                await testTask;
+            }
+
+            // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in
+            // some way. So it's safe to await it here. It's also necessary to cleanly propagate any exceptions that may
+            // have been thrown inside it.
+            await testTask;
 
             await _context.AssertLogsAsync();
 
