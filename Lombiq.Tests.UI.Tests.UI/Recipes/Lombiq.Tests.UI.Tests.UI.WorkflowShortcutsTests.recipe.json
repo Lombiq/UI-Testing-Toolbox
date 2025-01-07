@@ -3,7 +3,7 @@
   "displayName": "Lombiq UI Testing Toolbox - UI Tests - WorkflowShortcutsTests",
   "description": "Test recipe for WorkflowShortcutsTests.",
   "author": "Lombiq Technologies",
-  "website": "https://github.com/Lombiq/Orchard-Privacy",
+  "website": "https://github.com/Lombiq/UI-Testing-Toolbox",
   "version": "1.0",
   "issetuprecipe": false,
   "categories": [
