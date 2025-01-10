@@ -149,6 +149,11 @@ public static class WebDriverFactory
         options.AddArgument("disable-accelerated-2d-canvas");
         options.AddArgument("disable-gpu"); // #spell-check-ignore-line
 
+        // Setting font rendering to keep the text as they are for visual verification testing.
+        options.AddArgument("font-render-hinting=none");
+        options.AddArgument("disable-font-subpixel-positioning");
+        options.AddArgument("disable-lcd-text");
+
         // Setting color profile explicitly to sRGB to keep colors as they are for visual verification testing.
         options.AddArgument("force-color-profile=sRGB");
 
