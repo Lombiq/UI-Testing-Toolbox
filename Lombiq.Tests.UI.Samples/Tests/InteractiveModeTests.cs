@@ -1,6 +1,8 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium;
 using Shouldly;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
@@ -57,9 +59,11 @@ public class InteractiveModeTests : UITestBase
                     Task.Run(
                         async () =>
                         {
-                            // Ensure that the interactive mode polls for status at least once, so the arbitrary waiting
-                            // actually works in a real testing scenario.
-                            await Task.Delay(5000, context.Configuration.TestCancellationToken);
+                            ReliabilityHelper.DoWithRetriesOrFail(
+                                () => context.Driver.WindowHandles.Count > 1,
+                                TimeSpan.FromSeconds(5));
+
+                            context.SwitchToLastWindow();
 
                             await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
                         },
