@@ -24,7 +24,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // While there may be some common code between local and remote tests, they cannot be the same, and the common code must
 // be in a project independent of the web app (which is not the case here for the sake of simplicity):
 // - In local tests, you have a much lower-level access to the app: E.g., you can access the Orchard Core log, use
-//   shortcuts with all kinds of backdoors, and you can communicate directly with the Orchard Core shell (not just via
+//   shortcuts with all kinds of backdoors, and you can communicate directly with the Orchard Core shell (not just via #spell-check-ignore-line
 //   web APIs). You can also save a snapshot of the site's database and media. None of these are available (for a good
 //   reason) when the app is deployed to a server: There, you interact with it just as any ordinary user.
 // - For local tests, you need to build the web app and all its dependencies. For remote tests, you only need the test
