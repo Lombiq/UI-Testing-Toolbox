@@ -31,6 +31,17 @@ public delegate Task ExecuteTestAfterSetupAsync(
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
 
+/// <summary>
+/// Delegate with the signature of <see
+/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupWithoutBrowserAsync(Func{UITestContext, Task},
+/// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>TimeoutTests</c> in
+/// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate parameters.
+/// </summary>
+// If you change this, then also change the corresponding method below.
+public delegate Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+
 public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
 {
@@ -191,6 +202,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
+    // If you change this, then also change the corresponding delegate above.
     protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
