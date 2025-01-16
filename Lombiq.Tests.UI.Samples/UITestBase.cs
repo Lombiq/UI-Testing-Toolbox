@@ -84,6 +84,8 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // Action) to further configure it.
                 ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
+                configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+
                 // For locally running apps, the UI Testing Toolbox configures Fake Logging (see
                 // https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.testing). This provides an
                 // in-memory log for assertions, regardless of the logging framework your app uses otherwise. By
