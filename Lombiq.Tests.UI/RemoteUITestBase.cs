@@ -61,7 +61,7 @@ public abstract class RemoteUITestBase : UITestBase
             await testAsync(context);
         }
 
-        var testManifest = new UITestManifest { TestAsync = BaseUriVisitingTest };
+        var testManifest = new UITestManifest(BaseUriVisitingTest);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {

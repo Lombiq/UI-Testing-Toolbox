@@ -13,5 +13,7 @@ public class UITestManifest
 {
     public ITest XunitTest => TestContext.Current.Test;
     public string Name => XunitTest.TestDisplayName;
-    public Func<UITestContext, Task> TestAsync { get; set; }
+    public Func<UITestContext, Task> TestAsync { get; private set; }
+
+    public UITestManifest(Func<UITestContext, Task> testAsync) => TestAsync = testAsync;
 }

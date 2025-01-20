@@ -381,7 +381,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest { TestAsync = testAsync };
+        var testManifest = new UITestManifest(testAsync);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
