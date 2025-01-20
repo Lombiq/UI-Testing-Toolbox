@@ -70,6 +70,8 @@ public class FrontendServer
 
         _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
+            _testOutputHelper.WriteLineTimestampedAndDebug("Starting frontend server configuration.");
+
             var cli = Cli
                 .Wrap(program)
                 .WithArguments(arguments ?? [])
@@ -107,6 +109,7 @@ public class FrontendServer
 
             if (!execute)
             {
+                _testOutputHelper.WriteLineTimestampedAndDebug("Frontend server startup skipped.");
                 await thenAsync.InvokeFuncAsync(context);
                 return;
             }
@@ -117,7 +120,12 @@ public class FrontendServer
                 .WithStandardErrorPipe(pipe)
                 .ExecuteAsync(forcefulCancellation.Token, gracefulCancellation.Token);
 
-            if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
+            if (waiting)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Waiting for the frontend server to start up on URL {0}.", _configuration.GetFrontendAndBackendUris().FrontendUri.ToString());
+                await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
+            }
 
             _configuration.CustomConfiguration[GetKey(backendPort)] = new FrontendServerContext
             {
@@ -143,6 +151,8 @@ public class FrontendServer
             };
 
             await thenAsync.InvokeFuncAsync(context);
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("Finished frontend server configuration.");
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>
