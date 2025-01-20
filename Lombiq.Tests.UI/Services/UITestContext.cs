@@ -318,6 +318,13 @@ public class UITestContext
     public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
         DirectoryPaths.GetTempDirectoryPath([Id, .. subDirectoryNames]);
 
+    /// <summary>
+    /// Returns a path in the <see cref="DirectoryPaths.Downloads"/> subdirectory inside the current test instance's
+    /// <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string GetDownloadFilePath(params string[] subDirectoryNames) =>
+        DirectoryPaths.GetTempDirectoryPath([Id, DirectoryPaths.Downloads, .. subDirectoryNames]);
+
     private bool IsAlert()
     {
         // If there's an alert (which can happen mostly after a click but also after navigating) then all other driver
