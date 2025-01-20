@@ -61,7 +61,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
-        _configuration.TestCancellationToken.Register(() =>
+        using var cancellationTokenRegistration = _configuration.TestCancellationToken.Register(() =>
         {
             _testOutputHelper.WriteLine("Test execution was cancelled. Shutting down the test execution session.");
             ShutdownAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
