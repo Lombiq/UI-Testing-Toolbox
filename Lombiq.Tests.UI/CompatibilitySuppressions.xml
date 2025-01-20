@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-   <Suppression>
+  <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Lombiq.Tests.UI.Attributes.InternetExplorerAttribute</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
@@ -9,29 +9,15 @@
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Lombiq.Tests.UI.Services.Browser.InternetExplorer</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Services.WebDriverFactory.CreateInternetExplorerDriverAsync(Lombiq.Tests.UI.Services.BrowserConfiguration,System.TimeSpan)</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0011</DiagnosticId>
-    <Target>F:Lombiq.Tests.UI.Services.Browser.None</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Lombiq.Tests.UI.Extensions.UITestOutputHelperExtensions</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Lombiq.Tests.UI.Services.Browser.InternetExplorer</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -95,6 +81,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Models.UITestManifest.get_XunitTest</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Models.UITestManifest.set_TestAsync(System.Func{Lombiq.Tests.UI.Services.UITestContext,System.Threading.Tasks.Task})</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -185,6 +178,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.WebDriverFactory.CreateInternetExplorerDriverAsync(Lombiq.Tests.UI.Services.BrowserConfiguration,System.TimeSpan)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.UITestBase.#ctor(Xunit.Abstractions.ITestOutputHelper)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -214,6 +214,13 @@
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Lombiq.Tests.UI.Services.ITestOutputHelperDecorator</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0011</DiagnosticId>
+    <Target>F:Lombiq.Tests.UI.Services.Browser.None</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
