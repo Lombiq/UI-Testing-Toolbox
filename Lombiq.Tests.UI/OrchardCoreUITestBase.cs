@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Lombiq.Tests.UI;
 
+// These are not static fields because those shouldn't be used in generic types. See:
+// https://rules.sonarsource.com/csharp/RSPEC-2743/.
 internal static class OrchardCoreUITestBaseCounter
 {
     public static SemaphoreSlim SnapshotCopySemaphoreSlim = new(1, 1);
