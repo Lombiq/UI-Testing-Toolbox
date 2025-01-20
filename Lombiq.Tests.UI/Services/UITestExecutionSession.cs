@@ -590,7 +590,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private async Task<UITestContext> CreateContextAsync(Uri testStartRelativeUri)
     {
         var contextId = Guid.NewGuid().ToString();
-        _configuration.BrowserConfiguration.ContextId = contextId;
+        _configuration.BrowserConfiguration.UITestContextId = contextId;
 
         FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
 

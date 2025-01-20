@@ -245,7 +245,7 @@ public static class WebDriverFactory
 
     private static string PrepareDownloadDirectory(BrowserConfiguration configuration)
     {
-        var downloadPath = DirectoryPaths.GetTempDirectoryPath(configuration.ContextId, DirectoryPaths.Downloads);
+        var downloadPath = DirectoryPaths.GetTempDirectoryPath(configuration.UITestContextId, DirectoryPaths.Downloads);
         FileSystemHelper.EnsureDirectoryExists(downloadPath);
         return downloadPath;
     }
