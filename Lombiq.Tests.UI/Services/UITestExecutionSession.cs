@@ -63,7 +63,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         using var cancellationTokenRegistration = _configuration.TestCancellationToken.Register(() =>
         {
-            _testOutputHelper.WriteLine("Test execution was cancelled. Shutting down the test execution session.");
+            _testOutputHelper.WriteLine("Test execution was canceled. Shutting down the test execution session.");
             ShutdownAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
         });
 
