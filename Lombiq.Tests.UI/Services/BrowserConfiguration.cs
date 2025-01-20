@@ -54,5 +54,5 @@ public class BrowserConfiguration
     /// Gets or sets the context ID, to be used during driver creation when the <see cref="UITestContext"/> does not
     /// exist yet.
     /// </summary>
-    internal string ContextId { get; set; }
+    internal string UITestContextId { get; set; }
 }
