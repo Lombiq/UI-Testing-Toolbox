@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Helpers;
 
-public static class DirectoryHelper
+internal static class DirectoryHelper
 {
-    public static void SafelyDeleteDirectoryIfExists(string path, int maxTryCount = 10)
+    public static async Task SafelyDeleteDirectoryIfExistsAsync(string path, int maxTryCount = 10)
     {
         if (!Directory.Exists(path)) return;
 
@@ -29,7 +29,7 @@ public static class DirectoryHelper
             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
             {
                 // This means that somehow a process is still locking the content folder so let's wait and try again.
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
                 tryCount++;
 
                 if (tryCount == maxTryCount)

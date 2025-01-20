@@ -7,6 +7,7 @@ using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace Lombiq.Tests.UI;
 
 internal static class OrchardCoreUITestBaseCounter
 {
-    public static object SnapshotCopyLock { get; } = new();
+    public static SemaphoreSlim SnapshotCopySemaphoreSlim = new(1, 1);
     public static bool AppFolderCreated { get; set; }
 }
 
@@ -266,19 +267,20 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data or in
     /// the given folder.
     /// </summary>
-    protected virtual Task ExecuteTestFromExistingDBAsync(
+    protected virtual async Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
-        lock (OrchardCoreUITestBaseCounter.SnapshotCopyLock)
+        await OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.WaitAsync();
+        try
         {
             if (!OrchardCoreUITestBaseCounter.AppFolderCreated)
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(AppFolder);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(AppFolder);
 
-                OrchardCoreDirectoryHelper.CopyAppFolder(
+                await OrchardCoreDirectoryHelper.CopyAppFolderAsync(
                     customSnapshotFolderPath
                         ?? OrchardCoreDirectoryHelper.GetAppRootPath(typeof(TEntryPoint).Assembly.Location),
                     AppFolder);
@@ -286,8 +288,12 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
                 OrchardCoreUITestBaseCounter.AppFolderCreated = true;
             }
         }
+        finally
+        {
+            OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.Release();
+        }
 
-        return ExecuteTestAsync(
+        await ExecuteTestAsync(
             testAsync,
             browser,
             setupOperation: null,

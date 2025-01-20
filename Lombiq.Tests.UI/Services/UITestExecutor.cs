@@ -18,7 +18,7 @@ public static class UITestExecutor
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static Task ExecuteOrchardCoreTestAsync(
+    public static async Task ExecuteOrchardCoreTestAsync(
         WebApplicationInstanceFactory webApplicationInstanceFactory,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
@@ -41,11 +41,11 @@ public static class UITestExecutor
 
         configuration.AtataConfiguration.TestName = testManifest.Name;
 
-        var dumpRootPath = PrepareDumpFolder(testManifest, configuration);
+        var dumpRootPath = await PrepareDumpFolderAsync(testManifest, configuration);
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        return ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
+        await ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
     }
 
     private static async Task ExecuteOrchardCoreTestInnerAsync(
@@ -94,7 +94,7 @@ public static class UITestExecutor
         }
     }
 
-    private static string PrepareDumpFolder(
+    private static async Task<string> PrepareDumpFolderAsync(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
     {
@@ -126,7 +126,7 @@ public static class UITestExecutor
 
         var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
 
         // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name, or
         // volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe both
@@ -136,7 +136,7 @@ public static class UITestExecutor
         try
         {
             Directory.CreateDirectory(dumpRootPath);
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
         }
         catch (Exception ex) when (
             (ex is IOException &&
@@ -163,7 +163,7 @@ public static class UITestExecutor
 
             dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
 
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                 "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +

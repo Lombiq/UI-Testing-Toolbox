@@ -19,7 +19,7 @@ public delegate Task<(UITestContext Context, Uri TestStartUri)> AppInitializer()
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
         "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
-        "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
+        "IDisposable would need disposing static members on app shutdown, which is unreliable.")]
 public class SynchronizingWebApplicationSnapshotManager
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -42,7 +42,7 @@ public class SynchronizingWebApplicationSnapshotManager
             DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
             // Always start the current test run with a fresh snapshot.
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(_snapshotDirectoryPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_snapshotDirectoryPath);
 
             var result = await appInitializer();
             await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);

@@ -213,7 +213,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(DirectoryPaths.GetTempDirectoryPath(contextId));
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId));
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {

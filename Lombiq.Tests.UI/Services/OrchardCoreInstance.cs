@@ -146,7 +146,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             await _reverseProxy.DisposeAsync();
         }
 
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_contentRootPath, 60);
     }
 
     private void CreateContentRootFolder()
@@ -166,7 +166,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(CreateAppStartContext(), arguments));
 
         // This is to avoid adding Razor runtime view compilation.
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(
             Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
 
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
