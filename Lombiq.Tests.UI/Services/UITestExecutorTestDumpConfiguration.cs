@@ -16,6 +16,7 @@ public class UITestExecutorTestDumpConfiguration
     public bool CreateTestDump { get; set; } = true;
     public bool CaptureAppSnapshot { get; set; } = true;
     public bool CaptureScreenshots { get; set; } = true;
+    public bool CaptureDownloads { get; set; } = true;
     public bool CaptureHtmlSource { get; set; } = true;
     public bool CaptureBrowserLog { get; set; } = true;
 }

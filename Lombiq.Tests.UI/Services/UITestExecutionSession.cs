@@ -590,6 +590,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private async Task<UITestContext> CreateContextAsync(Uri testStartRelativeUri)
     {
         var contextId = Guid.NewGuid().ToString();
+        _configuration.BrowserConfiguration.ContextId = contextId;
 
         FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
 
@@ -789,6 +790,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_dumpConfiguration.CaptureScreenshots)
         {
             await CreateScreenshotsDumpAsync(debugInformationPath);
+        }
+
+        if (_dumpConfiguration.CaptureDownloads && Directory.Exists(_context.DownloadsDirectoryPath))
+        {
+            FileSystem.CopyDirectory(
+                _context.DownloadsDirectoryPath,
+                Path.Combine(debugInformationPath, DirectoryPaths.Downloads));
         }
 
         if (_dumpConfiguration.CaptureHtmlSource)

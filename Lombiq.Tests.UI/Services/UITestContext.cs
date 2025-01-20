@@ -147,6 +147,12 @@ public class UITestContext
     /// </summary>
     public string ScreenshotsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Screenshots);
 
+    /// <summary>
+    /// Gets the absolute path of the <see cref="DirectoryPaths.Downloads"/> subdirectory inside the current test
+    /// instance's <see cref="DirectoryPaths.Temp"/> directory.
+    /// </summary>
+    public string DownloadsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Downloads);
+
     // This is a central context object, we need the data to be passed in the constructor.
 #pragma warning disable S107 // Methods should not have too many parameters
     public UITestContext(
