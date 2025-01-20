@@ -216,8 +216,8 @@ internal static class CloudflareHelper
         [Get("/accounts/{accountId}/firewall/access_rules/rules")]
         Task<ApiResponse<IpAccessRuleResponse[]>> GetIpAccessRulesAsync(
             string accountId,
-            [AliasAs("configuration.value")] string configurationValue = null,
-            [AliasAs("per_page")] int pageSize = 200);
+            [AliasAs("configuration.value")] string configurationValue = null, // codespell:ignore
+            [AliasAs("per_page")] int pageSize = 200); // codespell:ignore
 
         [Delete("/accounts/{accountId}/firewall/access_rules/rules/{ruleId}")]
         Task<ApiResponse<DeleteResponse>> DeleteIpAccessRuleAsync(string accountId, string ruleId);
