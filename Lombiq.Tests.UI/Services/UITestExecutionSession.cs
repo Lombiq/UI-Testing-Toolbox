@@ -111,7 +111,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await Task.WhenAny(testTask, timeoutTask);
 
-            if (timeoutTask.IsCompleted)
+            if (timeoutTask.IsCompleted && !_configuration.TestCancellationToken.IsCancellationRequested)
             {
                 // If the EnterInteractiveModeAsync() extension method has been used, then timeout should be ignored to
                 // make the debugging experience smoother. Note that EnterInteractiveModeAsync() should never be used in
