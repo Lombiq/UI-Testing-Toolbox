@@ -132,7 +132,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await _context.AssertLogsAsync();
 
-            await CreateTestDumpAsync(dumpRootPath, retryCount, testDumpContainer);
+            //await CreateTestDumpAsync(dumpRootPath, retryCount, testDumpContainer);
 
             return true;
         }
