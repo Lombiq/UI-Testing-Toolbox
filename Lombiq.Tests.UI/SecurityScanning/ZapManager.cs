@@ -264,7 +264,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         //await CheckFilesAsync(reportsDirectoryPath);
 
-        var dockerKillOutput = await new CliProgram("docker stop $(docker ps -q)").ExecuteAndGetOutputAsync(CancellationToken.None);
+        var dockerKillOutput = await _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, "stop", "$(docker ps -q)");
         _testOutputHelper.WriteLineTimestampedAndDebug("Killing all Docker containers: {0}", dockerKillOutput);
 
         if (result.ExitCode == 1)
