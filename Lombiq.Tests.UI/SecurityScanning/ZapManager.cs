@@ -224,7 +224,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         if (GitHubHelper.IsGitHubEnvironment)
         {
-            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", reportsDirectoryPath);
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "drwxr-xr-x", reportsDirectoryPath);
         }
 
         _testOutputHelper.WriteLineTimestampedAndDebug("After chmodding ZAP reports directory:");
