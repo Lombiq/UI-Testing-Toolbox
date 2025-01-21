@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.CodeAnalysis.Sarif;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -182,24 +183,86 @@ public sealed class ZapManager : IAsyncDisposable
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
-        void LogFileAttributes(string directoryPath)
+        async Task LogFileLockDetailsAsync(string filePath)
+        {
+            try
+            {
+                using var stream = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.None);
+                _testOutputHelper.WriteLineTimestampedAndDebug("File: {0} is not locked.", filePath);
+            }
+            catch (IOException)
+            {
+                // File is locked, get the process locking the file
+                var process = await GetLockingProcessAsync(filePath);
+                if (process != null)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "File: {0} is locked by process: {1} (ID: {2})", filePath, process.ProcessName, process.Id);
+                }
+                else
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug("File: {0} is locked by an unknown process.", filePath);
+                }
+            }
+        }
+
+        async Task<Process> GetLockingProcessAsync(string filePath)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var processList = Process.GetProcesses();
+                foreach (var process in processList)
+                {
+                    try
+                    {
+                        foreach (ProcessModule module in process.Modules)
+                        {
+                            if (module.FileName.Equals(filePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return process;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore processes that we can't access
+                    }
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                var lsofOutput = await new CliProgram("lsof").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
+
+                _testOutputHelper.WriteLineTimestampedAndDebug("lsof output: {0}", lsofOutput);
+
+                var lines = lsofOutput.Split('\n');
+                if (lines.Length > 1)
+                {
+                    var parts = lines[1].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 1 && int.TryParse(parts[1], out var pid))
+                    {
+                        return Process.GetProcessById(pid);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        async Task CheckFilesAsync(string directoryPath)
         {
             foreach (var filePath in Directory.EnumerateFiles(directoryPath))
             {
-                var attributes = File.GetAttributes(filePath);
-                var unixFileMode = File.GetUnixFileMode(filePath);
-                ////var unixFileMode = "N/A";
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "ZAP file: {0}, Attributes: {1}, UnixFileMode: {2}", filePath, attributes, unixFileMode);
+                await LogFileLockDetailsAsync(filePath);
             }
 
             foreach (var subDirectory in Directory.EnumerateDirectories(directoryPath))
             {
-                LogFileAttributes(subDirectory);
+                await CheckFilesAsync(subDirectory);
             }
         }
 
-        LogFileAttributes(reportsDirectoryPath);
+        await CheckFilesAsync(reportsDirectoryPath);
 
         if (result.ExitCode == 1)
         {
@@ -221,14 +284,6 @@ public sealed class ZapManager : IAsyncDisposable
                 "No SARIF JSON report was generated for the ZAP scan. This indicates that the scan couldn't finish. " +
                 "Check the test output for details.");
         }
-
-        if (GitHubHelper.IsGitHubEnvironment)
-        {
-            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "777", reportsDirectoryPath);
-        }
-
-        _testOutputHelper.WriteLineTimestampedAndDebug("After chmodding ZAP reports directory:");
-        LogFileAttributes(reportsDirectoryPath);
 
         return new SecurityScanResult(
             reportsDirectoryPath,
