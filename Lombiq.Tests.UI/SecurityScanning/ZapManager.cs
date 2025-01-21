@@ -190,7 +190,7 @@ public sealed class ZapManager : IAsyncDisposable
                 using var stream = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.None);
                 _testOutputHelper.WriteLineTimestampedAndDebug("File: {0} is not locked.", filePath);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // File is locked, get the process locking the file
                 var process = await GetLockingProcessAsync(filePath);
