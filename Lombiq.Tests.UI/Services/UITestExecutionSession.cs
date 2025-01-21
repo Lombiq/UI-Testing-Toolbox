@@ -214,17 +214,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             var funnyFile = Path.Combine(DirectoryPaths.GetTempDirectoryPath(contextId), "Zap1/reports/2025-01-21-ZAP-Report-localhost/console.css");
 
-            _testOutputHelper.WriteLineTimestampedAndDebug(
-                File.Exists(funnyFile)
-                    ? $"Funny file: {File.GetAttributes(funnyFile)} - {File.GetUnixFileMode(funnyFile)}"
-                    : "Funny file not found.");
-
             try
             {
                 if (GitHubHelper.IsGitHubEnvironment)
                 {
                     await new CliProgram("chmod")
                         .ExecuteAsync(_configuration.TestCancellationToken, "777", DirectoryPaths.GetTempDirectoryPath(contextId));
+
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        File.Exists(funnyFile)
+                            ? $"Funny file: {File.GetAttributes(funnyFile)} - {File.GetUnixFileMode(funnyFile)}"
+                            : "Funny file not found.");
                 }
 
                 await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId));
