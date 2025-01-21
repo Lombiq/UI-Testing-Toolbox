@@ -231,11 +231,11 @@ public sealed class ZapManager : IAsyncDisposable
             }
             else if (OperatingSystem.IsLinux())
             {
-                var lsofOutput = await new CliProgram("sudo lsof").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
+                var lsofOutput = await new CliProgram("lsof").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
 
                 _testOutputHelper.WriteLineTimestampedAndDebug("lsof output: {0}", lsofOutput);
 
-                var lslkOutput = await new CliProgram("sudo lslk").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
+                var lslkOutput = await new CliProgram("lslk").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
 
                 _testOutputHelper.WriteLineTimestampedAndDebug("lslk output: {0}", lslkOutput);
 
