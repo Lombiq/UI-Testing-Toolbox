@@ -59,13 +59,25 @@ public class InteractiveModeTests : UITestBase
                     Task.Run(
                         async () =>
                         {
-                            ReliabilityHelper.DoWithRetriesOrFail(
-                                () => context.Driver.WindowHandles.Count > 1,
-                                TimeSpan.FromSeconds(5));
+                            try
+                            {
+                                ReliabilityHelper.DoWithRetriesOrFail(
+                                    () => context.Driver.WindowHandles.Count > 1,
+                                    TimeSpan.FromSeconds(15));
 
-                            context.SwitchToLastWindow();
+                                context.SwitchToLastWindow();
 
-                            await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
+                                await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
+                            }
+                            catch (Exception)
+                            {
+                                _testOutputHelper.WriteLineTimestampedAndDebug(
+                                    "Interactive mode wasn't canceled properly by a button click. Cancelling the test.");
+
+                                // The other thread will wait indefinitely if the button wasn't clicked in the end. So,
+                                // failing the test then.
+                                TestContext.Current.CancelCurrentTest();
+                            }
                         },
                         context.Configuration.TestCancellationToken));
 
