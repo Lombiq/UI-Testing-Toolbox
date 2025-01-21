@@ -1,5 +1,6 @@
 using Atata.HtmlValidation;
 using Cysharp.Text;
+using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -220,6 +221,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             try
             {
+                if (GitHubHelper.IsGitHubEnvironment)
+                {
+                    await new CliProgram("chmod")
+                        .ExecuteAsync(_configuration.TestCancellationToken, "777", DirectoryPaths.GetTempDirectoryPath(contextId));
+                }
+
                 await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId));
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
