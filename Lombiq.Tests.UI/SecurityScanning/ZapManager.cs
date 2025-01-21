@@ -189,7 +189,8 @@ public sealed class ZapManager : IAsyncDisposable
                 var attributes = File.GetAttributes(filePath);
                 var unixFileMode = File.GetUnixFileMode(filePath);
                 ////var unixFileMode = "N/A";
-                _testOutputHelper.WriteLineTimestampedAndDebug("ZAP file: {0}, Attributes: {1}, UnixFileMode: {2}", filePath, attributes, unixFileMode);
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "ZAP file: {0}, Attributes: {1}, UnixFileMode: {2}", filePath, attributes, unixFileMode);
             }
 
             foreach (var subDirectory in Directory.EnumerateDirectories(directoryPath))
