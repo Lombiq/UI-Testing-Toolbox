@@ -49,4 +49,10 @@ public class BrowserConfiguration
     /// Gets a list of command line arguments that were passed to the driver during the driver instance creation.
     /// </summary>
     public IList<string> Arguments { get; } = [];
+
+    /// <summary>
+    /// Gets or sets the context ID, to be used during driver creation when the <see cref="UITestContext"/> does not
+    /// exist yet.
+    /// </summary>
+    internal string UITestContextId { get; set; }
 }

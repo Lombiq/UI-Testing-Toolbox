@@ -1,5 +1,7 @@
 using Atata.WebDriverSetup;
 using Lombiq.HelpfulLibraries.Cli.Helpers;
+using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -113,6 +115,13 @@ public static class WebDriverFactory
                 options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
                 options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
+                // Set the download path to inside the context-specific temp directory to avoid clashes from parallel
+                // tests, and to make it available for test dumps.
+                options.SetPreference("browser.download.folderList", 2);
+                options.SetPreference("browser.download.dir", PrepareDownloadDirectory(configuration));
+                options.SetPreference("browser.download.useDownloadDir", preferenceValue: true);
+                options.SetPreference("pdfjs.disabled", preferenceValue: true);
+
                 if (configuration.Headless) options.AddArgument("--headless");
 
                 configuration.BrowserOptionsConfigurator?.Invoke(options);
@@ -184,6 +193,10 @@ public static class WebDriverFactory
 
         if (configuration.Headless) options.AddArgument("headless");
 
+        // Set the download path to inside the context-specific temp directory to avoid clashes from parallel tests, and
+        // to make it available for test dumps.
+        options.AddUserProfilePreference("download.default_directory", PrepareDownloadDirectory(configuration));
+
         return options;
     }
 
@@ -229,6 +242,13 @@ public static class WebDriverFactory
     private static void AutoSetup(string browserName)
     {
         lock (_setupLock) DriverSetup.AutoSetUp(browserName);
+    }
+
+    private static string PrepareDownloadDirectory(BrowserConfiguration configuration)
+    {
+        var downloadPath = DirectoryPaths.GetTempDirectoryPath(configuration.UITestContextId, DirectoryPaths.Downloads);
+        FileSystemHelper.EnsureDirectoryExists(downloadPath);
+        return downloadPath;
     }
 
     private sealed class ChromeConfiguration
