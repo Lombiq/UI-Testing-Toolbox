@@ -182,6 +182,24 @@ public sealed class ZapManager : IAsyncDisposable
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
+        void LogFileAttributes(string directoryPath)
+        {
+            foreach (var filePath in Directory.EnumerateFiles(directoryPath))
+            {
+                var attributes = File.GetAttributes(filePath);
+                var unixFileMode = File.GetUnixFileMode(filePath);
+                ////var unixFileMode = "N/A";
+                _testOutputHelper.WriteLineTimestampedAndDebug("ZAP file: {0}, Attributes: {1}, UnixFileMode: {2}", filePath, attributes, unixFileMode);
+            }
+
+            foreach (var subDirectory in Directory.EnumerateDirectories(directoryPath))
+            {
+                LogFileAttributes(subDirectory);
+            }
+        }
+
+        LogFileAttributes(reportsDirectoryPath);
+
         if (result.ExitCode == 1)
         {
             throw new SecurityScanningException("Security scanning didn't successfully finish. Check the test's output log for details.");
