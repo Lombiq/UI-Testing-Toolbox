@@ -26,7 +26,7 @@ public sealed class ZapManager : IAsyncDisposable
     // https://hub.docker.com/r/zaproxy/zap-stable/tags.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "zaproxy/zap-stable:2.15.0"; // #spell-check-ignore-line
+    private const string _zapImage = "zaproxy/zap-stable:2.16.0"; // #spell-check-ignore-line
     private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
     private const string _zapReportsDirectoryName = "reports";
     private const string _zapHomeDirectoryName = "home";
