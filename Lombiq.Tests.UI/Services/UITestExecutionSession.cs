@@ -218,9 +218,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             {
                 if (GitHubHelper.IsGitHubEnvironment)
                 {
-                    await new CliProgram("chmod")
-                        .ExecuteAsync(_configuration.TestCancellationToken, "777", DirectoryPaths.GetTempDirectoryPath(contextId));
-
                     _testOutputHelper.WriteLineTimestampedAndDebug(
                         File.Exists(funnyFile)
                             ? $"Funny file: {File.GetAttributes(funnyFile)} - {File.GetUnixFileMode(funnyFile)}"
