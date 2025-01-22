@@ -212,7 +212,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // handles to the temp folder, that can be cleaned up too.
         if (!string.IsNullOrEmpty(contextId))
         {
-            var funnyFile = Path.Combine(DirectoryPaths.GetTempDirectoryPath(contextId), "Zap1/reports/2025-01-21-ZAP-Report-localhost/console.css");
+            var funnyFile = Path.Combine(DirectoryPaths.GetTempDirectoryPath(contextId), "Zap1/reports/2025-01-22-ZAP-Report-localhost/console.css");
 
             try
             {
