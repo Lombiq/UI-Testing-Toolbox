@@ -235,15 +235,11 @@ public sealed class ZapManager : IAsyncDisposable
 
                 _testOutputHelper.WriteLineTimestampedAndDebug("lsof output: {0}", lsofOutput);
 
-                var lslkOutput = await new CliProgram("lslk").ExecuteAndGetOutputAsync(CancellationToken.None, filePath);
-
-                _testOutputHelper.WriteLineTimestampedAndDebug("lslk output: {0}", lslkOutput);
-
-                var lines = lslkOutput.Split('\n');
+                var lines = lsofOutput.Split('\n');
                 if (lines.Length > 1)
                 {
                     var parts = lines[1].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 2 && int.TryParse(parts[2], out var pid))
+                    if (parts.Length > 1 && int.TryParse(parts[1], out var pid))
                     {
                         return Process.GetProcessById(pid);
                     }
@@ -266,7 +262,7 @@ public sealed class ZapManager : IAsyncDisposable
             }
         }
 
-        await CheckFilesAsync(reportsDirectoryPath);
+        //await CheckFilesAsync(reportsDirectoryPath);
 
         var dockerKillOutput = await _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, "ps");
         _testOutputHelper.WriteLineTimestampedAndDebug("Running Docker containers: {0}", dockerKillOutput);
