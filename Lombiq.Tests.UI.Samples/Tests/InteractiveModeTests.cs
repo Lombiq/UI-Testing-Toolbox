@@ -72,7 +72,7 @@ public class InteractiveModeTests : UITestBase
                             catch (Exception ex)
                             {
                                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Interactive mode wasn't canceled properly due to the following exception. Cancelling the test. {0}",
+                                    "Interactive mode wasn't canceled properly due to the following exception. Canceling the test. {0}",
                                     ex);
 
                                 // The other thread will wait indefinitely if the button wasn't clicked in the end. So,
