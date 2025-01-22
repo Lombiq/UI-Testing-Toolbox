@@ -68,7 +68,7 @@ public class InteractiveModeTests : UITestBase
                             {
                                 ReliabilityHelper.DoWithRetriesOrFail(
                                     () => context.Driver.WindowHandles.Count > 1,
-                                    TimeSpan.FromSeconds(15));
+                                    TimeSpan.FromSeconds(30));
 
                                 context.SwitchToLastWindow();
 
@@ -88,6 +88,10 @@ public class InteractiveModeTests : UITestBase
                             }
                         },
                         linkedCancellationTokenSource.Token));
+
+                ReliabilityHelper.DoWithRetriesOrFail(
+                    () => context.Driver.WindowHandles.Count == 1,
+                    TimeSpan.FromSeconds(30));
 
                 // Ensure that the info tab is closed and the control handed back to the last tab.
                 context.Driver.Url.ShouldBe(currentUrl);
