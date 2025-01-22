@@ -207,7 +207,7 @@ public sealed class ZapManager : IAsyncDisposable
         if (GitHubHelper.IsGitHubEnvironment)
         {
             // Applying chmod to all subfolders too.
-            await new CliProgram("sudo").ExecuteAsync(_cancellationTokenSource.Token, "chmod", "--recursive", "a+w", homeDirectoryPath);
+            await new CliProgram("sudo").ExecuteAsync(_cancellationTokenSource.Token, "chmod", "--recursive", "777", homeDirectoryPath);
         }
 
         return new SecurityScanResult(
