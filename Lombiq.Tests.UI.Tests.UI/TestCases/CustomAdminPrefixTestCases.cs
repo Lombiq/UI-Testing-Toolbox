@@ -30,10 +30,10 @@ public static class CustomAdminPrefixTestCases
                     return Task.CompletedTask;
                 };
 
-                // Using a custom setup operation so UITT will consider it unique, and not reuse its snapshot with other
-                // tests if this one ends up running first. This is necessary because the AdminUrlPrefix is saved to the
-                // DB by the OrchardCore.AdminMenu feature, like for the admin menu's Blog item; we don't want the other
-                // tests to use that.
+                // Using a custom setup operation so the UI Testing Toolbox will consider it unique, and not reuse its
+                // snapshot with other tests if this one ends up running first. This is necessary because the
+                // AdminUrlPrefix is saved to the DB by the OrchardCore.AdminMenu feature, like for the admin menu's
+                // Blog item; we don't want the other tests to use that.
                 var originalSetupOperation = configuration.SetupConfiguration.SetupOperation;
                 configuration.SetupConfiguration.SetupOperation = context => originalSetupOperation(context);
 
