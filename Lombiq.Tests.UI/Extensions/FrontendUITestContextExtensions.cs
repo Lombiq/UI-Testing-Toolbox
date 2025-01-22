@@ -159,7 +159,8 @@ public static class FrontendUITestContextExtensions
 
         return context.SwitchToInteractiveAsync(
             $"To start a JavaScript test, open a command line terminal at \"{workingDirectory}\" and type the " +
-            $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>");
+                $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>",
+            context.Configuration.TestCancellationToken);
     }
 
     /// <summary>

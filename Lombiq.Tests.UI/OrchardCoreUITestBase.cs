@@ -420,7 +420,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         // This "test" will wait indefinitely, so it's important to skip it in CI.
         if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
 
-        testAsync ??= context => context.SwitchToInteractiveAsync();
+        testAsync ??= context => context.SwitchToInteractiveAsync(cancellationToken: context.Configuration.TestCancellationToken);
 
         return ExecuteTestAfterSetupAsync(
             testAsync,
