@@ -4,6 +4,7 @@ using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -54,8 +55,12 @@ public class InteractiveModeTests : UITestBase
             {
                 var currentUrl = context.Driver.Url;
 
+                using var localCancellationTokenSource = new CancellationTokenSource();
+                using var linkedCancellationTokenSource = CancellationTokenSource
+                    .CreateLinkedTokenSource(context.Configuration.TestCancellationToken, localCancellationTokenSource.Token);
+
                 await Task.WhenAll(
-                    context.SwitchToInteractiveAsync(),
+                    context.SwitchToInteractiveAsync(cancellationToken: linkedCancellationTokenSource.Token),
                     Task.Run(
                         async () =>
                         {
@@ -72,15 +77,17 @@ public class InteractiveModeTests : UITestBase
                             catch (Exception ex)
                             {
                                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Interactive mode wasn't canceled properly due to the following exception. Canceling the test. {0}",
+                                    "Interactive mode wasn't exited properly due to the following exception. Canceling the test. {0}",
                                     ex);
 
                                 // The other thread will wait indefinitely if the button wasn't clicked in the end. So,
-                                // failing the test then.
-                                TestContext.Current.CancelCurrentTest();
+                                // need to cancel the Task.
+                                await localCancellationTokenSource.CancelAsync();
+
+                                throw;
                             }
                         },
-                        context.Configuration.TestCancellationToken));
+                        linkedCancellationTokenSource.Token));
 
                 // Ensure that the info tab is closed and the control handed back to the last tab.
                 context.Driver.Url.ShouldBe(currentUrl);

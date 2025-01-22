@@ -620,13 +620,15 @@ public static class ShortcutsUITestContextExtensions
     /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
     /// HTML content.
     /// </param>
-    public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
+    /// <param name="cancellationToken">A token to cancel interactive mode programmatically.</param>
+    public static async Task SwitchToInteractiveAsync(
+        this UITestContext context, string notificationHtml = null, CancellationToken cancellationToken = default)
     {
         context.EnsureValidOrchardCoreTenantScope();
 
         InteractiveModeHasBeenUsed = true;
         await context.EnterInteractiveModeAsync(notificationHtml);
-        await context.WaitInteractiveModeAsync();
+        await context.WaitInteractiveModeAsync(cancellationToken);
 
         context.Driver.Close();
         context.SwitchToLastWindow();
@@ -649,12 +651,14 @@ public static class ShortcutsUITestContextExtensions
     /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
     /// <see langword="true"/>.
     /// </summary>
-    internal static async Task WaitInteractiveModeAsync(this UITestContext context)
+    internal static async Task WaitInteractiveModeAsync(this UITestContext context, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken == default) cancellationToken = context.Configuration.TestCancellationToken;
+
         var client = context.GetApi();
         while (await client.IsInteractiveModeEnabledAsync() && !context.Configuration.TestCancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(500), context.Configuration.TestCancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
         }
     }
 
