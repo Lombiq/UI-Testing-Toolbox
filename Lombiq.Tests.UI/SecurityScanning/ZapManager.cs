@@ -181,7 +181,7 @@ public sealed class ZapManager : IAsyncDisposable
             .ExecuteAsync(_cancellationTokenSource.Token);
 
         // Under the Ubuntu GitHub Actions runners, at this point, the report's folder (like
-        // "2025-01-22-ZAP-Report-localhost") will remain unwritable, but readable. No amount of sudo chmodding will fix
+        // "2025-01-22-ZAP-Report-localhost") will remain unwritable, but readable. No amount of sudo chmodding will fix #spell-check-ignore-line
         // this, and it's not because any process is locking it. This shouldn't be much of an issue, though.
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
