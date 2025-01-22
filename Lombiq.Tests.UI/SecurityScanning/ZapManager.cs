@@ -180,6 +180,10 @@ public sealed class ZapManager : IAsyncDisposable
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
 
+        // Under the Ubuntu GitHub Actions runners, at this point, the report's folder (like
+        // "2025-01-22-ZAP-Report-localhost") will remain unwritable, but readable. No amount of sudo chmodding will fix
+        // this, and it's not because any process is locking it. This shouldn't be much of an issue, though.
+
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
         if (result.ExitCode == 1)
@@ -201,13 +205,6 @@ public sealed class ZapManager : IAsyncDisposable
             throw new SecurityScanningException(
                 "No SARIF JSON report was generated for the ZAP scan. This indicates that the scan couldn't finish. " +
                 "Check the test output for details.");
-        }
-
-        // Without this, the report's folder (like "2025-01-22-ZAP-Report-localhost") will remain unwritable.
-        if (GitHubHelper.IsGitHubEnvironment)
-        {
-            // Applying chmod to all subfolders too.
-            await new CliProgram("sudo").ExecuteAsync(_cancellationTokenSource.Token, "chmod", "--recursive", "777", homeDirectoryPath);
         }
 
         return new SecurityScanResult(

@@ -1,6 +1,5 @@
 using Atata.HtmlValidation;
 using Cysharp.Text;
-using Lombiq.HelpfulLibraries.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -209,21 +208,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_zapManager != null) await _zapManager.DisposeAsync();
 
         // First the context needs to be disposed before anything else, and then, once the other services free up any
-        // handles to the temp folder, that can be cleaned up too.
-        if (!string.IsNullOrEmpty(contextId))
+        // handles to the temp folder, that can be cleaned up too. No need to do it on ephemeral GitHub runners, though,
+        // also because the ZAP report's folder (like "2025-01-22-ZAP-Report-localhost") will remain unwritable (see the
+        // comment in ZapManager).
+        if (!string.IsNullOrEmpty(contextId) && !GitHubHelper.IsGitHubEnvironment)
         {
-            var funnyFile = Path.Combine(DirectoryPaths.GetTempDirectoryPath(contextId), "Zap1/reports/2025-01-22-ZAP-Report-localhost/console.css");
-
             try
             {
-                if (GitHubHelper.IsGitHubEnvironment)
-                {
-                    _testOutputHelper.WriteLineTimestampedAndDebug(
-                        File.Exists(funnyFile)
-                            ? $"Funny file: {File.GetAttributes(funnyFile)} - {File.GetUnixFileMode(funnyFile)}"
-                            : "Funny file not found.");
-                }
-
                 await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId));
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
