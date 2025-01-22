@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -11,6 +11,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Lombiq.Tests.UI.Services.Browser.InternetExplorer</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.CreateAndAuthorizeClientAsync(Lombiq.Tests.UI.Services.UITestContext,System.String,System.String,System.String,System.String,System.String)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
