@@ -69,10 +69,11 @@ public class InteractiveModeTests : UITestBase
 
                                 await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
                             }
-                            catch (Exception)
+                            catch (Exception ex)
                             {
                                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Interactive mode wasn't canceled properly by a button click. Cancelling the test.");
+                                    "Interactive mode wasn't canceled properly due to the following exception. Cancelling the test. {0}",
+                                    ex);
 
                                 // The other thread will wait indefinitely if the button wasn't clicked in the end. So,
                                 // failing the test then.
