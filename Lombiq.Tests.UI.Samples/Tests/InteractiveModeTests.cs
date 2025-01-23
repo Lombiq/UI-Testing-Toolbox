@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium;
@@ -70,9 +71,7 @@ public class InteractiveModeTests : UITestBase
                                     () => context.Driver.WindowHandles.Count > 1,
                                     TimeSpan.FromSeconds(30));
 
-                                context.SwitchToLastWindow();
-
-                                await context.ClickReliablyOnAsync(By.ClassName("interactive__continue"));
+                                await context.ClickReliablyOnAsync(By.ClassName("interactive__continue").OfAnyVisibility());
                             }
                             catch (Exception ex)
                             {
