@@ -630,8 +630,11 @@ public static class ShortcutsUITestContextExtensions
         await context.EnterInteractiveModeAsync(notificationHtml);
         await context.WaitInteractiveModeAsync(cancellationToken);
 
-        context.Driver.Close();
-        context.SwitchToLastWindow();
+        if (context.Driver.WindowHandles.Count > 1)
+        {
+            context.Driver.Close();
+            context.SwitchToLastWindow();
+        }
     }
 
     /// <summary>
