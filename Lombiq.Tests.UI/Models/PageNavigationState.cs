@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
@@ -16,12 +17,15 @@ public class PageNavigationState : IWebContentState
     public PageNavigationState(IWebElement root) => _root = root;
 
     public PageNavigationState(UITestContext context)
-        : this(context.Get(By.TagName("html")))
+        : this(context.Get(By.TagName("html").OfAnyVisibility().Safely()))
     {
     }
 
     public bool CheckIfNavigationHasOccurred()
     {
+        // The response can be empty, without even an <html> tag.
+        if (_root == null) return true;
+
         try
         {
             // Just any element operation to cause a StaleElementReferenceException if it's stale. If it isn't then this
