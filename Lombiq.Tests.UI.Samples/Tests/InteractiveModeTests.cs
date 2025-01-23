@@ -44,7 +44,11 @@ public class InteractiveModeTests : UITestBase
                 // won't affect the test. If that's not practical, you can also do your thing in a new tab and close it
                 // before continuing the test.
                 (await context.GetCurrentUserNameAsync()).ShouldNotBeNullOrWhiteSpace();
-            });
+
+                // Interactive mode only makes sense if you can see the browser, so below we make sure it's not running
+                // in headless mode.
+            },
+            configuration => configuration.BrowserConfiguration.Headless = false);
 
     // This test checks if interactive mode works by opening it in one thread, and then clicking it away in a different
     // thread. Two threads are necessary because interactive mode stops test execution on its current thread, so we
