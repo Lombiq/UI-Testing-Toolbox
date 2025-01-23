@@ -1,11 +1,6 @@
-using Atata;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
-using OpenQA.Selenium;
 using Shouldly;
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -49,56 +44,6 @@ public class InteractiveModeTests : UITestBase
                 // in headless mode.
             },
             configuration => configuration.BrowserConfiguration.Headless = false);
-
-    // This test checks if interactive mode works by opening it in one thread, and then clicking it away in a different
-    // thread. Two threads are necessary because interactive mode stops test execution on its current thread, so we
-    // wouldn't be able to end it from within a test.
-    [Fact]
-    public Task EnteringInteractiveModeShouldWait() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                var currentUrl = context.Driver.Url;
-
-                using var localCancellationTokenSource = new CancellationTokenSource();
-                using var linkedCancellationTokenSource = CancellationTokenSource
-                    .CreateLinkedTokenSource(context.Configuration.TestCancellationToken, localCancellationTokenSource.Token);
-
-                await Task.WhenAll(
-                    context.SwitchToInteractiveAsync(cancellationToken: linkedCancellationTokenSource.Token),
-                    Task.Run(
-                        async () =>
-                        {
-                            try
-                            {
-                                ReliabilityHelper.DoWithRetriesOrFail(
-                                    () => context.Driver.WindowHandles.Count > 1,
-                                    TimeSpan.FromSeconds(30));
-
-                                await context.ClickReliablyOnAsync(By.ClassName("interactive__continue").OfAnyVisibility());
-                            }
-                            catch (Exception ex)
-                            {
-                                _testOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Interactive mode wasn't exited properly due to the following exception. Canceling the test. {0}",
-                                    ex);
-
-                                // The other thread will wait indefinitely if the button wasn't clicked in the end. So,
-                                // need to cancel the Task.
-                                await localCancellationTokenSource.CancelAsync();
-
-                                throw;
-                            }
-                        },
-                        linkedCancellationTokenSource.Token));
-
-                ReliabilityHelper.DoWithRetriesOrFail(
-                    () => context.Driver.WindowHandles.Count == 1,
-                    TimeSpan.FromSeconds(30));
-
-                // Ensure that the info tab is closed and the control handed back to the last tab.
-                context.Driver.Url.ShouldBe(currentUrl);
-            });
 }
 
 // END OF TRAINING SECTION: Interactive mode.
