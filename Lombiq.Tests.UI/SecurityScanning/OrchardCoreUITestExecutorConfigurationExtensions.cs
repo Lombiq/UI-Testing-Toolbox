@@ -60,9 +60,6 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             "System.InvalidOperationException: No authentication handler is registered for the scheme",
             // This error is generated when testing the error page is enabled. It is expected.
             "System.InvalidOperationException: This action intentionally causes an exception!",
-            // If the middleware is enabled, logs like this are emitted next to every exception even if they are
-            // already suppressed by one of these patterns.
-            "Lombiq.Tests.UI.Shortcuts.Middlewares.ExceptionContextLoggingMiddleware: HTTP request when the exception",
         };
 
         permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
