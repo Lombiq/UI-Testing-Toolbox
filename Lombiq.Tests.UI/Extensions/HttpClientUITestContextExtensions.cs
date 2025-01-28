@@ -47,7 +47,8 @@ public static class HttpClientUITestContextExtensions
         string clientId = "UITest",
         string clientSecret = "Password",
         string userName = null,
-        string password = null)
+        string password = null,
+        Action<HttpClient> configureClient = null)
     {
         var parameters = new List<KeyValuePair<string, string>>
         {
@@ -65,6 +66,8 @@ public static class HttpClientUITestContextExtensions
         using var requestBody = new FormUrlEncodedContent(parameters);
 
         var client = context.CreateClient();
+        configureClient?.Invoke(client);
+
         var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
         using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
 
