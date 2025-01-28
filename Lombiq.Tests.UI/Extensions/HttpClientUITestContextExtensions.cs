@@ -1,4 +1,5 @@
-﻿using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -26,20 +27,12 @@ public static class HttpClientUITestContextExtensions
 {
     public static JsonSerializerOptions JsonSerializerOptions { get; } = new(JsonSerializerDefaults.Web);
 
-    public static HttpClient CreateClient(this UITestContext context)
-    {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-            CheckCertificateRevocationList = true,
-        };
-
-        return new(handler) { BaseAddress = context.Scope.BaseUri };
-    }
+    public static HttpClient CreateClient(this UITestContext context) =>
+        HttpClientHelper.CreateCertificateIgnoringHttpClient(context.Scope.BaseUri);
 
     /// <summary>
-    /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
-    /// parameters.
+    /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the
+    /// provided parameters.
     /// </summary>
     public static async Task<HttpClient> CreateAndAuthorizeClientAsync(
         this UITestContext context,

@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -50,11 +51,8 @@ public static class BrowserUITestContextExtensions
         string address,
         Func<HttpResponseMessage, Task<T>> processResponseAsync)
     {
-        using var handler = new HttpClientHandler
-        {
-            CookieContainer = context.GetCookieContainer(),
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-        };
+        using var handler = HttpClientHelper.CreateCertificateIgnoringHttpClientHandler();
+        handler.CookieContainer = context.GetCookieContainer();
 
         using var client = new HttpClient(handler);
         using var request = new HttpRequestMessage(method, new Uri(context.GetCurrentUri(), address));
