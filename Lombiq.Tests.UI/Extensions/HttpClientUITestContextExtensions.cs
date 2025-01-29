@@ -23,10 +23,17 @@ public static class HttpClientUITestContextExtensions
 {
     public static JsonSerializerOptions JsonSerializerOptions { get; } = new(JsonSerializerDefaults.Web);
 
-    public static HttpClient CreateClient(this UITestContext context) =>
+    [Obsolete("Use CreateHttpClient instead.")]
+    public static HttpClient CreateClient(this UITestContext context) => context.CreateClient();
+
+    public static HttpClient CreateHttpClient(this UITestContext context) =>
         HttpClientHelper.CreateCertificateIgnoringHttpClient(context.Scope.BaseUri);
 
-    public static HttpClient CreateClientWithBrowserContext(this UITestContext context)
+    [Obsolete("Use CreateHttpClientWithBrowserContext instead.")]
+    public static HttpClient CreateClientWithBrowserContext(this UITestContext context) =>
+        context.CreateHttpClientWithBrowserContext();
+
+    public static HttpClient CreateHttpClientWithBrowserContext(this UITestContext context)
     {
         var handler = HttpClientHelper.CreateCertificateIgnoringHttpClientHandler();
         handler.CookieContainer = context.GetCookieContainer();
@@ -61,7 +68,7 @@ public static class HttpClientUITestContextExtensions
 
         using var requestBody = new FormUrlEncodedContent(parameters);
 
-        var client = context.CreateClient();
+        var client = context.CreateHttpClient();
         var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
         using var tokenResponse = await client.PostAsync(tokenUrl, requestBody);
 
