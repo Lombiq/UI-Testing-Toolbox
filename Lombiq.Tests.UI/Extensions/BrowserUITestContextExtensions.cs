@@ -36,6 +36,7 @@ public static class BrowserUITestContextExtensions
         return cookieContainer;
     }
 
+    [Obsolete("Use the methods in HttpClientUITestContextExtensions instead.")]
     public static async Task<T> FetchWithBrowserContextAsync<T>(
         this UITestContext context,
         HttpMethod method,

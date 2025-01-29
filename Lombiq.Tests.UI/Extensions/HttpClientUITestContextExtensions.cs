@@ -16,10 +16,6 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Extensions;
 
 [SuppressMessage(
-    "Security",
-    "SCS0004: Certificate Validation has been disabled.",
-    Justification = "Certificate validation is unnecessary for UI testing.")]
-[SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
         Justification = "Disposed by the HttpClient.")]
@@ -29,6 +25,14 @@ public static class HttpClientUITestContextExtensions
 
     public static HttpClient CreateClient(this UITestContext context) =>
         HttpClientHelper.CreateCertificateIgnoringHttpClient(context.Scope.BaseUri);
+
+    public static HttpClient CreateClientWithBrowserContext(this UITestContext context)
+    {
+        var handler = HttpClientHelper.CreateCertificateIgnoringHttpClientHandler();
+        handler.CookieContainer = context.GetCookieContainer();
+
+        return new HttpClient(handler);
+    }
 
     /// <summary>
     /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the
