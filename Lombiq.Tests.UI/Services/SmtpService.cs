@@ -54,7 +54,7 @@ public sealed class SmtpService : IAsyncDisposable
         // The service depends on the smtp4dev .NET CLI tool (https://github.com/rnwood/smtp4dev) to be installed as a
         // local tool (on local tools see: https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
         // The local tool manifest was already created with dotnet new tool-manifest and the tool installed with:
-        // dotnet tool install Rnwood.Smtp4dev --version "3.1.4"
+        // dotnet tool install Rnwood.Smtp4dev --version "<version>"
         var dotnetToolsConfigFilePath = Path.Combine(".config", "dotnet-tools.json");
 
         if (!File.Exists(dotnetToolsConfigFilePath))
@@ -104,7 +104,8 @@ public sealed class SmtpService : IAsyncDisposable
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
         await CliProgram.DotNet.GetCommand(
             "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri)
-            .ExecuteDotNetApplicationAsync(
+            .ExecuteUntilOutputAsync(
+                "Now listening on:",
                 stdErr =>
                     throw new IOException(
                         $"The smtp4dev service didn't start properly on SMTP port {smtpPortString} and web UI port " +

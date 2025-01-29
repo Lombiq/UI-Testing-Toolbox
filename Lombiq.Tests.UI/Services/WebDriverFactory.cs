@@ -143,6 +143,7 @@ public static class WebDriverFactory
         driverOptions.AcceptInsecureCertificates = true;
         driverOptions.UnhandledPromptBehavior = UnhandledPromptBehavior.Ignore;
         driverOptions.PageLoadStrategy = PageLoadStrategy.Normal;
+        driverOptions.UseWebSocketUrl = true;
         return driverOptions;
     }
 

@@ -1,16 +1,10 @@
-using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
-using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
-using Shouldly;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using LogLevel = OpenQA.Selenium.LogLevel;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -69,10 +63,9 @@ public class MonkeyTests : UITestBase
 
                 return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            configuration =>
-                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(
-                    logEntry => IsValidAdminBrowserLogEntry(logEntry),
-                    logEntries.Where(IsValidAdminBrowserLogEntry).ToFormattedString()));
+            // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
+            // parameters are required.
+            configuration => configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedStatusResponse("/api/graphql", 400));
 
     // Let's just test the background tasks management admin area.
     [Fact]
@@ -93,17 +86,10 @@ public class MonkeyTests : UITestBase
                 await context.SignInDirectlyAndGoToAdminRelativeUrlAsync("/BackgroundTasks");
                 await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
-            configuration => configuration.AssertBrowserLog = (logEntries) => logEntries
-                .Where(logEntry =>
-                    !logEntry
-                        .Message
-                        .Contains("An invalid form control with name='LockTimeout' is not focusable.")
-                    && !logEntry
-                        .Message
-                        .Contains("An invalid form control with name='LockExpiration' is not focusable.")
-                    && !logEntry.IsNotFoundLogEntry("/favicon.ico")
-                    && logEntry.Level != LogLevel.Info)
-                .ShouldBeEmpty());
+            configuration => configuration.BrowserLogFilter = logEntry =>
+                logEntry.IsNonSuccessBrowserLogEntry() &&
+                !logEntry.Text.Contains("An invalid form control with name='LockTimeout' is not focusable.") &&
+                !logEntry.Text.Contains("An invalid form control with name='LockExpiration' is not focusable."));
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
@@ -111,12 +97,6 @@ public class MonkeyTests : UITestBase
         {
             PageTestTime = TimeSpan.FromSeconds(5),
         };
-
-    private static bool IsValidAdminBrowserLogEntry(LogEntry logEntry) =>
-        OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry(logEntry) &&
-        // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
-        // parameters are required.
-        !logEntry.Message.ContainsOrdinalIgnoreCase("/api/graphql - Failed to load resource: the server responded with a status of 400");
 }
 
 // END OF TRAINING SECTION: Monkey tests.
