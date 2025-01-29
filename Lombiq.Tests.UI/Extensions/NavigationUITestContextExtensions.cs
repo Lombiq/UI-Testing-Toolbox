@@ -6,13 +6,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using OrchardCore.ContentFields.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -259,18 +253,13 @@ public static class NavigationUITestContextExtensions
 
     public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
-        var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
-        var index = await context.FetchWithBrowserContextAsync(
-            HttpMethod.Get,
-            searchUrl,
-            async response =>
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
-                return result.IndexOf(result.First(item => item.DisplayText == text));
-            });
+        var contentPickerBy = ByHelper.GetContentPickerSelector(part, field);
 
-        await context.SetContentPickerByIndexAsync(part, field, index);
+        await context.ClickAndFillInWithRetriesAsync(
+            contentPickerBy.Then(By.ClassName("multiselect__input")).OfAnyVisibility(),
+            text);
+
+        await SetFieldDropdownByTextAsync(context, contentPickerBy, text);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
