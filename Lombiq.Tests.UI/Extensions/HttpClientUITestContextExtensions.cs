@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,6 +15,10 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
+[SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Disposed by the HttpClient.")]
 public static class HttpClientUITestContextExtensions
 {
     public static JsonSerializerOptions JsonSerializerOptions { get; } = new(JsonSerializerDefaults.Web);
