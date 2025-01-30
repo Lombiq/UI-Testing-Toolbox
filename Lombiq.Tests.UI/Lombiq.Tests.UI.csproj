@@ -64,21 +64,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="3.2.0" />
+    <PackageReference Include="Atata" Version="3.3.0" />
     <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="3.1.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.0.0" />
     <PackageReference Include="Atata.WebDriverSetup" Version="3.1.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.298" />
-    <PackageReference Include="Deque.AxeCore.Commons" Version="4.9.1" />
-    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.9.1" />
+    <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
+    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
-    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.2.111" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
+    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.5.57" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.52.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.1.0" />
@@ -91,7 +91,7 @@
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="xunit.v3.extensibility.core" Version="1.0.0" />
-    <PackageReference Include="YamlDotNet" Version="15.1.4" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -111,9 +111,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="4.0.1-alpha.1.osoe-935" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.0.0" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.1.1-alpha.0.osoe-815" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.1.1-alpha.0.osoe-815" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.1.1-alpha.0.osoe-815" />
     <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
   </ItemGroup>
 

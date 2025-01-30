@@ -689,7 +689,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
 
-        return new UITestContext(
+        return await UITestContext.CreateAsync(
             contextId,
             _testManifest,
             _configuration,
@@ -860,12 +860,26 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllLinesAsync(
                 browserLogPath,
-                (await _context.UpdateHistoricBrowserLogAsync()).Select(message => message.ToString()),
+                _context.CumulativeBrowserLog.Select(entry => entry.ToString())),
                 _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
             {
                 TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "BrowserLog", browserLogPath);
+            }
+        }
+
+        if (_dumpConfiguration.CaptureResponseLog)
+        {
+            var responseLogPath = Path.Combine(debugInformationPath, "ResponseLog.log");
+
+            await File.WriteAllLinesAsync(
+                responseLogPath,
+                _context.CumulativeResponseLog.Select(response => response.ToString()));
+
+            if (_configuration.ReportTeamCityMetadata)
+            {
+                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "ResponseLog", responseLogPath);
             }
         }
     }

@@ -1,9 +1,7 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -73,15 +71,14 @@ public class BasicTests : UITestBase
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
             // You can change the configuration even for each test.
             configuration =>
-                // By default, apart from some commonly known exceptions, the browser log should be empty. However,
-                // ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on that.
-                configuration.AssertBrowserLog =
-                    logEntries =>
-                        {
-                            var messagesWithoutToggle = logEntries.Where(logEntry =>
-                                !logEntry.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
-                            OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
-                        });
+                // By default, apart from some commonly known false positives, the response log should be empty.
+                // However, ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on
+                // that.
+                // Note that similarly, you can filter out log entries from the browser log with BrowserLogFilter. You
+                // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
+                // filter out entries in the first place.
+                configuration.ResponseLogFilter = e =>
+                    e.IsNonSuccessResponseAndNotExpectedNotFoundResponse(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]
