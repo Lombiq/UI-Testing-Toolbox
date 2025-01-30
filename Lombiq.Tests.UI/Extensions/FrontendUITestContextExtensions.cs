@@ -7,6 +7,7 @@ using OrchardCore.Environment.Shell.Scope;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -91,6 +92,11 @@ public static class FrontendUITestContextExtensions
             GetShorterPath(workingDirectory, context.GetTempSubDirectoryPath()),
             browser.ToString(),
         };
+
+        if (context.SmtpServiceRunningContext?.WebUIUri != null)
+        {
+            arguments = [.. arguments, context.SmtpServiceRunningContext.WebUIUri.AbsoluteUri];
+        }
 
         return (workingDirectory, arguments);
     }
