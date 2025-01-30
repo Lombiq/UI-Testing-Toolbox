@@ -75,14 +75,15 @@ async function navigate(driver, url, maxAttempts = 10) {
 
 /**
  * Executes a test by connecting to an existing web driver using the information in the command line arguments.
- * @param {function(WebDriver, string):Promise<void>} test
+ * @param {function(WebDriver, string, string):Promise<void>} test The test to run. The WebDriver, start URL are provided
+ * every time. The EmailUIUrl is provided if it's available.
  * @param {function(chrome.Options):chrome.Options} configureOptions Update the configuration before the driver is built.
  * @returns {Promise<void>} Success if the driver is created and the test has run to completion.
  */
 async function runTest(test, configureOptions = null) {
     const args = process.argv.slice(2);
-    if (args.length !== 4) throw new Error('Usage: node script.js driverPath startUrl tempDirectory browserName');
-    const [driverPath, startUrl, tempDirectory, browserName] = args;
+    if (args.length < 4) throw new Error('Usage: node script.js driverPath startUrl tempDirectory browserName (EmailUIUrl)');
+    const [driverPath, startUrl, tempDirectory, browserName, emailUIUrl] = args;
 
     if (browserName !== 'Chrome') throw new Error('Only Chrome is supported at this time.');
 
@@ -106,7 +107,7 @@ async function runTest(test, configureOptions = null) {
     try {
         await navigate(driver, startUrl);
 
-        await test(driver, startUrl);
+        await test(driver, startUrl, emailUIUrl);
     }
     catch (exception) {
         // Write out some context, doesn't matter if these fail.
