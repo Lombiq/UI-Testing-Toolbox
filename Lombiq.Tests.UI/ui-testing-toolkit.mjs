@@ -49,11 +49,14 @@ async function shouldContainText(element, text) {
  * @param {WebDriver} driver The driver whose current tab should be navigated.
  * @param {string} url The target URL.
  * @param {number} maxAttempts The maximum number of attempts. If exceeded, an error is thrown.
+ * @param {boolean} forceNavigation If true, the driver will navigate to the URL even if it's already there.
  * @returns {Promise<void>} Success when a non-empty page has been reached.
  */
-async function navigate(driver, url, maxAttempts = 10) {
+async function navigate(driver, url, maxAttempts = 10, forceNavigation = false) {
     for (let i = 0; i < maxAttempts; i++) {
-        await driver.navigate().to(url);
+        if (await driver.getCurrentUrl() !== url || forceNavigation){
+            await driver.navigate().to(url);
+        }
 
         await driver.wait(() => driver
             .executeScript('return document.readyState')
