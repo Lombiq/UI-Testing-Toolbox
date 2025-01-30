@@ -860,7 +860,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllLinesAsync(
                 browserLogPath,
-                _context.CumulativeBrowserLog.Select(entry => entry.ToString())),
+                _context.CumulativeBrowserLog.Select(entry => entry.ToString()),
                 _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
@@ -875,7 +875,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await File.WriteAllLinesAsync(
                 responseLogPath,
-                _context.CumulativeResponseLog.Select(response => response.ToString()));
+                _context.CumulativeResponseLog.Select(response => response.ToString()),
+                _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
             {
