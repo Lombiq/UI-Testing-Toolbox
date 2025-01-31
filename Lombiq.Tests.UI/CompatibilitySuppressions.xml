@@ -52,6 +52,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Atata.SafeWaitAsync`1.UntilAsync``1(System.Func{`0,System.Threading.Tasks.Task{``0}})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.CloudflareRemoteUITestBase.#ctor(Xunit.Abstractions.ITestOutputHelper)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -94,6 +101,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HtmlValidationResultExtensions.GetErrorsAsync(Atata.HtmlValidation.HtmlValidationResult)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndGetResponseAsync(System.Net.Http.HttpClient,System.String,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions.IsNotFoundLogEntry(OpenQA.Selenium.LogEntry,System.String)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -109,6 +130,62 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.ShortcutsUITestContextExtensions.SwitchToInteractiveAsync(Lombiq.Tests.UI.Services.UITestContext,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.DoWithRetriesAndCatchesAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.DoWithRetriesAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.DoWithRetriesOrFail(System.Func{System.Boolean},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.DoWithRetriesOrFailAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.RetryIfNotStaleAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.RetryIfNotStaleOrFailAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.RetryIfStaleAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Helpers.ReliabilityHelper.RetryIfStaleOrFailAsync(System.Func{System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -185,6 +262,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.OrchardCoreHosting.OrchardApplicationFactory`1.#ctor(System.Action{Microsoft.Extensions.Configuration.IConfigurationBuilder},System.Action{Microsoft.AspNetCore.Hosting.IWebHostBuilder},System.Action{Microsoft.Extensions.Configuration.ConfigurationManager,Microsoft.Extensions.DependencyInjection.OrchardCoreBuilder})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Services.OrchardCoreInstance`1.#ctor(Lombiq.Tests.UI.Services.OrchardCoreConfiguration,System.String,Xunit.Abstractions.ITestOutputHelper)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -214,6 +298,34 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration.set_MaxParallelTests(System.Int32)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.PortLeaseManager.CreateStopLeaseDelegate(System.Int32)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.PortLeaseManager.LeaseAvailableRandomPortAsync</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.PortLeaseManager.StopLeaseAsync(System.Int32)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.SynchronizingWebApplicationSnapshotManager.RunOperationAndSnapshotIfNewAsync(Lombiq.Tests.UI.Services.AppInitializer)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
