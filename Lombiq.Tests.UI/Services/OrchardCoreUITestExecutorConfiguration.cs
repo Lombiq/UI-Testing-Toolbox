@@ -43,7 +43,18 @@ public class OrchardCoreUITestExecutorConfiguration
             entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated");
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
+            // Smtp4dev uses "sanitize-html" (https://github.com/apostrophecms/sanitize-html) to sanitize the HTML
+            // content of the email body and this library has a list of tags that are considered vulnerable to XSS
+            // attacks. As a workaround, we are ignoring the warnings for these tags in the browser logs. Instead,
+            // Smtp4dev should use the "allowVulnerableTags" configuration property to not have these warnings in the
+            // first place. These could be removed if https://github.com/rnwood/smtp4dev/issues/1627 is fixed and
+            // "allowVulnerableTags" property is set to true.
+            !entry.Text.Equals("error", StringComparison.OrdinalIgnoreCase) &&
+            // Ignoring the warnings about the "script" and "style" tags being vulnerable to XSS attacks.
+            !((entry.Text.Contains("Your `allowedTags` option includes, `script`, which is inherently") ||
+                entry.Text.Contains("Your `allowedTags` option includes, `style`, which is inherently")) &&
+                entry.Text.Contains("vulnerable to XSS attacks. Please remove it from `allowedTags`."));
 
     // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
     // different URL.
