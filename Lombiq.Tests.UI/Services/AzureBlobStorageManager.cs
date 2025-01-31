@@ -62,7 +62,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         _folderId = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
         _basePath = _folderId.ToTechnicalString();
 
-        await DropFolderIfExistsAsync();
+        await DropFolderIfExistsAsync(_cancellationTokenSource.Token);
 
         return new AzureBlobStorageRunningContext(_basePath);
     }
@@ -91,7 +91,8 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                 FileSystemHelper.EnsureDirectoryExists(fileParentDirectoryPath);
 
                 return blobClient.DownloadToAsync(fileFullPath, _cancellationTokenSource.Token);
-            });
+            },
+            _cancellationTokenSource.Token);
     }
 
     public async Task RestoreSnapshotAsync(string snapshotDirectoryPath)
@@ -127,26 +128,26 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
 
-        await DropFolderIfExistsAsync();
-
         // This is a clean-up method, no need to forward a CancellationToken.
+        await DropFolderIfExistsAsync(CancellationToken.None);
         await _portLeaseManager.StopLeaseAsync(_folderId, CancellationToken.None);
     }
 
     private Task<Response<BlobContainerInfo>> CreateContainerIfNotExistsAsync() =>
         _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: _cancellationTokenSource.Token);
 
-    private Task DropFolderIfExistsAsync() =>
-        IterateThroughBlobsAsync(blobClient =>
-            blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: _cancellationTokenSource.Token));
+    private Task DropFolderIfExistsAsync(CancellationToken cancellationToken = default) =>
+        IterateThroughBlobsAsync(
+            blobClient => blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken),
+            cancellationToken);
 
-    private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessorAsync)
+    private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessorAsync, CancellationToken cancellationToken = default)
     {
         var pages = _blobContainer
-            .GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath, _cancellationTokenSource.Token)
+            .GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath, cancellationToken)
             .AsPages();
 
-        await foreach (var page in pages.WithCancellation(_cancellationTokenSource.Token))
+        await foreach (var page in pages.WithCancellation(cancellationToken))
         {
             foreach (var blob in page.Values)
             {
