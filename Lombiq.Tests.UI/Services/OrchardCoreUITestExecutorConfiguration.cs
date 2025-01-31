@@ -54,6 +54,8 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
+    private CancellationToken _testCancellationToken;
+
     /// <summary>
     /// Gets the global events available during UI test execution.
     /// </summary>
@@ -175,8 +177,6 @@ public class OrchardCoreUITestExecutorConfiguration
     /// enabled in the app for these to work.
     /// </summary>
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
-
-    private CancellationToken _testCancellationToken;
 
     /// <summary>
     /// Gets or sets a <see cref="CancellationToken"/> that cancels the test execution.
