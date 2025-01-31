@@ -41,6 +41,7 @@ public sealed class ZapManager : IAsyncDisposable
     private static bool _wasPulled;
 
     private int _zapPort;
+    private bool _isDisposed;
 
     static ZapManager()
     {
@@ -215,6 +216,10 @@ public sealed class ZapManager : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
 

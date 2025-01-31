@@ -39,6 +39,7 @@ public sealed class SmtpService : IAsyncDisposable
 
     private int _smtpPort;
     private int _webUIPort;
+    private bool _isDisposed;
 
     static SmtpService()
     {
@@ -116,6 +117,10 @@ public sealed class SmtpService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
         // This is a clean-up method, no need to forward a CancellationToken.
         await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort, CancellationToken.None);
         await _webUIPortLeaseManager.StopLeaseAsync(_webUIPort, CancellationToken.None);
