@@ -112,16 +112,18 @@ public class OrchardCoreUITestExecutorConfiguration
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
 
     /// <summary>
-    /// Selects which response data get saved to <see cref="UITestContext.CumulativeBrowserLog"/>.
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeBrowserLog"/>.
     /// </summary>
-    public Func<Entry, bool> BrowserLogFilter = IsNonSuccessBrowserLogEntry;
+    public Func<Entry, bool> BrowserLogFilter { get; set; } = IsNonSuccessBrowserLogEntry;
 
     public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
-    /// Selects which response data get saved to <see cref="UITestContext.CumulativeResponseLog"/>.
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeResponseLog"/>.
     /// </summary>
-    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter = IsNonSuccessResponse;
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter { get; set; } = IsNonSuccessResponse;
 
     public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
 
