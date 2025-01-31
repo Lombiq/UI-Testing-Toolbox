@@ -231,7 +231,7 @@ public static class ShortcutsUITestContextExtensions
                 if (permissionClaim == null)
                 {
                     var permissionProviders = serviceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
-                    if (!await PermissionExistsAsync(permissionProviders, permissionName))
+                    if (!await PermissionExistsAsync(permissionProviders, permissionName, context.Configuration.TestCancellationToken))
                     {
                         throw new PermissionNotFoundException($"Permission with the name \"{permissionName}\" not found.");
                     }
@@ -633,7 +633,9 @@ public static class ShortcutsUITestContextExtensions
         if (context.Driver.WindowHandles.Count > 1)
         {
             context.Driver.Close();
-            ReliabilityHelper.DoWithRetriesOrFail(() => context.Driver.WindowHandles.Count == 1);
+            ReliabilityHelper.DoWithRetriesOrFail(
+                () => context.Driver.WindowHandles.Count == 1,
+                cancellationToken: context.Configuration.TestCancellationToken);
             context.SwitchToFirstWindow();
         }
     }
@@ -671,10 +673,11 @@ public static class ShortcutsUITestContextExtensions
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders,
-        string permissionName)
+        string permissionName,
+        CancellationToken cancellationToken)
     {
         var permissions = permissionProviders.ToAsyncEnumerable();
-        await foreach (var provider in permissions)
+        await foreach (var provider in permissions.WithCancellation(cancellationToken))
         {
             var providerPermissions = await provider.GetPermissionsAsync();
             if (providerPermissions.Any(permission => permission.Name == permissionName))

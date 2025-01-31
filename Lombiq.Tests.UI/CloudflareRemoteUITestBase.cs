@@ -76,6 +76,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             () => base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync),
             CloudflareAccountId,
             CloudflareApiToken,
-            _testOutputHelper);
+            _testOutputHelper,
+            TestContext.Current.CancellationToken);
     }
 }

@@ -275,17 +275,19 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
-        await OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.WaitAsync();
+        await OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.WaitAsync(TestContext.Current.CancellationToken);
+
         try
         {
             if (!OrchardCoreUITestBaseCounter.AppFolderCreated)
             {
-                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(AppFolder);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(AppFolder, TestContext.Current.CancellationToken);
 
                 await OrchardCoreDirectoryHelper.CopyAppFolderAsync(
                     customSnapshotFolderPath
                         ?? OrchardCoreDirectoryHelper.GetAppRootPath(typeof(TEntryPoint).Assembly.Location),
-                    AppFolder);
+                    AppFolder,
+                    TestContext.Current.CancellationToken);
 
                 OrchardCoreUITestBaseCounter.AppFolderCreated = true;
             }

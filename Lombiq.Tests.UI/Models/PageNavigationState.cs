@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Threading;
 
 namespace Lombiq.Tests.UI.Models;
 
@@ -39,5 +40,5 @@ public class PageNavigationState : IWebContentState
     }
 
     public void Wait(TimeSpan? timeout = null, TimeSpan? interval = null) =>
-        ReliabilityHelper.DoWithRetriesOrFail(CheckIfNavigationHasOccurred, timeout, interval);
+        ReliabilityHelper.DoWithRetriesOrFail(CheckIfNavigationHasOccurred, timeout, interval, CancellationToken.None);
 }

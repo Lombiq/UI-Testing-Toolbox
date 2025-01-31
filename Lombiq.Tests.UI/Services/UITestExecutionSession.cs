@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using TWP.Selenium.Axe.Html;
 using Xunit;
@@ -215,7 +216,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId));
+                // This is a clean-up method, no need to forward a CancellationToken.
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId), CancellationToken.None);
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
@@ -507,38 +509,40 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _dockerConfiguration = TestConfigurationManager.GetConfiguration<DockerConfiguration>();
 
-            var testStartUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(async () =>
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
-
-                await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
-
-                if (setupConfiguration.FastFailSetup &&
-                    UITestExecutionSessionsMeta.SetupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
-                    failure.FailureCount > _configuration.MaxRetryCount)
+            var testStartUri = await _currentSetupSnapshotManager.RunOperationAndSnapshotIfNewAsync(
+                async () =>
                 {
-                    throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
-                }
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Starting setup operation.");
 
-                // Note that the context creation needs to be done here too because the Orchard app needs the snapshot
-                // config to be available at startup too.
-                _context = await CreateContextAsync(testStartRelativeUri: null);
+                    await setupConfiguration.BeforeSetup.InvokeAsync<BeforeSetupHandler>(handler => handler(_configuration));
 
-                SetupSqlServerSnapshot();
-                SetupAzureBlobStorageSnapshot();
+                    if (setupConfiguration.FastFailSetup &&
+                        UITestExecutionSessionsMeta.SetupOperationFailureCount.TryGetValue(GetSetupHashCode(), out var failure) &&
+                        failure.FailureCount > _configuration.MaxRetryCount)
+                    {
+                        throw new SetupFailedFastException(failure.FailureCount, failure.LatestException);
+                    }
 
-                if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
+                    // Note that the context creation needs to be done here too because the Orchard app needs the
+                    // snapshot config to be available at startup too.
+                    _context = await CreateContextAsync(testStartRelativeUri: null);
 
-                var result = (_context, await setupConfiguration.SetupOperation(_context));
+                    SetupSqlServerSnapshot();
+                    SetupAzureBlobStorageSnapshot();
 
-                await _context.AssertLogsAsync();
+                    if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
-                await setupConfiguration.AfterSetup.InvokeAsync<AfterSetupHandler>(handler => handler(_configuration));
+                    var result = (_context, await setupConfiguration.SetupOperation(_context));
 
-                _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
+                    await _context.AssertLogsAsync();
 
-                return result;
-            });
+                    await setupConfiguration.AfterSetup.InvokeAsync<AfterSetupHandler>(handler => handler(_configuration));
+
+                    _testOutputHelper.WriteLineTimestampedAndDebug("Finished setup operation.");
+
+                    return result;
+                },
+                _configuration.TestCancellationToken);
 
             _testOutputHelper.WriteLineTimestampedAndDebug("Finished waiting for the setup operation.");
 

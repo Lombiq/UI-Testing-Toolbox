@@ -30,11 +30,11 @@ public class SynchronizingWebApplicationSnapshotManager
 
     public SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath) => _snapshotDirectoryPath = snapshotDirectoryPath;
 
-    public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
+    public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer, CancellationToken cancellationToken)
     {
         DebugHelper.WriteLineTimestamped($"Entering SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
             if (_snapshotCreated) return _testStartUri;
@@ -42,7 +42,7 @@ public class SynchronizingWebApplicationSnapshotManager
             DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
             // Always start the current test run with a fresh snapshot.
-            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_snapshotDirectoryPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_snapshotDirectoryPath, cancellationToken);
 
             var result = await appInitializer();
             await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);

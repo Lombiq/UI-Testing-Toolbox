@@ -10,6 +10,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -120,7 +121,7 @@ public static class HttpClientUITestContextExtensions
         string requestUri,
         string json)
     {
-        using var response = await PostAndGetResponseAsync(client, json, requestUri);
+        using var response = await PostAndGetResponseAsync(client, json, requestUri, context.Configuration.TestCancellationToken);
         return await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
     }
 
@@ -178,7 +179,7 @@ public static class HttpClientUITestContextExtensions
         HttpClient client,
         object objectToSerialize,
         string requestUri) =>
-        PostAndGetResponseAsync(client, Serialize(objectToSerialize), requestUri);
+        PostAndGetResponseAsync(client, Serialize(objectToSerialize), requestUri, context.Configuration.TestCancellationToken);
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/>.
@@ -187,10 +188,11 @@ public static class HttpClientUITestContextExtensions
     public static async Task<HttpResponseMessage> PostAndGetResponseAsync(
         HttpClient client,
         string json,
-        string requestUri)
+        string requestUri,
+        CancellationToken cancellationToken)
     {
         var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
-        var response = await client.PostAsync(requestUri, stringContent);
+        var response = await client.PostAsync(requestUri, stringContent, cancellationToken);
 
         return response;
     }

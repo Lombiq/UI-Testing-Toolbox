@@ -126,7 +126,7 @@ public static class UITestExecutor
 
         var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
 
         // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name, or
         // volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe both
@@ -136,7 +136,7 @@ public static class UITestExecutor
         try
         {
             Directory.CreateDirectory(dumpRootPath);
-            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
         }
         catch (Exception ex) when (
             (ex is IOException &&
@@ -163,7 +163,7 @@ public static class UITestExecutor
 
             dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
 
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                 "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +

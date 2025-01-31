@@ -77,7 +77,7 @@ public class FrontendServer
                 .WithArguments(arguments ?? [])
                 .WithWorkingDirectory(orchardContext.ContentRootPath);
 
-            var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync(CancellationToken.None);
             var backendPort = orchardContext.Url.Port;
             var context = new Context(
                 orchardContext.ContentRootPath,
@@ -146,7 +146,8 @@ public class FrontendServer
                     gracefulCancellation.Dispose();
                     forcefulCancellation.Dispose();
 
-                    await context.PortLeaseManager.StopLeaseAsync(frontendPort);
+                    // This is a clean-up method, no need to forward a CancellationToken.
+                    await context.PortLeaseManager.StopLeaseAsync(frontendPort, CancellationToken.None);
                 },
             };
 

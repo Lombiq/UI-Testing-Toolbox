@@ -3,7 +3,9 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -37,6 +39,8 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
     private static readonly PortLeaseManager _portLeaseManager;
 
     private readonly AzureBlobStorageConfiguration _configuration;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "False positive.")]
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private int _folderId;
     private string _basePath;
     private BlobContainerClient _blobContainer;
@@ -55,7 +59,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         _blobContainer = new BlobContainerClient(_configuration.ConnectionString, _configuration.ContainerName);
         await CreateContainerIfNotExistsAsync();
 
-        _folderId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _folderId = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
         _basePath = _folderId.ToTechnicalString();
 
         await DropFolderIfExistsAsync();
@@ -86,7 +90,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                 var fileParentDirectoryPath = Path.GetDirectoryName(fileFullPath);
                 FileSystemHelper.EnsureDirectoryExists(fileParentDirectoryPath);
 
-                return blobClient.DownloadToAsync(fileFullPath);
+                return blobClient.DownloadToAsync(fileFullPath, _cancellationTokenSource.Token);
             });
     }
 
@@ -109,7 +113,7 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
                         tenantDirectoryName +
                         relativePath.ReplaceOrdinalIgnoreCase(Path.DirectorySeparatorChar.ToString(), "/");
                     var blobClient = _blobContainer.GetBlobClient(blobUrl);
-                    await blobClient.UploadAsync(filePath);
+                    await blobClient.UploadAsync(filePath, _cancellationTokenSource.Token);
                 }
             }
         }
@@ -120,22 +124,29 @@ public sealed class AzureBlobStorageManager : IAsyncDisposable
         if (_isDisposed) return;
 
         _isDisposed = true;
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
 
         await DropFolderIfExistsAsync();
 
-        await _portLeaseManager.StopLeaseAsync(_folderId);
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await _portLeaseManager.StopLeaseAsync(_folderId, CancellationToken.None);
     }
 
     private Task<Response<BlobContainerInfo>> CreateContainerIfNotExistsAsync() =>
-        _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None);
+        _blobContainer.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: _cancellationTokenSource.Token);
 
     private Task DropFolderIfExistsAsync() =>
-        IterateThroughBlobsAsync(blobClient => blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots));
+        IterateThroughBlobsAsync(blobClient =>
+            blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: _cancellationTokenSource.Token));
 
     private async Task IterateThroughBlobsAsync(Func<BlobClient, Task> blobProcessorAsync)
     {
-        var pages = _blobContainer.GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath).AsPages();
-        await foreach (var page in pages)
+        var pages = _blobContainer
+            .GetBlobsAsync(BlobTraits.Metadata, BlobStates.None, _basePath, _cancellationTokenSource.Token)
+            .AsPages();
+
+        await foreach (var page in pages.WithCancellation(_cancellationTokenSource.Token))
         {
             foreach (var blob in page.Values)
             {

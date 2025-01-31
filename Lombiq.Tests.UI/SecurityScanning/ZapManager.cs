@@ -133,7 +133,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Using a different port than the default 8080 is necessary so ZAP doesn't clash with other web processes and
         // to allow more than one security scan to run at the same time.
-        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
@@ -215,28 +215,24 @@ public sealed class ZapManager : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
-        {
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource.Dispose();
-        }
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
 
-        await _portLeaseManager.StopLeaseAsync(_zapPort);
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await _portLeaseManager.StopLeaseAsync(_zapPort, CancellationToken.None);
     }
 
     private async Task EnsureInitializedAsync()
     {
         try
         {
-            var token = _cancellationTokenSource.Token;
-
-            await _pullSemaphore.WaitAsync(token);
+            await _pullSemaphore.WaitAsync(_cancellationTokenSource.Token);
 
             if (_wasPulled) return;
 
             // Without --quiet, "What's Next?" hints will be written to stderr by Docker. See
             // https://github.com/docker/for-mac/issues/6904.
-            await _docker.ExecuteAsync(token, "pull", _zapImage, "--quiet");
+            await _docker.ExecuteAsync(_cancellationTokenSource.Token, "pull", _zapImage, "--quiet");
             _wasPulled = true;
         }
         finally
