@@ -633,9 +633,7 @@ public static class ShortcutsUITestContextExtensions
         if (context.Driver.WindowHandles.Count > 1)
         {
             context.Driver.Close();
-            ReliabilityHelper.DoWithRetriesOrFail(
-                () => context.Driver.WindowHandles.Count == 1,
-                cancellationToken: context.Configuration.TestCancellationToken);
+            context.DoWithRetriesOrFail(() => context.Driver.WindowHandles.Count == 1);
             context.SwitchToFirstWindow();
         }
     }
