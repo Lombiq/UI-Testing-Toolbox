@@ -41,11 +41,21 @@ public static class VerificationUITestContextExtensions
             }
             catch (Exception)
             {
-                testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                testOutputHelper.WriteLine(context.CumulativeBrowserLog.ToFormattedString());
+                if (context.CumulativeBrowserLog.Count > 0)
+                {
+                    testOutputHelper.WriteLine("----------------------------------------");
+                    testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
+                    testOutputHelper.WriteLine(context.CumulativeBrowserLog.ToFormattedString());
+                    testOutputHelper.WriteLine("----------------------------------------");
+                }
 
-                testOutputHelper.WriteLine("Response logs: " + Environment.NewLine);
-                testOutputHelper.WriteLine(context.CumulativeResponseLog.ToFormattedString());
+                if (context.CumulativeResponseLog.Count > 0)
+                {
+                    testOutputHelper.WriteLine("----------------------------------------");
+                    testOutputHelper.WriteLine("Response logs: " + Environment.NewLine);
+                    testOutputHelper.WriteLine(context.CumulativeResponseLog.ToFormattedString());
+                    testOutputHelper.WriteLine("----------------------------------------");
+                }
 
                 throw;
             }

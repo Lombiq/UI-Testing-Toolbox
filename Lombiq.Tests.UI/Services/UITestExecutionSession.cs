@@ -862,9 +862,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             var browserLogPath = Path.Combine(debugInformationPath, "BrowserLog.log");
 
-            await File.WriteAllLinesAsync(
+            await File.WriteAllTextAsync(
                 browserLogPath,
-                _context.CumulativeBrowserLog.Select(entry => entry.ToString()),
+                _context.CumulativeBrowserLog.ToFormattedString(),
                 _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
@@ -877,9 +877,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             var responseLogPath = Path.Combine(debugInformationPath, "ResponseLog.log");
 
-            await File.WriteAllLinesAsync(
+            await File.WriteAllTextAsync(
                 responseLogPath,
-                _context.CumulativeResponseLog.Select(response => response.ToString()),
+                _context.CumulativeResponseLog.ToFormattedString(),
                 _configuration.TestCancellationToken);
 
             if (_configuration.ReportTeamCityMetadata)
