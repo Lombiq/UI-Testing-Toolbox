@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Lombiq.Tests.UI.Exceptions;
 
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Used in a very specific case.")]
-public class SetupFailedFastException : Exception
+public class SetupFailedFastException : Exception, IAssertionException
 {
     public int FailureCount { get; }
 
