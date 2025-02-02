@@ -10,6 +10,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Lombiq.Tests.UI.Extensions.UITestOutputHelperExtensions</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -109,20 +116,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndGetResponseAsync(System.Net.Http.HttpClient,System.String,System.String)</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions.IsNotFoundLogEntry(OpenQA.Selenium.LogEntry,System.String)</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions.ToFormattedString(System.Collections.Generic.IEnumerable{OpenQA.Selenium.LogEntry})</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
