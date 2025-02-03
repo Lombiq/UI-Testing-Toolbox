@@ -47,7 +47,11 @@ internal sealed class MonkeyTester
                 WriteOptionsToLog();
 
                 var pageTestInfo = GetCurrentPageTestInfo();
-                await TestCurrentPageAsync(pageTestInfo);
+
+                if (CanTestPage(pageTestInfo))
+                {
+                    await TestCurrentPageAsync(pageTestInfo);
+                }
 
                 while (true)
                 {
