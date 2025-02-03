@@ -546,7 +546,7 @@ to customize the name of the dump item.";
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
-        // So lets create it now and append it to test dump later.
+        // So let's create it now and append it to test dump later.
         using var diffImage = baselineImageCropped
             .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
