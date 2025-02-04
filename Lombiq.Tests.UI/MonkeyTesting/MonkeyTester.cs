@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static OpenQA.Selenium.BiDi.Modules.Script.EvaluateResult;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
 
@@ -163,7 +164,9 @@ internal sealed class MonkeyTester
 
         var testTimeLeft = TimeSpan.Zero;
 
-        while (retryCount <= maxRetries)
+        var success = false;
+
+        while (retryCount <= maxRetries && !success)
         {
             try
             {
@@ -172,15 +175,18 @@ internal sealed class MonkeyTester
                 driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
                 timeout: testTime,
                 pollingInterval: _options.PageMarkerPollingInterval);
+
+                success = true;
             }
             catch (UnsupportedOperationException exception)
             when (exception.Message.Contains("aborted by navigation"))
             {
-                retryCount++;
                 Log.Warn($"MeasureTimeLeftOfMeetingPredicate failed (attempt {retryCount.ToTechnicalString()}" +
                     $"/{maxRetries.ToTechnicalString()}): {exception.Message}");
 
                 if (retryCount == maxRetries) throw;
+
+                retryCount++;
             }
         }
 
