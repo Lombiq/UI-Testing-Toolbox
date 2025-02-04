@@ -32,7 +32,10 @@ public static class EmailUITestContextExtensions
         const string LoadingMaskClass = "el-loading-mask";
 
         context.CheckExistence(By.ClassName(LoadingMaskClass), exists: true);
-        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: false);
+
+        // We are checking for an element that contains this class, since the element gets different classes when fading
+        // away.
+        context.CheckExistence(By.XPath($"//div[contains(@class, '{LoadingMaskClass}')"), exists: false);
     }
 
     /// <summary>
