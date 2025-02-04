@@ -38,11 +38,12 @@ public static class EmailUITestContextExtensions
             // element either did not exist, or we waited for it to appear.
             context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
         }
-        catch (ElementNotFoundException)
+        catch (ElementNotFoundException exception)
         {
             context
                 .Scope.AtataContext.Log
-                .Info($"The smtp4dev site didn't reload, so the the missing loading element was ignored");
+                .Info($"The smtp4dev site didn't reload, so the the missing loading element was ignored: " +
+                    $"{exception.Message}");
         }
 
         // We are checking for the loading element that contains this class, since the element gets extra classes when
