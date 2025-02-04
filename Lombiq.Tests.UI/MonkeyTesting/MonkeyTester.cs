@@ -3,6 +3,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using OrchardCore.Workflows.Activities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -59,7 +60,7 @@ internal sealed class MonkeyTester
                     }
                     else if (TryGetAvailablePageToTest(out var availablePageToTest))
                     {
-                        await _context.GoToAbsoluteUrlAsync(availablePageToTest.Url);
+                        await GoToAbsoluteUrlWithRetriesAsync(availablePageToTest.Url);
 
                         await TestCurrentPageAsync(availablePageToTest);
                     }
@@ -214,5 +215,28 @@ internal sealed class MonkeyTester
 
         var timeLeft = timeout - stopwatch.Elapsed;
         return timeLeft > TimeSpan.Zero ? timeLeft : TimeSpan.Zero;
+    }
+
+    private async Task GoToAbsoluteUrlWithRetriesAsync(Uri url, int maxRetries = 3)
+    {
+        var retryAttempt = 1;
+
+        while (retryAttempt <= maxRetries)
+        {
+            try
+            {
+                await _context.GoToAbsoluteUrlAsync(url);
+                return;
+            }
+            catch (WebDriverException exception) when (exception.Message.Contains("aborted by navigation"))
+            {
+                Log.Warn($"Navigation to {url} failed (attempt {retryAttempt.ToTechnicalString()}/" +
+                    $"{maxRetries.ToTechnicalString()}): {exception.Message}");
+
+                if (retryAttempt == maxRetries) throw;
+
+                retryAttempt++;
+            }
+        }
     }
 }
