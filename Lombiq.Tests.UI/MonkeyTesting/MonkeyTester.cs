@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using static OpenQA.Selenium.BiDi.Modules.Script.EvaluateResult;
 
 namespace Lombiq.Tests.UI.MonkeyTesting;
 
