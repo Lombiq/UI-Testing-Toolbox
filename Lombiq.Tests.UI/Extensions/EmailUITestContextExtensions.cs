@@ -35,7 +35,7 @@ public static class EmailUITestContextExtensions
 
         // We are checking for an element that contains this class, since the element gets different classes when fading
         // away.
-        context.CheckExistence(By.XPath($"//div[contains(@class, '{LoadingMaskClass}')"), exists: false);
+        context.CheckExistence(By.XPath($"//div[contains(@class, '{LoadingMaskClass}')]"), exists: false);
     }
 
     /// <summary>
