@@ -46,8 +46,10 @@ public static class EmailUITestContextExtensions
         }
 
         // We are checking for the loading element that contains this class, since the element gets extra classes when
-        // fading away.
+        // fading away. Also checking for the element with the "loading-number" attribute, to make sure loading is
+        // finished.
         context.CheckExistence(By.ClassName(LoadingMaskClass), exists: false);
+        context.CheckExistence(By.XPath("//div[@loading-number]"), exists: false);
     }
 
     /// <summary>
