@@ -27,15 +27,27 @@ public static class EmailUITestContextExtensions
 
         await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
 
-        // The emails are reloading after a few seconds, so we are waiting for the loading indicator to appear, then to
-        // disappear.
+        // The emails sometimes are reloading after a few seconds, so we are waiting for the loading indicator to
+        // appear, then to disappear.
         const string LoadingMaskClass = "el-loading-mask";
 
-        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: true);
+        try
+        {
+            // We are waiting for this exact element to appear, only with one class, that indicates that the loading is
+            // happening. The loading is not always happening that's why we catch the exception, making sure that the
+            // element either did not exist, or we waited for it to appear.
+            context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
+        }
+        catch (ElementNotFoundException)
+        {
+            context
+                .Scope.AtataContext.Log
+                .Info($"The smtp4dev site didn't reload, so the the missing loading element was ignored");
+        }
 
-        // We are checking for an element that contains this class, since the element gets different classes when fading
-        // away.
-        context.CheckExistence(By.XPath($"//div[contains(@class, '{LoadingMaskClass}')]"), exists: false);
+        // We are checking for the loading element that contains this class, since the element gets extra classes when
+        // fading away.
+        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: false);
     }
 
     /// <summary>
