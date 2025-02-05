@@ -15,13 +15,15 @@ public class SmtpServiceConfiguration
 
 public class SmtpServiceRunningContext
 {
-    public int Port { get; }
-    public string Host => "localhost:" + Port.ToTechnicalString();
+    public int SmtpPort { get; }
+    public int ImapPort { get; set; }
+    public string Host => "localhost";
     public Uri WebUIUri { get; }
 
-    public SmtpServiceRunningContext(int port, Uri webUIUri)
+    public SmtpServiceRunningContext(int smtpPort, int imapPort, Uri webUIUri)
     {
-        Port = port;
+        SmtpPort = smtpPort;
+        ImapPort = imapPort;
         WebUIUri = webUIUri;
     }
 }
@@ -30,6 +32,7 @@ public sealed class SmtpService : IAsyncDisposable
 {
     private static readonly PortLeaseManager _smtpPortLeaseManager;
     private static readonly PortLeaseManager _webUIPortLeaseManager;
+    private static readonly PortLeaseManager _imapPortLeaseManager;
     private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
 
     private readonly SmtpServiceConfiguration _configuration;
@@ -38,6 +41,7 @@ public sealed class SmtpService : IAsyncDisposable
 
     private int _smtpPort;
     private int _webUIPort;
+    private int _imapPort;
     private CancellationTokenSource _cancellationTokenSource;
 
     static SmtpService()
@@ -45,6 +49,7 @@ public sealed class SmtpService : IAsyncDisposable
         var agentIndexTimesHundred = TestConfigurationManager.GetAgentIndexOrDefault() * 100;
         _smtpPortLeaseManager = new PortLeaseManager(11000 + agentIndexTimesHundred, 11099 + agentIndexTimesHundred);
         _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
+        _imapPortLeaseManager = new PortLeaseManager(16000 + agentIndexTimesHundred, 16099 + agentIndexTimesHundred);
     }
 
     public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
@@ -75,6 +80,7 @@ public sealed class SmtpService : IAsyncDisposable
 
         _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync();
         _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync();
+        _imapPort = await _imapPortLeaseManager.LeaseAvailableRandomPortAsync();
 
         var webUIPortString = _webUIPort.ToTechnicalString();
         var smtpPortString = _smtpPort.ToTechnicalString();
@@ -103,7 +109,7 @@ public sealed class SmtpService : IAsyncDisposable
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
         await CliProgram.DotNet.GetCommand(
-            "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--urls", webUIUri)
+            "tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--imapport", _imapPort, "--urls", webUIUri)
             .ExecuteDotNetApplicationAsync(
                 stdErr =>
                     throw new IOException(
@@ -111,7 +117,7 @@ public sealed class SmtpService : IAsyncDisposable
                         $"{webUIPortString} due to the following error:{Environment.NewLine}{stdErr.Text}"),
                 token);
 
-        return new SmtpServiceRunningContext(_smtpPort, webUIUri);
+        return new SmtpServiceRunningContext(_smtpPort, _imapPort, webUIUri);
     }
 
     public async ValueTask DisposeAsync()

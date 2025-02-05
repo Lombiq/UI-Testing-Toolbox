@@ -121,7 +121,7 @@ public static class EmailUITestContextExtensions
             await context.SetCheckboxValueAsync(byIsEnabled, isChecked: true);
         }
 
-        port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.Port;
+        port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.SmtpPort;
         if (!port.HasValue)
         {
             throw new InvalidOperationException(
