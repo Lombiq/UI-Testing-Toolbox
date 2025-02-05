@@ -149,7 +149,7 @@ internal sealed class MonkeyTester
 
     private int GetRandomSeed() => _randomizer.Get();
 
-    private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed, int maxRetries = 3)
+    private TimeSpan TestCurrentPageAndMeasureTestTimeLeft(TimeSpan testTime, int randomSeed)
     {
         // If Gremlin interactions cause the new tabs/windows to open, we need to switch back to the original one.
         _context.SwitchToCurrentWindow();
@@ -159,35 +159,11 @@ internal sealed class MonkeyTester
         string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
         _context.ExecuteScript(gremlinsRunScript);
 
-        var retryCount = 1;
-
-        var testTimeLeft = TimeSpan.Zero;
-
-        var success = false;
-
-        while (retryCount <= maxRetries && !success)
-        {
-            try
-            {
-                testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
-                _context.Driver,
-                driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
-                timeout: testTime,
-                pollingInterval: _options.PageMarkerPollingInterval);
-
-                success = true;
-            }
-            catch (UnsupportedOperationException exception)
-            when (exception.Message.Contains("aborted by navigation"))
-            {
-                Log.Warn($"MeasureTimeLeftOfMeetingPredicate failed (attempt {retryCount.ToTechnicalString()}" +
-                    $"/{maxRetries.ToTechnicalString()}): {exception.Message}");
-
-                if (retryCount == maxRetries) throw;
-
-                retryCount++;
-            }
-        }
+        var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(
+            _context.Driver,
+            driver => !(bool)driver.ExecuteScript(GremlinsScripts.GetAreGremlinsRunningScript),
+            timeout: testTime,
+            pollingInterval: _options.PageMarkerPollingInterval);
 
         _context.SwitchToCurrentWindow();
 
