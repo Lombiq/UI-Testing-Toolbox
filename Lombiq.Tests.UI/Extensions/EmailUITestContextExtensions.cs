@@ -167,7 +167,7 @@ public static class EmailUITestContextExtensions
     }
 
     /// <summary>
-    /// Clicks reliably on an SMTP inbox row and attempts to switch to frame 0 with retries.
+    /// Clicks reliably on an SMTP inbox row and attempts to switch to frame 0 with retries. // #spell-check-ignore-line
     /// If switching to the frame fails due to smtp4dev reloading, it logs the failure and retries up to the specified
     /// maximum attempts.
     /// </summary>
@@ -192,7 +192,7 @@ public static class EmailUITestContextExtensions
             {
                 context
                     .Scope.AtataContext.Log
-                    .Info($"Switching to frame 0 failed, smpt4dev page probably reloaded. (attempt " +
+                    .Info($"Switching to frame 0 failed, smtp4dev page probably reloaded. (attempt " +
                     $"{retryCount.ToTechnicalString()}/{maxRetries.ToTechnicalString()}): {exception.Message}");
 
                 if (retryCount == maxRetries) throw;
