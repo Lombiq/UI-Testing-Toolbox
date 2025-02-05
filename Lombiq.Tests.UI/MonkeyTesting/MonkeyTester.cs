@@ -196,11 +196,12 @@ internal sealed class MonkeyTester
         }
         .Build();
 
-    private static TimeSpan MeasureTimeLeftOfMeetingPredicate(
+    private TimeSpan MeasureTimeLeftOfMeetingPredicate(
         IWebDriver webDriver,
         Func<IWebDriver, bool> predicate,
         TimeSpan timeout,
-        TimeSpan pollingInterval)
+        TimeSpan pollingInterval,
+        int maxRetries = 3)
     {
         var wait = new SafeWait<IWebDriver>(webDriver)
         {
@@ -209,7 +210,30 @@ internal sealed class MonkeyTester
         };
 
         var stopwatch = Stopwatch.StartNew();
-        wait.Until(predicate);
+
+        var retryCount = 1;
+        var success = false;
+
+        while (retryCount <= maxRetries && !success)
+        {
+            try
+            {
+                wait.Until(predicate);
+
+                success = true;
+            }
+            catch (UnsupportedOperationException exception)
+            when (exception.Message.Contains("aborted by navigation"))
+            {
+                Log.Warn($"wait.Until(predicate) failed (attempt {retryCount.ToTechnicalString()}" +
+                    $"/{maxRetries.ToTechnicalString()}): {exception.Message}");
+
+                if (retryCount == maxRetries) throw;
+
+                retryCount++;
+            }
+        }
+
         stopwatch.Stop();
 
         var timeLeft = timeout - stopwatch.Elapsed;
