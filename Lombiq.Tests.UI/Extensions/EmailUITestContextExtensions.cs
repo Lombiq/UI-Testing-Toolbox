@@ -1,6 +1,8 @@
 using Atata;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using MailKit.Net.Smtp;
+using MimeKit;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -17,13 +19,7 @@ public static class EmailUITestContextExtensions
     /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
     public static async Task GoToSmtpWebUIAsync(this UITestContext context)
     {
-        if (context.SmtpServiceRunningContext == null)
-        {
-            throw new InvalidOperationException(
-                "The SMTP service is not running. Did you turn it on with " +
-                nameof(OrchardCoreUITestExecutorConfiguration) + "." + nameof(OrchardCoreUITestExecutorConfiguration.UseSmtpService) +
-                " and could it properly start?");
-        }
+        ThrowIfSmtpServiceIsNotRunning(context);
 
         await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
 
@@ -145,6 +141,60 @@ public static class EmailUITestContextExtensions
         {
             await context.ClickReliablyOnAsync(By.ClassName("save"));
             context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
+        }
+    }
+
+    /// <summary>
+    /// Creates an <see cref="SmtpClient"/> and runs the provided <paramref name="action"/> with it. The client is
+    /// automatically connected to the SMTP server running in the UI testing context. The client is disconnected after
+    /// the action is done.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
+    public static async Task CreateAndUseLocalSmtpClientAsync(this UITestContext context, Func<SmtpClient, Task> action)
+    {
+        ThrowIfSmtpServiceIsNotRunning(context);
+
+        var client = new SmtpClient();
+        await client.ConnectAsync(
+            context.SmtpServiceRunningContext.Host,
+            context.SmtpServiceRunningContext.SmtpPort,
+            useSsl: false);
+
+        try
+        {
+            await action(client);
+        }
+        finally
+        {
+            await client.DisconnectAsync(quit: true);
+            client.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Creates an <see cref="SmtpClient"/> and sends emails from the provided files with it. The client is
+    /// automatically connected to the SMTP server running in the UI testing context. The client is disconnected after
+    /// the action is done.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
+    public static Task CreateAndUseLocalSmtpClientToSendEmailsFromFilesAsync(this UITestContext context, string[] emailFiles) =>
+        CreateAndUseLocalSmtpClientAsync(context, async client =>
+        {
+            foreach (var emailFile in emailFiles)
+            {
+                var mimeMessage = await MimeMessage.LoadAsync(emailFile);
+                await client.SendAsync(mimeMessage);
+            }
+        });
+
+    private static void ThrowIfSmtpServiceIsNotRunning(UITestContext context)
+    {
+        if (context.SmtpServiceRunningContext == null)
+        {
+            throw new InvalidOperationException(
+                "The SMTP service is not running. Did you turn it on with " +
+                nameof(OrchardCoreUITestExecutorConfiguration) + "." + nameof(OrchardCoreUITestExecutorConfiguration.UseSmtpService) +
+                " and could it properly start?");
         }
     }
 }
