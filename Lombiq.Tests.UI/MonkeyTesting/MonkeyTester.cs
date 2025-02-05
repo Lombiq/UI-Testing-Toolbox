@@ -196,12 +196,11 @@ internal sealed class MonkeyTester
         }
         .Build();
 
-    private TimeSpan MeasureTimeLeftOfMeetingPredicate(
+    private static TimeSpan MeasureTimeLeftOfMeetingPredicate(
         IWebDriver webDriver,
         Func<IWebDriver, bool> predicate,
         TimeSpan timeout,
-        TimeSpan pollingInterval,
-        int maxRetries = 3)
+        TimeSpan pollingInterval)
     {
         var wait = new SafeWait<IWebDriver>(webDriver)
         {
@@ -210,37 +209,7 @@ internal sealed class MonkeyTester
         };
 
         var stopwatch = Stopwatch.StartNew();
-
-        var retryCount = 1;
-        var success = false;
-
-        // After a Chrome Driver update the following exception can happen:
-        // "OpenQA.Selenium.UnsupportedOperationException : aborted by navigation: loader has changed while resolving
-        // nodes". The only solution right now is to retry. The retry logic can be removed if
-        // https://groups.google.com/g/chromedriver-users/c/dhan8JFk1r4 is fixed.
-        while (retryCount <= maxRetries && !success)
-        {
-            try
-            {
-                wait.Until(predicate);
-
-                success = true;
-            }
-
-            // Using the general Exception type, since the same problem "aborted by navigation" can happen under
-            // multiple exception types.
-            catch (Exception exception)
-            when (exception.Message.Contains("aborted by navigation"))
-            {
-                Log.Warn($"Executing \"wait.Until(predicate)\" failed (attempt {retryCount.ToTechnicalString()}" +
-                    $"/{maxRetries.ToTechnicalString()}): {exception.Message}");
-
-                if (retryCount == maxRetries) throw;
-
-                retryCount++;
-            }
-        }
-
+        wait.Until(predicate);
         stopwatch.Stop();
 
         var timeLeft = timeout - stopwatch.Elapsed;
