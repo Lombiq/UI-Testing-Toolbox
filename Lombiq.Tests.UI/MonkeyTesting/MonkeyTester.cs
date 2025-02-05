@@ -214,6 +214,10 @@ internal sealed class MonkeyTester
         var retryCount = 1;
         var success = false;
 
+        // After a Chrome Driver update the following exception can happen:
+        // "OpenQA.Selenium.UnsupportedOperationException : aborted by navigation: loader has changed while resolving
+        // nodes". The only solution right now is to retry. The retry logic can be removed if
+        // https://groups.google.com/g/chromedriver-users/c/dhan8JFk1r4 is fixed.
         while (retryCount <= maxRetries && !success)
         {
             try
@@ -222,10 +226,13 @@ internal sealed class MonkeyTester
 
                 success = true;
             }
-            catch (UnsupportedOperationException exception)
+
+            // Using the general Exception type, since the same problem "aborted by navigation" can happen under
+            // multiple exception types.
+            catch (Exception exception)
             when (exception.Message.Contains("aborted by navigation"))
             {
-                Log.Warn($"wait.Until(predicate) failed (attempt {retryCount.ToTechnicalString()}" +
+                Log.Warn($"Executing \"wait.Until(predicate)\" failed (attempt {retryCount.ToTechnicalString()}" +
                     $"/{maxRetries.ToTechnicalString()}): {exception.Message}");
 
                 if (retryCount == maxRetries) throw;
