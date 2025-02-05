@@ -186,6 +186,8 @@ public static class EmailUITestContextExtensions
             try
             {
                 await context.ClickReliablyOnAsync(ByHelper.SmtpInboxRow(smtpInboxRow));
+                context.SwitchToFrame0();
+
                 success = true;
             }
             catch (NoSuchFrameException exception)
