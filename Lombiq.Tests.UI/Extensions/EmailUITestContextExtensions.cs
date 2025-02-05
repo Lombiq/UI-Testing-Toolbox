@@ -15,7 +15,7 @@ public static class EmailUITestContextExtensions
     /// cref="OrchardCoreUITestExecutorConfiguration.UseSmtpService"/> is set to <see langword="true"/>.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
-    public static Task GoToSmtpWebUIAsync(this UITestContext context)
+    public static async Task GoToSmtpWebUIAsync(this UITestContext context)
     {
         if (context.SmtpServiceRunningContext == null)
         {
@@ -25,7 +25,14 @@ public static class EmailUITestContextExtensions
                 " and could it properly start?");
         }
 
-        return context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
+        await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
+
+        // The emails are reloading after a few seconds, so we are waiting for the loading indicator to appear, then to
+        // disappear.
+        const string LoadingMaskClass = "el-loading-mask";
+
+        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: true);
+        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: false);
     }
 
     /// <summary>

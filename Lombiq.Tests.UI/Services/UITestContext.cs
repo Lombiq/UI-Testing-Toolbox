@@ -1,11 +1,16 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi;
+using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Modules.Network;
 using OrchardCore.Environment.Shell;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -15,7 +20,10 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestContext
 {
-    private readonly List<LogEntry> _historicBrowserLog = [];
+    // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
+    // preserve the insertion order.
+    private readonly ConcurrentQueue<Entry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -80,7 +88,7 @@ public class UITestContext
     /// <summary>
     /// Gets a value indicating whether a browser is configured to be used for the test. <see langword="false"/> means
     /// that no browser will be launched. Note that since the browser is only started on demand, with the first
-    /// operation requiring it, a browser might not be currently running even if this suggests it may. Check <see
+    /// operation requiring it, a browser might not be currently running even if this suggests it may. Use <see
     /// cref="IsBrowserRunning"/>" to check for that.
     /// </summary>
     public bool IsBrowserConfigured => Configuration.BrowserConfiguration.Browser != Browser.None;
@@ -103,9 +111,19 @@ public class UITestContext
     public ZapManager ZapManager { get; }
 
     /// <summary>
-    /// Gets a cumulative log of browser console entries.
+    /// Gets a cumulative log of browser console entries, containing all entries since the start of the test. This can
+    /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
+    /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<LogEntry> HistoricBrowserLog => _historicBrowserLog;
+    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+
+    /// <summary>
+    /// Gets a cumulative log of browser HTTP responses filtered by <see
+    /// cref="OrchardCoreUITestExecutorConfiguration.ResponseLogFilter"/>, containing all items since the start of the
+    /// test. This can be used to assert on response details. Note that
+    /// since the log is updated asynchronously by the browser, entries might appear with some delay.
+    /// </summary>
+    public IReadOnlyList<ResponseData> CumulativeResponseLog => _cumulativeResponseLog.ToReadOnly();
 
     /// <summary>
     /// Gets a dictionary storing some custom contextual data.
@@ -155,7 +173,7 @@ public class UITestContext
 
     // This is a central context object, we need the data to be passed in the constructor.
 #pragma warning disable S107 // Methods should not have too many parameters
-    public UITestContext(
+    private UITestContext(
         string id,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration,
@@ -179,64 +197,24 @@ public class UITestContext
     }
 
     /// <summary>
-    /// Updates <see cref="HistoricBrowserLog"/> with current console entries from the browser.
+    /// Clears accumulated browser log messages from <see cref="CumulativeBrowserLog"/>.
     /// </summary>
-    public Task<IReadOnlyList<LogEntry>> UpdateHistoricBrowserLogAsync()
-    {
-        var windowHandles = Driver.WindowHandles;
-
-        if (windowHandles.Count > 1)
-        {
-            var currentWindowHandle = Driver.CurrentWindowHandle;
-
-            foreach (var windowHandle in windowHandles)
-            {
-                // Not using the logging SwitchTo() deliberately as this is not part of what the test does.
-                Driver.SwitchTo().Window(windowHandle);
-                _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
-            }
-
-            try
-            {
-                Driver.SwitchTo().Window(currentWindowHandle);
-            }
-            catch (NoSuchWindowException)
-            {
-                // This can happen in rare instances if the current window/tab was just closed.
-                Driver.SwitchTo().Window(Driver.WindowHandles[^1]);
-            }
-        }
-        else
-        {
-            _historicBrowserLog.AddRange(Driver.GetAndEmptyBrowserLog());
-        }
-
-        return Task.FromResult<IReadOnlyList<LogEntry>>(_historicBrowserLog);
-    }
+    public void ClearCumulativeBrowserLog() => _cumulativeBrowserLog.Clear();
 
     /// <summary>
-    /// Clears accumulated historic browser log messages from <see cref="HistoricBrowserLog"/>.
+    /// Clears accumulated browser log messages from <see cref="CumulativeResponseLog"/>.
     /// </summary>
-    public void ClearHistoricBrowserLog() => _historicBrowserLog.Clear();
+    public void ClearCumulativeResponseLog() => _cumulativeResponseLog.Clear();
 
     /// <summary>
-    /// Run an assertion on the browser logs of the current tab with the delegate configured in <see
-    /// cref="Configuration"/>. This doesn't use <see cref="HistoricBrowserLog"/>.
-    /// </summary>
-    public Task AssertCurrentBrowserLogAsync()
-    {
-        Configuration.AssertBrowserLog?.Invoke(Scope.Driver.GetAndEmptyBrowserLog());
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Clears the application and historic browser logs.
+    /// Clears the application and cumulative browser logs.
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
     public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
     {
         foreach (var log in await Application.GetLogsAsync(cancellationToken)) await log.RemoveAsync();
-        ClearHistoricBrowserLog();
+        ClearCumulativeBrowserLog();
+        ClearCumulativeResponseLog();
     }
 
     /// <summary>
@@ -309,6 +287,51 @@ public class UITestContext
         TenantName = tenantName ?? ShellSettings.DefaultShellName;
         UrlPrefix = baseUri.AbsolutePath.Trim('/');
         Scope.BaseUri = baseUri;
+    }
+
+    // This is a central context object, we need the data to be passed in the constructor.
+#pragma warning disable S107 // Methods should not have too many parameters
+    public static async Task<UITestContext> CreateAsync(
+        string id,
+        UITestManifest testManifest,
+        OrchardCoreUITestExecutorConfiguration configuration,
+        IWebApplicationInstance application,
+        AtataScope scope,
+        Uri testStartUri,
+        RunningContextContainer runningContextContainer,
+        ZapManager zapManager)
+#pragma warning restore S107 // Methods should not have too many parameters
+    {
+        var context = new UITestContext(
+            id,
+            testManifest,
+            configuration,
+            application,
+            scope,
+            testStartUri,
+            runningContextContainer,
+            zapManager);
+
+        if (context.IsBrowserConfigured)
+        {
+            var biDi = await scope.Driver.AsBiDiAsync();
+
+            // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
+            // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
+            // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
+            // originated from a different URL and shouldn't be ignored.
+            await biDi.Log.OnEntryAddedAsync(entry =>
+            {
+                if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
+            });
+
+            await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+            {
+                if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+            });
+        }
+
+        return context;
     }
 
     /// <summary>

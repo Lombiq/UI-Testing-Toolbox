@@ -1,9 +1,11 @@
 using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using System;
 
 namespace Lombiq.Tests.UI.Attributes.Behaviors;
 
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class SetsValueReliablyAttribute : ValueSetBehaviorAttribute
 {
     public override void Execute<TOwner>(IUIComponent<TOwner> component, string value) // #spell-check-ignore-line

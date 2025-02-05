@@ -3,35 +3,84 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Lombiq.Tests.UI.Attributes.InternetExplorerAttribute</Target>
+    <Target>T:Lombiq.Tests.UI.Extensions.LoggingWebDriverExtensions</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Lombiq.Tests.UI.Services.Browser.InternetExplorer</Target>
+    <Target>F:Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.CreateAndAuthorizeClientAsync(Lombiq.Tests.UI.Services.UITestContext,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Target>F:Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration.IsValidBrowserLogEntry</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Services.WebDriverFactory.CreateInternetExplorerDriverAsync(Lombiq.Tests.UI.Services.BrowserConfiguration,System.TimeSpan)</Target>
+    <Target>M:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions.IsNotFoundLogEntry(OpenQA.Selenium.LogEntry,System.String)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0011</DiagnosticId>
-    <Target>F:Lombiq.Tests.UI.Services.Browser.None</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.SeleniumLogEntryExtensions.ToFormattedString(System.Collections.Generic.IEnumerable{OpenQA.Selenium.LogEntry})</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration.get_AssertBrowserLog</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.#ctor(System.String,Lombiq.Tests.UI.Models.UITestManifest,Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration,Lombiq.Tests.UI.Services.IWebApplicationInstance,Lombiq.Tests.UI.Services.AtataScope,System.Uri,Lombiq.Tests.UI.Models.RunningContextContainer,Lombiq.Tests.UI.SecurityScanning.ZapManager)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.AssertCurrentBrowserLogAsync</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.ClearHistoricBrowserLog</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.get_HistoricBrowserLog</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.UpdateHistoricBrowserLogAsync</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Lombiq.Tests.UI.Services.UITestContext</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

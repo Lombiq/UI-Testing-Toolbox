@@ -2,12 +2,12 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
-using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Modules.Network;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -35,20 +35,34 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
 
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
-        logEntries => logEntries.ShouldNotContain(
-            logEntry => IsValidBrowserLogEntry(logEntry),
-            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
+    public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
+        logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
-        logEntry =>
-            logEntry.Level >= LogLevel.Warning &&
+    public static readonly Func<Entry, bool> IsNonSuccessBrowserLogEntry =
+        entry =>
+            entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
-            // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
-            // under a different URL.
-            !logEntry.IsNotFoundLogEntry("/favicon.ico");
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
+            // Smtp4dev uses "sanitize-html" (https://github.com/apostrophecms/sanitize-html) to sanitize the HTML
+            // content of the email body and this library has a list of tags that are considered vulnerable to XSS
+            // attacks. As a workaround, we are ignoring the warnings for these tags in the browser logs. Instead,
+            // Smtp4dev should use the "allowVulnerableTags" configuration property to not have these warnings in the
+            // first place. These could be removed if https://github.com/rnwood/smtp4dev/issues/1627 is fixed and
+            // "allowVulnerableTags" property is set to true.
+            !entry.Text.Equals("error", StringComparison.OrdinalIgnoreCase) &&
+            // Ignoring the warnings about the "script" and "style" tags being vulnerable to XSS attacks.
+            !((entry.Text.Contains("Your `allowedTags` option includes, `script`, which is inherently") ||
+                entry.Text.Contains("Your `allowedTags` option includes, `style`, which is inherently")) &&
+                entry.Text.Contains("vulnerable to XSS attacks. Please remove it from `allowedTags`."));
+
+    // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
+    // different URL.
+    public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
+        e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+
+    public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
+        responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
     /// <summary>
     /// Gets the global events available during UI test execution.
@@ -107,7 +121,23 @@ public class OrchardCoreUITestExecutorConfiguration
             : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
-    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+
+    /// <summary>
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeBrowserLog"/>.
+    /// </summary>
+    public Func<Entry, bool> BrowserLogFilter { get; set; } = IsNonSuccessBrowserLogEntry;
+
+    public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+
+    /// <summary>
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeResponseLog"/>.
+    /// </summary>
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter { get; set; } = IsNonSuccessResponse;
+
+    public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
+
     public ITestOutputHelper TestOutputHelper { get; set; }
 
     /// <summary>
