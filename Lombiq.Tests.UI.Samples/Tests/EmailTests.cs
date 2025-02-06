@@ -34,7 +34,7 @@ public class EmailTests : UITestBase
                 await context.GoToSmtpWebUIAsync();
 
                 // We are clicking on the e-mail we've sent and switching to frame 0, to see its content.
-                await context.ClickReliablyOnSmtpInboxRowAndSwitchToFram0WithRetriesAsync("Test message");
+                await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
 
                 // If we see the message that we've sent then it's all good.
                 context.Exists(By.XPath($"//p[contains(.,'Hi, this is a test.')]"));
