@@ -213,7 +213,7 @@ internal sealed class MonkeyTester
         var retryCount = 1;
         var success = false;
 
-        // After a Chrome Driver update the following exception can happen:
+        // After a ChromeDriver update the following exception can happen:
         // "OpenQA.Selenium.UnsupportedOperationException : aborted by navigation: loader has changed while resolving
         // nodes". The only solution right now is to retry. The retry logic can be removed if
         // https://groups.google.com/g/chromedriver-users/c/dhan8JFk1r4 is fixed.
