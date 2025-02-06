@@ -64,8 +64,7 @@ public static class EmailUITestContextExtensions
         string textToFind)
     {
         await context.GoToSmtpWebUIAsync();
-        await context.ClickReliablyOnAsync(ByHelper.SmtpInboxRow(emailTitle));
-        context.SwitchToFrame0();
+        await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync(emailTitle);
 
         var currentlySelectedEmail = context.Get(By.CssSelector(".emailContent p"));
         while (!currentlySelectedEmail.Text.Contains(textToFind, StringComparison.InvariantCultureIgnoreCase))
