@@ -37,7 +37,7 @@ public class EmailTests : UITestBase
                 await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
 
                 // If we see the message that we've sent then it's all good.
-                context.Exists(By.XPath($"//p[contains(.,'Hi, this is a test.')]"));
+                context.Exists(By.XPath($"//pre[contains(.,'Hi, this is a test.')]"));
             },
             // UseSmtpService = true automatically enables the Email module so you don't have to enable it in a recipe,
             // and it configures the module too.
