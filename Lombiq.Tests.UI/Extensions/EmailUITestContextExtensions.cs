@@ -173,7 +173,7 @@ public static class EmailUITestContextExtensions
     /// </summary>
     /// <param name="smtpInboxRow">The text that the email's header contains to click.</param>
     /// <param name="maxRetries">The maximum number of retry attempts if switching to the frame fails.</param>
-    public static async Task ClickReliablyOnSmtpInboxRowAndSwitchToFram0WithRetriesAsync(
+    public static async Task ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync(
         this UITestContext context,
         string smtpInboxRow,
         int maxRetries = 3)
@@ -195,7 +195,7 @@ public static class EmailUITestContextExtensions
                 context
                     .Scope.AtataContext.Log
                     .Info($"Switching to frame 0 failed, smtp4dev page probably reloaded. (attempt " +
-                    $"{retryCount.ToTechnicalString()}/{maxRetries.ToTechnicalString()}): {exception.Message}");
+                    $"{retryCount.ToTechnicalString()} out of {maxRetries.ToTechnicalString()}): {exception.Message}");
 
                 if (retryCount == maxRetries) throw;
 
