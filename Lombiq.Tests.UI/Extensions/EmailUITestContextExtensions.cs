@@ -195,7 +195,7 @@ public static class EmailUITestContextExtensions
                 context
                     .Scope.AtataContext.Log
                     .Info($"Switching to frame 0 failed, smtp4dev page probably reloaded. (attempt " +
-                    $"{retryCount.ToTechnicalString()}/{maxRetries.ToTechnicalString()}): {exception.Message}");
+                    $"{retryCount.ToTechnicalString()} out of {maxRetries.ToTechnicalString()}): {exception.Message}");
 
                 if (retryCount == maxRetries) throw;
 
