@@ -15,7 +15,7 @@ public static class EmailUITestContextExtensions
     /// cref="OrchardCoreUITestExecutorConfiguration.UseSmtpService"/> is set to <see langword="true"/>.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the smtp4dev server is not running.</exception>
-    public static Task GoToSmtpWebUIAsync(this UITestContext context)
+    public static async Task GoToSmtpWebUIAsync(this UITestContext context)
     {
         if (context.SmtpServiceRunningContext == null)
         {
@@ -25,7 +25,32 @@ public static class EmailUITestContextExtensions
                 " and could it properly start?");
         }
 
-        return context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
+        await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
+
+        // The emails sometimes are reloading after a few seconds, so we are waiting for the loading indicator to
+        // appear, then to disappear.
+        const string LoadingMaskClass = "el-loading-mask";
+
+        try
+        {
+            // We are waiting for this exact element to appear, only with one class, that indicates that the loading is
+            // happening. The loading is not always happening that's why we catch the exception, making sure that the
+            // element either did not exist, or we waited for it to appear.
+            context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
+        }
+        catch (ElementNotFoundException exception)
+        {
+            context
+                .Scope.AtataContext.Log
+                .Info($"The smtp4dev site didn't reload, so the the missing loading element was ignored: " +
+                    $"{exception.Message}");
+        }
+
+        // We are checking for the loading element that contains this class, since the element gets extra classes when
+        // fading away. Also checking for the element with the "loading-number" attribute, to make sure loading is
+        // finished.
+        context.CheckExistence(By.ClassName(LoadingMaskClass), exists: false);
+        context.CheckExistence(By.XPath("//div[@loading-number]"), exists: false);
     }
 
     /// <summary>
@@ -39,8 +64,7 @@ public static class EmailUITestContextExtensions
         string textToFind)
     {
         await context.GoToSmtpWebUIAsync();
-        await context.ClickReliablyOnAsync(ByHelper.SmtpInboxRow(emailTitle));
-        context.SwitchToFrame0();
+        await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync(emailTitle);
 
         var currentlySelectedEmail = context.Get(By.CssSelector(".emailContent p"));
         while (!currentlySelectedEmail.Text.Contains(textToFind, StringComparison.InvariantCultureIgnoreCase))
@@ -138,6 +162,44 @@ public static class EmailUITestContextExtensions
         {
             await context.ClickReliablyOnAsync(By.ClassName("save"));
             context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
+        }
+    }
+
+    /// <summary>
+    /// Clicks reliably on an SMTP inbox row and attempts to switch to frame 0 with retries. // #spell-check-ignore-line
+    /// If switching to the frame fails due to smtp4dev reloading, it logs the failure and retries up to the specified
+    /// maximum attempts.
+    /// </summary>
+    /// <param name="smtpInboxRow">The text that the email's header contains to click.</param>
+    /// <param name="maxRetries">The maximum number of retry attempts if switching to the frame fails.</param>
+    public static async Task ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync(
+        this UITestContext context,
+        string smtpInboxRow,
+        int maxRetries = 3)
+    {
+        var retryCount = 1;
+        var success = false;
+
+        while (retryCount <= maxRetries && !success)
+        {
+            try
+            {
+                await context.ClickReliablyOnAsync(ByHelper.SmtpInboxRow(smtpInboxRow));
+                context.SwitchToFrame0();
+
+                success = true;
+            }
+            catch (NoSuchFrameException exception)
+            {
+                context
+                    .Scope.AtataContext.Log
+                    .Info($"Switching to frame 0 failed, smtp4dev page probably reloaded. (attempt " +
+                    $"{retryCount.ToTechnicalString()} out of {maxRetries.ToTechnicalString()}): {exception.Message}");
+
+                if (retryCount == maxRetries) throw;
+
+                retryCount++;
+            }
         }
     }
 }
