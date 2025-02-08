@@ -771,7 +771,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:EnableSmtp", value: true)
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.SmtpPort)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:DefaultSender", value: "sender@example.com");
             return Task.CompletedTask;
         }

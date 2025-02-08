@@ -141,7 +141,7 @@ public static class EmailUITestContextExtensions
             await context.SetCheckboxValueAsync(byIsEnabled, isChecked: true);
         }
 
-        port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.SmtpPort;
+        port ??= context.Configuration?.SmtpServiceConfiguration?.Context?.Port;
         if (!port.HasValue)
         {
             throw new InvalidOperationException(
@@ -212,7 +212,7 @@ public static class EmailUITestContextExtensions
         var client = new SmtpClient();
         await client.ConnectAsync(
             context.SmtpServiceRunningContext.Host,
-            context.SmtpServiceRunningContext.SmtpPort,
+            context.SmtpServiceRunningContext.Port,
             useSsl: false);
 
         try

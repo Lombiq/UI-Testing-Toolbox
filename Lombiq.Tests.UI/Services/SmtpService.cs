@@ -15,14 +15,14 @@ public class SmtpServiceConfiguration
 
 public class SmtpServiceRunningContext
 {
-    public int SmtpPort { get; }
+    public int Port { get; }
     public int ImapPort { get; set; }
     public string Host => "localhost";
     public Uri WebUIUri { get; }
 
-    public SmtpServiceRunningContext(int smtpPort, int imapPort, Uri webUIUri)
+    public SmtpServiceRunningContext(int port, int imapPort, Uri webUIUri)
     {
-        SmtpPort = smtpPort;
+        Port = port;
         ImapPort = imapPort;
         WebUIUri = webUIUri;
     }
