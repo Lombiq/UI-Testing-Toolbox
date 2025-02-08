@@ -325,10 +325,13 @@ public class UITestContext
                 if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
             });
 
-            await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+            if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-            });
+                await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+                {
+                    if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                });
+            }
         }
 
         return context;
