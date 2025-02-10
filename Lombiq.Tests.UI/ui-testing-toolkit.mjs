@@ -19,6 +19,10 @@ async function _takeScreenshot(driver, file){
     await writeFile(file, image, 'base64')
 }
 
+async function safeWait(driver, condition, timeout = 5000) {
+    return driver.wait(condition, timeout);
+}
+
 /**
  * Verifies that the provided element's inner text contains the provided text.
  * @param {WebElement} element The web element whose inner text is examined.
@@ -58,7 +62,7 @@ async function navigate(driver, url, maxAttempts = 10, forceNavigation = false) 
             await driver.navigate().to(url);
         }
 
-        await driver.wait(() => driver
+        await safeWait(driver, () => driver
             .executeScript('return document.readyState')
             .then((readyState) => readyState === 'complete'));
 
