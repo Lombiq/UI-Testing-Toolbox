@@ -316,6 +316,10 @@ public class UITestContext
         {
             var biDi = await scope.Driver.AsBiDiAsync();
 
+            // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
+            // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
+            // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
+            // originated from a different URL and shouldn't be ignored.
             await biDi.Log.OnEntryAddedAsync(entry =>
             {
                 if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
