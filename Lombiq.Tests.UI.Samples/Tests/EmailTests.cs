@@ -1,5 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
+using OpenQA.Selenium;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -32,8 +32,11 @@ public class EmailTests : UITestBase
                 // e-mails and check if everything's alright.
                 await context.GoToSmtpWebUIAsync();
 
-                // If the e-mail we've sent exists then it's all good.
-                context.Exists(ByHelper.SmtpInboxRow("Test message"));
+                // We are clicking on the e-mail we've sent and switching to frame 0, to see its content.
+                await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
+
+                // If we see the message that we've sent then it's all good.
+                context.Exists(By.XPath($"//pre[contains(.,'Hi, this is a test.')]"));
             },
             // UseSmtpService = true automatically enables the Email module so you don't have to enable it in a recipe,
             // and it configures the module too.
