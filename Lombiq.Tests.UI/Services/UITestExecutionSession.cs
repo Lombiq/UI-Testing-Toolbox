@@ -112,16 +112,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             await Task.WhenAny(testTask, timeoutTask);
 
-            if (timeoutTask.IsCompleted && !_configuration.TestCancellationToken.IsCancellationRequested)
+            // If the EnterInteractiveModeAsync() extension method has been used, then timeout should be ignored to make
+            // the debugging experience smoother. Note that EnterInteractiveModeAsync() should never be used in
+            // committed tests.
+            if (timeoutTask.IsCompleted
+                && !_configuration.TestCancellationToken.IsCancellationRequested
+                && !ShortcutsUITestContextExtensions.InteractiveModeHasBeenUsed)
             {
-                // If the EnterInteractiveModeAsync() extension method has been used, then timeout should be ignored to
-                // make the debugging experience smoother. Note that EnterInteractiveModeAsync() should never be used in
-                // committed tests.
-                if (!ShortcutsUITestContextExtensions.InteractiveModeHasBeenUsed)
-                {
-                    throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
-                }
-
+                throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
             }
 
             // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in
