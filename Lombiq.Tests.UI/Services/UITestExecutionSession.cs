@@ -122,7 +122,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     throw new TimeoutException($"The time allotted for the test ({timeout}) was exceeded.");
                 }
 
-                await testTask;
             }
 
             // Since the timeout task is not yet completed but the Task.WhenAny has finished, the test task is done in
