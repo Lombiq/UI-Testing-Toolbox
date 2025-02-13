@@ -4,9 +4,8 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -16,13 +15,10 @@ public delegate IWebApplicationInstance WebApplicationInstanceFactory(
 
 public static class UITestExecutor
 {
-    private static readonly object _numberOfTestsLimitLock = new();
-    private static SemaphoreSlim _numberOfTestsLimit;
-
     /// <summary>
     /// Executes a test on a new Orchard Core web app instance within a newly created Atata scope.
     /// </summary>
-    public static Task ExecuteOrchardCoreTestAsync(
+    public static async Task ExecuteOrchardCoreTestAsync(
         WebApplicationInstanceFactory webApplicationInstanceFactory,
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
@@ -45,22 +41,11 @@ public static class UITestExecutor
 
         configuration.AtataConfiguration.TestName = testManifest.Name;
 
-        var dumpRootPath = PrepareDumpFolder(testManifest, configuration);
+        var dumpRootPath = await PrepareDumpFolderAsync(testManifest, configuration);
 
         configuration.TestOutputHelper.WriteLineTimestampedAndDebug("Finished preparation for {0}.", testManifest.Name);
 
-        // This is our property.
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (_numberOfTestsLimit == null && configuration.MaxParallelTests > 0)
-        {
-            lock (_numberOfTestsLimitLock)
-            {
-                _numberOfTestsLimit ??= new SemaphoreSlim(configuration.MaxParallelTests);
-            }
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        return ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
+        await ExecuteOrchardCoreTestInnerAsync(webApplicationInstanceFactory, testManifest, configuration, dumpRootPath);
     }
 
     private static async Task ExecuteOrchardCoreTestInnerAsync(
@@ -75,11 +60,6 @@ public static class UITestExecutor
         {
             try
             {
-                if (_numberOfTestsLimit != null)
-                {
-                    await _numberOfTestsLimit.WaitAsync();
-                }
-
                 await using var instance = new UITestExecutionSession(webApplicationInstanceFactory, testManifest, configuration);
                 passed = await instance.ExecuteAsync(retryCount, dumpRootPath);
             }
@@ -108,15 +88,13 @@ public static class UITestExecutor
                 {
                     TeamCityMetadataReporter.ReportInt(testManifest, "TryCount", retryCount + 1);
                 }
-
-                _numberOfTestsLimit?.Release();
             }
 
             retryCount++;
         }
     }
 
-    private static string PrepareDumpFolder(
+    private static async Task<string> PrepareDumpFolderAsync(
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
     {
@@ -148,7 +126,7 @@ public static class UITestExecutor
 
         var dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
 
         // Probe creating the directory. At least on Windows this can still fail with "The filename, directory name, or
         // volume label syntax is incorrect" but not simply due to the presence of specific characters. Maybe both
@@ -158,7 +136,7 @@ public static class UITestExecutor
         try
         {
             Directory.CreateDirectory(dumpRootPath);
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
         }
         catch (Exception ex) when (
             (ex is IOException &&
@@ -185,7 +163,7 @@ public static class UITestExecutor
 
             dumpRootPath = Path.Combine(dumpConfiguration.DumpsDirectoryPath, dumpFolderNameBase);
 
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(dumpRootPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(dumpRootPath, configuration.TestCancellationToken);
 
             configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                 "Couldn't create a folder with the same name as the test. A TestName.txt file containing the " +

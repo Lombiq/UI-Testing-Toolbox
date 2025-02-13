@@ -42,7 +42,8 @@ public static class ReliabilityUITestContextExtensions
         ReliabilityHelper.DoWithRetriesOrFail(
             process,
             timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval,
+            context.Configuration.TestCancellationToken);
 
     /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
@@ -71,7 +72,8 @@ public static class ReliabilityUITestContextExtensions
         ReliabilityHelper.DoWithRetriesOrFailAsync(
             processAsync,
             timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval,
+            context.Configuration.TestCancellationToken);
 
     /// <summary>
     /// Executes the async process and retries if an element becomes stale (throws <see
@@ -107,7 +109,8 @@ public static class ReliabilityUITestContextExtensions
         ReliabilityHelper.RetryIfStaleOrFailAsync(
             processAsync,
             timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval,
+            context.Configuration.TestCancellationToken);
 
     /// <summary>
     /// Executes the process and retries until no element is stale (throws <see
@@ -139,7 +142,8 @@ public static class ReliabilityUITestContextExtensions
         ReliabilityHelper.RetryIfNotStaleOrFailAsync(
             processAsync,
             timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
-            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval);
+            interval ?? context.Configuration.TimeoutConfiguration.RetryInterval,
+            context.Configuration.TestCancellationToken);
 
     /// <summary>
     /// Tries to execute an operation until the given element exists.

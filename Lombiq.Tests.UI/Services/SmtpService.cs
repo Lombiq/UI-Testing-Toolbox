@@ -34,12 +34,13 @@ public sealed class SmtpService : IAsyncDisposable
     private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
 
     private readonly SmtpServiceConfiguration _configuration;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private static bool _wasRestored;
 
     private int _smtpPort;
     private int _webUIPort;
-    private CancellationTokenSource _cancellationTokenSource;
+    private bool _isDisposed;
 
     static SmtpService()
     {
@@ -63,7 +64,6 @@ public sealed class SmtpService : IAsyncDisposable
             throw new InvalidOperationException("No .NET CLI local tool manifest file found. Was the .config folder removed?");
         }
 
-        _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
         var manifest = JsonNode.Parse(await File.ReadAllTextAsync(dotnetToolsConfigFilePath, token));
@@ -74,8 +74,8 @@ public sealed class SmtpService : IAsyncDisposable
             throw new InvalidOperationException("There was no smtp4dev configuration in the .NET CLI local tool manifest file.");
         }
 
-        _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync();
-        _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync();
+        _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync(token);
+        _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync(token);
 
         var webUIPortString = _webUIPort.ToTechnicalString();
         var smtpPortString = _smtpPort.ToTechnicalString();
@@ -122,13 +122,15 @@ public sealed class SmtpService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort);
-        await _webUIPortLeaseManager.StopLeaseAsync(_webUIPort);
+        if (_isDisposed) return;
 
-        if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
-        {
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource.Dispose();
-        }
+        _isDisposed = true;
+
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort, CancellationToken.None);
+        await _webUIPortLeaseManager.StopLeaseAsync(_webUIPort, CancellationToken.None);
+
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
     }
 }

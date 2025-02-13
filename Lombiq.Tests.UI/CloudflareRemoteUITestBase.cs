@@ -2,7 +2,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 
@@ -76,6 +76,7 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             () => base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync),
             CloudflareAccountId,
             CloudflareApiToken,
-            _testOutputHelper);
+            _testOutputHelper,
+            TestContext.Current.CancellationToken);
     }
 }

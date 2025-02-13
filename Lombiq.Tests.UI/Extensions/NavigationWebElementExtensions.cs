@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -49,7 +49,7 @@ public static class NavigationWebElementExtensions
                             context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                 "\"move target out of bounds\" exception, retrying the click.");
 
-                            await Task.Delay(RetrySettings.Interval);
+                            await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
                         }
                     }
 

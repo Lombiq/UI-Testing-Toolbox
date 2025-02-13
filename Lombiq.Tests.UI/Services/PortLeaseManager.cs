@@ -1,5 +1,4 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -29,9 +28,9 @@ public class PortLeaseManager
     public PortLeaseManager(int lowerBound, int upperBound) =>
         _availablePortsRange = Enumerable.Range(lowerBound, upperBound - lowerBound);
 
-    public async Task<int> LeaseAvailableRandomPortAsync()
+    public async Task<int> LeaseAvailableRandomPortAsync(CancellationToken cancellationToken)
     {
-        await _portAcquisitionLock.WaitAsync();
+        await _portAcquisitionLock.WaitAsync(cancellationToken);
 
         int port;
 
@@ -50,14 +49,12 @@ public class PortLeaseManager
         return port;
     }
 
-    public async Task StopLeaseAsync(int port)
+    public async Task StopLeaseAsync(int port, CancellationToken cancellationToken)
     {
-        await _portAcquisitionLock.WaitAsync();
+        await _portAcquisitionLock.WaitAsync(cancellationToken);
 
         _usedPorts.Remove(port);
 
         _portAcquisitionLock.Release();
     }
-
-    public Func<Task> CreateStopLeaseDelegate(int port) => () => StopLeaseAsync(port);
 }
