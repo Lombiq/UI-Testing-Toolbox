@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Samples.Constants;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 

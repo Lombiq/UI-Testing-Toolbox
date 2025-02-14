@@ -4,7 +4,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-public class HtmlValidationAssertionException : Exception
+public class HtmlValidationAssertionException : Exception, IAssertionException
 {
     public HtmlValidationResult HtmlValidationResult { get; }
     public HtmlValidationConfiguration HtmlValidationConfiguration { get; }

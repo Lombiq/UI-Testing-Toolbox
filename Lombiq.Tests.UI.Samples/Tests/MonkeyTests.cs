@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 

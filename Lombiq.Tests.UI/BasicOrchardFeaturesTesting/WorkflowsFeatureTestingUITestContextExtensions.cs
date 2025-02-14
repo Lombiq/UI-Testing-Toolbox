@@ -48,6 +48,8 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                     By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"), // #spell-check-ignore-line
                     By.XPath(taskXPath));
 
+                context.WaitElementToNotChange(By.ClassName("jtk-connector")); // #spell-check-ignore-line
+
                 // We need to save the workflow early, because sometimes the editor, thus the startup task button can be
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.

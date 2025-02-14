@@ -58,7 +58,7 @@ public static class BrowserUITestContextExtensions
 
         using var client = new HttpClient(handler);
         using var request = new HttpRequestMessage(method, new Uri(context.GetCurrentUri(), address));
-        using var response = await client.SendAsync(request);
+        using var response = await client.SendAsync(request, context.Configuration.TestCancellationToken);
 
         return await processResponseAsync(response);
     }
@@ -87,7 +87,7 @@ public static class BrowserUITestContextExtensions
         }
         catch
         {
-            await context.ClearLogsAsync();
+            await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
             return true;
         }
 

@@ -5,7 +5,7 @@ using SixLabors.ImageSharp;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 

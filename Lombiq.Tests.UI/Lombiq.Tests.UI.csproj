@@ -91,7 +91,7 @@
     <PackageReference Include="System.IO.Packaging" Version="8.0.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
-    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="xunit.v3.extensibility.core" Version="1.0.1" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
@@ -111,7 +111,7 @@
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="..\..\..\src\Utilities\Lombiq.Npm.Targets\Lombiq.Npm.Targets.targets" />
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="4.0.0" />
+    <PackageReference Include="Lombiq.Tests" Version="4.0.1-alpha.1.osoe-935" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.1.1-alpha.0.osoe-815" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.1.1-alpha.0.osoe-815" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.1.1-alpha.0.osoe-815" />

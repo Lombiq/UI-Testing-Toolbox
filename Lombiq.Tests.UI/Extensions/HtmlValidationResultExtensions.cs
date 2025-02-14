@@ -6,20 +6,21 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class HtmlValidationResultExtensions
 {
-    public static async Task<IEnumerable<string>> GetErrorsAsync(this HtmlValidationResult result)
+    public static async Task<IEnumerable<string>> GetErrorsAsync(this HtmlValidationResult result, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(result.ResultFilePath) || !File.Exists(result.ResultFilePath))
         {
             return [];
         }
 
-        var fullOutput = await File.ReadAllTextAsync(result.ResultFilePath);
+        var fullOutput = await File.ReadAllTextAsync(result.ResultFilePath, cancellationToken);
         return fullOutput
             .Split(Environment.NewLine + Environment.NewLine + "error:", StringSplitOptions.RemoveEmptyEntries)
             .Select(error =>

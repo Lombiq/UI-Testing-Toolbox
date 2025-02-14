@@ -3,7 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Xunit.Abstractions;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
@@ -51,8 +52,8 @@ public class GitHubAnnotationWriter
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
     {
-        var className = testCase.TestMethod.TestClass.Class.Name.Split('.')[^1];
-        var testName = testCase.TestMethod.Method.Name;
+        var className = testCase.TestMethod.TestClass.TestClassName.Split('.')[^1];
+        var testName = testCase.TestMethod.MethodName;
 
         var stackFrames = new StackTrace(exception, fNeedFileInfo: true)
             .GetFrames()
@@ -70,7 +71,7 @@ public class GitHubAnnotationWriter
 
         Annotate(
             LogLevel.Error,
-            $"{exception.GetType().Name} in {testCase.DisplayName}",
+            $"{exception.GetType().Name} in {testCase.TestCaseDisplayName}",
             exception.ToString(),
             file,
             line);

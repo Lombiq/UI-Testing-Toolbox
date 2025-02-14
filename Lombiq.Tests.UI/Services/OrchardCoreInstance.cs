@@ -17,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -47,7 +47,7 @@ internal static class OrchardCoreInstanceCounter
     }
 
     public static Uri GetUri(int port) => new(StringHelper.CreateInvariant($"https://localhost:{port}"));
-    public static async Task<Uri> GetNewUriAsync() => GetUri(await PortLeases.LeaseAvailableRandomPortAsync());
+    public static async Task<Uri> GetNewUriAsync() => GetUri(await PortLeases.LeaseAvailableRandomPortAsync(CancellationToken.None));
 }
 
 /// <summary>
@@ -59,6 +59,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private readonly OrchardCoreConfiguration _configuration;
     private readonly string _contextId;
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private string _contentRootPath;
     private bool _isDisposed;
@@ -93,7 +94,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             OrchardCoreDirectoryHelper
                 .CopyAppConfigFiles(
                     Path.GetDirectoryName(typeof(TEntryPoint).Assembly.Location),
-                    _contentRootPath);
+                    _contentRootPath,
+                    _cancellationTokenSource.Token);
         }
 
         _reverseProxy = new TestReverseProxy(_url.AbsoluteUri);
@@ -139,6 +141,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         if (_isDisposed) return;
 
         _isDisposed = true;
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
 
         await StopOrchardAppAsync();
         if (_reverseProxy != null)
@@ -146,7 +150,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             await _reverseProxy.DisposeAsync();
         }
 
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(_contentRootPath, 60);
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_contentRootPath, CancellationToken.None, 60);
     }
 
     private void CreateContentRootFolder()
@@ -166,8 +171,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             .InvokeAsync<BeforeAppStartHandler>(handler => handler(CreateAppStartContext(), arguments));
 
         // This is to avoid adding Razor runtime view compilation.
-        DirectoryHelper.SafelyDeleteDirectoryIfExists(
-            Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), 60);
+        await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(
+            Path.Combine(Path.GetDirectoryName(typeof(OrchardCoreInstance<>).Assembly.Location), "refs"), _cancellationTokenSource.Token, 60);
 
         _orchardApplication = new OrchardApplicationFactory<TEntryPoint>(
             configuration =>
@@ -187,7 +192,8 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
                     _configuration.AfterFakeLoggingConfiguration?.Invoke(CreateAppStartContext(), options);
                 })),
             (configuration, orchardBuilder) => orchardBuilder
-                .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true));
+                .ConfigureUITesting(configuration, enableShortcutsDuringUITesting: true),
+            _cancellationTokenSource.Token);
 
         _orchardApplication.ClientOptions.AllowAutoRedirect = false;
         _orchardApplication.ClientOptions.BaseAddress = new Uri(_reverseProxy.RootUrl);

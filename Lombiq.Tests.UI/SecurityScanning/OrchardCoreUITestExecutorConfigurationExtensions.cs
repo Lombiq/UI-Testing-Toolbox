@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -66,10 +67,12 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
         permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
 
         return app =>
-            app.LogsShouldNotContainAsync(logEntry =>
-                !permittedErrorLinePatterns.Any(pattern =>
-                    Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
-                AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
-                logEntry.Level >= LogLevel.Error);
+            app.LogsShouldNotContainAsync(
+                logEntry =>
+                    !permittedErrorLinePatterns.Any(pattern =>
+                        Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
+                    AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
+                    logEntry.Level >= LogLevel.Error,
+                TestContext.Current.CancellationToken);
     }
 }

@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
@@ -10,7 +9,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -41,7 +39,7 @@ public class ErrorHandlingTests : UITestBase
                 catch (PageChangeAssertionException)
                 {
                     // Remove all logs to have a clean slate.
-                    await context.ClearLogsAsync();
+                    await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
                 }
             });
 
@@ -93,7 +91,7 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
 
                 // Since the browser log is updated asynchronously, we have to wait for most recent entries to appear.
-                ReliabilityHelper.DoWithRetriesOrFail(() =>
+                context.DoWithRetriesOrFail(() =>
                     context
                     .CumulativeBrowserLog
                     .Count(entry => entry.Text.Contains(testLog)) == 6);

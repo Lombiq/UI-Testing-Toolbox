@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
