@@ -8,9 +8,9 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -253,8 +253,19 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
         else if (_context?.Driver is not null)
         {
-            _testOutputHelper.WriteLineTimestampedAndDebug(
-                $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}.");
+            try
+            {
+                // This will throw a WebDriverException if the browser session was closed. This can happen even if
+                // _context.Driver is not null. There's no better way to check this.
+                var handle = _context.Driver.CurrentWindowHandle;
+
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}. Window handle: {handle}");
+            }
+            catch (WebDriverException webDriverException) when (webDriverException.Message == "invalid session id")
+            {
+                // The browser session was closed, so the driver can't be used to get the page title and address.
+            }
         }
 
         _testOutputHelper.WriteLineTimestampedAndDebug($"The test failed with the following exception: {ex}");
@@ -466,7 +477,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             GitHubHelper.IsGitHubEnvironment)
         {
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
-                LogLevel.Warning,
+                Microsoft.Extensions.Logging.LogLevel.Warning,
                 "UI test may be flaky",
                 $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
                     "retried. This may indicate it being flaky.",
