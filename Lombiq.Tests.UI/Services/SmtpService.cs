@@ -81,7 +81,7 @@ public sealed class SmtpService : IAsyncDisposable
 
         _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync(token);
         _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync(token);
-        _imapPort = await _imapPortLeaseManager.LeaseAvailableRandomPortAsync();
+        _imapPort = await _imapPortLeaseManager.LeaseAvailableRandomPortAsync(token);
 
         var webUIPortString = _webUIPort.ToTechnicalString();
         var smtpPortString = _smtpPort.ToTechnicalString();
