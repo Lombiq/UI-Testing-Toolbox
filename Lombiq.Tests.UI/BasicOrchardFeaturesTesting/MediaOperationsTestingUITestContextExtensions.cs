@@ -37,9 +37,12 @@ public static class MediaOperationsTestingUITestContextExtensions
                     .ClickReliablyAsync(context);
                 // Closing the newly opened tab with the image, so the browser doesn't continue to switch the UI back
                 // and forth.
+                context.DoWithRetriesOrFail(
+                    () => context.Driver.WindowHandles.Count > 1,
+                    TimeSpan.FromSeconds(30));
                 context.SwitchToLastWindow();
                 context.Driver.Close();
-                context.SwitchToFirstWindow();
+                context.SwitchToLastWindow();
 
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
@@ -56,12 +59,12 @@ public static class MediaOperationsTestingUITestContextExtensions
                     .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility())
                     .ClickReliablyAsync(context);
 
+                // For some reason, the PDF window in Chrome can't be closed (context.Driver.Close() will just time
+                // out). Thus not doing the same as with the image above. The rest of the test will execute hidden in
+                // the second tab.
                 await context
                     .Get(By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
-                context.SwitchToLastWindow();
-                context.Driver.Close();
-                context.SwitchToFirstWindow();
 
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
