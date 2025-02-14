@@ -53,17 +53,12 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
+                // For some reason, the PDF window in Chrome can't be closed (context.Driver.Close() will just time
+                // out). Thus not doing opening and closing it as with the image above.
                 context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
                 await context
                     .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility())
-                    .ClickReliablyAsync(context);
-
-                // For some reason, the PDF window in Chrome can't be closed (context.Driver.Close() will just time
-                // out). Thus not doing the same as with the image above. The rest of the test will execute hidden in
-                // the second tab.
-                await context
-                    .Get(By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{documentName}\"]"))
                     .ClickReliablyAsync(context);
 
                 context.WaitForPageLoad();
