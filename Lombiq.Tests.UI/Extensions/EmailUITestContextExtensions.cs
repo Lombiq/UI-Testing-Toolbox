@@ -213,7 +213,8 @@ public static class EmailUITestContextExtensions
         await client.ConnectAsync(
             context.SmtpServiceRunningContext.Host,
             context.SmtpServiceRunningContext.Port,
-            useSsl: false);
+            useSsl: false,
+            context.Configuration.TestCancellationToken);
 
         try
         {
@@ -221,7 +222,7 @@ public static class EmailUITestContextExtensions
         }
         finally
         {
-            await client.DisconnectAsync(quit: true);
+            await client.DisconnectAsync(quit: true, context.Configuration.TestCancellationToken);
             client.Dispose();
         }
     }
@@ -237,8 +238,8 @@ public static class EmailUITestContextExtensions
         {
             foreach (var emailFile in emailFiles)
             {
-                var mimeMessage = await MimeMessage.LoadAsync(emailFile);
-                await client.SendAsync(mimeMessage);
+                var mimeMessage = await MimeMessage.LoadAsync(emailFile, context.Configuration.TestCancellationToken);
+                await client.SendAsync(mimeMessage, context.Configuration.TestCancellationToken);
             }
         });
 
