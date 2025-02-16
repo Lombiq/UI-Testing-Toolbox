@@ -131,8 +131,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAsync(
         this UITestContext context,
-        bool dontCheckFrontend = false,
-        Func<UITestContext, Task> customPageHeaderCheckAsync = null)
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null,
+        bool dontCheckFrontend = false)
     {
         await context.TestRegistrationWithInvalidDataAsync();
         await context.TestRegistrationAsync();
