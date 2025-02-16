@@ -171,6 +171,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         await context.TestLoginAsync();
         await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
