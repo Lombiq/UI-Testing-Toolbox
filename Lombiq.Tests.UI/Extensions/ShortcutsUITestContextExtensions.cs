@@ -231,7 +231,7 @@ public static class ShortcutsUITestContextExtensions
                 if (permissionClaim == null)
                 {
                     var permissionProviders = serviceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
-                    if (!await PermissionExistsAsync(permissionProviders, permissionName))
+                    if (!await PermissionExistsAsync(permissionProviders, permissionName, context.Configuration.TestCancellationToken))
                     {
                         throw new PermissionNotFoundException($"Permission with the name \"{permissionName}\" not found.");
                     }
@@ -355,7 +355,7 @@ public static class ShortcutsUITestContextExtensions
             {
                 try
                 {
-                    await _recipeHarvesterSemaphore.WaitAsync();
+                    await _recipeHarvesterSemaphore.WaitAsync(context.Configuration.TestCancellationToken);
 
                     var recipeHarvesters = serviceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
                     var recipeCollections = await recipeHarvesters
@@ -377,7 +377,7 @@ public static class ShortcutsUITestContextExtensions
                         .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
 
                     var recipeExecutor = serviceProvider.GetRequiredService<IRecipeExecutor>();
-                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
+                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, context.Configuration.TestCancellationToken);
                 }
                 finally
                 {
@@ -620,16 +620,22 @@ public static class ShortcutsUITestContextExtensions
     /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
     /// HTML content.
     /// </param>
-    public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
+    /// <param name="cancellationToken">A token to cancel interactive mode programmatically.</param>
+    public static async Task SwitchToInteractiveAsync(
+        this UITestContext context, string notificationHtml = null, CancellationToken cancellationToken = default)
     {
         context.EnsureValidOrchardCoreTenantScope();
 
         InteractiveModeHasBeenUsed = true;
         await context.EnterInteractiveModeAsync(notificationHtml);
-        await context.WaitInteractiveModeAsync();
+        await context.WaitInteractiveModeAsync(cancellationToken);
 
-        context.Driver.Close();
-        context.SwitchToLastWindow();
+        if (context.Driver.WindowHandles.Count > 1)
+        {
+            context.Driver.Close();
+            context.DoWithRetriesOrFail(() => context.Driver.WindowHandles.Count == 1);
+            context.SwitchToFirstWindow();
+        }
     }
 
     /// <summary>
@@ -649,12 +655,14 @@ public static class ShortcutsUITestContextExtensions
     /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
     /// <see langword="true"/>.
     /// </summary>
-    internal static async Task WaitInteractiveModeAsync(this UITestContext context)
+    internal static async Task WaitInteractiveModeAsync(this UITestContext context, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken == default) cancellationToken = context.Configuration.TestCancellationToken;
+
         var client = context.GetApi();
-        while (await client.IsInteractiveModeEnabledAsync())
+        while (await client.IsInteractiveModeEnabledAsync() && !context.Configuration.TestCancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
         }
     }
 
@@ -663,10 +671,11 @@ public static class ShortcutsUITestContextExtensions
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders,
-        string permissionName)
+        string permissionName,
+        CancellationToken cancellationToken)
     {
         var permissions = permissionProviders.ToAsyncEnumerable();
-        await foreach (var provider in permissions)
+        await foreach (var provider in permissions.WithCancellation(cancellationToken))
         {
             var providerPermissions = await provider.GetPermissionsAsync();
             if (providerPermissions.Any(permission => permission.Name == permissionName))

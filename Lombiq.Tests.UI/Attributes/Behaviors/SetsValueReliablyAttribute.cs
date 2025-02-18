@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using System;
+using System.Threading;
 
 namespace Lombiq.Tests.UI.Attributes.Behaviors;
 
@@ -14,6 +15,7 @@ public sealed class SetsValueReliablyAttribute : ValueSetBehaviorAttribute
         var driver = component.Context.Driver;
 
         ReliabilityHelper.DoWithRetriesOrFail(
-            () => driver.TryFillElement(element, value).GetValue() == value);
+            () => driver.TryFillElement(element, value).GetValue() == value,
+            cancellationToken: CancellationToken.None);
     }
 }

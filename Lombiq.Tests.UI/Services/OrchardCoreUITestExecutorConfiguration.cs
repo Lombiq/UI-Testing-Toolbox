@@ -8,8 +8,9 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -30,10 +31,10 @@ public enum Browser
 public class OrchardCoreUITestExecutorConfiguration
 {
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
-        app.LogsShouldBeEmptyAsync();
+        app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
-        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate);
+        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
     public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
@@ -64,6 +65,8 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
+    private CancellationToken _testCancellationToken;
+
     /// <summary>
     /// Gets the global events available during UI test execution.
     /// </summary>
@@ -92,33 +95,6 @@ public class OrchardCoreUITestExecutorConfiguration
         TimeSpan.FromSeconds(TestConfigurationManager.GetIntConfiguration(
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
-
-    /// <summary>
-    /// Gets or sets how many tests should run at the same time. Use a value of 0 to indicate that you would like the
-    /// default behavior. Use a value of -1 to indicate that you do not wish to limit the number of tests running at the
-    /// same time. The default behavior and 0 uses the <see cref="Environment.ProcessorCount"/> property. Set any other
-    /// positive integer to limit to the exact number.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The XUnit MaxParallelThreads property controls only the threads, not the actual processes started. See <see
-    /// href="https://github.com/xunit/xunit/issues/2003"></see>.
-    /// </para>
-    /// <para>
-    /// This is important only for UI tests as there will be a running instance of the site for each UI test, which can
-    /// cause performance issues, like running out of memory.
-    /// </para>
-    /// </remarks>
-    [Obsolete("As of xUnit v2.8, the \"conservative\" parallelism algorithm is used by default, which limits the " +
-        "number of tests started (not currently running, as before) parallel tests. This feature is no longer needed " +
-        "and will be removed in a future version. Set maxParallelThreads in your test project's xunit.runner.json " +
-        "instead (see https://xunit.net/docs/running-tests-in-parallel).")]
-    // When removing this property, also remove the "ui-test-parallelism" config from Lombiq GitHub Actions.
-    public int MaxParallelTests { get; set; } =
-        TestConfigurationManager.GetIntConfiguration(
-            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
-            ? intValue
-            : Environment.ProcessorCount;
 
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
 
@@ -214,4 +190,15 @@ public class OrchardCoreUITestExecutorConfiguration
     /// enabled in the app for these to work.
     /// </summary>
     public ShortcutsConfiguration ShortcutsConfiguration { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets a <see cref="CancellationToken"/> that cancels the test execution.
+    /// </summary>
+    // TestContext.Current shouldn't be cached, it always needs to be accessed as needed. So, we can't use a simple
+    // property here.
+    public CancellationToken TestCancellationToken
+    {
+        get => _testCancellationToken == default ? TestContext.Current.CancellationToken : _testCancellationToken;
+        set => _testCancellationToken = value;
+    }
 }

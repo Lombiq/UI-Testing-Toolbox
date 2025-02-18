@@ -2,7 +2,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-public class VisualVerificationAssertionException : Exception
+public class VisualVerificationAssertionException : Exception, IAssertionException
 {
     public VisualVerificationAssertionException(string message)
         : base(message)

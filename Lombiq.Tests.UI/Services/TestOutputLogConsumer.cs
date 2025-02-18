@@ -1,5 +1,5 @@
 using Atata;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 

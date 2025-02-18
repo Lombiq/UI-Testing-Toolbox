@@ -3,7 +3,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-public class AccessibilityAssertionException : Exception
+public class AccessibilityAssertionException : Exception, IAssertionException
 {
     public AxeResult AxeResult { get; }
 

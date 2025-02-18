@@ -265,7 +265,7 @@ public static class NavigationUITestContextExtensions
             searchUrl,
             async response =>
             {
-                var json = await response.Content.ReadAsStringAsync();
+                var json = await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
                 var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
                 return result.IndexOf(result.First(item => item.DisplayText == text));
             });

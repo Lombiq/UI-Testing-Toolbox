@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Helpers;
 
@@ -35,16 +35,17 @@ internal static class CloudflareHelper
         Func<Task> testAsync,
         string cloudflareAccountId,
         string cloudflareApiToken,
-        ITestOutputHelper testOutputHelper)
+        ITestOutputHelper testOutputHelper,
+        CancellationToken cancellationToken)
     {
-        var currentIp = await GetPublicIpAsync();
+        var currentIp = await GetPublicIpAsync(cancellationToken);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
             "Current Cloudflare IP Access Rule reference count for IP {0} before entering semaphore: {1}.",
             currentIp,
             _referenceCounts.GetOrAdd(currentIp, 0));
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         _referenceCounts.AddOrUpdate(currentIp, 1, (_, count) => count + 1);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
@@ -71,13 +72,14 @@ internal static class CloudflareHelper
                         var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, currentIp);
                         preexistingRuleId = rulesResponse.Result?.FirstOrDefault()?.Id;
                         return rulesResponse.Success;
-                    });
+                    },
+                    cancellationToken: cancellationToken);
 
                 // preexistingRuleId can be set in the delegate above, so it's not always null.
 #pragma warning disable S2583 // Conditionally executed code should be reachable
                 if (preexistingRuleId != null)
                 {
-                    await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, preexistingRuleId);
+                    await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, preexistingRuleId, cancellationToken);
                 }
 #pragma warning restore S2583 // Conditionally executed code should be reachable
 
@@ -95,7 +97,8 @@ internal static class CloudflareHelper
                         _ipAccessRuleIds[currentIp] = createResponse.Result?.Id;
 
                         return createResponse.Success && _ipAccessRuleIds[currentIp] != null;
-                    });
+                    },
+                    cancellationToken: cancellationToken);
 
                 ThrowIfNotSuccess(createResponseResult, currentIp, "didn't save properly");
 
@@ -105,7 +108,8 @@ internal static class CloudflareHelper
                     {
                         var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId);
                         return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == _ipAccessRuleIds[currentIp]);
-                    });
+                    },
+                    cancellationToken: cancellationToken);
 
                 ThrowIfNotSuccess(ruleCheckRequestResult, currentIp, "didn't get activated");
 
@@ -138,7 +142,7 @@ internal static class CloudflareHelper
                     currentIp,
                     oldIpAccessRuleId);
 
-                var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, oldIpAccessRuleId);
+                var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, oldIpAccessRuleId, cancellationToken);
 
                 if (deleteSucceededResult.IsSuccess) _ipAccessRuleIds.TryRemove(currentIp, out _);
 
@@ -159,7 +163,7 @@ internal static class CloudflareHelper
         }
     }
 
-    private static async Task<string> GetPublicIpAsync()
+    private static async Task<string> GetPublicIpAsync(CancellationToken cancellationToken)
     {
         using var client = new HttpClient();
         string ip = string.Empty;
@@ -167,12 +171,13 @@ internal static class CloudflareHelper
         var ipRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
             async () =>
             {
-                var response = await client.GetStringAsync("https://cloudflare.com/cdn-cgi/trace");
+                var response = await client.GetStringAsync("https://cloudflare.com/cdn-cgi/trace", cancellationToken);
                 var lines = response.Split('\n');
                 var ipLine = Array.Find(lines, line => line.StartsWithOrdinalIgnoreCase("ip="));
                 ip = ipLine?.Split('=')[1];
                 return !string.IsNullOrEmpty(ip);
-            });
+            },
+            cancellationToken: cancellationToken);
 
         if (!ipRequestResult.IsSuccess)
         {
@@ -195,13 +200,15 @@ internal static class CloudflareHelper
 
     public static Task<(bool IsSuccess, Exception Exception)> DeleteIpAccessRuleWithRetriesAsync(
         string cloudflareAccountId,
-        string ipAccessRuleId) =>
+        string ipAccessRuleId,
+        CancellationToken cancellationToken) =>
         ReliabilityHelper.DoWithRetriesAndCatchesAsync(
             async () =>
             {
                 var deleteResponse = await _cloudflareApi.DeleteIpAccessRuleAsync(cloudflareAccountId, ipAccessRuleId);
                 return deleteResponse.Success;
-            });
+            },
+            cancellationToken: cancellationToken);
 
     [Headers("Authorization: Bearer")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "It's an API client.")]
