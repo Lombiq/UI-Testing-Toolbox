@@ -24,7 +24,7 @@ public static class MediaOperationsTestingUITestContextExtensions
 
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
 
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
 
                 // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
                 context.WaitForPageLoad();
@@ -47,7 +47,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
 
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
 
                 // Workaround for pending uploads, until you make an action the page is stuck on "Uploads Pending".
                 context.WaitForPageLoad();
@@ -65,7 +65,7 @@ public static class MediaOperationsTestingUITestContextExtensions
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
 
                 await context
-                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions")) // #spell-check-ignore-line
+                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions"))
                     .ClickReliablyAsync(context);
 
                 context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
@@ -79,8 +79,8 @@ public static class MediaOperationsTestingUITestContextExtensions
                         .Safely())),
                     timeout: TimeSpan.FromMinutes(2));
 
-                context.UploadSamplePngByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
-                context.UploadSamplePdfByIdOfAnyVisibility("fileupload"); // #spell-check-ignore-line
+                context.UploadSamplePngByIdOfAnyVisibility("fileupload");
+                context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
                 context.WaitForPageLoad();
 
                 var image = context.Get(By.XPath($"//span[contains(text(), '{imageName}')]"));

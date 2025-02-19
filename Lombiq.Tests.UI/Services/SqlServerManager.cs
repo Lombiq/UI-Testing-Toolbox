@@ -38,7 +38,7 @@ public class SqlServerRunningContext
 
 public sealed class SqlServerManager : IAsyncDisposable
 {
-    private const string DbSnapshotName = "Database.bak"; // #spell-check-ignore-line
+    private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);

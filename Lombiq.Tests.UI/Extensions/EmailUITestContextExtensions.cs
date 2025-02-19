@@ -162,7 +162,7 @@ public static class EmailUITestContextExtensions
     }
 
     /// <summary>
-    /// Clicks reliably on an SMTP inbox row and attempts to switch to frame 0 with retries. // #spell-check-ignore-line
+    /// Clicks reliably on an SMTP inbox row and attempts to switch to frame 0 with retries.
     /// If switching to the frame fails due to smtp4dev reloading, it logs the failure and retries up to the specified
     /// maximum attempts.
     /// </summary>

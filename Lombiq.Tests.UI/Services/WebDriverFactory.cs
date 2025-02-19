@@ -34,12 +34,12 @@ public static class WebDriverFactory
 
                 // Linux-specific setting, may be necessary for running in containers, see
                 // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-                chromeConfig.Options.AddArgument("disable-dev-shm-usage"); // #spell-check-ignore-line
+                chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
                 // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
                 // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
                 // details.
-                chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings"); // #spell-check-ignore-line
+                chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
 
                 // Disables the default search engine selector splash screen.
                 chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
@@ -64,7 +64,7 @@ public static class WebDriverFactory
                     .SetCommonTimeouts(pageLoadTimeout);
             });
 
-        var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER"); // #spell-check-ignore-line
+        var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
         if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
         {
             return CreateDriverInnerAsync(driverPath);
@@ -128,7 +128,7 @@ public static class WebDriverFactory
 
                 // For some reason FirefoxOptions does not expose the argument list like the Chromium-based driver
                 // options classes do.
-                const string argumentsFieldName = "firefoxArguments"; // #spell-check-ignore-line
+                const string argumentsFieldName = "firefoxArguments";
                 var arguments = typeof(FirefoxOptions)
                     .GetField(argumentsFieldName, BindingFlags.Instance | BindingFlags.NonPublic)?
                     .GetValue(options) as IList<string> ?? [];
@@ -156,7 +156,7 @@ public static class WebDriverFactory
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.AddArgument("disable-accelerated-2d-canvas");
-        options.AddArgument("disable-gpu"); // #spell-check-ignore-line
+        options.AddArgument("disable-gpu");
 
         // Setting font rendering to keep the text as they are for visual verification testing.
         options.AddArgument("font-render-hinting=none");

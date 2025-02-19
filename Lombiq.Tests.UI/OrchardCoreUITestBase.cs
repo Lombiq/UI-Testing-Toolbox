@@ -51,7 +51,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     private const string AppFolder = nameof(AppFolder);
 
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
-    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait; // #spell-check-ignore-line
+    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
