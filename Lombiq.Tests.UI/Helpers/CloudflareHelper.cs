@@ -39,27 +39,19 @@ internal static class CloudflareHelper
         CancellationToken cancellationToken)
     {
         var currentIp = await GetPublicIpAsync(cancellationToken);
-        // The IP retrieved above and the one later seen by the app during browser interactions can be different for
-        // some reason (perhaps different network routing). So, instead of creating a Cloudflare IP Access Rule just for
-        // the specific IP, we create it for the whole /24 subnet (i.e. X.Y.Z.*). In our experience, that always covers
-        // it, since the IPs are usually close to each other.
-        var currentIpRange = currentIp[0..currentIp.LastIndexOf('.')] + ".0/24";
-
-        testOutputHelper.WriteLineTimestampedAndDebug(
-            "Current public IP address of the runner is {0}. Using IP range {0}.", currentIp, currentIpRange);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
             "Current Cloudflare IP Access Rule reference count for IP {0} before entering semaphore: {1}.",
-            currentIpRange,
-            _referenceCounts.GetOrAdd(currentIpRange, 0));
+            currentIp,
+            _referenceCounts.GetOrAdd(currentIp, 0));
 
         await _semaphore.WaitAsync(cancellationToken);
-        _referenceCounts.AddOrUpdate(currentIpRange, 1, (_, count) => count + 1);
+        _referenceCounts.AddOrUpdate(currentIp, 1, (_, count) => count + 1);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
             "Current Cloudflare IP Access Rule reference count for IP {0} after entering semaphore: {1}.",
-            currentIpRange,
-            _referenceCounts[currentIpRange]);
+            currentIp,
+            _referenceCounts[currentIp]);
 
         try
         {
@@ -68,16 +60,16 @@ internal static class CloudflareHelper
                 AuthorizationHeaderValueGetter = (_, _) => Task.FromResult(cloudflareApiToken),
             });
 
-            if (!_ipAccessRuleIds.ContainsKey(currentIpRange))
+            if (!_ipAccessRuleIds.ContainsKey(currentIp))
             {
-                testOutputHelper.WriteLineTimestampedAndDebug("Creating a Cloudflare IP Access Rule for the IP {0}.", currentIpRange);
+                testOutputHelper.WriteLineTimestampedAndDebug("Creating a Cloudflare IP Access Rule for the IP {0}.", currentIp);
 
                 // Delete any pre-existing rules for the current IP first.
                 string preexistingRuleId = null;
                 await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
-                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, currentIpRange);
+                        var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId, currentIp);
                         preexistingRuleId = rulesResponse.Result?.FirstOrDefault()?.Id;
                         return rulesResponse.Success;
                     },
@@ -98,31 +90,31 @@ internal static class CloudflareHelper
                         var createResponse = await _cloudflareApi.CreateIpAccessRuleAsync(cloudflareAccountId, new IpAccessRuleRequest
                         {
                             Mode = "whitelist",
-                            Configuration = new IpAccessRuleConfiguration { Target = "ip_range", Value = currentIpRange },
+                            Configuration = new IpAccessRuleConfiguration { Target = "ip", Value = currentIp },
                             Notes = "Temporarily allow a remote UI test from GitHub Actions.",
                         });
 
-                        _ipAccessRuleIds[currentIpRange] = createResponse.Result?.Id;
+                        _ipAccessRuleIds[currentIp] = createResponse.Result?.Id;
 
-                        return createResponse.Success && _ipAccessRuleIds[currentIpRange] != null;
+                        return createResponse.Success && _ipAccessRuleIds[currentIp] != null;
                     },
                     cancellationToken: cancellationToken);
 
-                ThrowIfNotSuccess(createResponseResult, currentIpRange, "didn't save properly");
+                ThrowIfNotSuccess(createResponseResult, currentIp, "didn't save properly");
 
                 // Wait for the rule to appear, to make sure that it's active.
                 var ruleCheckRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
                     async () =>
                     {
                         var rulesResponse = await _cloudflareApi.GetIpAccessRulesAsync(cloudflareAccountId);
-                        return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == _ipAccessRuleIds[currentIpRange]);
+                        return rulesResponse.Success && rulesResponse.Result.Exists(rule => rule.Id == _ipAccessRuleIds[currentIp]);
                     },
                     cancellationToken: cancellationToken);
 
-                ThrowIfNotSuccess(ruleCheckRequestResult, currentIpRange, "didn't get activated");
+                ThrowIfNotSuccess(ruleCheckRequestResult, currentIp, "didn't get activated");
 
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Created a Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}).", currentIpRange, _ipAccessRuleIds[currentIpRange]);
+                    "Created a Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}).", currentIp, _ipAccessRuleIds[currentIp]);
             }
         }
         finally
@@ -138,35 +130,35 @@ internal static class CloudflareHelper
         {
             testOutputHelper.WriteLineTimestampedAndDebug(
                 "Current Cloudflare IP Access Rule reference count for IP {0} after the test (including this test): {1}.",
-                currentIpRange,
-                _referenceCounts[currentIpRange]);
+                currentIp,
+                _referenceCounts[currentIp]);
 
             // Clean up the IP access rule.
-            if (_ipAccessRuleIds.TryGetValue(currentIpRange, out string oldIpAccessRuleId) &&
-                _referenceCounts.AddOrUpdate(currentIpRange, 0, (_, count) => count - 1) == 0)
+            if (_ipAccessRuleIds.TryGetValue(currentIp, out string oldIpAccessRuleId) &&
+                _referenceCounts.AddOrUpdate(currentIp, 0, (_, count) => count - 1) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "Removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test has the last reference to it.",
-                    currentIpRange,
+                    currentIp,
                     oldIpAccessRuleId);
 
                 var deleteSucceededResult = await DeleteIpAccessRuleWithRetriesAsync(cloudflareAccountId, oldIpAccessRuleId, cancellationToken);
 
-                if (deleteSucceededResult.IsSuccess) _ipAccessRuleIds.TryRemove(currentIpRange, out _);
+                if (deleteSucceededResult.IsSuccess) _ipAccessRuleIds.TryRemove(currentIp, out _);
 
-                ThrowIfNotSuccess(deleteSucceededResult, currentIpRange, "couldn't be deleted");
+                ThrowIfNotSuccess(deleteSucceededResult, currentIp, "couldn't be deleted");
 
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "Removed the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test had the last reference to it.",
-                    currentIpRange,
+                    currentIp,
                     oldIpAccessRuleId);
             }
             else
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "Not removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since the current reference count is NOT 0.",
-                    currentIpRange,
-                    _ipAccessRuleIds[currentIpRange]);
+                    currentIp,
+                    _ipAccessRuleIds[currentIp]);
             }
         }
     }
