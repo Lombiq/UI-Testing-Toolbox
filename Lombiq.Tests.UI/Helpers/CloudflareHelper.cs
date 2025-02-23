@@ -46,10 +46,10 @@ internal static class CloudflareHelper
         var currentIpRange = currentIp[0..currentIp.LastIndexOf('.')] + ".0/24";
 
         testOutputHelper.WriteLineTimestampedAndDebug(
-            "Current public IP address of the runner is {0}. Using IP range {0}.", currentIp, currentIpRange);
+            "Current public IP address of the runner is {0}. Using IP range {1}.", currentIp, currentIpRange);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
-            "Current Cloudflare IP Access Rule reference count for IP {0} before entering semaphore: {1}.",
+            "Current Cloudflare IP Access Rule reference count for IP range {0} before entering semaphore: {1}.",
             currentIpRange,
             _referenceCounts.GetOrAdd(currentIpRange, 0));
 
@@ -57,7 +57,7 @@ internal static class CloudflareHelper
         _referenceCounts.AddOrUpdate(currentIpRange, 1, (_, count) => count + 1);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
-            "Current Cloudflare IP Access Rule reference count for IP {0} after entering semaphore: {1}.",
+            "Current Cloudflare IP Access Rule reference count for IP range {0} after entering semaphore: {1}.",
             currentIpRange,
             _referenceCounts[currentIpRange]);
 
@@ -70,7 +70,7 @@ internal static class CloudflareHelper
 
             if (!_ipAccessRuleIds.ContainsKey(currentIpRange))
             {
-                testOutputHelper.WriteLineTimestampedAndDebug("Creating a Cloudflare IP Access Rule for the IP {0}.", currentIpRange);
+                testOutputHelper.WriteLineTimestampedAndDebug("Creating a Cloudflare IP Access Rule for the IP range {0}.", currentIpRange);
 
                 // Delete any pre-existing rules for the current IP first.
                 string preexistingRuleId = null;
@@ -122,7 +122,9 @@ internal static class CloudflareHelper
                 ThrowIfNotSuccess(ruleCheckRequestResult, currentIpRange, "didn't get activated");
 
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Created a Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}).", currentIpRange, _ipAccessRuleIds[currentIpRange]);
+                    "Created a Cloudflare IP Access Rule for the IP range {0} (Rule ID: {1}).",
+                    currentIpRange,
+                    _ipAccessRuleIds[currentIpRange]);
             }
         }
         finally
@@ -137,7 +139,7 @@ internal static class CloudflareHelper
         finally
         {
             testOutputHelper.WriteLineTimestampedAndDebug(
-                "Current Cloudflare IP Access Rule reference count for IP {0} after the test (including this test): {1}.",
+                "Current Cloudflare IP Access Rule reference count for IP range {0} after the test (including this test): {1}.",
                 currentIpRange,
                 _referenceCounts[currentIpRange]);
 
@@ -146,7 +148,7 @@ internal static class CloudflareHelper
                 _referenceCounts.AddOrUpdate(currentIpRange, 0, (_, count) => count - 1) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test has the last reference to it.",
+                    "Removing the Cloudflare IP Access Rule for the IP range {0} (Rule ID: {1}) since this test has the last reference to it.",
                     currentIpRange,
                     oldIpAccessRuleId);
 
@@ -157,14 +159,14 @@ internal static class CloudflareHelper
                 ThrowIfNotSuccess(deleteSucceededResult, currentIpRange, "couldn't be deleted");
 
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Removed the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since this test had the last reference to it.",
+                    "Removed the Cloudflare IP Access Rule for the IP range {0} (Rule ID: {1}) since this test had the last reference to it.",
                     currentIpRange,
                     oldIpAccessRuleId);
             }
             else
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Not removing the Cloudflare IP Access Rule for the IP {0} (Rule ID: {1}) since the current reference count is NOT 0.",
+                    "Not removing the Cloudflare IP Access Rule for the IP range {0} (Rule ID: {1}) since the current reference count is NOT 0.",
                     currentIpRange,
                     _ipAccessRuleIds[currentIpRange]);
             }
@@ -201,7 +203,7 @@ internal static class CloudflareHelper
 
         throw new IOException(
             $"The Cloudflare IP Access Rule for allowing requests from this runner {messagePart}. There might be a " +
-            $"leftover rule for the IP {currentIp} that needs to be deleted manually." +
+            $"leftover rule for the IP range {currentIp} that needs to be deleted manually." +
             (result.InnerException is ApiException ex ? $" Response: {ex.Content}" : string.Empty),
             result.InnerException);
     }
