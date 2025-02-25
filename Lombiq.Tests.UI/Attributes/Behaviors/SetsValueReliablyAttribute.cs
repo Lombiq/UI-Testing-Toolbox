@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Attributes.Behaviors;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class SetsValueReliablyAttribute : ValueSetBehaviorAttribute
 {
-    public override void Execute<TOwner>(IUIComponent<TOwner> component, string value) // #spell-check-ignore-line
+    public override void Execute<TOwner>(IUIComponent<TOwner> component, string value)
     {
         var element = component.Scope;
         var driver = component.Context.Driver;

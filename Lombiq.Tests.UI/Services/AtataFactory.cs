@@ -38,7 +38,7 @@ public static class AtataFactory
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .PageSnapshots.UseCdpOrPageSourceStrategy() // #spell-check-ignore-line
+            .PageSnapshots.UseCdpOrPageSourceStrategy()
             .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
 
         if (configuration.BrowserConfiguration.Browser != Browser.None)
