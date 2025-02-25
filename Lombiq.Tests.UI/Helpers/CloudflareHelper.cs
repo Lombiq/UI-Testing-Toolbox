@@ -197,7 +197,7 @@ internal static class CloudflareHelper
         return ip;
     }
 
-    private static void ThrowIfNotSuccess((bool IsSuccess, Exception InnerException) result, string currentIp, string messagePart)
+    private static void ThrowIfNotSuccess((bool IsSuccess, Exception InnerException) result, string currentIpRange, string messagePart)
     {
         if (result.IsSuccess) return;
 
