@@ -39,7 +39,7 @@ async function _takeScreenshot(driver, file){
  * @param timeout {number} - The maximum time to wait for the condition to be true.
  * @returns {Promise<*>}
  */
-async function safeWait(driver, condition, timeout = 10000) {
+function safeWait(driver, condition, timeout = 10000) {
     return driver.wait(condition, timeout);
 }
 
@@ -50,7 +50,7 @@ async function safeWait(driver, condition, timeout = 10000) {
  * @param timeout {number} - The maximum time to wait for the URL to be the provided value.
  * @returns {Promise<*>}
  */
-async function waitForUrl(driver, url, timeout = 10000)
+function waitForUrl(driver, url, timeout = 10000)
 {
     return safeWait(driver, until.urlIs(url), timeout);
 }
@@ -62,7 +62,7 @@ async function waitForUrl(driver, url, timeout = 10000)
  * @param timeout {number} - The maximum time to wait for the input to have a non-empty value.
  * @returns {Promise<void>}
  */
-async function waitUntilInputValueIsNotEmpty(driver, element, timeout = 5000) {
+function waitUntilInputValueIsNotEmpty(driver, element, timeout = 5000) {
     return safeWait(
         driver,
         async function () {
@@ -80,7 +80,7 @@ async function waitUntilInputValueIsNotEmpty(driver, element, timeout = 5000) {
  * @param timeout {number} - The maximum time to wait for the class to be removed.
  * @returns {Promise<void>}
  */
-async function waitUntilClassIsRemoved(driver, by, className, timeout = 5000) {
+function waitUntilClassIsRemoved(driver, by, className, timeout = 5000) {
     return safeWait(driver, async function () {
         const element = await driver.findElement(by);
         const classList = await element.getAttribute('class');
@@ -96,7 +96,7 @@ async function waitUntilClassIsRemoved(driver, by, className, timeout = 5000) {
  * @param by {By} - The By selector used to find the element.
  * @returns {Promise<*>}
  */
-async function findElementBy(driver, by)
+function findElementBy(driver, by)
 {
     return driver.findElement(by);
 }
@@ -107,8 +107,8 @@ async function findElementBy(driver, by)
  * @param text {string} - The text of the link to find.
  * @returns {Promise<void>}
  */
-async function findLinkByTextInEmailThenClick(driver, text) {
-    return await findByThenClick(driver, By.linkText(text), true);
+function findLinkByTextInEmailThenClick(driver, text) {
+    return findByThenClick(driver, By.linkText(text), true);
 }
 
 /**
@@ -117,8 +117,8 @@ async function findLinkByTextInEmailThenClick(driver, text) {
  * @param text {string} - The text of the link to find.
  * @returns {Promise<void>}
  */
-async function findLinkByTextThenClick(driver, text) {
-    return await findByThenClick(driver, By.linkText(text));
+function findLinkByTextThenClick(driver, text) {
+    return findByThenClick(driver, By.linkText(text));
 }
 
 /**
@@ -127,7 +127,7 @@ async function findLinkByTextThenClick(driver, text) {
  * @param xpath {string} - The XPath of the element to find.
  * @returns {Promise<*>}
  */
-async function findElementByXpath(driver, xpath)
+function findElementByXpath(driver, xpath)
 {
     return driver.findElement(By.xpath(xpath));
 }
@@ -138,7 +138,7 @@ async function findElementByXpath(driver, xpath)
  * @param value {string} - The value of the input element to find.
  * @returns {Promise<*>}
  */
-async function findElementByInputValue(driver, value)
+function findElementByInputValue(driver, value)
 {
     return findElementByXpath(driver, `//input[@value=${JSON.stringify(value)}]`);
 }
