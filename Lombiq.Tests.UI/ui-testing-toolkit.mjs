@@ -47,11 +47,12 @@ async function safeWait(driver, condition, timeout = 10000) {
  * Waits for the URL to be the provided value.
  * @param driver {WebDriver} - The WebDriver instance.
  * @param url {string} - The URL to wait for.
+ * @param timeout {number} - The maximum time to wait for the URL to be the provided value.
  * @returns {Promise<*>}
  */
-async function waitForUrl(driver, url)
+async function waitForUrl(driver, url, timeout = 10000)
 {
-    return safeWait(driver, until.urlIs(url));
+    return safeWait(driver, until.urlIs(url), timeout);
 }
 
 /**
@@ -62,7 +63,7 @@ async function waitForUrl(driver, url)
  * @returns {Promise<void>}
  */
 async function waitUntilInputValueIsNotEmpty(driver, element, timeout = 5000) {
-    await safeWait(
+    return safeWait(
         driver,
         async function () {
             const currentValue = await element.getAttribute('value');
@@ -80,9 +81,9 @@ async function waitUntilInputValueIsNotEmpty(driver, element, timeout = 5000) {
  * @returns {Promise<void>}
  */
 async function waitUntilClassIsRemoved(driver, by, className, timeout = 5000) {
-    await safeWait(driver, async function () {
+    return safeWait(driver, async function () {
         const element = await driver.findElement(by);
-        const classList = await element.getAttribute("class");
+        const classList = await element.getAttribute('class');
 
         // Wait until class is NOT present
         return !classList.includes(className);
@@ -139,7 +140,7 @@ async function findElementByXpath(driver, xpath)
  */
 async function findElementByInputValue(driver, value)
 {
-    return findElementByXpath(driver, `//input[@value=\'${value}\']`);
+    return findElementByXpath(driver, `//input[@value=${JSON.stringify(value)}]`);
 }
 
 /**
@@ -150,30 +151,30 @@ async function findElementByInputValue(driver, value)
  */
 async function linkShouldOpenNewTab(driver, element)
 {
-    const targetAttr = await element.getAttribute("target");
-    return targetAttr === "_blank";
+    const targetAttr = await element.getAttribute('target');
+    return targetAttr === '_blank';
 }
 
 /**
  * Creates a By selector for finding an element by its tag and containing text.
  * @param tag The tag of the element.
- * @param searchAttribute The text to search for.
+ * @param text The text to search for.
  * @returns {!By} The By selector.
  */
-function byTagAndText(tag, searchAttribute){
-    return By.xpath(`//${tag}[contains(.,"${searchAttribute}")]`);
+function byTagAndText(tag, text){
+    return By.xpath(`//${tag}[contains(., ${JSON.stringify(text)})]`);
 }
 
 /**
  * Finds an element by its tag and containing text.
  * @param driver {WebDriver} - The WebDriver instance.
  * @param tag {string} - The tag of the element.
- * @param searchAttribute {string} - The text to search for.
+ * @param text {string} - The text to search for.
  * @returns {Promise<*>}
  */
-async function findElementByTagAndContainingText(driver, tag, searchAttribute)
+async function findElementByTagAndContainingText(driver, tag, text)
 {
-    const by = byTagAndText(tag, searchAttribute);
+    const by = byTagAndText(tag, text);
     return driver.findElement(by);
 }
 
@@ -231,7 +232,7 @@ async function switchToTab(driver, tabIndex = 0) {
     if (tabIndex < handles.length) {
         await driver.switchTo().window(handles[tabIndex]);
     } else {
-        throw new Error("Tab index out of range");
+        throw new Error('Tab index out of range');
     }
 }
 
@@ -346,7 +347,7 @@ async function fillInput(driver, by, value) {
 
     const currentValue = await inputField.getAttribute('value');
     if (currentValue?.length > 0) {
-        await inputField.sendKeys(Key.chord(Key.CONTROL, "a"), Key.DELETE);
+        await inputField.sendKeys(Key.chord(Key.CONTROL, 'a'), Key.DELETE);
     }
     await inputField.sendKeys(value);
 }
@@ -359,7 +360,7 @@ async function fillInput(driver, by, value) {
  * @returns {Promise<!By>}
  */
 async function byInputByLabel(driver, labelText, context = driver){
-    const label = await findElementByXpath(context, `//label[contains(.,"${labelText}")]`);
+    const label = await findElementByXpath(context, `//label[contains(., ${JSON.stringify(labelText)})]`);
     return By.id(await label.getAttribute('for'));
 }
 
