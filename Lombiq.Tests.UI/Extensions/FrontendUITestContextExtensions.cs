@@ -92,6 +92,11 @@ public static class FrontendUITestContextExtensions
             browser.ToString(),
         };
 
+        if (context.SmtpServiceRunningContext?.WebUIUri != null)
+        {
+            arguments = [.. arguments, context.SmtpServiceRunningContext.WebUIUri.AbsoluteUri];
+        }
+
         return (workingDirectory, arguments);
     }
 
