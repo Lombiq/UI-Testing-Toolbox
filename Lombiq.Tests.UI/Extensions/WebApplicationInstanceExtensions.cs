@@ -1,9 +1,11 @@
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +32,7 @@ public static class WebApplicationInstanceExtensions
         this IWebApplicationInstance webApplicationInstance,
         CancellationToken cancellationToken = default)
     {
-        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+        var logs = (await webApplicationInstance.GetLogsAsync(cancellationToken)).AsList();
         logs.ShouldNotContain(log => log.EntryCount > 0, await logs.ToFormattedStringAsync());
     }
 
@@ -166,7 +168,9 @@ public static class WebApplicationInstanceExtensions
         Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
         CancellationToken cancellationToken = default)
     {
-        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+        var logs = (await webApplicationInstance.GetLogsAsync(cancellationToken))
+            .ToList();
+
         var logContents = await logs.ToFormattedStringAsync();
 
         foreach (var log in logs)
