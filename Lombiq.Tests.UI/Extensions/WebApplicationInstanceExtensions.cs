@@ -167,6 +167,8 @@ public static class WebApplicationInstanceExtensions
         Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
         CancellationToken cancellationToken = default)
     {
+        // Fetch the log contents but only include the entries that will throw below so you don't have to manually sort
+        // through ignored log entries if there is an error.
         var logs = await (await webApplicationInstance.GetLogsAsync(cancellationToken))
             .AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, logEntryPredicate.Compile()));
 
