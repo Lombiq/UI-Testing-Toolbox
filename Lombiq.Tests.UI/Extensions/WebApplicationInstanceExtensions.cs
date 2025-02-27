@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -168,10 +167,10 @@ public static class WebApplicationInstanceExtensions
         Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
         CancellationToken cancellationToken = default)
     {
-        var logs = (await webApplicationInstance.GetLogsAsync(cancellationToken))
-            .ToList();
+        var logs = await (await webApplicationInstance.GetLogsAsync(cancellationToken))
+            .AwaitEachAsync(CachedApplicationLog.FromLogAsync);
 
-        var logContents = await logs.ToFormattedStringAsync();
+        var logContents = logs.ToFormattedStringCached();
 
         foreach (var log in logs)
         {
