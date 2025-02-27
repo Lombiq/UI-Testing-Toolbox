@@ -9,7 +9,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class ApplicationLogEnumerableExtensions
 {
-    public static string ToFormattedStringCached(this IEnumerable<CachedApplicationLog> logs)
+    public static string ToFormattedStringCached(this IEnumerable<MemoryApplicationLog> logs)
     {
         var logsArray = logs.ToArray();
 
@@ -30,6 +30,6 @@ public static class ApplicationLogEnumerableExtensions
         return cached.ToFormattedStringCached();
     }
 
-    private static string ToFormattedString(this CachedApplicationLog log) =>
+    private static string ToFormattedString(this MemoryApplicationLog log) =>
         string.Join(Environment.NewLine, log.Entries.Select(logEntry => logEntry.ToString()));
 }
