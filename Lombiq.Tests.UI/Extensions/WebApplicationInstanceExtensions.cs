@@ -168,7 +168,7 @@ public static class WebApplicationInstanceExtensions
         CancellationToken cancellationToken = default)
     {
         var logs = await (await webApplicationInstance.GetLogsAsync(cancellationToken))
-            .AwaitEachAsync(CachedApplicationLog.FromLogAsync);
+            .AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, logEntryPredicate.Compile()));
 
         var logContents = logs.ToFormattedStringCached();
 

@@ -26,7 +26,7 @@ public static class ApplicationLogEnumerableExtensions
 
     public static async Task<string> ToFormattedStringAsync(this IEnumerable<IApplicationLog> logs)
     {
-        var cached = await logs.AwaitEachAsync(CachedApplicationLog.FromLogAsync);
+        var cached = await logs.AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log));
         return cached.ToFormattedStringCached();
     }
 
