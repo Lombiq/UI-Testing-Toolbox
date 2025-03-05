@@ -161,7 +161,7 @@ public static class ExtendedLoggingExtensions
             catch (StaleElementReferenceException) when (notLast)
             {
                 LogStaleElementReferenceExceptionRetry(context, i);
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(1), context.Configuration.TestCancellationToken);
             }
         }
 

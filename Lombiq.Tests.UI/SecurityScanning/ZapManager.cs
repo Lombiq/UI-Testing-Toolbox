@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
@@ -26,8 +26,8 @@ public sealed class ZapManager : IAsyncDisposable
     // https://hub.docker.com/r/zaproxy/zap-stable/tags.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "zaproxy/zap-stable:2.15.0"; // #spell-check-ignore-line
-    private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
+    private const string _zapImage = "zaproxy/zap-stable:2.16.0";
+    private const string _zapWorkingDirectoryPath = "/zap/wrk/";
     private const string _zapReportsDirectoryName = "reports";
     private const string _zapHomeDirectoryName = "home";
 
@@ -41,6 +41,7 @@ public sealed class ZapManager : IAsyncDisposable
     private static bool _wasPulled;
 
     private int _zapPort;
+    private bool _isDisposed;
 
     static ZapManager()
     {
@@ -113,10 +114,8 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Also see https://www.zaproxy.org/docs/docker/about/#automation-framework.
 
-        // Running a ZAP desktop in the browser with Webswing with the same config under Windows: #spell-check-ignore-line
-#pragma warning disable S103 // Lines should not be too long
-        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh  #spell-check-ignore-line
-#pragma warning restore S103 // Lines should not be too long
+        // Running a ZAP desktop in the browser with Webswing with the same config under Windows:
+        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh
 
         var cliParameters = new List<object> { "run" };
 
@@ -133,7 +132,7 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Using a different port than the default 8080 is necessary so ZAP doesn't clash with other web processes and
         // to allow more than one security scan to run at the same time.
-        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
 
         var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
@@ -180,6 +179,10 @@ public sealed class ZapManager : IAsyncDisposable
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
 
+        // Under the Ubuntu GitHub Actions runners, at this point, the report's folder (like
+        // "2025-01-22-ZAP-Report-localhost") will remain unwritable, but readable. No amount of sudo chmodding will fix
+        // this, and it's not because any process is locking it. This shouldn't be much of an issue, though.
+
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
         if (result.ExitCode == 1)
@@ -211,28 +214,28 @@ public sealed class ZapManager : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
-        {
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource.Dispose();
-        }
+        if (_isDisposed) return;
 
-        await _portLeaseManager.StopLeaseAsync(_zapPort);
+        _isDisposed = true;
+
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
+
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await _portLeaseManager.StopLeaseAsync(_zapPort, CancellationToken.None);
     }
 
     private async Task EnsureInitializedAsync()
     {
         try
         {
-            var token = _cancellationTokenSource.Token;
-
-            await _pullSemaphore.WaitAsync(token);
+            await _pullSemaphore.WaitAsync(_cancellationTokenSource.Token);
 
             if (_wasPulled) return;
 
             // Without --quiet, "What's Next?" hints will be written to stderr by Docker. See
             // https://github.com/docker/for-mac/issues/6904.
-            await _docker.ExecuteAsync(token, "pull", _zapImage, "--quiet");
+            await _docker.ExecuteAsync(_cancellationTokenSource.Token, "pull", _zapImage, "--quiet");
             _wasPulled = true;
         }
         finally

@@ -4,7 +4,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Exceptions;
 
-public class PageChangeAssertionException : Exception
+public class PageChangeAssertionException : Exception, IAssertionException
 {
     public Uri Address { get; }
     public string Title { get; }

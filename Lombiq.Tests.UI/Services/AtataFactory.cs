@@ -4,7 +4,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -38,7 +38,7 @@ public static class AtataFactory
             .UseTestName(configuration.AtataConfiguration.TestName)
             .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
             .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .PageSnapshots.UseCdpOrPageSourceStrategy() // #spell-check-ignore-line
+            .PageSnapshots.UseCdpOrPageSourceStrategy()
             .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
 
         if (configuration.BrowserConfiguration.Browser != Browser.None)
@@ -92,7 +92,6 @@ public static class AtataFactory
                     Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, pageLoadTimeout),
-                    Browser.InternetExplorer => await WebDriverFactory.CreateInternetExplorerDriverAsync(browserConfiguration, pageLoadTimeout),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

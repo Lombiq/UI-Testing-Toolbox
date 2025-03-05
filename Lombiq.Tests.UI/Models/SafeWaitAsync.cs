@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Atata;
@@ -78,11 +79,12 @@ public class SafeWaitAsync<T> : IWait<T>
     /// </summary>
     /// <typeparam name="TResult">The delegate's expected return type.</typeparam>
     /// <param name="condition">A delegate taking an object of type T as its parameter, and returning a TResult.</param>
+    /// <param name="cancellationToken">The cancellation token to halt waiting early.</param>
     /// <returns>The delegate's return value.</returns>
     // Implements the same logic as <see cref="SafeWait{T}.Until{TResult}(Func{T, TResult})"/>, the complexity is
     // okay.
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
-    public async Task<TResult> UntilAsync<TResult>(Func<T, Task<TResult>> condition)
+    public async Task<TResult> UntilAsync<TResult>(Func<T, Task<TResult>> condition, CancellationToken cancellationToken = default)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
     {
         condition.CheckNotNull(nameof(condition));
@@ -92,6 +94,8 @@ public class SafeWaitAsync<T> : IWait<T>
 
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var iterationStart = _clock.Now;
 
             try
@@ -124,7 +128,7 @@ public class SafeWaitAsync<T> : IWait<T>
                 timeToSleep = timeUntilTimeout;
 
             if (timeToSleep > TimeSpan.Zero)
-                await Task.Delay(timeToSleep);
+                await Task.Delay(timeToSleep, cancellationToken);
         }
     }
 

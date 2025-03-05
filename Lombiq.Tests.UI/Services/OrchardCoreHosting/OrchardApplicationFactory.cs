@@ -12,6 +12,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using YesSql;
 
@@ -23,16 +24,19 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private readonly Action<IConfigurationBuilder> _configureHost;
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
+    private readonly CancellationToken _cancellationToken;
     private readonly List<IStore> _createdStores = [];
 
     public OrchardApplicationFactory(
-        Action<IConfigurationBuilder> configureHost = null,
-        Action<IWebHostBuilder> configuration = null,
-        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
+        Action<IConfigurationBuilder> configureHost,
+        Action<IWebHostBuilder> configuration,
+        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard,
+        CancellationToken cancellationToken)
     {
         _configureHost = configureHost;
         _configuration = configuration;
         _configureOrchard = configureOrchard;
+        _cancellationToken = cancellationToken;
     }
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
@@ -62,7 +66,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             // the latest source.
 
             var host = builder.Build();
-            Task.Run(() => host.StartAsync()).GetAwaiter().GetResult();
+            Task.Run(() => host.StartAsync(_cancellationToken), _cancellationToken).GetAwaiter().GetResult();
             return host;
         }
     }

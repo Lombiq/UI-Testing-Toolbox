@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -70,12 +70,14 @@ public class FrontendServer
 
         _configuration.OrchardCoreConfiguration.BeforeAppStart += async (orchardContext, orchardArguments) =>
         {
+            _testOutputHelper.WriteLineTimestampedAndDebug("Starting frontend server configuration.");
+
             var cli = Cli
                 .Wrap(program)
                 .WithArguments(arguments ?? [])
                 .WithWorkingDirectory(orchardContext.ContentRootPath);
 
-            var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync();
+            var frontendPort = await orchardContext.PortLeaseManager.LeaseAvailableRandomPortAsync(CancellationToken.None);
             var backendPort = orchardContext.Url.Port;
             var context = new Context(
                 orchardContext.ContentRootPath,
@@ -107,6 +109,7 @@ public class FrontendServer
 
             if (!execute)
             {
+                _testOutputHelper.WriteLineTimestampedAndDebug("Frontend server startup skipped.");
                 await thenAsync.InvokeFuncAsync(context);
                 return;
             }
@@ -117,7 +120,12 @@ public class FrontendServer
                 .WithStandardErrorPipe(pipe)
                 .ExecuteAsync(forcefulCancellation.Token, gracefulCancellation.Token);
 
-            if (waiting) await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
+            if (waiting)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Waiting for the frontend server to start up on URL {0}.", _configuration.GetFrontendAndBackendUris().FrontendUri.ToString());
+                await WaitForStartupAsync(cliTask, waitCompletionSource.Task, startupTimeout);
+            }
 
             _configuration.CustomConfiguration[GetKey(backendPort)] = new FrontendServerContext
             {
@@ -138,11 +146,14 @@ public class FrontendServer
                     gracefulCancellation.Dispose();
                     forcefulCancellation.Dispose();
 
-                    await context.PortLeaseManager.StopLeaseAsync(frontendPort);
+                    // This is a clean-up method, no need to forward a CancellationToken.
+                    await context.PortLeaseManager.StopLeaseAsync(frontendPort, CancellationToken.None);
                 },
             };
 
             await thenAsync.InvokeFuncAsync(context);
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("Finished frontend server configuration.");
         };
 
         _configuration.OrchardCoreConfiguration.AfterAppStop += context =>

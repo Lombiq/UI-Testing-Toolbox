@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
 
@@ -58,15 +59,20 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
             // invalid authentication challenges.
             "System.InvalidOperationException: No authentication handler is registered for the scheme",
+            // If the middleware is enabled, logs like this are emitted next to every exception even if they are
+            // already suppressed by one of these patterns.
+            "Lombiq.Tests.UI.Shortcuts.Middlewares.ExceptionContextLoggingMiddleware: HTTP request when the exception",
         };
 
         permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
 
         return app =>
-            app.LogsShouldNotContainAsync(logEntry =>
-                !permittedErrorLinePatterns.Any(pattern =>
-                    Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
-                AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
-                logEntry.Level >= LogLevel.Error);
+            app.LogsShouldNotContainAsync(
+                logEntry =>
+                    !permittedErrorLinePatterns.Any(pattern =>
+                        Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
+                    AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
+                    logEntry.Level >= LogLevel.Error,
+                TestContext.Current.CancellationToken);
     }
 }

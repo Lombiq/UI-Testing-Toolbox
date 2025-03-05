@@ -20,8 +20,6 @@ public static class VerificationUITestContextExtensions
         var configuration = context.Configuration;
         var testOutputHelper = configuration.TestOutputHelper;
 
-        if (context.IsBrowserRunning) await context.UpdateHistoricBrowserLogAsync();
-
         try
         {
             await configuration.AssertAppLogsAsync.InvokeFuncAsync(context.Application);
@@ -29,7 +27,7 @@ public static class VerificationUITestContextExtensions
         catch (Exception)
         {
             testOutputHelper.WriteLine("Application logs: " + Environment.NewLine);
-            testOutputHelper.WriteLine(await context.Application.GetLogContentsAsync());
+            testOutputHelper.WriteLine(await context.Application.GetLogContentsAsync(configuration.TestCancellationToken));
 
             throw;
         }
@@ -38,12 +36,26 @@ public static class VerificationUITestContextExtensions
         {
             try
             {
-                configuration.AssertBrowserLog?.Invoke(context.HistoricBrowserLog);
+                configuration.AssertResponseLog?.Invoke(context.CumulativeResponseLog);
+                configuration.AssertBrowserLog?.Invoke(context.CumulativeBrowserLog);
             }
             catch (Exception)
             {
-                testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
-                testOutputHelper.WriteLine(context.HistoricBrowserLog.ToFormattedString());
+                if (context.CumulativeBrowserLog.Count > 0)
+                {
+                    testOutputHelper.WriteLine("----------------------------------------");
+                    testOutputHelper.WriteLine("Browser logs: " + Environment.NewLine);
+                    testOutputHelper.WriteLine(context.CumulativeBrowserLog.ToFormattedString());
+                    testOutputHelper.WriteLine("----------------------------------------");
+                }
+
+                if (context.CumulativeResponseLog.Count > 0)
+                {
+                    testOutputHelper.WriteLine("----------------------------------------");
+                    testOutputHelper.WriteLine("Response logs: " + Environment.NewLine);
+                    testOutputHelper.WriteLine(context.CumulativeResponseLog.ToFormattedString());
+                    testOutputHelper.WriteLine("----------------------------------------");
+                }
 
                 throw;
             }

@@ -19,7 +19,7 @@ public delegate Task<(UITestContext Context, Uri TestStartUri)> AppInitializer()
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "This is because SemaphoreSlim but it's not actually necessary to dispose in this case: " +
         "https://stackoverflow.com/questions/32033416/do-i-need-to-dispose-a-semaphoreslim. Making this class " +
-        "IDisposable would need disposing static members above on app shutdown, which is unreliable.")]
+        "IDisposable would need disposing static members on app shutdown, which is unreliable.")]
 public class SynchronizingWebApplicationSnapshotManager
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -30,11 +30,11 @@ public class SynchronizingWebApplicationSnapshotManager
 
     public SynchronizingWebApplicationSnapshotManager(string snapshotDirectoryPath) => _snapshotDirectoryPath = snapshotDirectoryPath;
 
-    public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer)
+    public async Task<Uri> RunOperationAndSnapshotIfNewAsync(AppInitializer appInitializer, CancellationToken cancellationToken)
     {
         DebugHelper.WriteLineTimestamped($"Entering SynchronizingWebApplicationSnapshotManager semaphore for {_snapshotDirectoryPath}.");
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
             if (_snapshotCreated) return _testStartUri;
@@ -42,7 +42,7 @@ public class SynchronizingWebApplicationSnapshotManager
             DebugHelper.WriteLineTimestamped("Creating snapshot.");
 
             // Always start the current test run with a fresh snapshot.
-            DirectoryHelper.SafelyDeleteDirectoryIfExists(_snapshotDirectoryPath);
+            await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_snapshotDirectoryPath, cancellationToken);
 
             var result = await appInitializer();
             await result.Context.Application.TakeSnapshotAsync(_snapshotDirectoryPath);

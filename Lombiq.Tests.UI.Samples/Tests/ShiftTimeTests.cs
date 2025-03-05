@@ -6,7 +6,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -34,7 +33,7 @@ public class ShiftTimeTests : UITestBase
                 // Create a simple widget that shows the current date, so we can compare the effects of this feature.
                 await context.SignInDirectlyAsync();
                 await context.GoToAdminRelativeUrlAsync(
-                    "/Contents/ContentTypes/LiquidWidget/Create?returnUrl=%2FAdmin%2FLayers&" + // #spell-check-ignore-line
+                    "/Contents/ContentTypes/LiquidWidget/Create?returnUrl=%2FAdmin%2FLayers&" +
                     "LayerMetadata.Zone=Content&LayerMetadata.Position=1");
                 await context.FillInCodeMirrorEditorWithRetriesAsync(
                     By.CssSelector(".CodeMirror.cm-s-default"),

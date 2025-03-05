@@ -38,13 +38,14 @@ public class SqlServerRunningContext
 
 public sealed class SqlServerManager : IAsyncDisposable
 {
-    private const string DbSnapshotName = "Database.bak"; // #spell-check-ignore-line
+    private const string DbSnapshotName = "Database.bak";
 
     private static readonly PortLeaseManager _portLeaseManager;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private readonly CliProgram _docker = new("docker");
     private readonly SqlServerConfiguration _configuration;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private int _databaseId;
     private string _serverName;
@@ -63,7 +64,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
     public async Task<SqlServerRunningContext> CreateDatabaseAsync()
     {
-        _databaseId = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _databaseId = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
 
         var connectionString = _configuration.ConnectionStringTemplate
             .Replace(SqlServerConfiguration.DatabaseIdPlaceholder, _databaseId.ToTechnicalString(), StringComparison.Ordinal);
@@ -114,7 +115,7 @@ public sealed class SqlServerManager : IAsyncDisposable
     {
         DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in TakeSnapshotAsync().");
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(_cancellationTokenSource.Token);
         try
         {
             var filePathRemote = GetSnapshotFilePath(snapshotDirectoryPathRemote);
@@ -164,7 +165,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
                 await Cli.Wrap("docker")
                     .WithArguments(["cp", $"{containerName}:{filePathRemote}", filePathLocal])
-                    .ExecuteAsync();
+                    .ExecuteAsync(_cancellationTokenSource.Token);
             }
 
             if (!File.Exists(filePathLocal))
@@ -191,7 +192,7 @@ public sealed class SqlServerManager : IAsyncDisposable
     {
         DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in RestoreSnapshotAsync().");
 
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(_cancellationTokenSource.Token);
         try
         {
             if (_isDisposed)
@@ -256,10 +257,10 @@ public sealed class SqlServerManager : IAsyncDisposable
     }
 
     private Task DockerExecuteAsync(string containerName, params object[] command) =>
-        _docker.ExecuteAsync(CancellationToken.None, CreateArguments(containerName, command));
+        _docker.ExecuteAsync(_cancellationTokenSource.Token, CreateArguments(containerName, command));
 
     private Task<string> DockerExecuteAndGetOutputAsync(string containerName, params object[] command) =>
-        _docker.ExecuteAndGetOutputAsync(CancellationToken.None, CreateArguments(containerName, command));
+        _docker.ExecuteAndGetOutputAsync(_cancellationTokenSource.Token, CreateArguments(containerName, command));
 
     private static object[] CreateArguments(string containerName, params object[] command)
     {
@@ -274,10 +275,13 @@ public sealed class SqlServerManager : IAsyncDisposable
         if (_isDisposed) return;
 
         _isDisposed = true;
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
 
         DropDatabaseIfExists(CreateServer());
 
-        await _portLeaseManager.StopLeaseAsync(_databaseId);
+        // This is already a clean-up method, no need to forward a CancellationToken.
+        await _portLeaseManager.StopLeaseAsync(_databaseId, CancellationToken.None);
     }
 
     // It's easier to use the server name directly instead of the connection string as that also requires the referenced
@@ -355,11 +359,13 @@ public sealed class SqlServerManager : IAsyncDisposable
 
         do
         {
+            _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
             try
             {
                 // Copy back snapshot.
                 await _docker.ExecuteAsync(
-                    CancellationToken.None,
+                    _cancellationTokenSource.Token,
                     "cp",
                     Path.Combine(local),
                     $"{containerName}:{remote}");
@@ -381,7 +387,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
             retryCount++;
 
-            await Task.Delay(1000);
+            await Task.Delay(1000, _cancellationTokenSource.Token);
         }
         while (string.IsNullOrEmpty(result) && retryCount < maxRetries + 1);
 

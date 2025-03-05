@@ -10,7 +10,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -92,6 +92,11 @@ public static class FrontendUITestContextExtensions
             browser.ToString(),
         };
 
+        if (context.SmtpServiceRunningContext?.WebUIUri != null)
+        {
+            arguments = [.. arguments, context.SmtpServiceRunningContext.WebUIUri.AbsoluteUri];
+        }
+
         return (workingDirectory, arguments);
     }
 
@@ -125,14 +130,15 @@ public static class FrontendUITestContextExtensions
             var browserArguments = context.Configuration.BrowserConfiguration.Arguments;
             await File.WriteAllTextAsync(
                 context.GetTempSubDirectoryPath("BrowserArguments.json"),
-                JsonSerializer.Serialize(browserArguments));
+                JsonSerializer.Serialize(browserArguments),
+                context.Configuration.TestCancellationToken);
 
             await Cli.Wrap(command)
                 .WithArguments(arguments)
                 .WithStandardOutputPipe(pipe)
                 .WithStandardErrorPipe(pipe)
                 .WithWorkingDirectory(workingDirectory ?? Environment.CurrentDirectory)
-                .ExecuteAsync();
+                .ExecuteAsync(context.Configuration.TestCancellationToken);
         }
         catch
         {
@@ -158,7 +164,8 @@ public static class FrontendUITestContextExtensions
 
         return context.SwitchToInteractiveAsync(
             $"To start a JavaScript test, open a command line terminal at \"{workingDirectory}\" and type the " +
-            $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>");
+                $"following command: <code class=\"d-block\">node {string.Join(' ', arguments)}</code>",
+            context.Configuration.TestCancellationToken);
     }
 
     /// <summary>
@@ -197,7 +204,7 @@ public static class FrontendUITestContextExtensions
         if (!Directory.Exists(projectFilePath))
         {
             // lang=json
-            await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }");
+            await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }", context.Configuration.TestCancellationToken);
         }
 
         var pipe = helper.ToPipeTarget(nameof(SetupNodeSeleniumAsync));
@@ -206,7 +213,7 @@ public static class FrontendUITestContextExtensions
             .WithStandardOutputPipe(pipe)
             .WithStandardErrorPipe(pipe)
             .WithWorkingDirectory(workingDirectory)
-            .ExecuteAsync();
+            .ExecuteAsync(context.Configuration.TestCancellationToken);
     }
 
     /// <summary>
