@@ -34,14 +34,15 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
     /// </summary>
     public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLinePatterns)
     {
+        const string unhandledExceptionRegex = @"An unhandled exception has occurred while executing the request.\s*";
         var permittedErrorLinePatterns = new List<string>
         {
             // The model binding will throw FormatException exception with this text during ZAP active scan, when the
             // bot tries to send malicious query strings or POST data that doesn't fit the types expected by the model.
             // This is correct, safe behavior and should be logged in production.
             "is not a valid value for Boolean",
-            "An unhandled exception has occurred while executing the request. System.FormatException: any",
-            "System.FormatException: The input string '[\\S\\s]+' was not in a correct format.",
+            unhandledExceptionRegex + "System.FormatException: any",
+            @"System.FormatException: The input string '[\S\s]+' was not in a correct format.",
             "System.FormatException: The input string 'any",
             // Happens when the static file middleware tries to access a path that doesn't exist or access a file as a
             // directory. Presumably this is an attempt to access protected files using source path manipulation. This
@@ -52,7 +53,8 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             // This happens when a request's model contains a dictionary and a key is missing. While this can be a
             // legitimate application error, during a security scan it's more likely the result of an incomplete
             // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
-            "An unhandled exception has occurred while executing the request. System.ArgumentNullException: Value cannot be null. (Parameter 'key')",
+            unhandledExceptionRegex + "System.ArgumentNullException: Value cannot be null. (Parameter 'key')",
+            "at Microsoft.AspNetCore.Mvc.ModelBinding",
             // One way to verify correct error handling is to navigate to ~/Lombiq.Tests.UI.Shortcuts/Error/Index, which
             // always throws an exception. This also gets logged but it's expected, so it should be ignored.
             ErrorController.ExceptionMessage,
@@ -69,10 +71,10 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
         return app =>
             app.LogsShouldNotContainAsync(
                 logEntry =>
-                    !permittedErrorLinePatterns.Any(pattern =>
-                        Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)) &&
+                    logEntry.Level >= LogLevel.Error &&
                     AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
-                    logEntry.Level >= LogLevel.Error,
+                    !permittedErrorLinePatterns.Any(pattern =>
+                        Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)),
                 TestContext.Current.CancellationToken);
     }
 }

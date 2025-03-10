@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public static class WebApplicationInstanceExtensions
         this IWebApplicationInstance webApplicationInstance,
         CancellationToken cancellationToken = default)
     {
-        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
+        var logs = (await webApplicationInstance.GetLogsAsync(cancellationToken)).AsList();
         logs.ShouldNotContain(log => log.EntryCount > 0, await logs.ToFormattedStringAsync());
     }
 
@@ -166,8 +167,12 @@ public static class WebApplicationInstanceExtensions
         Action<IEnumerable<IApplicationLogEntry>, Expression<Func<IApplicationLogEntry, bool>>, string> shouldlyMethod,
         CancellationToken cancellationToken = default)
     {
-        var logs = await webApplicationInstance.GetLogsAsync(cancellationToken);
-        var logContents = await logs.ToFormattedStringAsync();
+        // Fetch the log contents but only include the entries that will throw below so you don't have to manually sort
+        // through ignored log entries if there is an error.
+        var logs = await (await webApplicationInstance.GetLogsAsync(cancellationToken))
+            .AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, logEntryPredicate.Compile()));
+
+        var logContents = logs.ToFormattedStringCached();
 
         foreach (var log in logs)
         {
