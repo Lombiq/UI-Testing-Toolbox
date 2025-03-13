@@ -318,6 +318,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Services.SmtpServiceRunningContext.#ctor(System.Int32,System.Uri)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Services.SynchronizingWebApplicationSnapshotManager.RunOperationAndSnapshotIfNewAsync(Lombiq.Tests.UI.Services.AppInitializer)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
@@ -417,13 +424,6 @@
   <Suppression>
     <DiagnosticId>CP1002</DiagnosticId>
     <Target>xunit.core, Version=2.9.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c</Target>
-    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
-    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Services.SmtpServiceRunningContext.#ctor(System.Int32,System.Uri)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
