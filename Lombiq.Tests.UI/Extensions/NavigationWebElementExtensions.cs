@@ -80,7 +80,15 @@ public static class NavigationWebElementExtensions
         context.RetryIfNotStaleOrFailAsync(
             async () =>
             {
-                await element.ClickReliablyAsync(context);
+                try
+                {
+                    await element.ClickReliablyAsync(context);
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                }
+
                 return false;
             },
             timeout,
@@ -104,7 +112,15 @@ public static class NavigationWebElementExtensions
         return context.DoWithRetriesOrFailAsync(
             async () =>
             {
-                await element.ClickReliablyAsync(context);
+                try
+                {
+                    await element.ClickReliablyAsync(context);
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                }
+
                 return context.GetCurrentUri() != originalUri;
             },
             timeout,
