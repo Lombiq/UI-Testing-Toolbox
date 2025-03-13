@@ -212,7 +212,7 @@ public static class ReliabilityUITestContextExtensions
     /// </exception>
     public static void DoWithRetriesIfStaleOrFail(
         this UITestContext context,
-        Func<T> process,
+        Action process,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
         context.DoWithRetriesOrFail(() =>
