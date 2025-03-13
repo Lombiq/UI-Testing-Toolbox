@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -37,6 +38,11 @@ public class PortLeaseManager
         try
         {
             var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
+
+            if (availablePorts.Count == 0)
+            {
+                throw new InvalidOperationException("No available ports to lease. Check if the range is too small or if you don't release ports.");
+            }
 
             port = availablePorts[new NonSecurityRandomizer().GetFromRange(availablePorts.Count)];
             _usedPorts.Add(port);
