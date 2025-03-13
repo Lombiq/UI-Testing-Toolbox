@@ -24,7 +24,8 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class ElementRetrievalUITestContextExtensions
 {
     /// <summary>
-    /// Retrieves the matching element with retries within the configured timeout.
+    /// Retrieves the matching element with retries within the configured timeout, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static IWebElement GetWithStaleRetries(this UITestContext context, By by) =>
         context.RetrieveWithRetriesIfStaleOrFail(() => context.Get(by));
@@ -34,6 +35,13 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     public static IWebElement Get(this UITestContext context, By by) =>
         context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().FindElement(by));
+
+    /// <summary>
+    /// Retrieves the matching element's trimmed text content with retries within the configured timeout, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    public static string GetTextWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.GetText(by));
 
     /// <summary>
     /// Retrieves the matching element's trimmed text content with retries within the configured timeout.
@@ -59,6 +67,14 @@ public static class ElementRetrievalUITestContextExtensions
 
     /// <summary>
     /// Retrieves all the matching elements with retries within the configured timeout. At least 1 item must exist
+    /// otherwise it will throw <see cref="NotFoundException"/>. Also retries if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    public static ReadOnlyCollection<IWebElement> GetAllWhenOneExistsWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.GetAllWhenOneExists(by));
+
+    /// <summary>
+    /// Retrieves all the matching elements with retries within the configured timeout. At least 1 item must exist
     /// otherwise it will throw <see cref="NotFoundException"/>.
     /// </summary>
     public static ReadOnlyCollection<IWebElement> GetAllWhenOneExists(this UITestContext context, By by)
@@ -68,10 +84,31 @@ public static class ElementRetrievalUITestContextExtensions
     }
 
     /// <summary>
-    /// Conditionally checks the existence of the element with retries within the configured timeout.
+    /// Conditionally checks the existence of the element with retries within the configured timeout, also retrying if
+    /// it throws <see cref="StaleElementReferenceException" />. Depending on the configuration of <paramref name="by"/>
+    /// will return a value indicating the element's existence or will throw an exception if it wasn't the expected
+    /// case. For details see <see href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
+    /// </summary>
+    public static bool CheckExistenceWithStaleRetries(this UITestContext context, By by, bool exists) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.CheckExistence(by, exists));
+
+    /// <summary>
+    /// Conditionally checks the existence of the element with retries within the configured timeout. Depending on the
+    /// configuration of <paramref name="by"/> will return a value indicating the element's existence or will throw an
+    /// exception if it wasn't the expected case. For details see <see
+    /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
     /// </summary>
     public static bool CheckExistence(this UITestContext context, By by, bool exists) =>
         exists ? context.Exists(by) : context.Missing(by);
+
+    /// <summary>
+    /// Checks the existence of the element with retries within the configured timeout, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />. Depending on the configuration of <paramref name="by"/> will return a
+    /// value indicating whether the element exists or will throw an exception if it doesn't. For details see <see
+    /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
+    /// </summary>
+    public static bool ExistsWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.Exists(by));
 
     /// <summary>
     /// Checks the existence of the element with retries within the configured timeout. Depending on the configuration
@@ -80,6 +117,15 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     public static bool Exists(this UITestContext context, By by) =>
         context.ExecuteLogged(nameof(Exists), by, () => context.CreateSearchContext().Exists(by));
+
+    /// <summary>
+    /// Checks the existence of the element with retries within the configured timeout, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />. Depending on the configuration of <paramref name="by"/> will return a
+    /// value indicating whether the element is missing or will throw an exception if it doesn't. For details see <see
+    /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
+    /// </summary>
+    public static bool MissingWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.Missing(by));
 
     /// <summary>
     /// Checks the existence of the element with retries within the configured timeout. Depending on the configuration
@@ -91,10 +137,26 @@ public static class ElementRetrievalUITestContextExtensions
         context.ExecuteLogged(nameof(Missing), by, () => context.CreateSearchContext().Missing(by));
 
     /// <summary>
+    /// Verifies that the current page doesn't show any validation error notifications, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    public static void ShouldHaveNoValidationErrorsWithStaleRetries(this UITestContext context) =>
+        context.DoWithRetriesIfStaleOrFail(() => context.ShouldHaveNoValidationErrors());
+
+    /// <summary>
     /// Verifies that the current page doesn't show any validation error notifications.
     /// </summary>
     public static void ShouldHaveNoValidationErrors(this UITestContext context) =>
         context.Missing(By.CssSelector(".validation-summary-errors li"));
+
+    /// <summary>
+    /// Verifies that publishing a content item has succeeded. No warning or error messages are allowed, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
+    /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
+    public static void ShouldBeSuccessWithStaleRetries(this UITestContext context, string matchText = null, TimeSpan? within = null) =>
+        context.DoWithRetriesIfStaleOrFail(() => context.ShouldBeSuccess(matchText, within));
 
     /// <summary>
     /// Verifies that publishing a content item has succeeded. No warning or error messages are allowed.
@@ -110,6 +172,15 @@ public static class ElementRetrievalUITestContextExtensions
     }
 
     /// <summary>
+    /// Verifies that publishing a content item has succeeded, where warning or error messages are allowed to show, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
+    /// <param name="within">If not <see langword="null"/>, the element will be searched for that long.</param>
+    public static void SuccessMessageExistsWithStaleRetries(this UITestContext context, string matchText = null, TimeSpan? within = null) =>
+        context.DoWithRetriesIfStaleOrFail(() => context.SuccessMessageExists(matchText, within));
+
+    /// <summary>
     /// Verifies that publishing a content item has succeeded, where warning or error messages are allowed to show.
     /// </summary>
     /// <param name="matchText">If not <see langword="null"/> or empty, the element should contain its value.</param>
@@ -122,6 +193,14 @@ public static class ElementRetrievalUITestContextExtensions
         var element = context.Get(by);
         if (!string.IsNullOrEmpty(matchText)) element.GetTextTrimmed().ShouldContain(matchText);
     }
+
+    /// <summary>
+    /// Check if error message is shown, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    /// <param name="errorMessage">Error message to look for.</param>
+    public static void ErrorMessageExistsWithStaleRetries(this UITestContext context, string errorMessage) =>
+        context.DoWithRetriesIfStaleOrFail(() => context.ErrorMessageExists(errorMessage));
 
     /// <summary>
     /// Check if error message is shown.
@@ -161,6 +240,20 @@ public static class ElementRetrievalUITestContextExtensions
     /// <inheritdoc cref="VerifyElementTexts(UITestContext, By, object[])"/>
     public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
         VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
+
+    /// <summary>
+    /// Retrieves the elements according to <paramref name="by"/> and matches their text content against <paramref
+    /// name="toMatch"/>. Both the text contents and <paramref name="toMatch"/> strings are trimmed. If an item in
+    /// <paramref name="toMatch"/> is <see langword="null"/> it's ignored among the result elements too. Every other
+    /// item is converted to string, using invariant culture where possible. Also retries if it throws <see
+    /// cref="StaleElementReferenceException" />.
+    /// </summary>
+    public static void VerifyElementTextsWithStaleRetries(this UITestContext context, By by, params object[] toMatch) =>
+        context.DoWithRetriesIfStaleOrFail(() => context.VerifyElementTexts(by, toMatch));
+
+    /// <inheritdoc cref="VerifyElementTextsWithStaleRetries(UITestContext, By, object[])"/>
+    public static void VerifyElementTextsWithStaleRetries(this UITestContext context, By by, IEnumerable<object> toMatch) =>
+        VerifyElementTextsWithStaleRetries(context, by, toMatch is object[] array ? array : toMatch.ToArray());
 
     private static ExtendedSearchContext<IWebDriver> CreateSearchContext(this UITestContext context) =>
         new(
