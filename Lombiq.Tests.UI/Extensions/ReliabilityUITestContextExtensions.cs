@@ -146,6 +146,51 @@ public static class ReliabilityUITestContextExtensions
             context.Configuration.TestCancellationToken);
 
     /// <summary>
+    /// Retrieves the value returned by <paramref name="process"/> and retries if an element becomes stale (throws <see
+    /// cref="StaleElementReferenceException"/>). If the operation didn't succeed then throws a <see
+    /// cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="process">
+    /// The long running operation that may execute during DOM change and should be retried. Should return a value if no
+    /// retries are necessary, and throw <see cref="StaleElementReferenceException"/> otherwise.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static T RetrieveWithRetriesIfStaleOrFail<T>(
+        this UITestContext context,
+        Func<T> process,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        T result = default;
+
+        context.DoWithRetriesOrFail(() =>
+        {
+            try
+            {
+                result = process();
+            }
+            catch (StaleElementReferenceException)
+            {
+                return false;
+            }
+
+            return true;
+        });
+
+        return result;
+    }
+
+    /// <summary>
     /// Tries to execute an operation until the given element exists.
     /// </summary>
     /// <param name="processAsync">Operation to execute.</param>

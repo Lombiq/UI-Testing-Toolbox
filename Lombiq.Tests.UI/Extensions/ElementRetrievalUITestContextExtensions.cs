@@ -26,6 +26,12 @@ public static class ElementRetrievalUITestContextExtensions
     /// <summary>
     /// Retrieves the matching element with retries within the configured timeout.
     /// </summary>
+    public static IWebElement GetWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.Get(by));
+
+    /// <summary>
+    /// Retrieves the matching element with retries within the configured timeout.
+    /// </summary>
     public static IWebElement Get(this UITestContext context, By by) =>
         context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().FindElement(by));
 
@@ -33,6 +39,15 @@ public static class ElementRetrievalUITestContextExtensions
     /// Retrieves the matching element's trimmed text content with retries within the configured timeout.
     /// </summary>
     public static string GetText(this UITestContext context, By by) => context.Get(by)?.GetTextTrimmed();
+
+    /// <summary>
+    /// Retrieves all the matching elements with retries within the configured timeout, also retrying if it throws <see
+    /// cref="StaleElementReferenceException" />. Don't use this for existence check, use <see
+    /// cref="CheckExistence(UITestContext, By, bool)"/>, <see cref="Exists(UITestContext, By)"/>, and <see
+    /// cref="Missing(UITestContext, By)"/> instead.
+    /// </summary>
+    public static ReadOnlyCollection<IWebElement> GetAllWithStaleRetries(this UITestContext context, By by) =>
+        context.RetrieveWithRetriesIfStaleOrFail(() => context.GetAll(by));
 
     /// <summary>
     /// Retrieves all the matching elements with retries within the configured timeout. Don't use this for existence
