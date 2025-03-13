@@ -92,7 +92,13 @@ public static class EmailUITestContextExtensions
         await context.FillInWithRetriesAsync(By.Id("Subject"), subject);
         await context.FillInWithRetriesAsync(By.Id("Body"), body);
 
-        if (submit) await context.ClickReliablyOnSubmitAsync();
+        if (submit)
+        {
+            // Without the navigation state check, operations immediately after this can access stale elements.
+            var navigationState = context.AsPageNavigationState();
+            await context.ClickReliablyOnSubmitAsync();
+            navigationState.Wait();
+        }
     }
 
     /// <summary>
