@@ -32,6 +32,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
                 await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
