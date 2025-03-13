@@ -24,22 +24,35 @@ public static class EmailUITestContextExtensions
         await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
 
         // The emails sometimes are reloading after a few seconds, so we are waiting for the loading indicator to
-        // appear, then to disappear.
+        // appear, then to disappear. We try multiple times, since sometimes it appears after a few seconds.
         const string LoadingMaskClass = "el-loading-mask";
 
-        try
+        var maxRetries = 3;
+        var attempt = 0;
+        var isSuccessful = false;
+
+        while (attempt < maxRetries && !isSuccessful)
         {
-            // We are waiting for this exact element to appear, only with one class, that indicates that the loading is
-            // happening. The loading is not always happening that's why we catch the exception, making sure that the
-            // element either did not exist, or we waited for it to appear.
-            context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
-        }
-        catch (ElementNotFoundException exception)
-        {
-            context
-                .Scope.AtataContext.Log
-                .Info($"The smtp4dev site didn't reload, so the the missing loading element was ignored: " +
-                    $"{exception.Message}");
+            try
+            {
+                // We are waiting for this exact element to appear, only with one class, that indicates that the loading
+                // is happening. The loading is not always happening that's why we catch the exception, making sure that
+                // the element either did not exist, or we waited for it to appear.
+                context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
+                isSuccessful = true;
+            }
+            catch (ElementNotFoundException exception)
+            {
+                attempt++;
+                if (attempt >= maxRetries)
+                {
+                    context
+                        .Scope.AtataContext.Log
+                        .Info($"The smtp4dev site didn't reload yet, so the missing loading element was ignored. " +
+                            $"Attempt {attempt.ToTechnicalString()} out of {maxRetries.ToTechnicalString()}: " +
+                            $"{exception.Message}");
+                }
+            }
         }
 
         // We are checking for the loading element that contains this class, since the element gets extra classes when
