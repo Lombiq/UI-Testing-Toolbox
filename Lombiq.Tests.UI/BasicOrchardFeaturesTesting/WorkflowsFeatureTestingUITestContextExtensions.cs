@@ -63,10 +63,6 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
 
                 context.ShouldBeSuccess("Workflow has been saved.");
 
-                // Sometimes the page doesn't load before it tries to go to the next page thus it stays here. As a
-                // workaround we reload the page.
-                context.Refresh();
-
                 var contentItemsPage = await context.GoToContentItemsPageAsync();
                 context.RefreshCurrentAtataContext();
                 contentItemsPage
