@@ -54,12 +54,18 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
+
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
                 await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup event']"));
                 await context.ClickReliablyOnSubmitAsync();
 
                 context.ShouldBeSuccess("Workflow has been saved.");
+
+                // Sometimes the page doesn't load before it tries to go to the next page thus it stays here. As a
+                // workaround we reload the page.
+                context.Refresh();
 
                 var contentItemsPage = await context.GoToContentItemsPageAsync();
                 context.RefreshCurrentAtataContext();
