@@ -141,10 +141,23 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {relativeUrl}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(
+                            url: context.GetAbsoluteUri(relativeUrl).ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -158,10 +171,22 @@ public static class NavigationUITestContextExtensions
     {
         var uri = context.GetAbsoluteAdminUri(relativeUrl);
 
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {uri.LocalPath}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: uri.ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(url: uri.ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
