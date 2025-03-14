@@ -141,7 +141,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static void ShouldHaveNoValidationErrorsWithStaleRetries(this UITestContext context) =>
-        context.DoWithRetriesIfStaleOrFail(() => context.ShouldHaveNoValidationErrors());
+        context.DoWithRetriesIfStaleOrFail(context.ShouldHaveNoValidationErrors);
 
     /// <summary>
     /// Verifies that the current page doesn't show any validation error notifications.
