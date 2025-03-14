@@ -60,35 +60,21 @@ public class MonkeyTests : UITestBase
                 // "/Admin". But this is just this sample, you can unleash monkeys on the whole admin too!
                 monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter("/Admin$"));
 
+                // You can fence monkey testing with URL filters: Monkey testing will only be executed if the current
+                // URL matches. This way, you can restrict monkey testing to just sections of the site. You can also use
+                // such fencing to have multiple monkey testing methods in multiple test classes, thus running them in
+                // parallel. Another option apart from regex is e.g. StartsWithMonkeyTestingUrlFilter, with which you
+                // can do things like this:
+                ////monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
+                // Explore all the options in the Lombiq.Tests.UI.MonkeyTesting.UrlFilters namespace.
+
+                // With this method, you can test the whole (barring restrictions like above) admin recursively. But you
+                // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too. 
                 return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
             // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
             // parameters are required.
             configuration => configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedStatusResponse("/api/graphql", 400));
-
-    // Let's just test the background tasks management admin area.
-    [Fact]
-    public Task TestAdminBackgroundTasksAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                var monkeyTestingOptions = CreateMonkeyTestingOptions();
-
-                // You can fence monkey testing with URL filters: Monkey testing will only be executed if the current
-                // URL matches. This way, you can restrict monkey testing to just sections of the site. You can also use
-                // such fencing to have multiple monkey testing methods in multiple test classes, thus running them in
-                // parallel.
-                monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
-                // You could also configure the same thing with regex:
-                ////_monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter(@"\/Admin\/BackgroundTasks"));
-
-                await context.SignInDirectlyAndGoToAdminRelativeUrlAsync("/BackgroundTasks");
-                await context.TestCurrentPageAsMonkeyRecursivelyAsync(monkeyTestingOptions);
-            },
-            configuration => configuration.BrowserLogFilter = logEntry =>
-                logEntry.IsNonSuccessBrowserLogEntry() &&
-                !logEntry.Text.Contains("An invalid form control with name='LockTimeout' is not focusable.") &&
-                !logEntry.Text.Contains("An invalid form control with name='LockExpiration' is not focusable."));
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
