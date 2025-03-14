@@ -167,8 +167,8 @@ public static class ElementRetrievalUITestContextExtensions
     {
         context.SuccessMessageExists(matchText, within);
 
-        context.Missing(By.CssSelector(".message-warning"));
-        context.Missing(By.CssSelector(".message-error"));
+        context.MissingWithStaleRetries(By.CssSelector(".message-warning"));
+        context.MissingWithStaleRetries(By.CssSelector(".message-error"));
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ public static class ElementRetrievalUITestContextExtensions
         var by = By.CssSelector(".message-success");
         if (within is { } timeSpan) by = by.Within(timeSpan);
 
-        var element = context.Get(by);
+        var element = context.GetWithStaleRetries(by);
         if (!string.IsNullOrEmpty(matchText)) element.GetTextTrimmed().ShouldContain(matchText);
     }
 

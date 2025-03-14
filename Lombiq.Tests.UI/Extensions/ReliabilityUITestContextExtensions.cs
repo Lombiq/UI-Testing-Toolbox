@@ -46,6 +46,42 @@ public static class ReliabilityUITestContextExtensions
             context.Configuration.TestCancellationToken);
 
     /// <summary>
+    /// Executes the async process repeatedly until a navigation has occurred, with the given timeout and retry
+    /// intervals. If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="processAsync">
+    /// The operation that potentially needs to be retried.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static Task DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+        this UITestContext context,
+        Func<Task> processAsync,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var navigationState = context.AsPageNavigationState();
+
+        return context.DoWithRetriesOrFailAsync(
+            async () =>
+            {
+                await processAsync();
+                return navigationState.CheckIfNavigationHasOccurred();
+            },
+            timeout,
+            interval);
+    }
+
+    /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
