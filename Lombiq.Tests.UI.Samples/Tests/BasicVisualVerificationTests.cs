@@ -77,7 +77,7 @@ public class BasicVisualVerificationTests : UITestBase
                 // you should apply a percentage of approximately 5 in cases of images with a lot of text.
                 context.AssertVisualVerificationApproved(
                     navbarElementSelector,
-                    0,
+                    5,
                     configurator: configuration =>
                         configuration
                             // These configurations below are to generate/use different baseline images on each
