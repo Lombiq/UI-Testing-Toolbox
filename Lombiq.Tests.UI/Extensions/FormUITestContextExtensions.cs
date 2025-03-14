@@ -382,5 +382,5 @@ public static class FormUITestContextExtensions
     }
 
     private static void WaitForMonacoEditor(UITestContext context, string editorId) =>
-        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
+        context.GetWithStaleRetries(By.CssSelector($"#{editorId} .monaco-editor"));
 }
