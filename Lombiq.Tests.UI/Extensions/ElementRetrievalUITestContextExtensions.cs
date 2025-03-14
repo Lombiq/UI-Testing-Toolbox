@@ -134,7 +134,8 @@ public static class ElementRetrievalUITestContextExtensions
     /// Retrieves the elements according to <paramref name="by"/> and matches their text content against <paramref
     /// name="toMatch"/>. Both the text contents and <paramref name="toMatch"/> strings are trimmed. If an item in
     /// <paramref name="toMatch"/> is <see langword="null"/> it's ignored among the result elements too. Every other
-    /// item is converted to string, using invariant culture where possible.
+    /// item is converted to string, using invariant culture where possible. Also retries if it throws <see
+    /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch)
     {
@@ -156,20 +157,6 @@ public static class ElementRetrievalUITestContextExtensions
             .ToArray()
             .ShouldBe(target);
     }
-
-    /// <inheritdoc cref="VerifyElementTexts(UITestContext, By, object[])"/>
-    public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
-        VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
-
-    /// <summary>
-    /// Retrieves the elements according to <paramref name="by"/> and matches their text content against <paramref
-    /// name="toMatch"/>. Both the text contents and <paramref name="toMatch"/> strings are trimmed. If an item in
-    /// <paramref name="toMatch"/> is <see langword="null"/> it's ignored among the result elements too. Every other
-    /// item is converted to string, using invariant culture where possible. Also retries if it throws <see
-    /// cref="StaleElementReferenceException" />.
-    /// </summary>
-    public static void VerifyElementTexts(this UITestContext context, By by, params object[] toMatch) =>
-        context.DoWithRetriesIfStaleOrFail((Action)(() => ElementRetrievalUITestContextExtensions.VerifyElementTexts(context, by, toMatch)));
 
     /// <inheritdoc cref="VerifyElementTexts(UITestContext, By, object[])"/>
     public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
