@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,7 +38,9 @@ public class JavaScriptTests : UITestBase
     // real test, but it sets up the site in interactive mode (see Tests/InteractiveModeTests.cs for more) with
     // information on how to start up test scripts from your GUI. It's an example of some tooling that can improve the
     // test developer's workflow.
-    [Fact]
+    // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
+    [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
+    [Fact(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI.")]
     public Task Sandbox() =>
         OpenSandboxAfterSetupAsync(async context =>
         {
