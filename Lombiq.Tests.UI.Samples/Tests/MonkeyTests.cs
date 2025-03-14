@@ -69,7 +69,7 @@ public class MonkeyTests : UITestBase
                 // Explore all the options in the Lombiq.Tests.UI.MonkeyTesting.UrlFilters namespace.
 
                 // With this method, you can test the whole (barring restrictions like above) admin recursively. But you
-                // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too. 
+                // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too.
                 return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             },
             // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
