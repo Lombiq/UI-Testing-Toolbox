@@ -64,7 +64,7 @@ public static class FormUITestContextExtensions
         return context.ExecuteLoggedAsync(
             nameof(ClickAndFillInTrumbowygEditorWithRetriesAsync),
             $"{editorBy} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () =>
                 {
                     TryFillElement(context, editorBy, text);
@@ -167,7 +167,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesAsync),
             $"{by} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () => Task.FromResult(TryFillElement(context, by, text).GetValue() == text),
                 timeout,
                 interval));
@@ -194,7 +194,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesUntilNotBlankAsync),
             $"{by} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () => Task.FromResult(!string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue())),
                 timeout,
                 interval));
@@ -211,7 +211,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
         nameof(FillInCodeMirrorEditorWithRetriesAsync),
         $"{by} - \"{text}\"",
-        () => context.DoWithRetriesOrFailAsync(
+        () => context.RetryIfStaleOrFailAsync(
             () =>
             {
                 // Approach taken from https://stackoverflow.com/a/57621266/220230.
@@ -382,5 +382,5 @@ public static class FormUITestContextExtensions
     }
 
     private static void WaitForMonacoEditor(UITestContext context, string editorId) =>
-        context.GetWithStaleRetries(By.CssSelector($"#{editorId} .monaco-editor"));
+        context.Get(By.CssSelector($"#{editorId} .monaco-editor"));
 }
