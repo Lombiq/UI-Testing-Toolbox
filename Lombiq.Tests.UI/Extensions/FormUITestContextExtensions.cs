@@ -310,8 +310,18 @@ public static class FormUITestContextExtensions
     /// <summary>
     /// Finds the first submit button (excluding any "Log off" buttons) and clicks on it reliably.
     /// </summary>
-    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false) =>
-        context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+    /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
+    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false)
+    {
+        if (withJavaScript)
+        {
+            context.ExecuteScript("document.querySelector(\"button[type='submit']:not(form[action='/Users/LogOff'] button)\").click();");
+            return Task.CompletedTask;
+        }
+
+        return
+            context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+    }
 
     /// <summary>
     /// Finds the "Add New" button.
