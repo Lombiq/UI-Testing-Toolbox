@@ -18,7 +18,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             // When navigating away this exception will be thrown for all old element references. Not nice to use
             // exceptions but there doesn't seem to be a better way to do this.
@@ -34,7 +34,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             return true;
         }
