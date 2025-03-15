@@ -35,7 +35,9 @@ public static class NavigationWebElementExtensions
                         .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
 
                     // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
-                    // "move target out of bounds" exception message. In this case it should be retried.
+                    // "move target out of bounds" exception message. And while the UI is changing, wrongly timed clicks
+                    // can fail with StaleElementReferenceExceptions.
+                    // In these cases it should be retried.
                     var notFound = true;
                     for (var i = 1; notFound && i <= maxTries; i++)
                     {
@@ -48,6 +50,13 @@ public static class NavigationWebElementExtensions
                         {
                             context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                 "\"move target out of bounds\" exception, retrying the click.");
+
+                            await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
+                        }
+                        catch (StaleElementReferenceException) when (i < maxTries)
+                        {
+                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                "Stale element reference exception, retrying the click.");
 
                             await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
                         }
@@ -65,6 +74,15 @@ public static class NavigationWebElementExtensions
                 }
             });
 
+    /// <inheritdoc cref="ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext, TimeSpan?, TimeSpan?)"/>
+    [Obsolete("Use ClickReliablyUntilNavigationHasOccurredAsync instead.")]
+    public static Task ClickReliablyUntilPageLeaveAsync(
+        this IWebElement element,
+        UITestContext context,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        element.ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
+
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. Note that unlike <see
     /// cref="ClickReliablyUntilUrlChangeAsync"/> this doesn't just necessitate a URL change but also a page leave. If
@@ -72,24 +90,20 @@ public static class NavigationWebElementExtensions
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilPageLeaveAsync(UITestContext, By, TimeSpan?,
     /// TimeSpan?)"/> instead.
     /// </summary>
-    public static Task ClickReliablyUntilPageLeaveAsync(
+    public static Task ClickReliablyUntilNavigationHasOccurredAsync(
         this IWebElement element,
         UITestContext context,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.RetryIfNotStaleOrFailAsync(
-            async () =>
-            {
-                await element.ClickReliablyAsync(context);
-                return false;
-            },
+        context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+            () => element.ClickReliablyAsync(context),
             timeout,
             interval);
 
     /// <summary>
     /// Repeatedly clicks an element until the browser URL changes. Note that unlike <see
-    /// cref="ClickReliablyUntilPageLeaveAsync"/> this doesn't necessitate a page leave, but can include it. If you're
-    /// doing a Get() before then use <see
+    /// cref="ClickReliablyUntilNavigationHasOccurredAsync"/> this doesn't necessitate a navigation, but can include it.
+    /// If you're doing a Get() before then use <see
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilUrlChangeAsync(UITestContext, By, TimeSpan?,
     /// TimeSpan?)"/> instead.
     /// </summary>
@@ -104,7 +118,15 @@ public static class NavigationWebElementExtensions
         return context.DoWithRetriesOrFailAsync(
             async () =>
             {
-                await element.ClickReliablyAsync(context);
+                try
+                {
+                    await element.ClickReliablyAsync(context);
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                }
+
                 return context.GetCurrentUri() != originalUri;
             },
             timeout,
