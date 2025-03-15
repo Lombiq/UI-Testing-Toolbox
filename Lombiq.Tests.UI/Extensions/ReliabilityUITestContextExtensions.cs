@@ -215,7 +215,7 @@ public static class ReliabilityUITestContextExtensions
             {
                 result = process();
             }
-            catch (StaleElementReferenceException)
+            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
             {
                 return false;
             }
@@ -257,7 +257,7 @@ public static class ReliabilityUITestContextExtensions
             {
                 process();
             }
-            catch (StaleElementReferenceException)
+            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
             {
                 return false;
             }

@@ -29,49 +29,50 @@ public static class NavigationWebElementExtensions
             element,
             async () =>
             {
-                try
-                {
-                    await context.Configuration.Events.BeforeClick
-                        .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+                await context.Configuration.Events.BeforeClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
 
-                    // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
-                    // "move target out of bounds" exception message. And while the UI is changing, wrongly timed clicks
-                    // can fail with StaleElementReferenceExceptions.
-                    // In these cases it should be retried.
-                    var notFound = true;
-                    for (var i = 1; notFound && i <= maxTries; i++)
+                // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
+                // "move target out of bounds" exception message. And while the UI is changing, wrongly timed clicks can
+                // fail with StaleElementReferenceExceptions. In these cases it should be retried.
+                var notFound = true;
+                for (var i = 1; notFound && i <= maxTries; i++)
+                {
+                    try
                     {
-                        try
-                        {
-                            context.Driver.Perform(actions => actions.MoveToElement(element).Click());
-                            notFound = false;
-                        }
-                        catch (WebDriverException ex) when (i < maxTries && ex.Message.Contains("move target out of bounds"))
-                        {
-                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                "\"move target out of bounds\" exception, retrying the click.");
-
-                            await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
-                        }
-                        catch (StaleElementReferenceException) when (i < maxTries)
-                        {
-                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                "Stale element reference exception, retrying the click.");
-
-                            await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
-                        }
+                        context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                        notFound = false;
                     }
+                    catch (WebDriverException ex) when (i < maxTries)
+                    {
+                        switch (ex.Message)
+                        {
+                            case string message when message.Contains("move target out of bounds"):
+                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                    "\"move target out of bounds\" exception, retrying the click.");
+                                break;
 
-                    await context.Configuration.Events.AfterClick
-                        .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+                            case string message when ex.IsStateElementLikeException():
+                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                    "Stale element exception with the message \"{0}\", retrying the click.",
+                                    message);
+                                break;
+
+                            case string message when message.ContainsOrdinalIgnoreCase(
+                                "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
+                                throw new NotSupportedException(
+                                    "For this element use the standard Click() method.");
+
+                            default:
+                                throw;
+                        }
+
+                        await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
+                    }
                 }
-                catch (WebDriverException ex)
-                    when (ex.Message.ContainsOrdinalIgnoreCase(
-                        "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
-                {
-                    throw new NotSupportedException(
-                        "For this element use the standard Click() method.");
-                }
+
+                await context.Configuration.Events.AfterClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
             });
 
     /// <inheritdoc cref="ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext, TimeSpan?, TimeSpan?)"/>
@@ -122,7 +123,7 @@ public static class NavigationWebElementExtensions
                 {
                     await element.ClickReliablyAsync(context);
                 }
-                catch (StaleElementReferenceException)
+                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
                 {
                     // If navigation happened while retrying the click, the element will become stale, but that's normal.
                 }
