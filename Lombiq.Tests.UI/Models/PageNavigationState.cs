@@ -37,6 +37,13 @@ public class PageNavigationState : IWebContentState
         {
             return true;
         }
+        catch (UnknownErrorException ex) when (ex.Message.Contains("Node with given id does not belong to the document"))
+        {
+            // This is the same as StaleElementReferenceException but for some reason ChromeDriver randomly throws this
+            // instead. Also see:
+            // https://stackoverflow.com/questions/76250688/webdriverexception-unhandled-inspector-error-no-node-with-given-id-found-at-a.
+            return true;
+        }
     }
 
     public void Wait(TimeSpan? timeout = null, TimeSpan? interval = null) =>

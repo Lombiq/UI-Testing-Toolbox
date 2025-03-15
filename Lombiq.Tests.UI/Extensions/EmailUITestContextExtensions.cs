@@ -24,36 +24,13 @@ public static class EmailUITestContextExtensions
         await context.GoToAbsoluteUrlAsync(context.SmtpServiceRunningContext.WebUIUri);
 
         // The emails sometimes are reloading after a few seconds, so we are waiting for the loading indicator to
-        // appear, then to disappear. We try multiple times, since sometimes it appears after a few seconds.
+        // appear, then to disappear.
         const string LoadingMaskClass = "el-loading-mask";
 
-        var maxRetries = 3;
-        var attempt = 0;
-        var isSuccessful = false;
-
-        while (attempt < maxRetries && !isSuccessful)
-        {
-            try
-            {
-                // We are waiting for this exact element to appear, only with one class, that indicates that the loading
-                // is happening. The loading is not always happening that's why we catch the exception, making sure that
-                // the element either did not exist, or we waited for it to appear.
-                context.CheckExistence(By.XPath($"//div[@class='{LoadingMaskClass}']"), exists: true);
-                isSuccessful = true;
-            }
-            catch (ElementNotFoundException exception)
-            {
-                attempt++;
-                if (attempt >= maxRetries)
-                {
-                    context
-                        .Scope.AtataContext.Log
-                        .Info($"The smtp4dev site didn't reload yet, so the missing loading element was ignored. " +
-                            $"Attempt {attempt.ToTechnicalString()} out of {maxRetries.ToTechnicalString()}: " +
-                            $"{exception.Message}");
-                }
-            }
-        }
+        // We are waiting for this exact element to appear, only with one class, that indicates that the loading is
+        // happening. The loading is not always happening that's why we do it with Safely(), making sure that the
+        // element either did not exist, or we waited for it to appear.
+        context.Get(By.XPath($"//div[@class='{LoadingMaskClass}']").Safely());
 
         // We are checking for the loading element that contains this class, since the element gets extra classes when
         // fading away. Also checking for the element with the "loading-number" attribute, to make sure loading is
@@ -115,7 +92,13 @@ public static class EmailUITestContextExtensions
         await context.FillInWithRetriesAsync(By.Id("Subject"), subject);
         await context.FillInWithRetriesAsync(By.Id("Body"), body);
 
-        if (submit) await context.ClickReliablyOnSubmitAsync();
+        if (submit)
+        {
+            // Without the navigation state check, operations immediately after this can access stale elements.
+            var navigationState = context.AsPageNavigationState();
+            await context.ClickReliablyOnSubmitAsync();
+            navigationState.Wait();
+        }
     }
 
     /// <summary>

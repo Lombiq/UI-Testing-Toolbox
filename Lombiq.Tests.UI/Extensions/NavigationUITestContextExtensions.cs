@@ -57,7 +57,9 @@ public static class NavigationUITestContextExtensions
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
-                await context.Driver.Navigate().GoToUrlAsync(absoluteUri);
+                // Navigation can sometimes not happen on the first try.
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () => context.Driver.Navigate().GoToUrlAsync(absoluteUri));
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
@@ -139,10 +141,23 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {relativeUrl}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(
+                            url: context.GetAbsoluteUri(relativeUrl).ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -156,10 +171,22 @@ public static class NavigationUITestContextExtensions
     {
         var uri = context.GetAbsoluteAdminUri(relativeUrl);
 
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {uri.LocalPath}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: uri.ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(url: uri.ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -324,17 +351,25 @@ public static class NavigationUITestContextExtensions
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
         context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
-    /// <summary>
-    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
-    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
-    /// </summary>
+    /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
+        context.ClickReliablyOnUntilNavigationHasOccurredAsync(by, timeout, interval);
+
+    /// <summary>
+    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext,
+    /// TimeSpan?, TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// </summary>
+    public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.Get(by).ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
