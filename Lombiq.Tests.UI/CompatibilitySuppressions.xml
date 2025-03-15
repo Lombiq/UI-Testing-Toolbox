@@ -73,6 +73,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.FormUITestContextExtensions.ClickReliablyOnSubmitAsync(Lombiq.Tests.UI.Services.UITestContext)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.FrontendUITestContextExtensions.ExecuteJavascriptTestAsync(Lombiq.Tests.UI.Services.UITestContext,System.String,Xunit.Abstractions.ITestOutputHelper)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
