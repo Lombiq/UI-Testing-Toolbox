@@ -69,7 +69,7 @@
     <PackageReference Include="Atata.HtmlValidation" Version="3.2.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.1.0" />
     <PackageReference Include="Atata.WebDriverSetup" Version="3.2.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.298" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
@@ -79,7 +79,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="162.5.57" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.61.0" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.64.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.1.0" />
