@@ -28,6 +28,8 @@ public static class AuditTrailFeatureTestingUITestContextExtensions
 
             await context.ClickReliablyOnSubmitAsync();
 
+            context.SuccessMessageExists("Site settings updated successfully.");
+
             var contentItemsPage = await context.GoToContentItemsPageAsync();
             context.RefreshCurrentAtataContext();
             contentItemsPage
