@@ -64,7 +64,7 @@ public static class FormUITestContextExtensions
         return context.ExecuteLoggedAsync(
             nameof(ClickAndFillInTrumbowygEditorWithRetriesAsync),
             $"{editorBy} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () =>
                 {
                     TryFillElement(context, editorBy, text);
@@ -167,7 +167,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesAsync),
             $"{by} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () => Task.FromResult(TryFillElement(context, by, text).GetValue() == text),
                 timeout,
                 interval));
@@ -194,7 +194,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesUntilNotBlankAsync),
             $"{by} - \"{text}\"",
-            () => context.DoWithRetriesOrFailAsync(
+            () => context.RetryIfStaleOrFailAsync(
                 () => Task.FromResult(!string.IsNullOrEmpty(TryFillElement(context, by, text).GetValue())),
                 timeout,
                 interval));
@@ -211,7 +211,7 @@ public static class FormUITestContextExtensions
         context.ExecuteLoggedAsync(
         nameof(FillInCodeMirrorEditorWithRetriesAsync),
         $"{by} - \"{text}\"",
-        () => context.DoWithRetriesOrFailAsync(
+        () => context.RetryIfStaleOrFailAsync(
             () =>
             {
                 // Approach taken from https://stackoverflow.com/a/57621266/220230.
@@ -310,8 +310,18 @@ public static class FormUITestContextExtensions
     /// <summary>
     /// Finds the first submit button (excluding any "Log off" buttons) and clicks on it reliably.
     /// </summary>
-    public static Task ClickReliablyOnSubmitAsync(this UITestContext context) =>
-        context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+    /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
+    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false)
+    {
+        if (withJavaScript)
+        {
+            context.ExecuteScript("document.querySelector(\"button[type='submit']:not(form[action='/Users/LogOff'] button)\").click();");
+            return Task.CompletedTask;
+        }
+
+        return
+            context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+    }
 
     /// <summary>
     /// Finds the "Add New" button.

@@ -160,7 +160,18 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             LogRetry(retryCount);
 
-            await Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
+            if (_configuration.RetryInterval > TimeSpan.Zero)
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "Waiting {0} before retrying the test.", _configuration.RetryInterval);
+
+                await Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
+            }
+            else
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug(
+                    "No retry interval is set, retrying the test immediately.");
+            }
         }
         finally
         {

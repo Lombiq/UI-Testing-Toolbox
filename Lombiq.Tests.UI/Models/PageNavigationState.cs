@@ -33,7 +33,7 @@ public class PageNavigationState : IWebContentState
             // will always return false.
             return _root.Size.Width < 0;
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             return true;
         }

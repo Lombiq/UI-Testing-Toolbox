@@ -32,6 +32,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
                 await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
@@ -54,10 +55,15 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
+
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
                 await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup event']"));
-                await context.ClickReliablyOnSubmitAsync();
+
+                // Sometimes during this step the test can fail, so we are using JavaScript to click submit, this only
+                // happens here.
+                await context.ClickReliablyOnSubmitAsync(withJavaScript: true);
 
                 context.ShouldBeSuccess("Workflow has been saved.");
 
