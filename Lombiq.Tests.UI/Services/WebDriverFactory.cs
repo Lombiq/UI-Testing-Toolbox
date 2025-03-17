@@ -46,6 +46,11 @@ public static class WebDriverFactory
 
                 chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
+                // The current versions can be retrieved here:
+                // https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints. But this version number is
+                // updated automatically by Renovate.
+                chromeConfig.Options.BrowserVersion = "134.0.6998.89";
+
                 configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
                 chromeConfig.Service = driverPath == null
