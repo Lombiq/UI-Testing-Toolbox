@@ -19,6 +19,7 @@ namespace Lombiq.Tests.UI.Services;
 
 // The awkward async-method-that-returns-a-func pattern is used here because the WebDriver factory method required by
 // Atata is synchronous but we need async I/O for the initialization before that.
+// If this file is renamed or moved, be sure to adjust the regex in the renovate.json5 config file in the root too.
 public static class WebDriverFactory
 {
     private static readonly object _setupLock = new();
@@ -47,8 +48,10 @@ public static class WebDriverFactory
                 chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
                 // The current versions can be retrieved here:
-                // https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints. But this version number is
+                // https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints. This version number is
                 // updated automatically by Renovate.
+                // If anything on this line is every renamed, be sure to adjust the regex in the renovate.json5 config
+                // file in the root too.
                 chromeConfig.Options.BrowserVersion = "134.0.6998.89";
 
                 configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
