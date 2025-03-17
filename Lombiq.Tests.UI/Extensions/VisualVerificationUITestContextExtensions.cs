@@ -25,7 +25,7 @@ namespace Lombiq.Tests.UI.Extensions;
 public static class VisualVerificationUITestContextExtensions
 {
     private const string ConditionLessThenOrEqualTo = "less than or equal to";
-    private const string HintFailureDumpItemAlreadyExists = $@"
+    private const string HintTestDumpItemAlreadyExists = $@"
 Hint: You can use the configurator callback of {nameof(AssertVisualVerificationApproved)} and {nameof(AssertVisualVerification)}
 to customize the name of the dump item.";
 
@@ -73,7 +73,7 @@ to customize the name of the dump item.";
                         configurator?.Invoke(configuration);
                     });
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not ImageFormatException)
             {
                 // We don't throw yet, this way if there are missing images they are generated all in one run.
                 exceptions.Add(exception);
@@ -157,7 +157,10 @@ to customize the name of the dump item.";
     /// <see cref="AssertVisualVerificationApproved(UITestContext, IWebElement, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
-    /// <param name="elementSelector">Selector for the target element.</param>
+    /// <param name="elementSelector">
+    /// Selector for the target element. If <see langword="null" />, the current viewport (visible screen) will be
+    /// captured and the <c>viewport</c> text will be used instead of a selector description.
+    /// </param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
     /// <param name="regionOfInterest">Region of interest. Can be <see langword="null"/>.</param>
     /// <param name="configurator">Action callback to configure the behavior. Can be <see langword="null"/>.</param>
@@ -341,7 +344,7 @@ to customize the name of the dump item.";
         Rectangle? regionOfInterest = null,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
         context.AssertVisualVerificationApproved(
-            context.Get(elementSelector),
+            elementSelector is null ? null : context.Get(elementSelector),
             comparator,
             regionOfInterest,
             configuration =>
@@ -350,7 +353,7 @@ to customize the name of the dump item.";
                 configuration.WithFileNameSuffix(
                     new[]
                     {
-                        elementSelector.ToString().MakeFileSystemFriendly(),
+                        elementSelector?.ToString().MakeFileSystemFriendly() ?? "viewport",
                         configuration.FileNameSuffix,
                     }
                     .JoinNotNullOrEmpty("-")
@@ -408,17 +411,17 @@ to customize the name of the dump item.";
 
                 var suggestedImageFileName = $"{approvedContext.BaselineImageFileName}.png";
 
-                context.AppendFailureDump(
+                context.AppendTestDump(
                     Path.Combine(
                         VisualVerificationMatchNames.DumpFolderName,
                         suggestedImageFileName),
                     suggestedImage.Clone(),
-                    messageIfExists: HintFailureDumpItemAlreadyExists);
+                    messageIfExists: HintTestDumpItemAlreadyExists);
 
                 throw new VisualVerificationSourceInformationNotAvailableException(
                     $"Source information not available, make sure you are compiling with full debug information."
                     + $" Frame: {testFrame.MethodInfo.DeclaringType?.Name}.{testFrame.MethodInfo.Name}."
-                    + $" The suggested baseline image was added to the failure dump as {suggestedImageFileName}");
+                    + $" The suggested baseline image was added to the test dump as {suggestedImageFileName}");
             }
 
             if (!File.Exists(approvedContext.BaselineImagePath))
@@ -462,17 +465,17 @@ to customize the name of the dump item.";
     {
         using var suggestedImage = context.TakeElementScreenshot(element);
         suggestedImage.Save(baselineImagePath, new PngEncoder());
-        context.AddImageToFailureDump(baselineFileName + ".png", suggestedImage);
+        context.AddImageToTestDump(baselineFileName + ".png", suggestedImage);
     }
 
-    private static void AddImageToFailureDump(
+    private static void AddImageToTestDump(
         this UITestContext context,
         string fileName,
         Image image) =>
-        context.AppendFailureDump(
+        context.AppendTestDump(
             Path.Combine(VisualVerificationMatchNames.DumpFolderName, fileName),
             image.Clone(),
-            messageIfExists: HintFailureDumpItemAlreadyExists);
+            messageIfExists: HintTestDumpItemAlreadyExists);
 
     private static void AssertVisualVerification(
         this UITestContext context,
@@ -501,8 +504,8 @@ to customize the name of the dump item.";
 
         var cropRegion = regionOfInterest ?? new Rectangle(0, 0, baseline.Width, baseline.Height);
 
-        // We take a full-page screenshot before validating. It will be appended to the failure dump later. This is
-        // useful to investigate validation errors.
+        // We take a full-page screenshot before validating. It will be appended to the test dump later. This is useful
+        // to investigate validation errors.
         using var fullScreenImage = context.TakeFullPageScreenshot();
 
         // We take a screenshot of the element area. This will be compared to a baseline image.
@@ -523,9 +526,9 @@ to customize the name of the dump item.";
                 $"{cropRegionName} ({cropWidth.ToTechnicalString()}px x {cropHeight.ToTechnicalString()}px). This " +
                 "can happen if due to a change in the app the captured element got smaller than before, or if the " +
                 $"{cropRegionName} is mistakenly too large. The suggested baseline image with a screenshot of the " +
-                "captured element was saved to the failure dump. Compare this with the original image used by the " +
+                "captured element was saved to the test dump. Compare this with the original image used by the " +
                 "test and if suitable, use it as the baseline going forward.";
-            context.AddImageToFailureDump(originalElementScreenshotFileName, elementImageOriginal);
+            context.AddImageToTestDump(originalElementScreenshotFileName, elementImageOriginal);
 
             throw new VisualVerificationAssertionException(message);
         }
@@ -543,7 +546,7 @@ to customize the name of the dump item.";
         // Creating a diff image is not required, but it can be very useful to investigate failing tests.
         // You can read more about how diff created here:
         // https://github.com/Codeuctivity/ImageSharp.Compare/blob/2.0.46/ImageSharpCompare/ImageSharpCompare.cs#L303.
-        // So lets create it now and append it to failure dump later.
+        // So let's create it now and append it to test dump later.
         using var diffImage = baselineImageCropped
             .CalcDiffImage(elementImageCropped)
             .ShouldNotBeNull();
@@ -560,19 +563,19 @@ to customize the name of the dump item.";
         }
         catch
         {
-            // Here we append all the relevant items to the failure dump to help the investigation.
-            void AddImageToFailureDumpLocal(string fileName, Image image, bool dontWrap = false) =>
-                context.AddImageToFailureDump(dontWrap ? fileName : configuration.WrapFileName(fileName), image);
+            // Here we append all the relevant items to the test dump to help the investigation.
+            void AddImageToTestDumpLocal(string fileName, Image image, bool dontWrap = false) =>
+                context.AddImageToTestDump(dontWrap ? fileName : configuration.WrapFileName(fileName), image);
 
-            AddImageToFailureDumpLocal(VisualVerificationMatchNames.FullScreenImageFileName, fullScreenImage);
-            AddImageToFailureDumpLocal(originalElementScreenshotFileName, elementImageOriginal, dontWrap: true);
-            AddImageToFailureDumpLocal(VisualVerificationMatchNames.BaselineImageFileName, baselineImageOriginal);
-            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedBaselineImageFileName, baselineImageCropped);
-            AddImageToFailureDumpLocal(VisualVerificationMatchNames.CroppedElementImageFileName, elementImageCropped);
-            AddImageToFailureDumpLocal(VisualVerificationMatchNames.DiffImageFileName, diffImage);
+            AddImageToTestDumpLocal(VisualVerificationMatchNames.FullScreenImageFileName, fullScreenImage);
+            AddImageToTestDumpLocal(originalElementScreenshotFileName, elementImageOriginal, dontWrap: true);
+            AddImageToTestDumpLocal(VisualVerificationMatchNames.BaselineImageFileName, baselineImageOriginal);
+            AddImageToTestDumpLocal(VisualVerificationMatchNames.CroppedBaselineImageFileName, baselineImageCropped);
+            AddImageToTestDumpLocal(VisualVerificationMatchNames.CroppedElementImageFileName, elementImageCropped);
+            AddImageToTestDumpLocal(VisualVerificationMatchNames.DiffImageFileName, diffImage);
 
             // The diff stats.
-            context.AppendFailureDump(
+            context.AppendTestDump(
                 Path.Combine(
                     VisualVerificationMatchNames.DumpFolderName,
                     configuration.WrapFileName(VisualVerificationMatchNames.DiffLogFileName)),
@@ -588,7 +591,7 @@ calculated differences:
                     diff.MeanError,
                     diff.PixelErrorCount,
                     diff.PixelErrorPercentage),
-                messageIfExists: HintFailureDumpItemAlreadyExists);
+                messageIfExists: HintTestDumpItemAlreadyExists);
 
             throw;
         }

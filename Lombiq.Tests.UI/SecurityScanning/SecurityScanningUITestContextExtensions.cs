@@ -57,9 +57,9 @@ public static class SecurityScanningUITestContextExtensions
     /// This extension method makes changes to the normal configuration of the test to be more suited for CI operation.
     /// It changes the <see cref="UITestContext.Configuration"/> to not do any retries because this is a long running
     /// test. It also replaces the app log assertion logic with the specialized version for security scans, <see
-    /// cref="OrchardCoreUITestExecutorConfiguration.UseAssertAppLogsForSecurityScan"/>. The scan is configured t
-    /// ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the "active scan"
-    /// portion of the security scan.
+    /// cref="OrchardCoreUITestExecutorConfigurationExtensions.UseAssertAppLogsForSecurityScan"/>. The scan is
+    /// configured to ignore the admin dashboard, optionally log in as admin, and use the provided time limits for the
+    /// "active scan" portion of the security scan.
     /// </para></remarks>
     public static Task RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync(
         this UITestContext context,
@@ -67,10 +67,11 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null,
         bool doSignIn = true,
         int maxActiveScanDurationInMinutes = 10,
-        int maxRuleDurationInMinutes = 2)
+        int maxRuleDurationInMinutes = 2,
+        string[] additionalPermittedErrorLinePatterns = null)
     {
         // Ignore some validation errors that only happen during security tests.
-        context.Configuration.UseAssertAppLogsForSecurityScan();
+        context.Configuration.UseAssertAppLogsForSecurityScan(additionalPermittedErrorLinePatterns ?? []);
 
         // This can take even over 10 minutes and the CI session would certainly time out with retries.
         context.Configuration.MaxRetryCount = 0;
@@ -80,9 +81,6 @@ public static class SecurityScanningUITestContextExtensions
             {
                 // Signing in ensures full access and that the bot won't have to interact with the login screen.
                 if (doSignIn) configuration.SignIn();
-
-                // There is no need to security scan the admin dashboard.
-                configuration.ExcludeUrlWithRegex(@".*/Admin/.*");
 
                 // Active scan takes a very long time, this is not practical in CI.
                 configuration.ModifyZapPlan(plan => plan
@@ -109,7 +107,12 @@ public static class SecurityScanningUITestContextExtensions
         Action<SarifLog> assertSecurityScanResult = null) =>
         context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.GraphQLPlanPath,
-            configure,
+            configuration =>
+            {
+                configuration.DontScanErrorPage = true;
+
+                configure?.Invoke(configuration);
+            },
             assertSecurityScanResult);
 
     /// <summary>
@@ -118,18 +121,48 @@ public static class SecurityScanningUITestContextExtensions
     /// href="https://www.zaproxy.org/docs/desktop/addons/openapi-support/"/> for the official docs on ZAP's GraphQL
     /// support).
     /// </summary>
+    /// <param name="apiDefinitionUri">
+    /// The <see cref="Uri"/> of the JSON OpenAPI definition for the API to scan. If <see langword="null"/> then the API
+    /// of the app will automatically be discovered with Swagger.
+    /// </param>
     /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
     /// A delegate to run assertions on the <see cref="SarifLog"/> one the scan finishes.
     /// </param>
-    public static Task RunAndAssertOpenApiSecurityScanAsync(
+    public static async Task RunAndAssertOpenApiSecurityScanAsync(
         this UITestContext context,
+        Uri apiDefinitionUri = null,
         Action<SecurityScanConfiguration> configure = null,
-        Action<SarifLog> assertSecurityScanResult = null) =>
-        context.RunAndAssertSecurityScanAsync(
+        Action<SarifLog> assertSecurityScanResult = null)
+    {
+        if (apiDefinitionUri == null)
+        {
+            await context.EnableFeatureDirectlyAsync(Shortcuts.ShortcutsFeatureIds.Swagger);
+        }
+
+        await context.RunAndAssertSecurityScanAsync(
             AutomationFrameworkPlanPaths.OpenAPIPlanPath,
-            configure,
+            configuration =>
+            {
+                configuration.ModifyZapPlan(plan =>
+                {
+                    var openApiJob =
+                        plan.GetJobByType("openapi") ??
+                        throw new ArgumentException(
+                            "No job named \"openapi\" found in the Automation Framework Plan. We can only run the " +
+                            "OpenAPI scan if the job exists.");
+
+                    apiDefinitionUri ??= context.GetAbsoluteUri("/swagger/v1/swagger.json");
+
+                    openApiJob.GetOrCreateParameters().SetMappingChild("apiUrl", apiDefinitionUri.ToString());
+                });
+
+                configuration.DontScanErrorPage = true;
+
+                configure?.Invoke(configuration);
+            },
             assertSecurityScanResult);
+    }
 
     /// <summary>
     /// Run a <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> security scan against an app and runs
@@ -160,27 +193,24 @@ public static class SecurityScanningUITestContextExtensions
         {
             result = await context.RunSecurityScanAsync(automationFrameworkYamlPath, scanConfiguration =>
             {
+                configure?.Invoke(scanConfiguration);
+
                 // Verify that error page handling also works by visiting a known error page with no logging.
                 if (!scanConfiguration.DontScanErrorPage)
                 {
                     var errorUrl = context.GetAbsoluteUrlOfAction<ErrorController>(controller => controller.Index());
-                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri));
+                    scanConfiguration.ModifyZapPlan(yamlDocument => yamlDocument.AddRequestor(errorUrl.AbsoluteUri, 500));
                 }
-
-                configure?.Invoke(scanConfiguration);
             });
 
             if (assertSecurityScanResult != null) assertSecurityScanResult(result.SarifLog);
             else configuration.AssertSecurityScanResult(context, result.SarifLog);
 
-            if (configuration.CreateReportAlways)
-            {
-                context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
-            }
+            if (configuration.CreateReportAlways) AppendResultToTestDump(context, result);
         }
         catch (Exception ex)
         {
-            if (result != null) context.AppendDirectoryToFailureDump(result.ReportsDirectoryPath);
+            if (result != null) AppendResultToTestDump(context, result);
             throw new SecurityScanningAssertionException(ex);
         }
     }
@@ -203,7 +233,7 @@ public static class SecurityScanningUITestContextExtensions
         Action<SecurityScanConfiguration> configure = null)
     {
         var configuration = new SecurityScanConfiguration()
-            .StartAtUri(context.GetCurrentUri());
+            .StartAtUri(context.IsBrowserRunning ? context.GetCurrentUri() : context.TestStartUri);
 
         // By default ignore /vendor/ or /vendors/ URLs. This is case-insensitive. We have no control over them, and
         // they may contain several false positives (e.g. in font-awesome).
@@ -221,5 +251,11 @@ public static class SecurityScanningUITestContextExtensions
             context,
             automationFrameworkYamlPath,
             async plan => await configuration.ApplyToPlanAsync(plan, context));
+    }
+
+    private static void AppendResultToTestDump(UITestContext context, SecurityScanResult result)
+    {
+        context.AppendDirectoryToTestDump(result.ReportsDirectoryPath);
+        context.AppendTestDump(result.ZapLogPath);
     }
 }

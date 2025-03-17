@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Configuration;
@@ -7,15 +8,16 @@ using Lombiq.Tests.UI.Services.Counters.Data;
 using Lombiq.Tests.UI.Services.Counters.Extensions;
 using Lombiq.Tests.UI.Services.Counters.Value;
 using Lombiq.Tests.UI.Services.GitHub;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
-using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Modules.Network;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -25,7 +27,12 @@ public enum Browser
     Chrome,
     Edge,
     Firefox,
-    InternetExplorer,
+
+    /// <summary>
+    /// No browser will be used. Useful for testing things that don't require a browser, like API endpoints or running
+    /// security scans.
+    /// </summary>
+    None,
 }
 
 public class OrchardCoreUITestExecutorConfiguration
@@ -38,25 +45,41 @@ public class OrchardCoreUITestExecutorConfiguration
         + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))";
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
-        app.LogsShouldBeEmptyAsync();
+        app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainWarningsAsync =
-        app => app.LogsShouldBeEmptyAsync(canContainWarnings: true);
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
+        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
-        logEntries => logEntries.ShouldNotContain(
-            logEntry => IsValidBrowserLogEntry(logEntry),
-            logEntries.Where(IsValidBrowserLogEntry).ToFormattedString());
+    public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
+        logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<LogEntry, bool> IsValidBrowserLogEntry =
-        logEntry =>
-            logEntry.Level >= LogLevel.Warning &&
+    public static readonly Func<Entry, bool> IsNonSuccessBrowserLogEntry =
+        entry =>
+            entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !logEntry.Message.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
-            // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be
-            // under a different URL.
-            !logEntry.IsNotFoundLogEntry("/favicon.ico");
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
+            // Smtp4dev uses "sanitize-html" (https://github.com/apostrophecms/sanitize-html) to sanitize the HTML
+            // content of the email body and this library has a list of tags that are considered vulnerable to XSS
+            // attacks. As a workaround, we are ignoring the warnings for these tags in the browser logs. Instead,
+            // Smtp4dev should use the "allowVulnerableTags" configuration property to not have these warnings in the
+            // first place. These could be removed if https://github.com/rnwood/smtp4dev/issues/1627 is fixed and
+            // "allowVulnerableTags" property is set to true.
+            !entry.Text.Equals("error", StringComparison.OrdinalIgnoreCase) &&
+            // Ignoring the warnings about the "script" and "style" tags being vulnerable to XSS attacks.
+            !((entry.Text.Contains("Your `allowedTags` option includes, `script`, which is inherently") ||
+                entry.Text.Contains("Your `allowedTags` option includes, `style`, which is inherently")) &&
+                entry.Text.Contains("vulnerable to XSS attacks. Please remove it from `allowedTags`."));
+
+    // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
+    // different URL.
+    public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
+        e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+
+    public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
+        responses => responses.ShouldBeEmpty(responses.ToFormattedString());
+
+    private CancellationToken _testCancellationToken;
 
     public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList =
     [
@@ -103,30 +126,24 @@ public class OrchardCoreUITestExecutorConfiguration
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
 
-    /// <summary>
-    /// Gets or sets how many tests should run at the same time. Use a value of 0 to indicate that you would like the
-    /// default behavior. Use a value of -1 to indicate that you do not wish to limit the number of tests running at the
-    /// same time. The default behavior and 0 uses the <see cref="Environment.ProcessorCount"/> property. Set any other
-    /// positive integer to limit to the exact number.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The XUnit MaxParallelThreads property controls only the threads, not the actual processes started. See <see
-    /// href="https://github.com/xunit/xunit/issues/2003"></see>.
-    /// </para>
-    /// <para>
-    /// This is important only for UI tests as there will be a running instance of the site for each UI test, which can
-    /// cause performance issues, like running out of memory.
-    /// </para>
-    /// </remarks>
-    public int MaxParallelTests { get; set; } =
-        TestConfigurationManager.GetIntConfiguration(
-            $"{nameof(OrchardCoreUITestExecutorConfiguration)}:{nameof(MaxParallelTests)}") is { } intValue and > 0
-            ? intValue
-            : Environment.ProcessorCount;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
 
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainWarningsAsync;
-    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    /// <summary>
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeBrowserLog"/>.
+    /// </summary>
+    public Func<Entry, bool> BrowserLogFilter { get; set; } = IsNonSuccessBrowserLogEntry;
+
+    public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+
+    /// <summary>
+    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeResponseLog"/>.
+    /// </summary>
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter { get; set; } = IsNonSuccessResponse;
+
+    public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
+
     public ITestOutputHelper TestOutputHelper { get; set; }
 
     /// <summary>
@@ -136,9 +153,8 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// For this to properly work the build artifacts should be configured to contain the FailureDumps folder (it can
-    /// also contain other folders but it must contain a folder called "FailureDumps", e.g.: <c>+:FailureDumps =&gt;
-    /// FailureDumps</c>.
+    /// For this to properly work the build artifacts should be configured to contain the TestDumps folder (it can also
+    /// contain other folders but it must contain a folder called "TestDumps", e.g.: <c>+:TestDumps =&gt; TestDumps</c>.
     /// </para>
     /// </remarks>
     public bool ReportTeamCityMetadata { get; set; } =
@@ -157,7 +173,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     public OrchardCoreSetupConfiguration SetupConfiguration { get; set; } = new();
 
-    public UITestExecutorFailureDumpConfiguration FailureDumpConfiguration { get; set; } = new();
+    public UITestExecutorTestDumpConfiguration TestDumpConfiguration { get; set; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether to launch and use a local SMTP service to test sending out e-mails. When
@@ -209,86 +225,15 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets configuration for performance counting and monitoring.
     /// </summary>
     public CounterConfigurations CounterConfiguration { get; set; } = new();
-
-    public async Task AssertAppLogsMaybeAsync(IWebApplicationInstance instance, Action<string> log)
-    {
-        if (instance == null || AssertAppLogsAsync == null) return;
-
-        try
-        {
-            await AssertAppLogsAsync(instance);
-        }
-        catch (Exception)
-        {
-            log("Application logs: " + Environment.NewLine);
-            log(await instance.GetLogOutputAsync());
-
-            throw;
-        }
-    }
-
-    public void AssertBrowserLogMaybe(IList<LogEntry> browserLogs, Action<string> log)
-    {
-        if (AssertBrowserLog == null) return;
-
-        try
-        {
-            AssertBrowserLog(browserLogs);
-        }
-        catch (Exception)
-        {
-            log("Browser logs: " + Environment.NewLine);
-            log(browserLogs.ToFormattedString());
-
-            throw;
-        }
-    }
-
     /// <summary>
-    /// Sets the <see cref="AssertAppLogsAsync"/> to the output of <see cref="CreateAppLogAssertionForSecurityScan"/> so
-    /// it accepts errors in the log caused by the security scanning.
+    /// Gets or sets a <see cref="CancellationToken"/> that cancels the test execution.
     /// </summary>
-    public OrchardCoreUITestExecutorConfiguration UseAssertAppLogsForSecurityScan(params string[] additionalPermittedErrorLines)
+    // TestContext.Current shouldn't be cached, it always needs to be accessed as needed. So, we can't use a simple
+    // property here.
+    public CancellationToken TestCancellationToken
     {
-        AssertAppLogsAsync = CreateAppLogAssertionForSecurityScan(additionalPermittedErrorLines);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Similar to <see cref="AssertAppLogsCanContainWarningsAsync"/>, but also permits certain <c>|ERROR</c> log
-    /// entries which represent correct reactions to incorrect or malicious user behavior during a security scan.
-    /// </summary>
-    public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLines)
-    {
-        var permittedErrorLines = new List<string>
-        {
-            // The model binding will throw FormatException exception with this text during ZAP active scan, when
-            // the bot tries to send malicious query strings or POST data that doesn't fit the types expected by the
-            // model. This is correct, safe behavior and should be logged in production.
-            "is not a valid value for Boolean",
-            "An unhandled exception has occurred while executing the request. System.FormatException: any",
-            // Happens when the static file middleware tries to access a path that doesn't exist or access a file as
-            // a directory. Presumably this is an attempt to access protected files using source path manipulation.
-            // This is handled by ASP.NET Core and there is nothing for us to worry about.
-            "System.IO.IOException: Not a directory",
-            "System.IO.IOException: The filename, directory name, or volume label syntax is incorrect",
-            "System.IO.DirectoryNotFoundException: Could not find a part of the path",
-            // This happens when a request's model contains a dictionary and a key is missing. While this can be a
-            // legitimate application error, during a security scan it's more likely the result of an incomplete
-            // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
-            "An unhandled exception has occurred while executing the request. System.ArgumentNullException: Value cannot be null. (Parameter 'key')",
-            // One way to verify correct error handling is to navigate to ~/Lombiq.Tests.UI.Shortcuts/Error/Index, which
-            // always throws an exception. This also gets logged but it's expected, so it should be ignored.
-            ErrorController.ExceptionMessage,
-            // Thrown from Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync() when ZAP sends
-            // invalid authentication challenges.
-            "System.InvalidOperationException: No authentication handler is registered for the scheme",
-        };
-
-        permittedErrorLines.AddRange(additionalPermittedErrorLines);
-
-        return app => app.LogsShouldBeEmptyAsync(canContainWarnings: true, permittedErrorLines);
+        get => _testCancellationToken == default ? TestContext.Current.CancellationToken : _testCancellationToken;
+        set => _testCancellationToken = value;
     }
 
     public static Action<ICounterDataCollector, ICounterProbe> DefaultAssertCounterData(

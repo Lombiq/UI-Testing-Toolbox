@@ -1,9 +1,10 @@
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services;
+using System;
 
 namespace Lombiq.Tests.UI.Models;
 
-internal sealed record UITestContextParameters
+public sealed record UITestContextParameters
 {
     public string Id { get; init; }
     public UITestManifest TestManifest { get; init; }
@@ -13,4 +14,5 @@ internal sealed record UITestContextParameters
     public RunningContextContainer RunningContextContainer { get; init; }
     public ZapManager ZapManager { get; init; }
     public CounterDataCollector CounterDataCollector { get; init; }
+    public Uri TestStartUri { get; init; }
 }

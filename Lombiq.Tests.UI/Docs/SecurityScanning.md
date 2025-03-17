@@ -2,7 +2,7 @@
 
 ## Overview
 
-You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend. See a demo video of this feature [here](https://www.youtube.com/watch?v=iUYivLkFbY4).
+You can create detailed security scans of your app with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/) right from the Lombiq UI Testing Toolbox, with nice reports. ZAP is the world's most widely used web app security scanner, and a fellow open-source project we can recommend. See a demo video of this feature [here](https://www.youtube.com/watch?v=iUYivLkFbY4), and an Orchard Harvest 2024 talk [here](https://www.youtube.com/watch?v=FsOpo8EA4wE).
 
 ![Sample ZAP security scan report](Attachments/ZapReportScreenshot.png)
 
@@ -33,7 +33,7 @@ This is because the Docker installation is configured to use Windows images, whi
     # See https://github.com/Lombiq/GitHub-Actions/blob/dev/.github/workflows/build-and-test-orchard-core.yml.
     uses: Lombiq/GitHub-Actions/.github/workflows/build-and-test-orchard-core.yml@dev
     with:
-      machine-types: '["windows-latest"]'
+      machine-types: '["windows-2022"]'
       test-filter: "FullyQualifiedName!~SecurityScanningTests"
 ```
 
@@ -41,10 +41,14 @@ This is because the Docker installation is configured to use Windows images, whi
 
 - Most common alerts in Orchard Core can be resolved by [using the extension method in Lombiq Helpful Libraries](https://github.com/Lombiq/Helpful-Libraries/blob/dev/Lombiq.HelpfulLibraries.OrchardCore/Docs/Security.md) like this: `orchardCoreBuilder.ConfigureSecurityDefaults(allowInlineStyle: true)`.
 - If you're unsure what happens in a scan, run the [ZAP desktop app](https://www.zaproxy.org/download/) and load the Automation Framework plan's YAML file into it. If you use the default scans, then these will be available under the build output directory (like _bin/Debug_) under _SecurityScanning/AutomationFrameworkPlans_. Then, you can open and run them as demonstrated [in this video](https://youtu.be/PnCbIAnauD8?si=u0vi63Uvv9wZINzb&t=1173).
-- If an alert is a false positive, follow [the official docs](https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/). You can use the [`alertFilter` job](https://www.zaproxy.org/docs/desktop/addons/alert-filters/automation/) to ignore alerts in very specific conditions. You can also access this via the .NET configuration API via `SecurityScanConfiguration.MarkScanRuleAsFalsePositiveForUrlWithRegex()`.
+- If an alert is a false positive, follow [the official docs](https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/). You can use the [`alertFilter` job](https://www.zaproxy.org/docs/desktop/addons/alert-filters/automation/) to ignore alerts in very specific conditions. You can also access this via the .NET configuration API via `SecurityScanConfiguration.MarkScanRuleAsFalsePositiveForUrlWithRegex()`. For less common filters (e.g., filters other than by URL), you can use the `SecurityScanConfiguration.ModifyZapPlan()` and `YamlDocument.AddFalsePositiveRuleFilter()` extension methods to configure the action filter YAML node directly (see `SecurityScanWithCustomConfigurationShouldPass` test in the sample).
 - ZAP didn't find everything in your app? By default, ZAP has a crawl depth of 5 for its standard spider and 10 for its AJAX spider. Set `maxDepth` (and `maxChildren`) [for `spider`](https://www.zaproxy.org/docs/desktop/addons/automation-framework/job-spider/) and `maxCrawlDepth` [for `spiderAjax`](https://www.zaproxy.org/docs/desktop/addons/ajax-spider/automation/).
 - Do you sometimes get slightly different scan results? This is normal, and ZAP can be inconsistent/appear random within limits, see [the official docs page](https://www.zaproxy.org/faq/why-can-zap-scans-be-inconsistent/).
 - Is the active scan too slow?
   - You can find out which rules take the most time by adding a script displaying each rules' runtime with `YamlDocumentExtensions.AddDisplayActiveScanRuleRuntimesScriptAfterActiveScan()`.
   - The ["Cross Site Scripting (DOM Based)" active scan rule](https://www.zaproxy.org/docs/desktop/addons/dom-xss-active-scan-rule/), unlike other rules, launches browsers and thus will take 1-2 orders of magnitude more time than other scans, usually causing the bulk of an active scan's runtime. Also see [the official docs](https://www.zaproxy.org/docs/desktop/addons/dom-xss-active-scan-rule/). You can tune it so it completes faster but still produces acceptable results for your app. You can do this from the Automation Framework plan's YAML file (see the samples on how you can use a custom one), or with `SecurityScanConfiguration.ConfigureXssActiveScanRule()`.
-  - In CI workflows, you might want to restrict how many scans run in parallel, if you have more than one. You can use [xUnit's `[Collection]` attributes](https://xunit.net/docs/running-tests-in-parallel#parallelism-in-test-frameworks) to have e.g. only two collections for such tests, thus allowing only two parallel scans.
+  - In CI workflows, you might want to restrict how many scans run in parallel, if you have more than one. You can use [xUnit's `[Collection]` attributes](https://xunit.net/docs/running-tests-in-parallel#parallelism-in-test-frameworks) to have e.g. only two collections for such tests, thus allowing only two parallel scans. Alternatively, if you have many such tests, only run them selectively and not on each commit, like after a pull requests approval (or otherwise just before merge). Using test filtering and reducing the xUnit parallelism to 1 can help with this.
+- The test fails due to Orchard Core exceptions caused by ZAP being logged, but you have no idea how those happened?
+  - If you app uses NLog for logging, make it log the URL too with the [AspNetRequest Url Layout Renderer](https://github.com/NLog/NLog/wiki/AspNetRequest-Url-Layout-Renderer): `${aspnet-request-url:IncludeQueryString=true}`. This will help you pinpoint the ZAP request that caused the exception. We recommend adding this before `${aspnet-traceidentifier}`, so the usual format of log messages is otherwise preserved.
+  - Set `SecurityScanningConfiguration.CreateReportOnTestFailAlways` to `true` to get a report even if the security scan passes. In the report, you may find details even about ignored alerts.
+  - Increase the ZAP log level to `Debug` via `SecurityScanningConfiguration.ZapLogLevel`. This will include the ZAP log in the failure dump, providing you with more information about what ZAP did exactly, including the URLs of the requests it sent. Note that this slows down the security scan considerably (can even double the runtime), so use it only when necessary.

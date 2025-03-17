@@ -2,10 +2,10 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
-using Shouldly;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Samples;
 
@@ -65,7 +65,8 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/. We can set e.g. Orchard's
                 // AdminUrlPrefix like below, but this is just setting the default, so it's only an example. A more
                 // useful example is enabling offline operation of the Lombiq Hosting - Azure Application Insights for
-                // Orchard Core module (see https://github.com/Lombiq/Orchard-Azure-Application-Insights).
+                // Orchard Core module (see the UI test project in
+                // https://github.com/Lombiq/Orchard-Azure-Application-Insights).
                 configuration.OrchardCoreConfiguration.BeforeAppStart +=
                     (_, argumentsBuilder) =>
                     {
@@ -83,21 +84,53 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // Action) to further configure it.
                 ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
-                // The UI Testing Toolbox can run several checks for the app even if you don't add explicit
-                // assertions: By default, the Orchard logs and the browser logs (where e.g. JavaScript errors show
-                // up) are checked and if there are any errors, the test will fail. You can also enable the checking of
-                // accessibility rules as we'll see later. Maybe not all of the default checks are suitable for you.
-                // Then it's simple to override them; here we change which log entries cause the tests to fail. We use
-                // the trick of making expected error messages not look like real errors.
-                configuration.AssertAppLogsAsync = async webApplicationInstance =>
-                    (await webApplicationInstance.GetLogOutputAsync())
-                    .ReplaceOrdinalIgnoreCase(
-                        "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|ERROR|Expected non-error",
-                        "|Lombiq.TrainingDemo.Services.DemoBackgroundTask|EXPECTED_ERROR|Expected non-error")
-                    .ReplaceOrdinalIgnoreCase(
-                        "|OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|ERROR|Error deleting cache folder",
-                        "|OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider|EXPECTED_ERROR|Error deleting cache folder")
-                    .ShouldNotContain("|ERROR|");
+                // For locally running apps, the UI Testing Toolbox configures Fake Logging (see
+                // https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.testing). This provides an
+                // in-memory log for assertions, regardless of the logging framework your app uses otherwise. By
+                // default, it'll only collect log entries with the Error level and up. However, you can change this,
+                // and the usual Logging app settings still work.
+                configuration.OrchardCoreConfiguration.BeforeAppStart +=
+                    (_, argumentsBuilder) =>
+                    {
+                        // This is how you can configure logging to be on the >=Error level in general, while still
+                        // allowing info-level entries for ShellHost.
+                        argumentsBuilder
+                            .AddWithValue("Logging:LogLevel:Default", "Error")
+                            .AddWithValue("Logging:LogLevel:System", "Error")
+                            .AddWithValue("Logging:LogLevel:Microsoft", "Error")
+                            .AddWithValue("Logging:LogLevel:OrchardCore.Environment.Shell.ShellHost", "Information");
+
+                        return Task.CompletedTask;
+                    };
+
+                // Enabling FakeLogger to collect the info-level ShellHost log entries configured above. These will show
+                // up in the test's output like "[Information] OrchardCore.Environment.Shell.ShellHost: Start creation
+                // of shells".
+                configuration.OrchardCoreConfiguration.AfterFakeLoggingConfiguration =
+                    (_, fakeLogCollectorOptions) => fakeLogCollectorOptions.FilteredLevels.Add(LogLevel.Information);
+
+                // Logging is important because the UI Testing Toolbox can run several checks for the app even if you
+                // don't add explicit assertions: By default, the Orchard logs and the browser logs (where e.g.
+                // JavaScript errors show up) are checked and if there are any errors, the test will fail. You can also
+                // enable the checking of accessibility rules as we'll see later. Maybe not all of the default checks
+                // are suitable for you. Then it's simple to override them; here we change which log entries cause the
+                // tests to fail, and allow certain log entries: info-level log entries for ShellHost are allowed, see
+                // above.
+                configuration.AssertAppLogsAsync = webApplicationInstance =>
+                    webApplicationInstance.LogsShouldNotContainAsync(
+                        logEntry => logEntry.Message != "My permitted message." && logEntry.Level != LogLevel.Information,
+                        configuration.TestCancellationToken);
+
+                // Strictly speaking this is not necessary here, because we always use the same static method for setup.
+                // However, if you used a dynamic setup operation (e.g. `context => SetupHelpers.RunSetupAsync(context,
+                // someOtherVariable)` then the default setup identifier calculator would always return a new random
+                // value, because it uses `setupOperation.GetHashCode()` under the hood. A custom calculator would fix
+                // that. But in this example we just safely replace it with a human-readable name so the setup snapshot
+                // directory is easier to find.
+                configuration.SetupConfiguration.SetupOperationIdentifierCalculator = setupOperation =>
+                    setupOperation == SetupHelpers.RunSetupAsync
+                        ? "Sample Setup"
+                        : OrchardCoreSetupConfiguration.DefaultSetupOperationIdentifierCalculator(setupOperation);
 
                 if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
             });

@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.Models;
 using System;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
@@ -12,25 +12,39 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
 
     public ITestOutputHelper Decorated { get; private set; }
 
+    public string Output => Decorated.Output;
+
     private GitHubActionsGroupingTestOutputHelper(ITestOutputHelper decorated, string groupName)
     {
         Decorated = decorated;
         _groupName = groupName;
     }
 
+    public void Write(string message)
+    {
+        StartGroupIfNotStarted();
+        Decorated.Write(message);
+    }
+
+    public void Write(string format, params object[] args)
+    {
+        StartGroupIfNotStarted();
+        Decorated.Write(format, args);
+    }
+
     public void WriteLine(string message)
     {
-        Start();
+        StartGroupIfNotStarted();
         Decorated.WriteLine(message);
     }
 
     public void WriteLine(string format, params object[] args)
     {
-        Start();
+        StartGroupIfNotStarted();
         Decorated.WriteLine(format, args);
     }
 
-    private void Start()
+    private void StartGroupIfNotStarted()
     {
         if (_isStarted) return;
 
@@ -48,7 +62,7 @@ internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperD
         UITestManifest testManifest)
     {
         if (!GitHubHelper.IsGitHubEnvironment ||
-            testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.Class?.Name is not { } className ||
+            testManifest.XunitTest?.TestCase?.TestMethod?.TestClass?.TestClassName is not { } className ||
             testManifest.Name is not { } testName)
         {
             return (testOutputHelper, () => { });

@@ -1,10 +1,7 @@
-using Atata;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -25,42 +22,24 @@ public class EmailTests : UITestBase
                 // A shortcut to sign in without going through (and thus testing) the login screen.
                 await context.SignInDirectlyAsync();
 
-                // Let's go to the "Test settings" option of the e-mail admin page. The default sender is configured in
-                // the test recipe so we can use the test feature.
-                await context.GoToAdminRelativeUrlAsync("/Email/Index");
-
-                // Let's send a basic e-mail.
-                await context.FillInWithRetriesAsync(By.Id("To"), "recipient@example.com");
-                await context.FillInWithRetriesAsync(By.Id("Subject"), "Test message");
-                await context.FillInWithRetriesAsync(By.Id("Body"), "Hi, this is a test.");
-
-                // With the button being under the fold in the configured screen size, we need to make sure it's
-                // actually clicked. Scrolling there first doesn't work for some reason.
-                await ReliabilityHelper.DoWithRetriesOrFailAsync(
-                    async () =>
-                    {
-                        try
-                        {
-                            await context.ClickReliablyOnAsync(By.Id("emailtestsend")); // #spell-check-ignore-line
-                            return true;
-                        }
-                        catch (WebDriverException ex) when (ex.Message.Contains("move target out of bounds"))
-                        {
-                            return false;
-                        }
-                    });
-
+                // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
+                // sender is configured in the test recipe so we can use the test feature.
+                await context.GoToEmailTestAsync();
+                await context.FillEmailTestFormAsync("Test message");
                 context.ShouldBeSuccess();
 
                 // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
                 // e-mails and check if everything's alright.
                 await context.GoToSmtpWebUIAsync();
 
-                // If the e-mail we've sent exists then it's all good.
-                context.Exists(ByHelper.SmtpInboxRow("Test message"));
+                // We are clicking on the e-mail we've sent and switching to frame 0, to see its content.
+                await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
+
+                // If we see the message that we've sent then it's all good.
+                context.Exists(By.XPath($"//pre[contains(.,'Hi, this is a test.')]"));
             },
-            // UseSmtpService = true automatically enables the Email module too so you don't have to enable it in a
-            // recipe.
+            // UseSmtpService = true automatically enables the Email module so you don't have to enable it in a recipe,
+            // and it configures the module too.
             configuration => configuration.UseSmtpService = true);
 }
 

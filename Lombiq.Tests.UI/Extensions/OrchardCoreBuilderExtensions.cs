@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OrchardCore.Email;
 using OrchardCore.Modules;
 using System.Linq;
 
@@ -38,18 +37,14 @@ public static class OrchardCoreBuilderExtensions
 
         if (enableShortcutsDuringUITesting) builder.AddTenantFeatures("Lombiq.Tests.UI.Shortcuts");
 
-        var smtpPort = configuration.GetValue<string>("Lombiq_Tests_UI:SmtpSettings:Port");
-
-        if (!string.IsNullOrEmpty(smtpPort)) builder.AddTenantFeatures("OrchardCore.Email");
+        var enableSmtp = configuration.GetValue<bool>("Lombiq_Tests_UI:EnableSmtpFeature");
+        if (enableSmtp) builder.AddTenantFeatures("OrchardCore.Email.Smtp");
 
         if (configuration.GetValue<bool>("Lombiq_Tests_UI:UseAzureBlobStorage"))
         {
             builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
         }
 
-        return builder.ConfigureServices(
-            services => services
-                .PostConfigure<SmtpSettings>(settings =>
-                    configuration.GetSection("Lombiq_Tests_UI:SmtpSettings").Bind(settings)));
+        return builder;
     }
 }

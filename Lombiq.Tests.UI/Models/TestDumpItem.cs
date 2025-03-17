@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class FailureDumpItem : IFailureDumpItem
+public class TestDumpItem : ITestDumpItem
 {
     private readonly Func<Task<Stream>> _getStream;
     private readonly Action _dispose;
     private bool _disposed;
 
-    public FailureDumpItem(
+    public TestDumpItem(
         Func<Task<Stream>> getStream,
         Action dispose = null)
     {

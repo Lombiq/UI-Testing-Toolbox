@@ -14,12 +14,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NLog;
-using NLog.Web;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using YesSql;
 using ISession = YesSql.ISession;
@@ -34,17 +33,20 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly ConcurrentBag<IStore> _createdStores = [];
+    private readonly CancellationToken _cancellationToken;
 
     public OrchardApplicationFactory(
         ICounterDataCollector counterDataCollector,
-        Action<IConfigurationBuilder> configureHost = null,
-        Action<IWebHostBuilder> configuration = null,
-        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard = null)
+        Action<IConfigurationBuilder> configureHost,
+        Action<IWebHostBuilder> configuration,
+        Action<ConfigurationManager, OrchardCoreBuilder> configureOrchard,
+        CancellationToken cancellationToken)
     {
         _counterDataCollector = counterDataCollector;
         _configureHost = configureHost;
         _configuration = configuration;
         _configureOrchard = configureOrchard;
+        _cancellationToken = cancellationToken;
     }
 
     public Uri BaseAddress => ClientOptions.BaseAddress;
@@ -74,27 +76,18 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             // the latest source.
 
             var host = builder.Build();
-            Task.Run(() => host.StartAsync()).GetAwaiter().GetResult();
+            Task.Run(() => host.StartAsync(_cancellationToken), _cancellationToken).GetAwaiter().GetResult();
             return host;
         }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(ConfigureTestServices)
-            .ConfigureLogging((context, loggingBuilder) =>
-            {
-                var environment = context.HostingEnvironment;
-                var nLogConfig = Path.Combine(environment.ContentRootPath, "NLog.config");
-                var factory = new LogFactory()
-                    .Setup()
-                    .LoadConfigurationFromFile(nLogConfig)
-                    .LogFactory;
-
-                factory.Configuration.Variables["configDir"] = environment.ContentRootPath;
-
-                loggingBuilder.AddNLogWeb(factory, new NLogAspNetCoreOptions { ReplaceLoggerFactory = true });
-            });
+        builder
+            .ConfigureTestServices(ConfigureTestServices)
+            // NLog, if used, will put log files into configDir. Not setting this would use the default, which would be
+            // App_Data/App_Data/logs.
+            .ConfigureLogging((context, _) => LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath);
 
         _configuration?.Invoke(builder);
     }
@@ -107,12 +100,13 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             .LastOrDefault(descriptor => descriptor.ServiceType == typeof(OrchardCoreBuilder))?
             .ImplementationInstance as OrchardCoreBuilder
             ?? throw new InvalidOperationException(
-                "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs!");
+                "Please call WebApplicationBuilder.Services.AddOrchardCms() in your Program.cs.");
         var configuration = services
             .LastOrDefault(descriptor => descriptor.ServiceType == typeof(ConfigurationManager))?
             .ImplementationInstance as ConfigurationManager
             ?? throw new InvalidOperationException(
-                $"Please add {nameof(ConfigurationManager)} instance to WebApplicationBuilder.Services in your Program.cs!");
+                $"Please register the {nameof(ConfigurationManager)} instance in the Service Collection in your " +
+                "Program.cs, following the documentation.");
 
         _configureOrchard?.Invoke(configuration, builder);
 

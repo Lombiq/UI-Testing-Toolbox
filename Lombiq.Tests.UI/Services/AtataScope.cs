@@ -13,7 +13,18 @@ public sealed class AtataScope : IDisposable
     private Uri _baseUri;
 
     public AtataContext AtataContext { get; }
-    public IWebDriver Driver => AtataContext.Driver;
+
+    public IWebDriver Driver
+    {
+        get
+        {
+            var driver = AtataContext.Driver;
+            IsBrowserRunning = driver != null;
+            return driver;
+        }
+    }
+
+    public bool IsBrowserRunning { get; private set; }
 
     public Uri BaseUri
     {

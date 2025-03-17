@@ -4,16 +4,20 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 
+// These are not static fields because those shouldn't be used in generic types. See:
+// https://rules.sonarsource.com/csharp/RSPEC-2743/.
 internal static class OrchardCoreUITestBaseCounter
 {
-    public static object SnapshotCopyLock { get; } = new();
+    public static SemaphoreSlim SnapshotCopySemaphoreSlim = new(1, 1);
     public static bool AppFolderCreated { get; set; }
 }
 
@@ -30,13 +34,24 @@ public delegate Task ExecuteTestAfterSetupAsync(
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
 
+/// <summary>
+/// Delegate with the signature of <see
+/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupWithoutBrowserAsync(Func{UITestContext, Task},
+/// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>TimeoutTests</c> in
+/// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate parameters.
+/// </summary>
+// If you change this, then also change the corresponding method below.
+public delegate Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+
 public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
 {
     private const string AppFolder = nameof(AppFolder);
 
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
-    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait; // #spell-check-ignore-line
+    protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
@@ -148,6 +163,54 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
+    protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfiguration);
+
+    protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfigurationAsync);
+
+    protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
+
+    protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, async configuration =>
+        {
+            configuration.SetupConfiguration.BeforeSetup = configuration =>
+            {
+                configuration.BrowserConfiguration.Browser = browser;
+                return Task.CompletedTask;
+            };
+
+            configuration.SetupConfiguration.AfterSetup = configuration =>
+            {
+                configuration.BrowserConfiguration.Browser = Browser.None;
+                return Task.CompletedTask;
+            };
+
+            await changeConfigurationAsync.InvokeFuncAsync(configuration);
+        });
+
+    protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
+
+    // If you change this, then also change the corresponding delegate above.
+    protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
+
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
@@ -206,35 +269,42 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     /// Executes the given UI test, starting the app from an existing SQLite database available in the App_Data or in
     /// the given folder.
     /// </summary>
-    protected virtual Task ExecuteTestFromExistingDBAsync(
+    protected virtual async Task ExecuteTestFromExistingDBAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         string customSnapshotFolderPath = null,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
     {
-        lock (OrchardCoreUITestBaseCounter.SnapshotCopyLock)
+        await OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.WaitAsync(TestContext.Current.CancellationToken);
+
+        try
         {
             if (!OrchardCoreUITestBaseCounter.AppFolderCreated)
             {
-                DirectoryHelper.SafelyDeleteDirectoryIfExists(AppFolder);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(AppFolder, TestContext.Current.CancellationToken);
 
-                OrchardCoreDirectoryHelper.CopyAppFolder(
+                await OrchardCoreDirectoryHelper.CopyAppFolderAsync(
                     customSnapshotFolderPath
                         ?? OrchardCoreDirectoryHelper.GetAppRootPath(typeof(TEntryPoint).Assembly.Location),
-                    AppFolder);
+                    AppFolder,
+                    TestContext.Current.CancellationToken);
 
                 OrchardCoreUITestBaseCounter.AppFolderCreated = true;
             }
         }
+        finally
+        {
+            OrchardCoreUITestBaseCounter.SnapshotCopySemaphoreSlim.Release();
+        }
 
-        return ExecuteTestAsync(
+        await ExecuteTestAsync(
             testAsync,
             browser,
             setupOperation: null,
             async configuration =>
             {
                 configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder;
-                if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+                await changeConfigurationAsync.InvokeFuncAsync(configuration);
             });
     }
 
@@ -321,7 +391,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = testAsync };
+        var testManifest = new UITestManifest(testAsync);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
@@ -331,7 +401,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             SetupConfiguration = { SetupOperation = setupOperation },
         };
 
-        if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        await changeConfigurationAsync.InvokeFuncAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync(
             (configuration, contextId, counterDataCollector) =>
@@ -342,5 +412,32 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
                     counterDataCollector),
             testManifest,
             configuration);
+    }
+
+    /// <summary>
+    /// Starts a "test" with configuration adjustments to make it more suitable for interactive exploration of the UI
+    /// testing setup. In a GitHub Actions environment this method does nothing.
+    /// </summary>
+    protected Task OpenSandboxAfterSetupAsync(
+        Func<UITestContext, Task> testAsync = null,
+        Browser browser = default,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
+    {
+        // This "test" will wait indefinitely, so it's important to skip it in CI.
+        if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
+
+        testAsync ??= context => context.SwitchToInteractiveAsync(cancellationToken: context.Configuration.TestCancellationToken);
+
+        return ExecuteTestAfterSetupAsync(
+            testAsync,
+            browser,
+            configuration =>
+            {
+                // Since this made for human interaction, make sure the browser is always displayed and disable retries.
+                configuration.BrowserConfiguration.Headless = false;
+                configuration.MaxRetryCount = 0;
+
+                return changeConfigurationAsync == null ? Task.CompletedTask : changeConfigurationAsync(configuration);
+            });
     }
 }

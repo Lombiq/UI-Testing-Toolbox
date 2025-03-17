@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using SixLabors.ImageSharp;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Lombiq.Tests.UI.Services;
@@ -43,4 +44,15 @@ public class BrowserConfiguration
     /// Gets or sets the fake camera video source information. See: <see cref="FakeBrowserVideoSource"/>.
     /// </summary>
     public FakeBrowserVideoSource FakeVideoSource { get; set; }
+
+    /// <summary>
+    /// Gets a list of command line arguments that were passed to the driver during the driver instance creation.
+    /// </summary>
+    public IList<string> Arguments { get; } = [];
+
+    /// <summary>
+    /// Gets or sets the context ID, to be used during driver creation when the <see cref="UITestContext"/> does not
+    /// exist yet.
+    /// </summary>
+    internal string UITestContextId { get; set; }
 }

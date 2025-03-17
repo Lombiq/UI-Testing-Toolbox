@@ -1,12 +1,17 @@
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI;
 
+/// <summary>
+/// Base class for UI tests that run on a remote (i.e. not locally running) app. If you're testing an app running behind
+/// Cloudflare, then consider using <see cref="CloudflareRemoteUITestBase"/> instead.
+/// </summary>
 public abstract class RemoteUITestBase : UITestBase
 {
     protected RemoteUITestBase(ITestOutputHelper testOutputHelper)
@@ -56,7 +61,7 @@ public abstract class RemoteUITestBase : UITestBase
             await testAsync(context);
         }
 
-        var testManifest = new UITestManifest(_testOutputHelper) { TestAsync = BaseUriVisitingTest };
+        var testManifest = new UITestManifest(BaseUriVisitingTest);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
@@ -65,11 +70,10 @@ public abstract class RemoteUITestBase : UITestBase
             BrowserConfiguration = { Browser = browser },
         };
 
-        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = (_) => true;
-        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = (_) => true;
-        configuration.FailureDumpConfiguration.CaptureAppSnapshot = false;
-
-        if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
+        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
+        await changeConfigurationAsync.InvokeFuncAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync((_, _, _) => new RemoteInstance(baseUri), testManifest, configuration);
     }

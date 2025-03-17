@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -59,7 +60,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
-        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderCheckAsync);
+        await context.TestBasicOrchardFeaturesExceptSetupAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
     }
 
     /// <summary>
@@ -127,9 +128,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static async Task TestBasicOrchardFeaturesExceptSetupAsync(
         this UITestContext context,
+        bool dontCheckFrontend,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         await context.TestRegistrationWithInvalidDataAsync();
@@ -137,13 +140,27 @@ public static class BasicFeaturesTestingUITestContextExtensions
         await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
         await context.TestLoginWithInvalidDataAsync();
         await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(customPageHeaderCheckAsync: customPageHeaderCheckAsync);
+        await context.TestContentOperationsAsync(dontCheckFrontend: dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
     }
+
+    /// <summary>
+    /// <para>Tests all the basic Orchard features except for setup.</para>
+    /// <para>The test method assumes that the site is set up.</para>
+    /// </summary>
+    /// <param name="customPageHeaderCheckAsync">
+    /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
+    /// TestContentOperationsAsync().
+    /// </param>
+    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    public static Task TestBasicOrchardFeaturesExceptSetupAsync(
+        this UITestContext context,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
+            context.TestBasicOrchardFeaturesExceptSetupAsync(dontCheckFrontend: false, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
 
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup and registration.</para>
@@ -169,6 +186,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         await context.TestLoginAsync();
         await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
+        await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
         await context.TestWorkflowsAsync();
         await context.TestLogoutAsync();
@@ -365,7 +383,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
     {
-        parameters ??= UserRegistrationParameters.CreateDefault();
+        parameters ??= UserRegistrationParameters.CreateTest();
 
         return context.ExecuteTestAsync(
             "Test registration",
@@ -416,8 +434,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
-                registrationPage.ShouldStayOnRegistrationPage().ValidationMessages.Should.Not.BeEmpty();
+                await registrationPage.RegisterWithAsync(context, parameters);
+                context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
 
@@ -439,18 +457,20 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         UserRegistrationParameters parameters = null)
     {
-        parameters ??= UserRegistrationParameters.CreateDefault();
+        parameters ??= UserRegistrationParameters.CreateTest();
 
         return context.ExecuteTestAsync(
             "Test registration with already registered email",
             async () =>
             {
                 var registrationPage = await context.GoToRegistrationPageAsync();
-                registrationPage = await registrationPage.RegisterWithAsync(context, parameters);
+                await registrationPage.RegisterWithAsync(context, parameters);
                 context.RefreshCurrentAtataContext();
-                registrationPage
-                    .ShouldStayOnRegistrationPage()
-                    .ValidationMessages[page => page.Email].Should.BeVisible();
+
+                context
+                    .Get(By.CssSelector(".text-danger.field-validation-error"))
+                    .Text
+                    .ShouldContain("A user with the same username already exists.");
             });
     }
 
@@ -544,22 +564,23 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
                 context.RefreshCurrentAtataContext();
 
+                featuresPage.SearchForFeature(featureName).IsEnabled.Get(out var originalEnabledState);
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
+
                 featuresPage
-                    .SearchForFeature(featureName).IsEnabled.Get(out bool originalEnabledState)
-                    .Features[featureName].CheckBox.Check()
-                    .BulkActions.Toggle.Click()
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState));
+                featuresPage.Features[featureName].CheckBox.Check();
+                featuresPage.BulkActions.Toggle.Click();
 
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState))
-                .Features[featureName].CheckBox.Check()
-                .BulkActions.Toggle.Click()
-
-                .AggregateAssert(page => page
-                    .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                    .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                    .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                featuresPage
+                    .AggregateAssert(page => page
+                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
+                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
+                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
             });
 
     /// <summary>

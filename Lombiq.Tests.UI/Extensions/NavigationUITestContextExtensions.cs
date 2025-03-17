@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.Counters;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -60,14 +60,16 @@ public static class NavigationUITestContextExtensions
 
                 using (new NavigationProbe(context.CounterDataCollector, absoluteUri))
                 {
-                    context.Driver.Navigate().GoToUrl(absoluteUri);
+                    // Navigation can sometimes not happen on the first try.
+                    await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                        () => context.Driver.Navigate().GoToUrlAsync(absoluteUri));
                 }
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
             });
 
-    public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver.Url);
+    public static Uri GetCurrentUri(this UITestContext context) => new(context.Driver?.Url ?? context.TestStartUri.AbsoluteUri);
 
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
@@ -143,10 +145,23 @@ public static class NavigationUITestContextExtensions
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {relativeUrl}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: context.GetAbsoluteUri(relativeUrl).ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(
+                            url: context.GetAbsoluteUri(relativeUrl).ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -160,10 +175,22 @@ public static class NavigationUITestContextExtensions
     {
         var uri = context.GetAbsoluteAdminUri(relativeUrl);
 
-        var page = context.ExecuteLogged(
+        var page = await context.ExecuteLoggedAsync(
             $"{typeof(T).FullName} - {uri.LocalPath}",
             typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(url: uri.ToString()));
+            async () =>
+            {
+                T pageInternal = null;
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+                    () =>
+                    {
+                        pageInternal = context.Scope.AtataContext.Go.To<T>(url: uri.ToString());
+                        return Task.CompletedTask;
+                    });
+
+                return pageInternal;
+            });
 
         await context.TriggerAfterPageChangeEventAsync();
 
@@ -269,8 +296,8 @@ public static class NavigationUITestContextExtensions
             searchUrl,
             async response =>
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<IList<VueMultiselectItemViewModel>>(json);
+                var json = await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
+                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
                 return result.IndexOf(result.First(item => item.DisplayText == text));
             });
 
@@ -328,17 +355,25 @@ public static class NavigationUITestContextExtensions
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
         context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
-    /// <summary>
-    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilPageLeaveAsync(IWebElement, UITestContext, TimeSpan?,
-    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
-    /// </summary>
+    /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilPageLeaveAsync(context, timeout, interval);
+        context.ClickReliablyOnUntilNavigationHasOccurredAsync(by, timeout, interval);
+
+    /// <summary>
+    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext,
+    /// TimeSpan?, TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// </summary>
+    public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.Get(by).ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see

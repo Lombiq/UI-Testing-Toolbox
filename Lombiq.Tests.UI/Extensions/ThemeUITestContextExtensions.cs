@@ -26,7 +26,7 @@ public static class ThemeUITestContextExtensions
     {
         await context.GoToHomePageAsync();
 
-        context.Get(By.ClassName(siteNameClass)).Text.ShouldBe(siteName);
+        context.GetText(By.ClassName(siteNameClass)).ShouldBe(siteName);
         context.Driver.Exists(By.ClassName(creditsClass).Visible());
     }
 }

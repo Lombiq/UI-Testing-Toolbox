@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +16,8 @@ public sealed class RemoteInstance : IWebApplicationInstance
 
     public Task<Uri> StartUpAsync() => Task.FromResult(_baseUri);
 
-    public IEnumerable<IApplicationLog> GetLogs(CancellationToken cancellationToken = default) => [];
+    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(Enumerable.Empty<IApplicationLog>());
     public TService GetRequiredService<TService>() => throw new NotSupportedException();
     public Task PauseAsync() => throw new NotSupportedException();
     public Task ResumeAsync() => throw new NotSupportedException();

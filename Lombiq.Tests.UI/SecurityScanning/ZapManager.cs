@@ -1,6 +1,5 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
-using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
@@ -12,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 using YamlDotNet.RepresentationModel;
 
 namespace Lombiq.Tests.UI.SecurityScanning;
@@ -24,12 +23,13 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 public sealed class ZapManager : IAsyncDisposable
 {
     // Using the then-latest stable release of ZAP. You can check for newer version tags here:
-    // https://hub.docker.com/r/softwaresecurityproject/zap-stable/tags.
+    // https://hub.docker.com/r/zaproxy/zap-stable/tags.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "softwaresecurityproject/zap-stable:2.14.0"; // #spell-check-ignore-line
-    private const string _zapWorkingDirectoryPath = "/zap/wrk/"; // #spell-check-ignore-line
+    private const string _zapImage = "zaproxy/zap-stable:2.16.0";
+    private const string _zapWorkingDirectoryPath = "/zap/wrk/";
     private const string _zapReportsDirectoryName = "reports";
+    private const string _zapHomeDirectoryName = "home";
 
     private static readonly SemaphoreSlim _pullSemaphore = new(1, 1);
     private static readonly CliProgram _docker = new("docker");
@@ -41,6 +41,7 @@ public sealed class ZapManager : IAsyncDisposable
     private static bool _wasPulled;
 
     private int _zapPort;
+    private bool _isDisposed;
 
     static ZapManager()
     {
@@ -77,9 +78,9 @@ public sealed class ZapManager : IAsyncDisposable
             automationFrameworkYamlPath = AutomationFrameworkPlanPaths.BaselinePlanPath;
         }
 
-        // Each attempt will have it's own "ZapN" directory inside the temp, starting with "Zap1".
+        // Each attempt will have its own "ZapN" directory inside the temp, starting with "Zap1".
         var mountedDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
-            DirectoryPaths.GetTempSubDirectoryPath(context.Id, "Zap"));
+            context.GetTempSubDirectoryPath("Zap"));
         var reportsDirectoryPath = Path.Combine(mountedDirectoryPath, _zapReportsDirectoryName);
 
         Directory.CreateDirectory(reportsDirectoryPath);
@@ -113,10 +114,8 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Also see https://www.zaproxy.org/docs/docker/about/#automation-framework.
 
-        // Running a ZAP desktop in the browser with Webswing with the same config under Windows: #spell-check-ignore-line
-#pragma warning disable S103 // Lines should not be too long
-        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh  #spell-check-ignore-line
-#pragma warning restore S103 // Lines should not be too long
+        // Running a ZAP desktop in the browser with Webswing with the same config under Windows:
+        // docker run --add-host localhost:host-gateway -u zap -p 8080:8080 -p 8090:8090 -i softwaresecurityproject/zap-stable zap-webswing.sh
 
         var cliParameters = new List<object> { "run" };
 
@@ -133,8 +132,19 @@ public sealed class ZapManager : IAsyncDisposable
 
         // Using a different port than the default 8080 is necessary so ZAP doesn't clash with other web processes and
         // to allow more than one security scan to run at the same time.
-        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync();
+        _zapPort = await _portLeaseManager.LeaseAvailableRandomPortAsync(_cancellationTokenSource.Token);
         _testOutputHelper.WriteLineTimestampedAndDebug("Running ZAP on port {0}.", _zapPort);
+
+        var configuration = context.Configuration.SecurityScanningConfiguration ?? new SecurityScanningConfiguration();
+
+        var homeDirectoryPath = Path.Combine(mountedDirectoryPath, _zapHomeDirectoryName);
+        Directory.CreateDirectory(homeDirectoryPath);
+
+        // Same as for reportsDirectoryPath above.
+        if (GitHubHelper.IsGitHubEnvironment)
+        {
+            await new CliProgram("chmod").ExecuteAsync(_cancellationTokenSource.Token, "a+w", homeDirectoryPath);
+        }
 
         cliParameters.AddRange(
         [
@@ -149,6 +159,10 @@ public sealed class ZapManager : IAsyncDisposable
             _zapWorkingDirectoryPath + yamlFileName,
             "-port",
             _zapPort,
+            "-loglevel",
+            configuration.ZapLogLevel,
+            "-dir",
+            Path.Combine(_zapWorkingDirectoryPath, _zapHomeDirectoryName),
         ]);
 
         var stdErrBuffer = new StringBuilder();
@@ -164,6 +178,10 @@ public sealed class ZapManager : IAsyncDisposable
             // This is so no exception is thrown by CliWrap if the exit code is not 0.
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync(_cancellationTokenSource.Token);
+
+        // Under the Ubuntu GitHub Actions runners, at this point, the report's folder (like
+        // "2025-01-22-ZAP-Report-localhost") will remain unwritable, but readable. No amount of sudo chmodding will fix
+        // this, and it's not because any process is locking it. This shouldn't be much of an issue, though.
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Security scanning completed with the exit code {0}.", result.ExitCode);
 
@@ -188,33 +206,36 @@ public sealed class ZapManager : IAsyncDisposable
                 "Check the test output for details.");
         }
 
-        return new SecurityScanResult(reportsDirectoryPath, SarifLog.Load(jsonReports[0]));
+        return new SecurityScanResult(
+            reportsDirectoryPath,
+            Path.Combine(homeDirectoryPath, "zap.log"),
+            SarifLog.Load(jsonReports[0]));
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
-        {
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource.Dispose();
-        }
+        if (_isDisposed) return;
 
-        await _portLeaseManager.StopLeaseAsync(_zapPort);
+        _isDisposed = true;
+
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
+
+        // This is a clean-up method, no need to forward a CancellationToken.
+        await _portLeaseManager.StopLeaseAsync(_zapPort, CancellationToken.None);
     }
 
     private async Task EnsureInitializedAsync()
     {
         try
         {
-            var token = _cancellationTokenSource.Token;
-
-            await _pullSemaphore.WaitAsync(token);
+            await _pullSemaphore.WaitAsync(_cancellationTokenSource.Token);
 
             if (_wasPulled) return;
 
             // Without --quiet, "What's Next?" hints will be written to stderr by Docker. See
             // https://github.com/docker/for-mac/issues/6904.
-            await _docker.ExecuteAsync(token, "pull", _zapImage, "--quiet");
+            await _docker.ExecuteAsync(_cancellationTokenSource.Token, "pull", _zapImage, "--quiet");
             _wasPulled = true;
         }
         finally
@@ -247,7 +268,7 @@ public sealed class ZapManager : IAsyncDisposable
                 "The supplied ZAP Automation Framework YAML file should contain exactly one SARIF report job.");
         }
 
-        if (modifyPlan != null) await modifyPlan(yamlDocument);
+        await modifyPlan.InvokeFuncAsync(yamlDocument);
 
         using var streamWriter = new StreamWriter(yamlFilePath);
         var yamlStream = new YamlStream(yamlDocument);

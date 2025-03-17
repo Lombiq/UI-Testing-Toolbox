@@ -5,7 +5,7 @@ using SixLabors.ImageSharp;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -36,6 +36,7 @@ public static class ResponsivenessUITestContextExtensions
         context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
             "Set window size to {0}x{1}.", size.Width, size.Height);
         context.Driver.Manage().Window.Size = new System.Drawing.Size(size.Width, size.Height);
+        context.TriggerHtmlReload();
     }
 
     /// <summary>

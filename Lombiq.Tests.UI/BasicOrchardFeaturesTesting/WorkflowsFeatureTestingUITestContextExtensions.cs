@@ -29,14 +29,15 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Event']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'ContentPublishedEvent')]"));
 
-                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_Title"), "Content Published Trigger");
+                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
                 await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
 
-                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_Title"), "Content Published Notification");
+                await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Notification");
                 await context.ClickAndFillInWithRetriesAsync(By.Id("NotifyTask_Message"), contentItemPublishTestSuccessMessage);
                 await context.ClickReliablyOnSubmitAsync();
 
@@ -45,17 +46,24 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 context.DragAndDropToOffset(By.XPath(taskXPath), 400, 0);
 
                 context.DragAndDrop(
-                    By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"), // #spell-check-ignore-line
+                    By.XPath("//div[@class = 'jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable']"),
                     By.XPath(taskXPath));
+
+                context.WaitElementToNotChange(By.ClassName("jtk-connector"));
 
                 // We need to save the workflow early, because sometimes the editor, thus the startup task button can be
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess();
+
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 
-                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup task']"));
-                await context.ClickReliablyOnSubmitAsync();
+                await context.ClickReliablyOnAsync(By.XPath("//a[@title='Startup event']"));
+
+                // Sometimes during this step the test can fail, so we are using JavaScript to click submit, this only
+                // happens here.
+                await context.ClickReliablyOnSubmitAsync(withJavaScript: true);
 
                 context.ShouldBeSuccess("Workflow has been saved.");
 

@@ -1,10 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Extensions;
-using Lombiq.Tests.UI.Services;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -38,13 +35,8 @@ public class AzureBlobStorageTests : UITestBase
             {
                 configuration.UseAzureBlobStorage = true;
 
-                configuration.AssertBrowserLog =
-                    logEntries =>
-                    {
-                        var messagesWithoutToggle = logEntries.Where(logEntry =>
-                            !logEntry.IsNotFoundLogEntry(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
-                        OrchardCoreUITestExecutorConfiguration.AssertBrowserLogIsEmpty(messagesWithoutToggle);
-                    };
+                configuration.ResponseLogFilter = e =>
+                    e.IsNonSuccessResponseAndNotExpectedNotFoundResponse(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
             });
 }
 

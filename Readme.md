@@ -1,6 +1,6 @@
 # Lombiq UI Testing Toolbox for Orchard Core
 
-[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/) [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/) [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/)
+[![Lombiq.Tests.UI NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI?label=Lombiq.Tests.UI)](https://www.nuget.org/packages/Lombiq.Tests.UI/) [![Lombiq.Tests.UI.AppExtensions NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.AppExtensions?label=Lombiq.Tests.UI.AppExtensions)](https://www.nuget.org/packages/Lombiq.Tests.UI.AppExtensions/) [![Lombiq.Tests.UI.Shortcuts NuGet](https://img.shields.io/nuget/v/Lombiq.Tests.UI.Shortcuts?label=Lombiq.Tests.UI.Shortcuts)](https://www.nuget.org/packages/Lombiq.Tests.UI.Shortcuts/) [![Latest version of 'Lombiq.Tests.UI' @ Cloudsmith](https://api-prd.cloudsmith.io/v1/badges/version/lombiq/open-source-orchard-core-extensions/nuget/Lombiq.Tests.UI/latest/xsp=True/?render=true&show_latest=true)](https://cloudsmith.io/~lombiq/repos/open-source-orchard-core-extensions/packages/detail/nuget/Lombiq.Tests.UI/latest/xsp=True/)
 
 ## About
 
@@ -27,9 +27,12 @@ Highlights:
 - If your app uses a camera, a fake video capture source in Chrome is supported. [Here's a demo video of the feature](https://www.youtube.com/watch?v=sGcD0eJ2ytc), and check out the docs [here](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md).
 - Interactive mode for debugging the app while the test is paused. [Here's a demo of the feature](Lombiq.Tests.UI.Samples/Tests/InteractiveModeTests.cs), and a [demo video here](https://www.youtube.com/watch?v=ItNltaruWTY).
 - Security scanning with [Zed Attack Proxy (ZAP)](https://www.zaproxy.org/), the world's most widely used web app security scanner, right from UI tests. See a demo video [here](https://www.youtube.com/watch?v=iUYivLkFbY4).
+- Testing time-dependent functionalities with a time shifting clock. See a demo video [here](https://www.youtube.com/watch?v=eK2C9BW98sM).
+- Testing a headless app with a separate frontend. See a demo video [here](https://youtu.be/eK2C9BW98sM?si=Ehd_bbieXKOwm7vc&t=225).
+- Writing Selenium tests not just in .NET but also in JavaScript. See a demo video [here](https://youtu.be/eK2C9BW98sM?si=m0TXkBVRsFGD8lfr&t=415).
 - Duplicate SQL query detector: Built-in infrastructure to detect N+1 queries.
 
-See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
+See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). We also had an Orchard Harvest 2024 talk about security scanning [here](https://www.youtube.com/watch?v=FsOpo8EA4wE). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
 Looking not just for dynamic testing but also static code analysis? Check out our [.NET Analyzers project](https://github.com/Lombiq/.NET-Analyzers).
 

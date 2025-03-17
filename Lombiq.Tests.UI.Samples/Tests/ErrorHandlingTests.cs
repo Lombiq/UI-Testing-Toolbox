@@ -2,12 +2,13 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Samples.Helpers;
+using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium.BiDi.Modules.Log;
 using Shouldly;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -38,7 +39,7 @@ public class ErrorHandlingTests : UITestBase
                 catch (PageChangeAssertionException)
                 {
                     // Remove all logs to have a clean slate.
-                    context.ClearLogs();
+                    await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
                 }
             });
 
@@ -59,8 +60,8 @@ public class ErrorHandlingTests : UITestBase
                 }
                 catch (PageChangeAssertionException)
                 {
-                    // Remove browser logs to have a clean slate.
-                    context.ClearHistoricBrowserLog();
+                    // Remove response logs to have a clean slate.
+                    context.ClearCumulativeResponseLog();
                 }
             });
 
@@ -89,12 +90,21 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
                 WriteConsoleLog();
 
-                await context.UpdateHistoricBrowserLogAsync();
+                // Since the browser log is updated asynchronously, we have to wait for most recent entries to appear.
+                context.DoWithRetriesOrFail(() =>
+                    context
+                    .CumulativeBrowserLog
+                    .Count(entry => entry.Text.Contains(testLog)) == 6);
+            },
+            configuration =>
+            {
+                // By default, anything below warning is not logged to the browser log. So, to allow the info messages
+                // of the test, we change the filter.
+                configuration.BrowserLogFilter = logEntry =>
+                    OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(logEntry) || logEntry.Level == Level.Info;
 
-                context
-                    .HistoricBrowserLog
-                    .Count(entry => entry.Message.Contains(testLog))
-                    .ShouldBe(6);
+                // By default, the test will fail if the browser log is not empty. We allow info entries here.
+                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(entry => entry.Level > Level.Info);
             });
 
     [Fact]
@@ -128,7 +138,7 @@ public class ErrorHandlingTests : UITestBase
                     };
 
                     // No need to create a failure dump folder for this test, since it'll always fail.
-                    configuration.FailureDumpConfiguration.CreateFailureDump = false;
+                    configuration.TestDumpConfiguration.CreateTestDump = false;
                 }));
 }
 

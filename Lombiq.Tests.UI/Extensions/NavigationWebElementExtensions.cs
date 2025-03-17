@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -29,41 +29,60 @@ public static class NavigationWebElementExtensions
             element,
             async () =>
             {
-                try
-                {
-                    await context.Configuration.Events.BeforeClick
-                        .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+                await context.Configuration.Events.BeforeClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
 
-                    // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
-                    // "move target out of bounds" exception message. In this case it should be retried.
-                    var notFound = true;
-                    for (var i = 1; notFound && i <= maxTries; i++)
+                // When the button is under some overhanging UI element, the MoveToElement sometimes fails with the
+                // "move target out of bounds" exception message. And while the UI is changing, wrongly timed clicks can
+                // fail with StaleElementReferenceExceptions. In these cases it should be retried.
+                var notFound = true;
+                for (var i = 1; notFound && i <= maxTries; i++)
+                {
+                    try
                     {
-                        try
-                        {
-                            context.Driver.Perform(actions => actions.MoveToElement(element).Click());
-                            notFound = false;
-                        }
-                        catch (WebDriverException ex) when (i < maxTries && ex.Message.Contains("move target out of bounds"))
-                        {
-                            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                "\"move target out of bounds\" exception, retrying the click.");
-
-                            await Task.Delay(RetrySettings.Interval);
-                        }
+                        context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                        notFound = false;
                     }
+                    catch (WebDriverException ex) when (i < maxTries)
+                    {
+                        switch (ex.Message)
+                        {
+                            case string message when message.Contains("move target out of bounds"):
+                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                    "\"move target out of bounds\" exception, retrying the click.");
+                                break;
 
-                    await context.Configuration.Events.AfterClick
-                        .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+                            case string message when ex.IsStateElementLikeException():
+                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                    "Stale element exception with the message \"{0}\", retrying the click.",
+                                    message);
+                                break;
+
+                            case string message when message.ContainsOrdinalIgnoreCase(
+                                "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
+                                throw new NotSupportedException(
+                                    "For this element use the standard Click() method.");
+
+                            default:
+                                throw;
+                        }
+
+                        await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
+                    }
                 }
-                catch (WebDriverException ex)
-                    when (ex.Message.ContainsOrdinalIgnoreCase(
-                        "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."))
-                {
-                    throw new NotSupportedException(
-                        "For this element use the standard Click() method.");
-                }
+
+                await context.Configuration.Events.AfterClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
             });
+
+    /// <inheritdoc cref="ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext, TimeSpan?, TimeSpan?)"/>
+    [Obsolete("Use ClickReliablyUntilNavigationHasOccurredAsync instead.")]
+    public static Task ClickReliablyUntilPageLeaveAsync(
+        this IWebElement element,
+        UITestContext context,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        element.ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
 
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. Note that unlike <see
@@ -72,24 +91,20 @@ public static class NavigationWebElementExtensions
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilPageLeaveAsync(UITestContext, By, TimeSpan?,
     /// TimeSpan?)"/> instead.
     /// </summary>
-    public static Task ClickReliablyUntilPageLeaveAsync(
+    public static Task ClickReliablyUntilNavigationHasOccurredAsync(
         this IWebElement element,
         UITestContext context,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
-        context.RetryIfNotStaleOrFailAsync(
-            async () =>
-            {
-                await element.ClickReliablyAsync(context);
-                return false;
-            },
+        context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+            () => element.ClickReliablyAsync(context),
             timeout,
             interval);
 
     /// <summary>
     /// Repeatedly clicks an element until the browser URL changes. Note that unlike <see
-    /// cref="ClickReliablyUntilPageLeaveAsync"/> this doesn't necessitate a page leave, but can include it. If you're
-    /// doing a Get() before then use <see
+    /// cref="ClickReliablyUntilNavigationHasOccurredAsync"/> this doesn't necessitate a navigation, but can include it.
+    /// If you're doing a Get() before then use <see
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilUrlChangeAsync(UITestContext, By, TimeSpan?,
     /// TimeSpan?)"/> instead.
     /// </summary>
@@ -104,7 +119,15 @@ public static class NavigationWebElementExtensions
         return context.DoWithRetriesOrFailAsync(
             async () =>
             {
-                await element.ClickReliablyAsync(context);
+                try
+                {
+                    await element.ClickReliablyAsync(context);
+                }
+                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+                {
+                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                }
+
                 return context.GetCurrentUri() != originalUri;
             },
             timeout,

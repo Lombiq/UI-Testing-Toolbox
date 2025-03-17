@@ -3,6 +3,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Helpers;
@@ -17,7 +18,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             // When navigating away this exception will be thrown for all old element references. Not nice to use
             // exceptions but there doesn't seem to be a better way to do this.
@@ -33,7 +34,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             return true;
         }
@@ -55,14 +56,16 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWait{T}"/>. Defaults to the default of <see
     /// cref="SafeWait{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <exception cref="TimeoutException">
     /// Thrown if the operation didn't succeed even after retries within the allotted time.
     /// </exception>
     public static void DoWithRetriesOrFail(
         Func<bool> process,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        ThrowTimeoutExceptionIfNotSuccess(DoWithRetriesInternal(process, timeout, interval));
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+        ThrowTimeoutExceptionIfNotSuccess(DoWithRetriesInternal(process, timeout, interval, cancellationToken));
 
     /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
@@ -80,14 +83,16 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <exception cref="TimeoutException">
     /// Thrown if the operation didn't succeed even after retries within the allotted time.
     /// </exception>
     public static async Task DoWithRetriesOrFailAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        ThrowTimeoutExceptionIfNotSuccess(await DoWithRetriesInternalAsync(processAsync, timeout, interval));
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+        ThrowTimeoutExceptionIfNotSuccess(await DoWithRetriesInternalAsync(processAsync, timeout, interval, cancellationToken));
 
     /// <summary>
     /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals.
@@ -104,6 +109,7 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <returns>
     /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
     /// or during retries, <see langword="false"/> otherwise.
@@ -111,11 +117,64 @@ public static class ReliabilityHelper
     public static async Task<bool> DoWithRetriesAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            (await DoWithRetriesInternalAsync(processAsync, timeout, interval)).IsSuccess;
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+            (await DoWithRetriesInternalAsync(processAsync, timeout, interval, cancellationToken)).IsSuccess;
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>). If
+    /// Executes the process repeatedly while it's not successful, with the given timeout and retry intervals.
+    /// Exceptions thrown by the process are caught and treated as failures.
+    /// </summary>
+    /// <param name="processAsync">
+    /// The operation that potentially needs to be retried. Should return <see langword="true"/> if it's successful,
+    /// <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to the default of <see
+    /// cref="SafeWaitAsync{T}.Timeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
+    /// cref="SafeWaitAsync{T}.PollingInterval"/>.
+    /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
+    /// <returns>
+    /// A tuple with a <see langword="bool"/> indicating if <paramref name="processAsync"/> succeeded (regardless of it
+    /// happening on the first try or during retries, <see langword="false"/> otherwise. The second element is the
+    /// <see cref="Exception"/> that was thrown by the process during the last attempt, if any.
+    /// </returns>
+    public static async Task<(bool IsSuccess, Exception Exception)> DoWithRetriesAndCatchesAsync(
+        Func<Task<bool>> processAsync,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default)
+    {
+        Exception exception = null;
+
+        var isSuccess = (await DoWithRetriesInternalAsync(
+                async () =>
+                {
+                    exception = null;
+
+                    try
+                    {
+                        return await processAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                        return false;
+                    }
+                },
+                timeout,
+                interval,
+                cancellationToken)).IsSuccess;
+
+        return (isSuccess, exception);
+    }
+
+    /// <summary>
+    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>). If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     ///
     /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
@@ -124,8 +183,8 @@ public static class ReliabilityHelper
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, and throw <see cref="StaleElementReferenceException"/> or return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -135,17 +194,19 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <exception cref="TimeoutException">
     /// Thrown if the operation didn't succeed even after retries within the allotted time.
     /// </exception>
     public static Task RetryIfStaleOrFailAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            DoWithRetriesOrFailAsync(_retryIfStaleProcess(processAsync), timeout, interval);
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+            DoWithRetriesOrFailAsync(_retryIfStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
     ///
     /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
     /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
@@ -153,8 +214,8 @@ public static class ReliabilityHelper
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, and throw <see cref="StaleElementReferenceException"/> or return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -164,6 +225,7 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <returns>
     /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
     /// or during retries, <see langword="false"/> otherwise.
@@ -171,18 +233,19 @@ public static class ReliabilityHelper
     public static Task<bool> RetryIfStaleAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            DoWithRetriesAsync(_retryIfStaleProcess(processAsync), timeout, interval);
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+            DoWithRetriesAsync(_retryIfStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if no element is stale (<see cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> or throw <see cref="StaleElementReferenceException"/> if no retries are necessary, and return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -192,22 +255,24 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <exception cref="TimeoutException">
     /// Thrown if the operation didn't succeed even after retries within the allotted time.
     /// </exception>
     public static Task RetryIfNotStaleOrFailAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            DoWithRetriesOrFailAsync(_retryIfNotStaleProcess(processAsync), timeout, interval);
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+            DoWithRetriesOrFailAsync(_retryIfNotStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if no element is stale (<see cref="StaleElementReferenceException"/>).
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> or throw <see cref="StaleElementReferenceException"/> if no retries are necessary, and return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -217,6 +282,7 @@ public static class ReliabilityHelper
     /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to the default of <see
     /// cref="SafeWaitAsync{T}.PollingInterval"/>.
     /// </param>
+    /// <param name="cancellationToken">The cancellation token to halt the operation early.</param>
     /// <returns>
     /// <see langword="true"/> if <paramref name="processAsync"/> succeeded (regardless of it happening on the first try
     /// or during retries, <see langword="false"/> otherwise.
@@ -224,13 +290,15 @@ public static class ReliabilityHelper
     public static Task<bool> RetryIfNotStaleAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-            DoWithRetriesAsync(_retryIfNotStaleProcess(processAsync), timeout, interval);
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default) =>
+            DoWithRetriesAsync(_retryIfNotStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     private static (bool IsSuccess, SafeWait<object> Wait) DoWithRetriesInternal(
         Func<bool> process,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default)
     {
         var wait = new SafeWait<object>(new object());
 
@@ -238,13 +306,20 @@ public static class ReliabilityHelper
         if (timeout != null) wait.Timeout = timeout.Value;
         if (interval != null) wait.PollingInterval = interval.Value;
 
-        return (wait.Until(_ => process()), wait);
+        return (wait.Until(
+            _ =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return process();
+            }),
+            wait);
     }
 
     private static async Task<(bool IsSuccess, SafeWaitAsync<object> Wait)> DoWithRetriesInternalAsync(
         Func<Task<bool>> processAsync,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
+        TimeSpan? interval = null,
+        CancellationToken cancellationToken = default)
     {
         var wait = new SafeWaitAsync<object>(new object());
 
@@ -252,7 +327,7 @@ public static class ReliabilityHelper
         if (timeout != null) wait.Timeout = timeout.Value;
         if (interval != null) wait.PollingInterval = interval.Value;
 
-        return (await wait.UntilAsync(_ => processAsync()), wait);
+        return (await wait.UntilAsync(_ => processAsync(), cancellationToken), wait);
     }
 
     private static void ThrowTimeoutExceptionIfNotSuccess((bool IsSuccess, IWait<object> Wait) retriesResult)

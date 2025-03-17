@@ -57,6 +57,8 @@ public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, 
         _session.BeginTransactionAsync(isolationLevel);
     ISession ISession.RegisterIndexes(IIndexProvider[] indexProviders, string collection) =>
         _session.RegisterIndexes(indexProviders, collection);
+    void ISession.Detach(IEnumerable<object> entries, string collection) =>
+        _session.Detach(entries, collection);
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         await _session.DisposeAsync();

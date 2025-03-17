@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -25,7 +24,7 @@ public class BasicVisualVerificationTests : UITestBase
     // same, the test will fail. One more trap is the changes between browser versions, e.g. there was a change between
     // the Chrome version 67 and 68 in the image rendering. This caused that the rendered image looked similar, but
     // comparing pixel-by-pixel was different. You can investigate this or similar failure using the captured and
-    // generated diff images under the path FailureDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
+    // generated diff images under the path TestDumps/<test-name>/Attempt <n>/DebugInformation/VisualVerification.
     // To update your baseline images after making changes to a visually checked element, remove the previous images
     // and run the test with maxRetryCount set to 0.
     [Fact]
@@ -46,7 +45,10 @@ public class BasicVisualVerificationTests : UITestBase
                 var blogImageElementSelector = By.ClassName("field-name-blog-image");
 
                 // Here we check that the rendered content visually equals the baseline image within a given error
-                // percentage. You can read more about this in the AssertVisualVerificationApproved method documentation.
+                // percentage. You can read more about this in the AssertVisualVerificationApproved method
+                // documentation. Keep in mind, that after a browser update, font rendering and spacing can change. To
+                // prevent visual verification tests from failing, you should apply a percentage of approximately 5 in
+                // cases of images with a lot of text.
                 context.AssertVisualVerificationApproved(blogImageElementSelector, 0);
             });
 
@@ -54,8 +56,8 @@ public class BasicVisualVerificationTests : UITestBase
     // text content on different platforms (like Windows or Linux) or browsers, it can cause surprises too. The reason
     // is the different rendering of text on each platform, but it can occur between different Linux distributions too.
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
-    // in 2022.
-    [Theory, Chrome, Edge]
+    // today.
+    [Theory, Chrome, Firefox]
     public Task VerifyNavbar(Browser browser) =>
         ExecuteTestAfterSetupAsync(
             context =>
@@ -69,11 +71,13 @@ public class BasicVisualVerificationTests : UITestBase
                 var navbarElementSelector = By.ClassName("navbar-brand");
 
                 // Here we check that the rendered content visually equals the baseline image within a given error
-                // percentage using different baseline image on each platform and browser. You can read more about
-                // this in the AssertVisualVerificationApproved method documentation.
+                // percentage using different baseline image on each platform and browser. You can read more about this
+                // in the AssertVisualVerificationApproved method documentation. Keep in mind, that after a browser
+                // update, font rendering and spacing can change. To prevent visual verification tests from failing,
+                // you should apply a percentage of approximately 5 in cases of images with a lot of text.
                 context.AssertVisualVerificationApproved(
                     navbarElementSelector,
-                    0,
+                    5,
                     configurator: configuration =>
                         configuration
                             // These configurations below are to generate/use different baseline images on each

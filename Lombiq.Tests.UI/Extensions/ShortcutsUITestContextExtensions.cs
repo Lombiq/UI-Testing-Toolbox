@@ -1,7 +1,7 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
-using Lombiq.HelpfulLibraries.Refit.Helpers;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
@@ -15,7 +15,6 @@ using OrchardCore.Abstractions.Setup;
 using OrchardCore.Admin;
 using OrchardCore.Data;
 using OrchardCore.DisplayManagement.Extensions;
-using OrchardCore.Entities;
 using OrchardCore.Environment.Extensions;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Environment.Shell.Models;
@@ -24,7 +23,6 @@ using OrchardCore.Modules.Manifest;
 using OrchardCore.Recipes.Services;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
-using OrchardCore.Settings;
 using OrchardCore.Setup.Services;
 using OrchardCore.Themes.Services;
 using OrchardCore.Users;
@@ -41,10 +39,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -59,13 +58,18 @@ public static class ShortcutsUITestContextExtensions
     private static readonly ConcurrentDictionary<string, IShortcutsApi> _apis = new();
     private static readonly SemaphoreSlim _recipeHarvesterSemaphore = new(1, 1);
 
+    public static bool InteractiveModeHasBeenUsed { get; private set; }
+
     /// <summary>
     /// Authenticates the client with the given user account. Note that this will execute a direct sign in without
     /// anything else happening on the login page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c>
     /// enabled.
     /// </summary>
-    public static Task SignInDirectlyAsync(this UITestContext context, string userName = DefaultUser.UserName) =>
-        context.GoToAsync<AccountController>(controller => controller.SignInDirectly(userName));
+    public static Task SignInDirectlyAsync(this UITestContext context, string userName = DefaultUser.UserName)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<AccountController>(controller => controller.SignInDirectly(userName));
+    }
 
     /// <summary>
     /// Authenticates the client with the default user account and navigates to the given URL. Note that this will
@@ -75,8 +79,8 @@ public static class ShortcutsUITestContextExtensions
     public static Task SignInDirectlyAndGoToRelativeUrlAsync(
         this UITestContext context,
         string relativeUrl,
-        bool onlyIfNotAlreadyThere = true)
-        => context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
+        bool onlyIfNotAlreadyThere = true) =>
+        context.SignInDirectlyAndGoToRelativeUrlAsync(DefaultUser.UserName, relativeUrl, onlyIfNotAlreadyThere);
 
     /// <summary>
     /// Authenticates the client with the given user account and navigates to the given URL. Note that this will execute
@@ -97,8 +101,11 @@ public static class ShortcutsUITestContextExtensions
     /// Signs the client out. Note that this will execute a direct sign in without anything else happening on the logoff
     /// page. The target app needs to have <c>Lombiq.Tests.UI.Shortcuts</c> enabled.
     /// </summary>
-    public static Task SignOutDirectlyAsync(this UITestContext context) =>
-        context.GoToAsync<AccountController>(controller => controller.SignOutDirectly());
+    public static Task SignOutDirectlyAsync(this UITestContext context)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<AccountController>(controller => controller.SignOutDirectly());
+    }
 
     /// <summary>
     /// Retrieves the currently authenticated user's name, if any. The target app needs to have
@@ -107,35 +114,12 @@ public static class ShortcutsUITestContextExtensions
     /// <returns>The currently authenticated user's name, empty or null string if the user is anonymous.</returns>
     public static async Task<string> GetCurrentUserNameAsync(this UITestContext context)
     {
+        context.EnsureValidOrchardCoreTenantScope();
         await context.GoToAsync<CurrentUserController>(controller => controller.Index());
-        var userNameContainer = context.Get(By.CssSelector("pre")).Text;
+        var userNameContainer = context.GetText(By.CssSelector("pre"));
         if (userNameContainer == "Unauthenticated") return string.Empty;
         return userNameContainer["UserName: ".Length..];
     }
-
-    /// <summary>
-    /// Sets the registration type in site settings.
-    /// </summary>
-    public static Task SetUserRegistrationTypeAsync(
-        this UITestContext context,
-        UserRegistrationType type,
-        string tenant = null,
-        bool activateShell = true) =>
-        UsingScopeAsync(
-            context,
-            async serviceProvider =>
-            {
-                var siteService = serviceProvider.GetRequiredService<ISiteService>();
-                var settings = await siteService.LoadSiteSettingsAsync();
-
-                settings.Alter<RegistrationSettings>(
-                    nameof(RegistrationSettings),
-                    registrationSettings => registrationSettings.UsersCanRegister = type);
-
-                await siteService.UpdateSiteSettingsAsync(settings);
-            },
-            tenant,
-            activateShell);
 
     /// <summary>
     /// Creates a user with the given parameters.
@@ -143,20 +127,24 @@ public static class ShortcutsUITestContextExtensions
     /// <exception cref="CreateUserFailedException">
     /// If creating the user with the given parameters was not successful.
     /// </exception>
-    public static Task CreateUserAsync(
+    /// <returns>The <see cref="IUser"/> instance of the user just created.</returns>
+    public static async Task<IUser> CreateUserAsync(
         this UITestContext context,
-        string userName,
-        string password,
-        string email,
+        string userName = TestUser.UserName,
+        string password = TestUser.Password,
+        string email = TestUser.Email,
         string tenant = null,
-        bool activateShell = true) =>
-        UsingScopeAsync(
+        bool activateShell = true)
+    {
+        IUser user = null;
+
+        await UsingScopeAsync(
             context,
             async serviceProvider =>
             {
                 var userService = serviceProvider.GetRequiredService<IUserService>();
                 var errors = new Dictionary<string, string>();
-                var user = await userService.CreateUserAsync(
+                user = await userService.CreateUserAsync(
                     new User
                     {
                         UserName = userName,
@@ -178,6 +166,9 @@ public static class ShortcutsUITestContextExtensions
             },
             tenant,
             activateShell);
+
+        return user;
+    }
 
     /// <summary>
     /// Adds a user to a role.
@@ -240,7 +231,7 @@ public static class ShortcutsUITestContextExtensions
                 if (permissionClaim == null)
                 {
                     var permissionProviders = serviceProvider.GetRequiredService<IEnumerable<IPermissionProvider>>();
-                    if (!await PermissionExistsAsync(permissionProviders, permissionName))
+                    if (!await PermissionExistsAsync(permissionProviders, permissionName, context.Configuration.TestCancellationToken))
                     {
                         throw new PermissionNotFoundException($"Permission with the name \"{permissionName}\" not found.");
                     }
@@ -303,10 +294,11 @@ public static class ShortcutsUITestContextExtensions
     /// </summary>
     public static async Task ExecuteAndAssertTestFeatureToggleAsync(this UITestContext context)
     {
-        await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+        context.EnsureValidOrchardCoreTenantScope();
+        await context.EnableFeatureDirectlyAsync(FeatureToggleTestBench);
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl);
         context.Scope.Driver.PageSource.ShouldContain("The Feature Toggle Test Bench worked.");
-        await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench");
+        await context.DisableFeatureDirectlyAsync(FeatureToggleTestBench);
         await context.GoToRelativeUrlAsync(FeatureToggleTestBenchUrl, onlyIfNotAlreadyThere: false);
         context.Scope.Driver.PageSource.ShouldNotContain("The Feature Toggle Test Bench worked.");
     }
@@ -323,14 +315,15 @@ public static class ShortcutsUITestContextExtensions
     {
         if (toggleTheFeature)
         {
-            await context.EnableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            await context.EnableFeatureDirectlyAsync(MediaCachePurge);
         }
 
+        context.EnsureValidOrchardCoreTenantScope();
         await context.GoToAsync<MediaCachePurgeController>(controller => controller.PurgeMediaCacheDirectly());
 
         if (toggleTheFeature)
         {
-            await context.DisableFeatureDirectlyAsync("Lombiq.Tests.UI.Shortcuts.MediaCachePurge");
+            await context.DisableFeatureDirectlyAsync(MediaCachePurge);
         }
     }
 
@@ -362,7 +355,7 @@ public static class ShortcutsUITestContextExtensions
             {
                 try
                 {
-                    await _recipeHarvesterSemaphore.WaitAsync();
+                    await _recipeHarvesterSemaphore.WaitAsync(context.Configuration.TestCancellationToken);
 
                     var recipeHarvesters = serviceProvider.GetRequiredService<IEnumerable<IRecipeHarvester>>();
                     var recipeCollections = await recipeHarvesters
@@ -384,7 +377,7 @@ public static class ShortcutsUITestContextExtensions
                         .InvokeAsync((provider, env) => provider.PopulateEnvironmentAsync(env), environment, logger);
 
                     var recipeExecutor = serviceProvider.GetRequiredService<IRecipeExecutor>();
-                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, CancellationToken.None);
+                    await recipeExecutor.ExecuteAsync(executionId, recipe, environment, context.Configuration.TestCancellationToken);
                 }
                 finally
                 {
@@ -398,30 +391,24 @@ public static class ShortcutsUITestContextExtensions
     /// Navigates to a page whose action method throws <see cref="InvalidOperationException"/>. This causes ASP.NET Core
     /// to display an error page.
     /// </summary>
-    public static Task GoToErrorPageDirectlyAsync(this UITestContext context) =>
-        context.GoToAsync<ErrorController>(controller => controller.Index());
+    public static Task GoToErrorPageDirectlyAsync(this UITestContext context)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return context.GoToAsync<ErrorController>(controller => controller.Index());
+    }
 
-    private static IShortcutsApi GetApi(this UITestContext context) =>
-        _apis.GetOrAdd(
-            context.Scope.BaseUri.ToString(),
-            _ =>
-            {
-                // To allow self-signed development certificates.
+    private static IShortcutsApi GetApi(this UITestContext context)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
 
-                var invalidCertificateAllowingHttpClientHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-                    // Revoked certificates shouldn't be used though.
-                    CheckCertificateRevocationList = true,
-                };
+        // If there is a subdirectory-like URL prefix (e.g. for tenants) in the scope base URI, the requests will have
+        // double slashes that results in 404 error. So the trailing slash has to be trimmed out.
+        var baseUri = new Uri(context.Scope.BaseUri.ToString().TrimEnd('/'));
 
-                var httpClient = new HttpClient(invalidCertificateAllowingHttpClientHandler)
-                {
-                    BaseAddress = context.Scope.BaseUri,
-                };
-
-                return RefitHelper.WithNewtonsoftJson<IShortcutsApi>(httpClient);
-            });
+        return _apis.GetOrAdd(
+            baseUri.AbsoluteUri,
+            _ => RestService.For<IShortcutsApi>(HttpClientHelper.CreateCertificateIgnoringHttpClient(baseUri)));
+    }
 
     /// <summary>
     /// A client interface for <c>Lombiq.Tests.UI.Shortcuts</c> web APIs.
@@ -593,8 +580,7 @@ public static class ShortcutsUITestContextExtensions
                         tokenLifeSpan == 0 ? HttpWorkflowController.NoExpiryTokenLifespan : tokenLifeSpan));
 
                 // LinkGenerator.GetPathByAction(...) and UrlHelper.Action(...) doesn't resolve the URL for the
-                // HttpWorkflowController.Invoke action.
-                // https://github.com/OrchardCMS/OrchardCore/issues/11764.
+                // HttpWorkflowController.Invoke action since they rely on IActionContextAccessor.ActionContext.
                 eventUrl = $"/workflows/Invoke?token={Uri.EscapeDataString(token)}";
             },
             tenant,
@@ -630,13 +616,26 @@ public static class ShortcutsUITestContextExtensions
     /// ordinary user from the browser or access its web APIs. To switch back to the test, click the button
     /// that'll be displayed in the browser, or open <see cref="InteractiveModeController.Continue"/>.
     /// </summary>
-    public static async Task SwitchToInteractiveAsync(this UITestContext context)
+    /// <param name="notificationHtml">
+    /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
+    /// HTML content.
+    /// </param>
+    /// <param name="cancellationToken">A token to cancel interactive mode programmatically.</param>
+    public static async Task SwitchToInteractiveAsync(
+        this UITestContext context, string notificationHtml = null, CancellationToken cancellationToken = default)
     {
-        await context.EnterInteractiveModeAsync();
-        await context.WaitInteractiveModeAsync();
+        context.EnsureValidOrchardCoreTenantScope();
 
-        context.Driver.Close();
-        context.SwitchToLastWindow();
+        InteractiveModeHasBeenUsed = true;
+        await context.EnterInteractiveModeAsync(notificationHtml);
+        await context.WaitInteractiveModeAsync(cancellationToken);
+
+        if (context.Driver.WindowHandles.Count > 1)
+        {
+            context.Driver.Close();
+            context.DoWithRetriesOrFail(() => context.Driver.WindowHandles.Count == 1);
+            context.SwitchToFirstWindow();
+        }
     }
 
     /// <summary>
@@ -644,24 +643,26 @@ public static class ShortcutsUITestContextExtensions
     /// page. Visiting this page enables the interactive mode flag so it can be awaited with the <see
     /// cref="WaitInteractiveModeAsync"/> extension method.
     /// </summary>
-    internal static Task EnterInteractiveModeAsync(this UITestContext context)
+    internal static Task EnterInteractiveModeAsync(this UITestContext context, string notificationHtml)
     {
         context.Driver.SwitchTo().NewWindow(WindowType.Tab);
         context.Driver.SwitchTo().Window(context.Driver.WindowHandles[^1]);
 
-        return context.GoToAsync<InteractiveModeController>(controller => controller.Index());
+        return context.GoToAsync<InteractiveModeController>(controller => controller.Index(notificationHtml));
     }
 
     /// <summary>
     /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
     /// <see langword="true"/>.
     /// </summary>
-    internal static async Task WaitInteractiveModeAsync(this UITestContext context)
+    internal static async Task WaitInteractiveModeAsync(this UITestContext context, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken == default) cancellationToken = context.Configuration.TestCancellationToken;
+
         var client = context.GetApi();
-        while (await client.IsInteractiveModeEnabledAsync())
+        while (await client.IsInteractiveModeEnabledAsync() && !context.Configuration.TestCancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
         }
     }
 
@@ -670,10 +671,11 @@ public static class ShortcutsUITestContextExtensions
 
     private static async Task<bool> PermissionExistsAsync(
         IEnumerable<IPermissionProvider> permissionProviders,
-        string permissionName)
+        string permissionName,
+        CancellationToken cancellationToken)
     {
         var permissions = permissionProviders.ToAsyncEnumerable();
-        await foreach (var provider in permissions)
+        await foreach (var provider in permissions.WithCancellation(cancellationToken))
         {
             var providerPermissions = await provider.GetPermissionsAsync();
             if (providerPermissions.Any(permission => permission.Name == permissionName))
@@ -687,6 +689,92 @@ public static class ShortcutsUITestContextExtensions
         UITestContext context,
         Func<IServiceProvider, Task> execute,
         string tenant,
-        bool activateShell) =>
-        context.Application.UsingScopeAsync(execute, tenant ?? context.TenantName, activateShell);
+        bool activateShell)
+    {
+        tenant ??= context.TenantName;
+        if (tenant.StartsWith('!')) tenant = ShellSettings.DefaultShellName;
+
+        return context.Application.UsingScopeAsync(execute, tenant, activateShell);
+    }
+
+    /// <summary>
+    /// Places the provided <paramref name="steps"/> into a recipe and executes it with JSON Import.
+    /// </summary>
+    public static async Task ExecuteJsonRecipeAsync(this UITestContext context, params object[] steps)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        await context.GoToAdminRelativeUrlAsync("/DeploymentPlan/Import/Json");
+
+        var json = JsonSerializer.Serialize(new { steps });
+        await context.FillInCodeMirrorEditorWithRetriesAsync(By.ClassName("CodeMirror"), json);
+        await context.ClickReliablyOnAsync(By.CssSelector(".ta-content button[type='submit']"));
+        context.ShouldBeSuccess();
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="settingsContent"/> which may include multiple named site settings.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingsAsync(this UITestContext context, IDictionary<string, object> settingsContent)
+    {
+        settingsContent["name"] = "settings";
+        return context.ExecuteJsonRecipeAsync(settingsContent);
+    }
+
+    /// <summary>
+    /// Executes JSON Import in the admin menu with a single <c>settings</c> step containing the provided <paramref
+    /// name="setting"/>.
+    /// </summary>
+    public static Task ExecuteJsonRecipeSiteSettingAsync<T>(this UITestContext context, T setting) =>
+        context.ExecuteJsonRecipeSiteSettingsAsync(new Dictionary<string, object> { [typeof(T).Name] = setting });
+
+    /// <summary>
+    /// Enabled the "Shift Time - Shortcuts - Lombiq UI Testing Toolbox" feature directly.
+    /// </summary>
+    public static Task EnableTimeShiftingAsync(this UITestContext context) => context.EnableFeatureDirectlyAsync(ShiftTime);
+
+    /// <summary>
+    /// Sets the time shift to a specific value.
+    /// </summary>
+    public static Task SetTimeShiftAsync(this UITestContext context, TimeSpan time)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Set(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Set(0, time.TotalSeconds));
+    }
+
+    /// <summary>
+    /// Adds the specified value to the time shift.
+    /// </summary>
+    public static Task AddTimeShiftAsync(this UITestContext context, TimeSpan time)
+    {
+        context.EnsureValidOrchardCoreTenantScope();
+        return time.TotalDays >= 1.0
+            ? context.GoToAsync<TimeShiftController>(controller => controller.Add(time.TotalDays, 0))
+            : context.GoToAsync<TimeShiftController>(controller => controller.Add(0, time.TotalSeconds));
+    }
+
+    /// <summary>
+    /// Switches the current tenant to <see cref="ShellSettings.DefaultShellName"/> if it's not a real Orchard Core
+    /// tenant but some other technical scope.
+    /// </summary>
+    /// <remarks><para>
+    /// Real Orchard Core tenant names can't contain the <c>!</c> character. So if the <see
+    /// cref="UITestContext.TenantName"/> starts with it, this indicates we are in some other non-OC scope, like the
+    /// frontend of <see cref="FrontendServer"/>.
+    /// </para></remarks>
+    public static void EnsureValidOrchardCoreTenantScope(this UITestContext context)
+    {
+        if (!context.TenantName.StartsWith('!')) return;
+
+        if (context.Configuration.GetFrontendAndBackendUris().BackendUri is { })
+        {
+            context.SwitchToBackend();
+        }
+        else
+        {
+            context.SwitchCurrentTenantToDefault();
+        }
+    }
 }
