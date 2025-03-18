@@ -70,15 +70,6 @@ public static class WebDriverFactory
 
             options.SetCommonChromiumOptions(configuration);
 
-            // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
-            // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
-            // sets the full path as the browser's binary location.
-            //if (!OperatingSystem.IsWindows() &&
-            //    (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
-            //{
-            //    options.BinaryLocation = binaryLocation.FullName;
-            //}
-
             // The current versions can be retrieved here: https://edgeupdates.microsoft.com/api/products. This version
             // number is updated automatically by Renovate.
             // If anything on these lines is ever renamed, be sure to adjust the regex in the renovate.json5 config file
