@@ -1,4 +1,3 @@
-using Atata.WebDriverSetup;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
@@ -20,59 +19,52 @@ namespace Lombiq.Tests.UI.Services;
 // If this file is renamed or moved, be sure to adjust the regex in the renovate.json5 config file in the root too.
 public static class WebDriverFactory
 {
-    private static readonly object _setupLock = new();
+    public static Task<Func<ChromeDriver>> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
+        CreateDriverAsync(() => Task.FromResult(() =>
+        {
+            var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
 
-    public static Task<Func<ChromeDriver>> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
-    {
-        Task<Func<ChromeDriver>> CreateDriverInnerAsync() =>
-            Task.FromResult(() =>
-            {
-                var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
+            chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
-                chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
+            // Linux-specific setting, may be necessary for running in containers, see
+            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+            chromeConfig.Options.AddArgument("disable-dev-shm-usage");
 
-                // Linux-specific setting, may be necessary for running in containers, see
-                // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-                chromeConfig.Options.AddArgument("disable-dev-shm-usage");
+            // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
+            // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
+            // details.
+            chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
 
-                // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
-                // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
-                // details.
-                chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
+            // Disables the default search engine selector splash screen.
+            chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
 
-                // Disables the default search engine selector splash screen.
-                chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
+            chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
-                chromeConfig.Options.SetCommonChromiumOptions(configuration);
+            // The current versions can be retrieved here:
+            // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version number
+            // is updated automatically by Renovate.
+            // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file
+            // in the root too.
+            chromeConfig.Options.BrowserVersion = "134.0.6998.88";
 
-                // The current versions can be retrieved here:
-                // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version
-                // number is updated automatically by Renovate.
-                // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config
-                // file in the root too.
-                chromeConfig.Options.BrowserVersion = "134.0.6998.88";
+            configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
-                configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
+            chromeConfig.Service = ChromeDriverService.CreateDefaultService();
 
-                chromeConfig.Service = ChromeDriverService.CreateDefaultService();
+            chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
+            // By default localhost is only allowed in IPv4.
+            chromeConfig.Service.AllowedIPAddresses += "::ffff:127.0.0.1";
+            // Helps with misconfigured hosts.
+            if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
 
-                chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
-                // By default localhost is only allowed in IPv4.
-                chromeConfig.Service.AllowedIPAddresses += "::ffff:127.0.0.1";
-                // Helps with misconfigured hosts.
-                if (chromeConfig.Service.HostName == "localhost") chromeConfig.Service.HostName = "127.0.0.1";
+            configuration.Arguments.SetItems(chromeConfig.Options.Arguments);
 
-                configuration.Arguments.SetItems(chromeConfig.Options.Arguments);
-
-                return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
-                    .SetCommonTimeouts(pageLoadTimeout);
-            });
-
-        return CreateDriverAsync(BrowserNames.Chrome, CreateDriverInnerAsync);
-    }
+            return new ChromeDriver(chromeConfig.Service, chromeConfig.Options, pageLoadTimeout)
+                .SetCommonTimeouts(pageLoadTimeout);
+        }));
 
     public static Task<Func<EdgeDriver>> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(BrowserNames.Edge, () =>
+        CreateDriverAsync(() =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -118,49 +110,47 @@ public static class WebDriverFactory
         });
 
     public static Task<Func<FirefoxDriver>> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync(
-            BrowserNames.Firefox,
-            () => Task.FromResult(() =>
-            {
-                var firefoxOptions = new FirefoxOptions().SetCommonOptions();
+        CreateDriverAsync(() => Task.FromResult(() =>
+        {
+            var firefoxOptions = new FirefoxOptions().SetCommonOptions();
 
-                firefoxOptions.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+            firefoxOptions.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
-                // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
-                firefoxOptions.SetPreference("general.smoothScroll", preferenceValue: false);
+            // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
+            firefoxOptions.SetPreference("general.smoothScroll", preferenceValue: false);
 
-                // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-                firefoxOptions.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
-                firefoxOptions.SetPreference("layers.acceleration.disabled", preferenceValue: true);
+            // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
+            firefoxOptions.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
+            firefoxOptions.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
-                // Set the download path to inside the context-specific temp directory to avoid clashes from parallel
-                // tests, and to make it available for test dumps.
-                firefoxOptions.SetPreference("browser.download.folderList", 2);
-                firefoxOptions.SetPreference("browser.download.dir", PrepareDownloadDirectory(configuration));
-                firefoxOptions.SetPreference("browser.download.useDownloadDir", preferenceValue: true);
-                firefoxOptions.SetPreference("pdfjs.disabled", preferenceValue: true);
+            // Set the download path to inside the context-specific temp directory to avoid clashes from parallel
+            // tests, and to make it available for test dumps.
+            firefoxOptions.SetPreference("browser.download.folderList", 2);
+            firefoxOptions.SetPreference("browser.download.dir", PrepareDownloadDirectory(configuration));
+            firefoxOptions.SetPreference("browser.download.useDownloadDir", preferenceValue: true);
+            firefoxOptions.SetPreference("pdfjs.disabled", preferenceValue: true);
 
-                // The current versions can be retrieved here:
-                // https://product-details.mozilla.org/1.0/firefox_versions.json. This version number is updated
-                // automatically by Renovate.
-                // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config
-                // file in the root too.
-                firefoxOptions.BrowserVersion = "136.0.1";
+            // The current versions can be retrieved here:
+            // https://product-details.mozilla.org/1.0/firefox_versions.json. This version number is updated
+            // automatically by Renovate.
+            // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file
+            // in the root too.
+            firefoxOptions.BrowserVersion = "136.0.1";
 
-                if (configuration.Headless) firefoxOptions.AddArgument("--headless");
+            if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
-                configuration.BrowserOptionsConfigurator?.Invoke(firefoxOptions);
+            configuration.BrowserOptionsConfigurator?.Invoke(firefoxOptions);
 
-                // For some reason FirefoxOptions does not expose the argument list like the Chromium-based driver
-                // options classes do.
-                const string argumentsFieldName = "firefoxArguments";
-                var arguments = typeof(FirefoxOptions)
-                    .GetField(argumentsFieldName, BindingFlags.Instance | BindingFlags.NonPublic)?
-                    .GetValue(firefoxOptions) as IList<string> ?? [];
-                configuration.Arguments.SetItems(arguments);
+            // For some reason FirefoxOptions does not expose the argument list like the Chromium-based driver options
+            // classes do.
+            const string argumentsFieldName = "firefoxArguments";
+            var arguments = typeof(FirefoxOptions)
+                .GetField(argumentsFieldName, BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(firefoxOptions) as IList<string> ?? [];
+            configuration.Arguments.SetItems(arguments);
 
-                return new FirefoxDriver(firefoxOptions).SetCommonTimeouts(pageLoadTimeout);
-            }));
+            return new FirefoxDriver(firefoxOptions).SetCommonTimeouts(pageLoadTimeout);
+        }));
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
@@ -241,12 +231,11 @@ public static class WebDriverFactory
         return driver;
     }
 
-    private static async Task<Func<TDriver>> CreateDriverAsync<TDriver>(string browserName, Func<Task<Func<TDriver>>> driverFactory)
+    private static async Task<Func<TDriver>> CreateDriverAsync<TDriver>(Func<Task<Func<TDriver>>> driverFactory)
         where TDriver : IWebDriver
     {
         try
         {
-            AutoSetup(browserName);
             return await driverFactory();
         }
         catch (InvalidDataException exception) when (exception.Message.Contains("End of Central Directory record could not be found."))
@@ -263,13 +252,6 @@ public static class WebDriverFactory
                 $"leftover web driver process that you have to kill manually. Full exception: {exception}",
                 exception);
         }
-    }
-
-    // We don't use the async version of auto setup because it doesn't do any locking. In fact it's just the sync method
-    // passed to Task.Run() so it wouldn't benefit us anyway.
-    private static void AutoSetup(string browserName)
-    {
-        //lock (_setupLock) DriverSetup.AutoSetUp(browserName);
     }
 
     private static string PrepareDownloadDirectory(BrowserConfiguration configuration)
