@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -74,7 +75,17 @@ public static class ReliabilityUITestContextExtensions
         return context.DoWithRetriesOrFailAsync(
             async () =>
             {
-                await processAsync();
+                try
+                {
+                    await processAsync();
+                }
+                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+                {
+                    context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                        "Stale element exception with the message \"{0}\". This is normal if the process navigated away.",
+                        ex.Message);
+                }
+
                 return navigationState.CheckIfNavigationHasOccurred();
             },
             timeout,
