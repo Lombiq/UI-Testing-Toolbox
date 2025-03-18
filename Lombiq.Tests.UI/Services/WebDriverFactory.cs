@@ -112,37 +112,44 @@ public static class WebDriverFactory
             BrowserNames.Firefox,
             () => Task.FromResult(() =>
             {
-                var options = new FirefoxOptions().SetCommonOptions();
+                var firefoxOptions = new FirefoxOptions().SetCommonOptions();
 
-                options.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
+                firefoxOptions.SetPreference("intl.accept_languages", configuration.AcceptLanguage.ToString());
 
                 // Disabling smooth scrolling to avoid large waiting time when taking full-page screenshots.
-                options.SetPreference("general.smoothScroll", preferenceValue: false);
+                firefoxOptions.SetPreference("general.smoothScroll", preferenceValue: false);
 
                 // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
-                options.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
-                options.SetPreference("layers.acceleration.disabled", preferenceValue: true);
+                firefoxOptions.SetPreference("browser.preferences.defaultPerformanceSettings.enabled", preferenceValue: false);
+                firefoxOptions.SetPreference("layers.acceleration.disabled", preferenceValue: true);
 
                 // Set the download path to inside the context-specific temp directory to avoid clashes from parallel
                 // tests, and to make it available for test dumps.
-                options.SetPreference("browser.download.folderList", 2);
-                options.SetPreference("browser.download.dir", PrepareDownloadDirectory(configuration));
-                options.SetPreference("browser.download.useDownloadDir", preferenceValue: true);
-                options.SetPreference("pdfjs.disabled", preferenceValue: true);
+                firefoxOptions.SetPreference("browser.download.folderList", 2);
+                firefoxOptions.SetPreference("browser.download.dir", PrepareDownloadDirectory(configuration));
+                firefoxOptions.SetPreference("browser.download.useDownloadDir", preferenceValue: true);
+                firefoxOptions.SetPreference("pdfjs.disabled", preferenceValue: true);
 
-                if (configuration.Headless) options.AddArgument("--headless");
+                // The current versions can be retrieved here:
+                // https://product-details.mozilla.org/1.0/firefox_versions.json. This version number is updated
+                // automatically by Renovate.
+                // If anything on this line is every renamed, be sure to adjust the regex in the renovate.json5 config
+                // file in the root too.
+                firefoxOptions.BrowserVersion = "136.0.1";
 
-                configuration.BrowserOptionsConfigurator?.Invoke(options);
+                if (configuration.Headless) firefoxOptions.AddArgument("--headless");
+
+                configuration.BrowserOptionsConfigurator?.Invoke(firefoxOptions);
 
                 // For some reason FirefoxOptions does not expose the argument list like the Chromium-based driver
                 // options classes do.
                 const string argumentsFieldName = "firefoxArguments";
                 var arguments = typeof(FirefoxOptions)
                     .GetField(argumentsFieldName, BindingFlags.Instance | BindingFlags.NonPublic)?
-                    .GetValue(options) as IList<string> ?? [];
+                    .GetValue(firefoxOptions) as IList<string> ?? [];
                 configuration.Arguments.SetItems(arguments);
 
-                return new FirefoxDriver(options).SetCommonTimeouts(pageLoadTimeout);
+                return new FirefoxDriver(firefoxOptions).SetCommonTimeouts(pageLoadTimeout);
             }));
 
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
