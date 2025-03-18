@@ -79,8 +79,6 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
-    private CancellationToken _testCancellationToken;
-
     public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList =
     [
         new DbCommandExecuteCounterKey(
@@ -96,6 +94,8 @@ public class OrchardCoreUITestExecutorConfiguration
             new("p0", "ContentUpdatedEvent"),
             new("p1", value: true)),
     ];
+
+    private CancellationToken _testCancellationToken;
 
     /// <summary>
     /// Gets the global events available during UI test execution.
@@ -225,6 +225,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets configuration for performance counting and monitoring.
     /// </summary>
     public CounterConfigurations CounterConfiguration { get; set; } = new();
+
     /// <summary>
     /// Gets or sets a <see cref="CancellationToken"/> that cancels the test execution.
     /// </summary>
