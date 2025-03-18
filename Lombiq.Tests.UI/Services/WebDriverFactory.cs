@@ -24,7 +24,7 @@ public static class WebDriverFactory
 
     public static Task<Func<ChromeDriver>> CreateChromeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout)
     {
-        Task<Func<ChromeDriver>> CreateDriverInnerAsync(string driverPath = null) =>
+        Task<Func<ChromeDriver>> CreateDriverInnerAsync() =>
             Task.FromResult(() =>
             {
                 var chromeConfig = new ChromeConfiguration { Options = new ChromeOptions().SetCommonOptions() };
@@ -54,9 +54,7 @@ public static class WebDriverFactory
 
                 configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
-                chromeConfig.Service = driverPath == null
-                    ? ChromeDriverService.CreateDefaultService()
-                    : ChromeDriverService.CreateDefaultService(driverPath);
+                chromeConfig.Service = ChromeDriverService.CreateDefaultService();
 
                 chromeConfig.Service.SuppressInitialDiagnosticInformation = true;
                 // By default localhost is only allowed in IPv4.
@@ -70,13 +68,7 @@ public static class WebDriverFactory
                     .SetCommonTimeouts(pageLoadTimeout);
             });
 
-        var chromeWebDriverPath = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
-        if (chromeWebDriverPath is { } driverPath && Directory.Exists(driverPath))
-        {
-            return CreateDriverInnerAsync(driverPath);
-        }
-
-        return CreateDriverAsync(BrowserNames.Chrome, () => CreateDriverInnerAsync());
+        return CreateDriverAsync(BrowserNames.Chrome, CreateDriverInnerAsync);
     }
 
     public static Task<Func<EdgeDriver>> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
