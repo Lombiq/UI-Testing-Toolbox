@@ -37,6 +37,10 @@ public sealed class FakeStore : IStore
     public IStore RegisterIndexes(IEnumerable<IIndexProvider> indexProviders, string collection = null) =>
         _store.RegisterIndexes(indexProviders, collection);
 
+    public void Dispose() =>
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+
     private void Dispose(bool disposing)
     {
         if (!_isDisposed && disposing)
@@ -61,12 +65,5 @@ public sealed class FakeStore : IStore
 
             _isDisposed = true;
         }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }
