@@ -30,7 +30,10 @@ public class MultiBrowserTests : UITestBase
     // tests. [Chrome], [Firefox], and [Edge] are input parameters of the test, and thus in effect, you have now three
     // tests: AnonymousHomePageShouldExistMultiBrowser once with Chrome, once with Firefox, and once with Edge. See here
     // for more info:
-    // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
+    // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/. Note that
+    // all browsers will be automatically installed (as isolated instances just used for testing) with the specific
+    // version pinned by the UI Testing Toolbox. So, you don't need to preinstall them, nor do you have to worry about
+    // browser updates breaking your tests.
     [Theory, Chrome, Firefox, Edge]
     public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, browser);
