@@ -48,9 +48,9 @@ public sealed class FakeStore : IStore
                     session.Dispose();
                 }
                 catch
-                // The mocked session can cause exception, but we can't do anything with it here.
 #pragma warning disable S108 // Nested blocks of code should not be left empty
                 {
+                    // The mocked session can cause exception, but we can't do anything with it here.
                 }
 #pragma warning restore S108 // Nested blocks of code should not be left empty
             }
