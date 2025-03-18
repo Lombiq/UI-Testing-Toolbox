@@ -24,3 +24,4 @@ await runTest(async (driver, startUrl) => {
 });
 
 // END OF TRAINING SECTION: Executing tests written in JavaScript.
+// NEXT STATION: Head over to Tests/DuplicatedSqlQueryDetectorTests.cs.

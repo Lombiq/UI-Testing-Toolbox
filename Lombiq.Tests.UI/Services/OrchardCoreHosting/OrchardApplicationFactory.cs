@@ -171,11 +171,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             var requestMethod = httpContextAccessor.HttpContext?.Request?.Method ?? "UNKNOWN";
             var requestUrl = httpContextAccessor?.HttpContext?.Request?.GetEncodedUrl() ?? "https://localhost/unknown";
 
-            return new SessionProbe(
-                _counterDataCollector,
-                requestMethod,
-                new Uri(requestUrl),
-                session);
+            return new SessionProbe(_counterDataCollector, requestMethod, new Uri(requestUrl), session);
         });
     }
 
