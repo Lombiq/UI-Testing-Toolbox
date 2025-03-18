@@ -1,6 +1,8 @@
 {
-    '$schema': 'https://docs.renovatebot.com/renovate-schema.json',
-    'extends': ['github>Lombiq/renovate-config:default-orchard-core-submodule.json5'],
+    $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+    extends: [
+        'github>Lombiq/renovate-config:default-orchard-core-submodule.json5',
+    ],
     packageRules: [
         {
             groupName: 'Atata',
@@ -20,5 +22,126 @@
                 'Microsoft.Extensions.*',
             ],
         },
+        {
+            groupName: 'ZAP',
+            matchPackageNames: [
+                'zaproxy/zap-stable',
+            ],
+            // Renovate can't update the digest for some reason (it just fails).
+            pinDigests: false,
+            prBodyNotes: 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
+        },
     ],
+    customManagers: [
+        {
+            depNameTemplate: 'Chrome for Testing',
+            customType: 'regex',
+            fileMatch: [
+                'WebDriverFactory\\.cs$',
+            ],
+            matchStrings: [
+                'chromeConfig\\.Options\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+            ],
+            datasourceTemplate: 'custom.chrome-for-testing',
+            // Without support for four-segment version numbers, 'loose' needs to be used. See:
+            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
+            versioningTemplate: 'loose',
+        },
+        {
+            depNameTemplate: 'Edge Linux',
+            customType: 'regex',
+            fileMatch: [
+                'WebDriverFactory\\.cs$',
+            ],
+            matchStrings: [
+                'linuxEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+            ],
+            datasourceTemplate: 'custom.edge-linux',
+            // Without support for four-segment version numbers, 'loose' needs to be used. See:
+            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
+            versioningTemplate: 'loose',
+        },
+        {
+            depNameTemplate: 'Edge MacOS',
+            customType: 'regex',
+            fileMatch: [
+                'WebDriverFactory\\.cs$',
+            ],
+            matchStrings: [
+                'macOsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+            ],
+            datasourceTemplate: 'custom.edge-macos',
+            // Without support for four-segment version numbers, 'loose' needs to be used. See:
+            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
+            versioningTemplate: 'loose',
+        },
+        {
+            depNameTemplate: 'Edge Windows',
+            customType: 'regex',
+            fileMatch: [
+                'WebDriverFactory\\.cs$',
+            ],
+            matchStrings: [
+                'windowsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+            ],
+            datasourceTemplate: 'custom.edge-windows',
+            // Without support for four-segment version numbers, 'loose' needs to be used. See:
+            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
+            versioningTemplate: 'loose',
+        },
+        {
+            depNameTemplate: 'Firefox',
+            customType: 'regex',
+            fileMatch: [
+                'WebDriverFactory\\.cs$',
+            ],
+            matchStrings: [
+                'firefoxOptions\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+            ],
+            datasourceTemplate: 'custom.firefox',
+        },
+        {
+            depNameTemplate: 'zaproxy/zap-stable',
+            customType: 'regex',
+            fileMatch: [
+                'ZapManager\\.cs$'
+            ],
+            matchStrings: [
+                'private const string _zapImage\\s*=\\s*"zaproxy/zap-stable:(?<currentValue>[^"]+)";'
+            ],
+            datasourceTemplate: 'docker',
+        }
+    ],
+    customDatasources: {
+        'chrome-for-testing': {
+            defaultRegistryUrlTemplate: 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json',
+            transformTemplates: [
+                '{ "releases": [ { "version": channels.Stable.version } ], "homepage": "https://googlechromelabs.github.io/chrome-for-testing/" }',
+            ],
+        },
+        'edge-linux': {
+            defaultRegistryUrlTemplate: 'https://edgeupdates.microsoft.com/api/products',
+            transformTemplates: [
+                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="Linux"].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
+            ],
+        },
+        'edge-macos': {
+            defaultRegistryUrlTemplate: 'https://edgeupdates.microsoft.com/api/products',
+            transformTemplates: [
+                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="MacOS"].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
+            ],
+        },
+        'edge-windows': {
+            defaultRegistryUrlTemplate: 'https://edgeupdates.microsoft.com/api/products',
+            transformTemplates: [
+                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="Windows" and Architecture="x64"].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
+            ],
+        },
+        firefox: {
+            defaultRegistryUrlTemplate: 'https://product-details.mozilla.org/1.0/firefox_versions.json',
+            transformTemplates: [
+                '{ "releases": [ { "version": LATEST_FIREFOX_VERSION } ], "homepage": "https://www.mozilla.org/en-US/firefox/new/" }',
+            ],
+        },
+    },
 }
