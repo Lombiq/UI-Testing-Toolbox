@@ -165,10 +165,16 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
             var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
 
+            // The actual HttpContext can be null during the IShellHost.InitializeAsync() when creating a new scope.
+            // E.g.: UsingScopeWebApplicationInstanceExtensions.UsingScopeAsync.
+            // We have to handle this situation here.
+            var requestMethod = httpContextAccessor.HttpContext?.Request?.Method ?? "UNKNOWN";
+            var requestUrl = httpContextAccessor?.HttpContext?.Request?.GetEncodedUrl() ?? "https://localhost/unknown";
+
             return new SessionProbe(
                 _counterDataCollector,
-                httpContextAccessor.HttpContext.Request.Method,
-                new Uri(httpContextAccessor.HttpContext.Request.GetEncodedUrl()),
+                requestMethod,
+                new Uri(requestUrl),
                 session);
         });
     }
