@@ -402,7 +402,9 @@ async function runTest(test, configureOptions = null) {
 
     if (browserName !== 'Chrome') throw new Error('Only Chrome is supported at this time.');
 
-    let options = new chrome.Options().addArguments('ignore-certificate-errors');
+    let options = new chrome.Options()
+        .addArguments('ignore-certificate-errors')
+        .setBrowserVersion('134.0.6998.88');;
 
     const argumentsPath = path.join(tempDirectory, 'BrowserArguments.json');
     if (await _exists(argumentsPath)) {
