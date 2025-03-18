@@ -920,6 +920,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             context
                 .TakeScreenshot()
                 .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount));
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("Took screenshot #{0}.", _screenshotCount);
         }
         catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
         {
