@@ -35,7 +35,7 @@ Here's a full _TestConfiguration.json_ file example, something appropriate durin
     "AgentIndex": 3,
     "TimeoutConfiguration": {
       "RetryTimeoutSeconds": 5,
-      "RetryIntervalMillisecondSeconds": 300,
+      "RetryIntervalMilliseconds": 300,
       "PageLoadTimeoutSeconds": 120
     },
     "OrchardCoreUITestExecutorConfiguration": {
