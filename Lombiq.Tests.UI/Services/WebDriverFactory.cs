@@ -80,7 +80,7 @@ public static class WebDriverFactory
     }
 
     public static Task<Func<EdgeDriver>> CreateEdgeDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
-        CreateDriverAsync<EdgeDriver>(BrowserNames.Edge, async () =>
+        CreateDriverAsync(BrowserNames.Edge, () =>
         {
             var options = new EdgeOptions().SetCommonOptions();
 
@@ -122,7 +122,7 @@ public static class WebDriverFactory
 
             configuration.Arguments.SetItems(options.Arguments);
 
-            return () => new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout);
+            return Task.FromResult(() => new EdgeDriver(service, options).SetCommonTimeouts(pageLoadTimeout));
         });
 
     public static Task<Func<FirefoxDriver>> CreateFirefoxDriverAsync(BrowserConfiguration configuration, TimeSpan pageLoadTimeout) =>
