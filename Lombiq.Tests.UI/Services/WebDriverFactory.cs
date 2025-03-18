@@ -1,5 +1,4 @@
 using Atata.WebDriverSetup;
-using Lombiq.HelpfulLibraries.Cli.Helpers;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
@@ -11,7 +10,6 @@ using OpenQA.Selenium.Firefox;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -48,9 +46,9 @@ public static class WebDriverFactory
                 chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
                 // The current versions can be retrieved here:
-                // https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints. This version number is
-                // updated automatically by Renovate.
-                // If anything on this line is every renamed, be sure to adjust the regex in the renovate.json5 config
+                // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version
+                // number is updated automatically by Renovate.
+                // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config
                 // file in the root too.
                 chromeConfig.Options.BrowserVersion = "134.0.6998.89";
 
@@ -91,10 +89,30 @@ public static class WebDriverFactory
             // While the Edge driver easily locates Edge on Windows, it struggles on Linux, where the different release
             // channels have different executable names. This setting looks up the "microsoft-edge-stable" command and
             // sets the full path as the browser's binary location.
-            if (!OperatingSystem.IsWindows() &&
-                (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
+            //if (!OperatingSystem.IsWindows() &&
+            //    (await CliWrapHelper.WhichAsync("microsoft-edge-stable"))?.FirstOrDefault() is { } binaryLocation)
+            //{
+            //    options.BinaryLocation = binaryLocation.FullName;
+            //}
+
+            // The current versions can be retrieved here: https://edgeupdates.microsoft.com/api/products. This version
+            // number is updated automatically by Renovate.
+            // If anything on these lines is ever renamed, be sure to adjust the regex in the renovate.json5 config file
+            // in the root too.
+            if (OperatingSystem.IsLinux())
             {
-                options.BinaryLocation = binaryLocation.FullName;
+                var linuxEdgeVersion = "134.0.3124.68";
+                options.BrowserVersion = linuxEdgeVersion;
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                var windowsEdgeVersion = "134.0.3124.72";
+                options.BrowserVersion = windowsEdgeVersion;
+            }
+            else if (!OperatingSystem.IsMacOS())
+            {
+                var macOsEdgeVersion = "134.0.3124.68";
+                options.BrowserVersion = macOsEdgeVersion;
             }
 
             configuration.BrowserOptionsConfigurator?.Invoke(options);
@@ -133,7 +151,7 @@ public static class WebDriverFactory
                 // The current versions can be retrieved here:
                 // https://product-details.mozilla.org/1.0/firefox_versions.json. This version number is updated
                 // automatically by Renovate.
-                // If anything on this line is every renamed, be sure to adjust the regex in the renovate.json5 config
+                // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config
                 // file in the root too.
                 firefoxOptions.BrowserVersion = "136.0.1";
 
@@ -259,7 +277,7 @@ public static class WebDriverFactory
     // passed to Task.Run() so it wouldn't benefit us anyway.
     private static void AutoSetup(string browserName)
     {
-        lock (_setupLock) DriverSetup.AutoSetUp(browserName);
+        //lock (_setupLock) DriverSetup.AutoSetUp(browserName);
     }
 
     private static string PrepareDownloadDirectory(BrowserConfiguration configuration)

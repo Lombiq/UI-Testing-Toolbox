@@ -27,10 +27,11 @@ public class MultiBrowserTests : UITestBase
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, Browser.Firefox);
 
     // This test is now marked not with the [Fact] attribute but [Theory]. With it, you can create so-called data-driven
-    // tests. [Chrome] and [Firefox] are input parameters of the test, and thus in effect, you have now two tests:
-    // AnonymousHomePageShouldExistMultiBrowser once with Chrome, and once with Firefox. See here for more info:
+    // tests. [Chrome], [Firefox], and [Edge] are input parameters of the test, and thus in effect, you have now three
+    // tests: AnonymousHomePageShouldExistMultiBrowser once with Chrome, once with Firefox, and once with Edge. See here
+    // for more info:
     // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
-    [Theory, Chrome, Firefox]
+    [Theory, Chrome, Firefox, Edge]
     public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, browser);
 
