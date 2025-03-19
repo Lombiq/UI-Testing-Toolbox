@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -47,7 +48,9 @@ public class OrchardCoreLoginPage : Page<_>
         var page = UserName.Set(userName)
             .Password.Set(password);
 
-        // The Atata Click() is not always reliable.
+        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
+        await context.FillInWithRetriesAsync(By.Id("LoginForm_UserName"), userName);
+        await context.FillInWithRetriesAsync(By.Id("LoginForm_Password"), password);
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();

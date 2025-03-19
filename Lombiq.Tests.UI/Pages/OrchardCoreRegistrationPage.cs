@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -64,7 +65,11 @@ public class OrchardCoreRegistrationPage : Page<_>
             PrivacyPolicyAgreement.Click();
         }
 
-        // The Atata Click() is not always reliable.
+        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
+        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
+        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
+        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
+        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_ConfirmPassword"), parameters.Password);
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
