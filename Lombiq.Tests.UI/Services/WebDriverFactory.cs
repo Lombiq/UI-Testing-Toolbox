@@ -43,8 +43,8 @@ public static class WebDriverFactory
             // The current versions can be retrieved here:
             // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version number
             // is updated automatically by Renovate.
-            // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file
-            // in the root too.
+            // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
+            // root too.
             chromeConfig.Options.BrowserVersion = "134.0.6998.88";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
@@ -72,8 +72,8 @@ public static class WebDriverFactory
 
             // The current versions can be retrieved here: https://edgeupdates.microsoft.com/api/products. This version
             // number is updated automatically by Renovate.
-            // If anything on these lines is ever renamed, be sure to adjust the regex in the renovate.json5 config file
-            // in the root too.
+            // If anything on these lines changed, be sure to adjust the regex in the renovate.json5 config file in the
+            // root too.
             if (OperatingSystem.IsLinux())
             {
                 var linuxEdgeVersion = "134.0.3124.68";
@@ -124,8 +124,8 @@ public static class WebDriverFactory
             // The current versions can be retrieved here:
             // https://product-details.mozilla.org/1.0/firefox_versions.json. This version number is updated
             // automatically by Renovate.
-            // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file
-            // in the root too.
+            // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
+            // root too.
             firefoxOptions.BrowserVersion = "136.0.1";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
