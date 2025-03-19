@@ -404,7 +404,7 @@ async function runTest(test, configureOptions = null) {
 
     let options = new chrome.Options()
         .addArguments('ignore-certificate-errors')
-        .setBrowserVersion('134.0.6998.88');;
+        .setBrowserVersion('134.0.6998.88');
 
     const argumentsPath = path.join(tempDirectory, 'BrowserArguments.json');
     if (await _exists(argumentsPath)) {
