@@ -402,9 +402,14 @@ async function runTest(test, configureOptions = null) {
 
     if (browserName !== 'Chrome') throw new Error('Only Chrome is supported at this time.');
 
-    let options = new chrome.Options()
-        .addArguments('ignore-certificate-errors')
-        .setBrowserVersion('134.0.6998.88');
+    let options = new chrome.Options().addArguments('ignore-certificate-errors');
+
+    // The current versions can be retrieved here:
+    // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version number is
+    // updated automatically by Renovate.
+    // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the root
+    // too.
+    options.setBrowserVersion('134.0.6998.88');
 
     console.log(`Using Chrome version ${options.getBrowserVersion()}.`);
 
