@@ -45,10 +45,10 @@ public class OrchardCoreLoginPage : Page<_>
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
     {
         var page = UserName.Set(userName)
-            .Password.Set(password)
-            .LogIn.Click();
+            .Password.Set(password);
 
-        await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+        // The Atata Click() is not always reliable.
+        await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
 

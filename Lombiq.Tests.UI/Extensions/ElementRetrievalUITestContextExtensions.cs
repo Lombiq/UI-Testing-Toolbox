@@ -106,6 +106,7 @@ public static class ElementRetrievalUITestContextExtensions
     {
         context.Missing(By.CssSelector(".message-warning"));
         context.Missing(By.CssSelector(".message-error"));
+        context.SuccessMessageExists(matchText, within);
     }
 
     /// <summary>

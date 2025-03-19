@@ -64,9 +64,8 @@ public class OrchardCoreRegistrationPage : Page<_>
             PrivacyPolicyAgreement.Click();
         }
 
-        Register.Click();
-
-        await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+        // The Atata Click() is not always reliable.
+        await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
 
