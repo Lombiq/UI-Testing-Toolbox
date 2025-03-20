@@ -31,6 +31,16 @@
             pinDigests: false,
             prBodyNotes: 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
         },
+        {
+            groupName: 'Browsers',
+            matchPackageNames: [
+                'chrome-for-testing',
+                'edge-linux',
+                'edge-macos',
+                'edge-windows',
+                'firefox',
+            ],
+        },
     ],
     customManagers: [
         {
