@@ -33,12 +33,12 @@
         },
         {
             groupName: 'Browsers',
-            matchPackageNames: [
-                'chrome-for-testing',
-                'edge-linux',
-                'edge-macos',
-                'edge-windows',
-                'firefox',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
             ],
         },
     ],
