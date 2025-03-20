@@ -45,7 +45,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "134.0.6998.88";
+            chromeConfig.Options.BrowserVersion = "134.0.6998.90";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -86,7 +86,7 @@ public static class WebDriverFactory
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "134.0.3124.68";
+                var macOsEdgeVersion = "134.0.3124.77";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -126,7 +126,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "136.0.1";
+            firefoxOptions.BrowserVersion = "136.0.2";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
