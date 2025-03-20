@@ -61,10 +61,10 @@ public class OrchardCoreRegistrationPage : Page<_>
         }
 
         // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
-        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
-        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
-        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
-        await context.FillInWithRetriesAsync(By.Id("RegisterUserForm_ConfirmPassword"), parameters.Password);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_ConfirmPassword"), parameters.Password);
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();

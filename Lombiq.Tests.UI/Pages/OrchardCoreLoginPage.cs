@@ -46,8 +46,8 @@ public class OrchardCoreLoginPage : Page<_>
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
     {
         // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
-        await context.FillInWithRetriesAsync(By.Id("LoginForm_UserName"), userName);
-        await context.FillInWithRetriesAsync(By.Id("LoginForm_Password"), password);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("LoginForm_UserName"), userName);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("LoginForm_Password"), password);
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
