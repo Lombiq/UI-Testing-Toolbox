@@ -1,8 +1,7 @@
 {
     $schema: 'https://docs.renovatebot.com/renovate-schema.json',
     extends: [
-        'github>Lombiq/renovate-config:default-orchard-core-submodule.json5',
-        'github>Lombiq/Open-Source-Orchard-Core-Extensions:renovate-osoce.json5',
+        'github>Lombiq/Open-Source-Orchard-Core-Extensions:renovate-osoce-orchard-core-submodule.json5',
     ],
     packageRules: [
         {
@@ -31,6 +30,16 @@
             // Renovate can't update the digest for some reason (it just fails).
             pinDigests: false,
             prBodyNotes: 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
+        },
+        {
+            groupName: 'Browsers',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
+            ],
         },
     ],
     customManagers: [
