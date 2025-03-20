@@ -20,10 +20,13 @@ namespace Lombiq.Tests.UI.SecurityScanning;
 /// Service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances and security scans
 /// for a given test.
 /// </summary>
+// If this file is renamed or moved, be sure to adjust the regex in the renovate.json5 config file in the root too.
 public sealed class ZapManager : IAsyncDisposable
 {
     // Using the then-latest stable release of ZAP. You can check for newer version tags here:
-    // https://hub.docker.com/r/zaproxy/zap-stable/tags.
+    // https://hub.docker.com/r/zaproxy/zap-stable/tags. This version number is updated automatically by Renovate.
+    // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config
+    // file in the root too.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
     private const string _zapImage = "zaproxy/zap-stable:2.16.0";
