@@ -32,7 +32,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
                 await context.SetCheckboxValueAsync(By.XPath("//input[@value='Page']"));
                 await context.ClickReliablyOnSubmitAsync();
-                context.ShouldBeSuccess();
+                context.ShouldBeSuccess("Activity added successfully.");
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
@@ -40,6 +40,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Notification");
                 await context.ClickAndFillInWithRetriesAsync(By.Id("NotifyTask_Message"), contentItemPublishTestSuccessMessage);
                 await context.ClickReliablyOnSubmitAsync();
+                context.ShouldBeSuccess("Activity added successfully.");
 
                 var taskXPath = "//div[contains(@class, 'activity-task')]";
 
@@ -55,7 +56,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.
                 await context.ClickReliablyOnSubmitAsync();
-                context.ShouldBeSuccess();
+                context.ShouldBeSuccess("Workflow has been saved.");
 
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
 

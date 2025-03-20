@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -45,10 +46,12 @@ public class OrchardCoreLoginPage : Page<_>
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
     {
         var page = UserName.Set(userName)
-            .Password.Set(password)
-            .LogIn.Click();
+            .Password.Set(password);
 
-        await context.TriggerAfterPageChangeEventAndRefreshAtataContextAsync();
+        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
+        await context.FillInWithRetriesAsync(By.Id("LoginForm_UserName"), userName);
+        await context.FillInWithRetriesAsync(By.Id("LoginForm_Password"), password);
+        await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
 
