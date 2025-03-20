@@ -27,6 +27,8 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Event']"));
+                // Make sure that the Content Published event's card loads before trying to add it.
+                context.Exists(By.XPath("//h4[contains(@class, 'card-title') and contains(text(), 'Content Published')]"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'ContentPublishedEvent')]"));
 
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
