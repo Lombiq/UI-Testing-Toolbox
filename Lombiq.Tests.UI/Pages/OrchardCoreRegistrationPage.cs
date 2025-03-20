@@ -55,11 +55,6 @@ public class OrchardCoreRegistrationPage : Page<_>
     public async Task<_> RegisterWithAsync(
         UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
-        UserName.Set(parameters.UserName);
-        Email.Set(parameters.Email);
-        Password.Set(parameters.Password);
-        ConfirmPassword.Set(parameters.ConfirmPassword);
-
         if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
         {
             PrivacyPolicyAgreement.Click();
