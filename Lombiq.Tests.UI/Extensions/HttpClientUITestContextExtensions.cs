@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
@@ -16,10 +17,6 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.Extensions;
 
 [SuppressMessage(
-    "Security",
-    "SCS0004: Certificate Validation has been disabled.",
-    Justification = "Certificate validation is unnecessary for UI testing.")]
-[SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
         Justification = "Disposed by the HttpClient.")]
@@ -27,20 +24,27 @@ public static class HttpClientUITestContextExtensions
 {
     public static JsonSerializerOptions JsonSerializerOptions { get; } = new(JsonSerializerDefaults.Web);
 
-    public static HttpClient CreateClient(this UITestContext context)
-    {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-            CheckCertificateRevocationList = true,
-        };
+    [Obsolete("Use CreateHttpClient instead.")]
+    public static HttpClient CreateClient(this UITestContext context) => context.CreateHttpClient();
 
-        return new(handler) { BaseAddress = context.Scope.BaseUri };
+    public static HttpClient CreateHttpClient(this UITestContext context) =>
+        HttpClientHelper.CreateCertificateIgnoringHttpClient(context.Scope.BaseUri);
+
+    [Obsolete("Use CreateHttpClientWithBrowserContext instead.")]
+    public static HttpClient CreateClientWithBrowserContext(this UITestContext context) =>
+        context.CreateHttpClientWithBrowserContext();
+
+    public static HttpClient CreateHttpClientWithBrowserContext(this UITestContext context)
+    {
+        var handler = HttpClientHelper.CreateCertificateIgnoringHttpClientHandler();
+        handler.CookieContainer = context.GetCookieContainer();
+
+        return new HttpClient(handler);
     }
 
     /// <summary>
-    /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the provided
-    /// parameters.
+    /// Creates a new <see cref="HttpClient"/> and authorizes it with a Bearer token that is created based on the
+    /// provided parameters.
     /// </summary>
     public static async Task<HttpClient> CreateAndAuthorizeClientAsync(
         this UITestContext context,
@@ -66,7 +70,7 @@ public static class HttpClientUITestContextExtensions
 
         using var requestBody = new FormUrlEncodedContent(parameters);
 
-        var client = context.CreateClient();
+        var client = context.CreateHttpClient();
         configureClient?.Invoke(client);
 
         var tokenUrl = new Uri(context.Scope.BaseUri, "connect/token");
@@ -96,18 +100,18 @@ public static class HttpClientUITestContextExtensions
     }
 
     /// <summary>
-    /// Issues a GET request to the given <paramref name="requestUri"/> using the provided <paramref name="client"/> then
-    /// deserializes the response content to the given <typeparamref name="TObject"/>.
+    /// Issues a GET request to the given <paramref name="requestUri"/> using the provided <paramref name="client"/>
+    /// then deserializes the response content to the given <typeparamref name="T"/>.
     /// </summary>
     /// <returns>The response's <see cref="HttpContent"/> as a string.</returns>
-    public static async Task<TObject> GetAndReadResponseContentAsync<TObject>(
+    public static async Task<T> GetAndReadResponseContentAsync<T>(
         this UITestContext context,
         HttpClient client,
         string requestUri)
-        where TObject : class
+        where T : class
     {
         var content = await GetAndReadResponseContentAsync(context, client, requestUri);
-        return Deserialize<TObject>(content);
+        return Deserialize<T>(content);
     }
 
     /// <summary>
@@ -127,16 +131,16 @@ public static class HttpClientUITestContextExtensions
 
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided <paramref name="json"/> then
-    /// deserializes the response content to the given <typeparamref name="TObject"/>.
+    /// deserializes the response content to the given <typeparamref name="T"/>.
     /// </summary>
-    /// <returns>The deserialized <typeparamref name="TObject"/> object.</returns>
-    public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
+    /// <returns>The deserialized <typeparamref name="T"/> object.</returns>
+    public static async Task<T> PostAndReadResponseContentAsync<T>(
         this UITestContext context,
         HttpClient client,
         string json,
         string requestUri)
-        where TObject : class =>
-        Deserialize<TObject>(await context.PostAndReadResponseContentAsync(
+        where T : class =>
+        Deserialize<T>(await context.PostAndReadResponseContentAsync(
             client,
             requestUri,
             json));
@@ -144,15 +148,15 @@ public static class HttpClientUITestContextExtensions
     /// <summary>
     /// Issues a POST request to the given <paramref name="requestUri"/> using the provided
     /// <paramref name="objectToSerialize"/>, that will be serialized as JSON, then the response content is deserialized
-    /// to the given <typeparamref name="TObject"/> and returned.
+    /// to the given <typeparamref name="T"/> and returned.
     /// </summary>
-    public static async Task<TObject> PostAndReadResponseContentAsync<TObject>(
+    public static async Task<T> PostAndReadResponseContentAsync<T>(
         this UITestContext context,
         HttpClient client,
         object objectToSerialize,
         string requestUri)
-        where TObject : class =>
-        Deserialize<TObject>(await context.PostAndReadResponseContentAsync(
+        where T : class =>
+        Deserialize<T>(await context.PostAndReadResponseContentAsync(
             client,
             requestUri,
             Serialize(objectToSerialize)));
@@ -233,10 +237,10 @@ public static class HttpClientUITestContextExtensions
         JsonSerializer.Serialize(objectToSerialize, JsonSerializerOptions);
 
     /// <summary>
-    /// Deserializes the provided <paramref name="content"/> to the given <typeparamref name="TObject"/> using the
+    /// Deserializes the provided <paramref name="content"/> to the given <typeparamref name="T"/> using the
     /// default <see cref="JOptions"/> settings.
     /// </summary>
-    public static TObject Deserialize<TObject>(string content)
-        where TObject : class =>
-        JsonSerializer.Deserialize<TObject>(content, JsonSerializerOptions);
+    public static T Deserialize<T>(string content)
+        where T : class =>
+        JsonSerializer.Deserialize<T>(content, JsonSerializerOptions);
 }
