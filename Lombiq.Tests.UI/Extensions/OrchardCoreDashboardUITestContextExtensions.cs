@@ -31,6 +31,15 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// </summary>
     public static Task ClickModalOkAsync(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
 
+    /// <inheritdoc cref="ClickPublishUntilNavigationHasOccurredAsync(UITestContext, bool, TimeSpan?, TimeSpan?)"/>/>
+    [Obsolete("Use ClickPublishUntilNavigationHasOccurredAsync instead.")]
+    public static Task ClickPublishUntilNavigationAsync(
+        this UITestContext context,
+        bool withJavaScript = false,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.ClickPublishUntilNavigationHasOccurredAsync(withJavaScript, timeout, interval);
+
     /// <summary>
     /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30 second
     /// interval between attempts. This should grant enough time to execute the publish action if the button actually
@@ -43,23 +52,15 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// unintended early timeout or bounce effect because the publishing may take a longer time.
     /// </para>
     /// </remarks>
-    public static Task ClickPublishUntilNavigationAsync(
+    public static Task ClickPublishUntilNavigationHasOccurredAsync(
         this UITestContext context,
         bool withJavaScript = false,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
-    {
-        var navigationState = context.AsPageNavigationState();
-
-        return context.DoWithRetriesOrFailAsync(
-            async () =>
-            {
-                await ClickPublishAsync(context, withJavaScript);
-                return navigationState.CheckIfNavigationHasOccurred();
-            },
-            timeout ?? TimeSpan.FromSeconds(30),
-            interval ?? TimeSpan.FromMinutes(2));
-    }
+        TimeSpan? interval = null) =>
+        context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+            () => ClickPublishAsync(context, withJavaScript),
+            timeout ?? TimeSpan.FromMinutes(2),
+            interval ?? TimeSpan.FromSeconds(30));
 
     public static Task GoToContentItemListAsync(this UITestContext context, string filterContentType = null)
     {

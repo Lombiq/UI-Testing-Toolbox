@@ -46,6 +46,42 @@ public static class ReliabilityUITestContextExtensions
             context.Configuration.TestCancellationToken);
 
     /// <summary>
+    /// Executes the async process repeatedly until a navigation has occurred, with the given timeout and retry
+    /// intervals. If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="processAsync">
+    /// The operation that potentially needs to be retried.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static Task DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
+        this UITestContext context,
+        Func<Task> processAsync,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var navigationState = context.AsPageNavigationState();
+
+        return context.DoWithRetriesOrFailAsync(
+            async () =>
+            {
+                await processAsync();
+                return navigationState.CheckIfNavigationHasOccurred();
+            },
+            timeout,
+            interval);
+    }
+
+    /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
@@ -87,8 +123,8 @@ public static class ReliabilityUITestContextExtensions
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, and throw <see cref="StaleElementReferenceException"/> or return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to <paramref
@@ -113,15 +149,15 @@ public static class ReliabilityUITestContextExtensions
             context.Configuration.TestCancellationToken);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale (throws <see
+    /// Executes the process and retries if no element is stale (throws <see
     /// cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> or throw <see cref="StaleElementReferenceException"/> if no retries are necessary, and return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to <paramref
@@ -144,6 +180,90 @@ public static class ReliabilityUITestContextExtensions
             timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout,
             interval ?? context.Configuration.TimeoutConfiguration.RetryInterval,
             context.Configuration.TestCancellationToken);
+
+    /// <summary>
+    /// Retrieves the value returned by <paramref name="process"/> and retries if an element becomes stale (throws <see
+    /// cref="StaleElementReferenceException"/>). If the operation didn't succeed then throws a <see
+    /// cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="process">
+    /// The long running operation that may execute during DOM change and should be retried. Should return a value if no
+    /// retries are necessary, and throw <see cref="StaleElementReferenceException"/> otherwise.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static T RetrieveWithRetriesIfStaleOrFail<T>(
+        this UITestContext context,
+        Func<T> process,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        T result = default;
+
+        context.DoWithRetriesOrFail(() =>
+        {
+            try
+            {
+                result = process();
+            }
+            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+            {
+                return false;
+            }
+
+            return true;
+        });
+
+        return result;
+    }
+
+    /// <summary>
+    /// Executes the process and retries if an element becomes stale (throws <see
+    /// cref="StaleElementReferenceException"/>). If the operation didn't succeed then throws a <see
+    /// cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="process">
+    /// The long running operation that may execute during DOM change and should be retried. Should return complete if
+    /// no retries are necessary, and throw <see cref="StaleElementReferenceException"/> otherwise.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static void DoWithRetriesIfStaleOrFail(
+        this UITestContext context,
+        Action process,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null) =>
+        context.DoWithRetriesOrFail(() =>
+        {
+            try
+            {
+                process();
+            }
+            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+            {
+                return false;
+            }
+
+            return true;
+        });
 
     /// <summary>
     /// Tries to execute an operation until the given element exists.

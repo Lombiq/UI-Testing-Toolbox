@@ -179,6 +179,9 @@ public static class WebDriverFactory
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
         options.AddArgument("--no-sandbox");
 
+        // The prompt requesting notifications may obscure UI elements.
+        options.AddArgument("--disable-notifications");
+
         if (configuration.FakeVideoSource is not null)
         {
             var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();

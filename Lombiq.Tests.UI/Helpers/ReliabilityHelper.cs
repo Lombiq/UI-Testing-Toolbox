@@ -18,7 +18,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             // When navigating away this exception will be thrown for all old element references. Not nice to use
             // exceptions but there doesn't seem to be a better way to do this.
@@ -34,7 +34,7 @@ public static class ReliabilityHelper
             // exception below.
             return await innerProcess();
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverException ex) when (ex.IsStateElementLikeException())
         {
             return true;
         }
@@ -174,7 +174,7 @@ public static class ReliabilityHelper
     }
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>). If
+    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>). If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     ///
     /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
@@ -183,8 +183,8 @@ public static class ReliabilityHelper
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, and throw <see cref="StaleElementReferenceException"/> or return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -206,7 +206,7 @@ public static class ReliabilityHelper
             DoWithRetriesOrFailAsync(_retryIfStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries if an element becomes stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if an element becomes stale (<see cref="StaleElementReferenceException"/>).
     ///
     /// In situations like a DataTable load it is possible that the page will change during execution of multiple long
     /// running operations such as GetAll, causing stale virtual DOM. Such change tends to be near instantaneous and
@@ -214,8 +214,8 @@ public static class ReliabilityHelper
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> if no retries are necessary, and throw <see cref="StaleElementReferenceException"/> or return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -238,14 +238,14 @@ public static class ReliabilityHelper
             DoWithRetriesAsync(_retryIfStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if no element is stale (<see cref="StaleElementReferenceException"/>).
     ///
     /// If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> or throw <see cref="StaleElementReferenceException"/> if no retries are necessary, and return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
@@ -267,12 +267,12 @@ public static class ReliabilityHelper
             DoWithRetriesOrFailAsync(_retryIfNotStaleProcess(processAsync), timeout, interval, cancellationToken);
 
     /// <summary>
-    /// Executes the process and retries until no element is stale ( <see cref="StaleElementReferenceException"/>).
+    /// Executes the process and retries if no element is stale (<see cref="StaleElementReferenceException"/>).
     /// </summary>
     /// <param name="processAsync">
     /// The long running operation that may execute during DOM change and should be retried. Should return <see
-    /// langword="true"/> if no retries are necessary, throw <see cref="StaleElementReferenceException"/> or return <see
-    /// langword="false"/> otherwise.
+    /// langword="true"/> or throw <see cref="StaleElementReferenceException"/> if no retries are necessary, and return
+    /// <see langword="false"/> otherwise.
     /// </param>
     /// <param name="timeout">
     /// The maximum time allowed for the process to complete. Defaults to the default of <see
