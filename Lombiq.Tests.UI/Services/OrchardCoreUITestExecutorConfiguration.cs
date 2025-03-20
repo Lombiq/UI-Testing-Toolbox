@@ -79,7 +79,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
-    public static readonly IEnumerable<ICounterKey> DefaultCounterExcludeList =
+    public static readonly HashSet<ICounterKey> DefaultCounterExcludeList =
     [
         new DbCommandExecuteCounterKey(
             WorkflowTypeStartActivitiesQuery,

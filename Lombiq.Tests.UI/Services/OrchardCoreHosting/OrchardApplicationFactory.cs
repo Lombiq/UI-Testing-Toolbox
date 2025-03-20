@@ -120,7 +120,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
             int.MaxValue);
 
         builder.Configure(
-            app => app.UseMiddleware<RequestProbeMiddleware>(),
+            app => app.UseMiddleware<RequestLoadProbeMiddleware>(),
             int.MaxValue);
     }
 

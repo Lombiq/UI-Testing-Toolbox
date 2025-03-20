@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services.Counters.Middlewares;
 
-public class RequestProbeMiddleware
+public class RequestLoadProbeMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ICounterDataCollector _counterDataCollector;
 
-    public RequestProbeMiddleware(RequestDelegate next, ICounterDataCollector counterDataCollector)
+    public RequestLoadProbeMiddleware(RequestDelegate next, ICounterDataCollector counterDataCollector)
     {
         _next = next;
         _counterDataCollector = counterDataCollector;

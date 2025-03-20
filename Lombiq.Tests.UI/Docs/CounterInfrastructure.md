@@ -13,7 +13,7 @@ This part of the infrastructure injects a mocked implementation that replaces th
 ### Entrypoints Where the Counter Operates
 
 - **Executing SQL Commands:** The counter tracks storage and retrieval operations performed by the persistence subsystem on the configured database. In short, every CRUD operation is counted. The implementation supports counting the same command both with and without comparing the parameter set.
-  - *Example:* The command `SELECT * FROM SampleTable WHERE Id=@d` is counted each time the command text is executed and separately for each unique parameter set.
+  - _Example:_ The command `SELECT * FROM SampleTable WHERE Id=@d` is counted each time the command text is executed and separately for each unique parameter set.
 - **Reading a Row from a Result Set:** Each row read from a result set is also counted.
 
 ## Configuration
