@@ -61,6 +61,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
 - [Version migration guide](Lombiq.Tests.UI/Docs/Migration.md)
+- [Duplicate SQL query detector](Lombiq.Tests.UI/Docs/CounterInfrastructure.md)
 
 ## Contributing and support
 
