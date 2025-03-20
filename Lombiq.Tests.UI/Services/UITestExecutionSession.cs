@@ -708,6 +708,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterClick -= TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterClick += TakeScreenshotIfEnabledAsync;
         }
 
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
@@ -908,7 +910,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private Task TakeScreenshotIfEnabledAsync(UITestContext context)
+    private Task TakeScreenshotIfEnabledAsync(UITestContext context, IWebElement targeElement) =>
+        TakeScreenshotIfEnabledAsync(context, "AfterClick");
+
+    private Task TakeScreenshotIfEnabledAsync(UITestContext context) =>
+        TakeScreenshotIfEnabledAsync(context, "AfterPageChange");
+
+    private Task TakeScreenshotIfEnabledAsync(UITestContext context, string suffix)
     {
         if (_context == null || !_dumpConfiguration.CaptureScreenshots || !_context.IsBrowserRunning) return Task.CompletedTask;
 
@@ -919,7 +927,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             context
                 .TakeScreenshot()
-                .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount));
+                .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount, "-" + suffix));
+
+            _testOutputHelper.WriteLineTimestampedAndDebug("Took screenshot #{0}.", _screenshotCount);
         }
         catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))
         {
@@ -954,8 +964,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private static string GetScreenshotPath(string parentDirectoryPath, int index) =>
-        Path.Combine(parentDirectoryPath, index.ToTechnicalString() + ".png");
+    private static string GetScreenshotPath(string parentDirectoryPath, int index, string nameSuffix = "") =>
+        Path.Combine(parentDirectoryPath, index.ToTechnicalString() + nameSuffix + ".png");
 
     private static string GetDebugInformationPath(string dumpContainerPath) =>
         Path.Combine(dumpContainerPath, "DebugInformation");
