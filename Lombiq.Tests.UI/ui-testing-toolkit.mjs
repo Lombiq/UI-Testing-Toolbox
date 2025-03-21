@@ -1,7 +1,7 @@
 import path from 'path';
 import process from 'process';
 import fs from 'node:fs/promises';
-import { By, WebDriver, WebElement, until, Key }  from 'selenium-webdriver';
+import { Builder, By, WebDriver, WebElement, until, Key }  from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import { writeFile } from 'node:fs/promises'
 
@@ -404,6 +404,15 @@ async function runTest(test, configureOptions = null) {
 
     let options = new chrome.Options().addArguments('ignore-certificate-errors');
 
+    // The current versions can be retrieved here:
+    // https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json. This version number is
+    // updated automatically by Renovate.
+    // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the root
+    // too.
+    options.setBrowserVersion('134.0.6998.90');
+
+    console.log(`Using Chrome version ${options.getBrowserVersion()}.`);
+
     const argumentsPath = path.join(tempDirectory, 'BrowserArguments.json');
     if (await _exists(argumentsPath)) {
         JSON.parse(await fs.readFile(argumentsPath, { encoding: 'utf8' }))
@@ -415,8 +424,10 @@ async function runTest(test, configureOptions = null) {
     if (process.env.GITHUB_ENV) options = options.addArguments('headless');
     if (configureOptions) options = configureOptions(options) ?? options;
 
-    const service = new chrome.ServiceBuilder(driverPath).build();
-    const driver = chrome.Driver.createSession(options, service);
+    const driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(options)
+        .build();
     await driver.manage().setTimeouts({ implicit: 10000 });
 
     try {
