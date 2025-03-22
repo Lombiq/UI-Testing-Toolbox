@@ -27,6 +27,8 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync();
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Event']"));
+                // Make sure that the Content Published event's card loads before trying to add it.
+                context.Exists(By.XPath("//h4[contains(@class, 'card-title') and contains(text(), 'Content Published')]"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'ContentPublishedEvent')]"));
 
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Trigger");
@@ -35,6 +37,8 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 context.ShouldBeSuccess("Activity added successfully.");
 
                 await context.ClickReliablyOnAsync(By.XPath("//button[@data-activity-type='Task']"));
+                // Make sure that the Notify task's card loads before trying to add it.
+                context.Exists(By.XPath("//h4[contains(@class, 'card-title') and contains(text(), 'Notify')]"));
                 await context.ClickReliablyOnAsync(By.XPath("//a[contains(@href, 'NotifyTask')]"));
 
                 await context.ClickAndFillInWithRetriesAsync(By.Id("IActivity_ActivityMetadata_Title"), "Content Published Notification");
