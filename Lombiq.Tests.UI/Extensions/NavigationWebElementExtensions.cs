@@ -112,25 +112,9 @@ public static class NavigationWebElementExtensions
         this IWebElement element,
         UITestContext context,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null)
-    {
-        var originalUri = context.GetCurrentUri();
-
-        return context.DoWithRetriesOrFailAsync(
-            async () =>
-            {
-                try
-                {
-                    await element.ClickReliablyAsync(context);
-                }
-                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
-                {
-                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
-                }
-
-                return context.GetCurrentUri() != originalUri;
-            },
+        TimeSpan? interval = null) =>
+        context.DoWithRetriesUntilUrlChangeOrFailAsync(
+            () => element.ClickReliablyAsync(context),
             timeout,
             interval);
-    }
 }
