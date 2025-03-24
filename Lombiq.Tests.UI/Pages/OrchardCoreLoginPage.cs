@@ -3,8 +3,10 @@ using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Pages;
 
@@ -45,9 +47,25 @@ public class OrchardCoreLoginPage : Page<_>
 
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
     {
-        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
-        await context.ClickAndFillInWithRetriesAsync(By.Id("LoginForm_UserName"), userName);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("LoginForm_Password"), password);
+        var userNameBy = By.Id("LoginForm_UserName");
+        var passwordBy = By.Id("LoginForm_Password");
+
+        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu, but sometimes even
+        // ClickAndFillInWithRetriesAsync can fail and stuck failing, even with retried tests.
+        try
+        {
+            await context.ClickAndFillInWithRetriesAsync(userNameBy, userName);
+            await context.ClickAndFillInWithRetriesAsync(passwordBy, password);
+        }
+        catch (TimeoutException)
+        {
+            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                "Failed to fill in the login form, retrying with JavaScript.");
+
+            await context.ClickAndFillInWithScriptAsync(userNameBy, userName);
+            await context.ClickAndFillInWithScriptAsync(passwordBy, password);
+        }
+
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();
