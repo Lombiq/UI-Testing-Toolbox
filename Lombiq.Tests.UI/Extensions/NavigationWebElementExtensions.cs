@@ -117,4 +117,23 @@ public static class NavigationWebElementExtensions
             () => element.ClickReliablyAsync(context),
             timeout,
             interval);
+
+    /// <summary>
+    /// Clicks the given element with a JavaScript <c>click()</c>. This can work when <see
+    /// cref="ClickReliablyAsync(IWebElement, UITestContext, int)"/> fails even with retries.
+    /// </summary>
+    public static Task ClickWithScriptAsync(this IWebElement element, UITestContext context) =>
+        context.ExecuteLoggedAsync(
+            nameof(ClickWithScriptAsync),
+            element,
+            async () =>
+            {
+                await context.Configuration.Events.BeforeClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+
+                context.ExecuteScript("arguments[0].click();", element);
+
+                await context.Configuration.Events.AfterClick
+                    .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
+            });
 }
