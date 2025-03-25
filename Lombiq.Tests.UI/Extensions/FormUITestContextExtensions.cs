@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -341,6 +342,30 @@ public static class FormUITestContextExtensions
 
         return
             context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+    }
+
+    /// <inheritdoc cref="ClickReliablyOnSubmitAsync(UITestContext,bool)"/>
+    [SuppressMessage(
+        "Usage",
+        "MA0136:Raw String contains an implicit end of line character",
+        Justification = "It doesn't matter in JS code.")]
+    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, string label, bool withJavaScript = false)
+    {
+        if (withJavaScript)
+        {
+            context.ExecuteScript(
+                """
+                Array
+                    .from(document.querySelectorAll("button[type='submit']"))
+                    .filter(button => button.textContent.trim() === arguments[0])[0]
+                    .click();
+                """,
+                label);
+            return Task.CompletedTask;
+        }
+
+        var path = $"//button[@type='submit' and normalize-space(.) = {JsonSerializer.Serialize(label)}]";
+        return context.ClickReliablyOnAsync(By.XPath(path));
     }
 
     /// <summary>
