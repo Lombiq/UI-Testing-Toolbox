@@ -93,6 +93,50 @@ public static class ReliabilityUITestContextExtensions
     }
 
     /// <summary>
+    /// Executes the async process repeatedly until the current URL changes occurred, with the given timeout and retry
+    /// intervals. If the operation didn't succeed then throws a <see cref="TimeoutException"/>.
+    /// </summary>
+    /// <param name="processAsync">
+    /// The operation that potentially needs to be retried.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time allowed for the process to complete. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryTimeout"/>.
+    /// </param>
+    /// <param name="interval">
+    /// The polling interval used by <see cref="SafeWaitAsync{T}"/>. Defaults to <paramref
+    /// name="context.Configuration.TimeoutConfiguration.RetryInterval"/>.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// Thrown if the operation didn't succeed even after retries within the allotted time.
+    /// </exception>
+    public static Task DoWithRetriesUntilUrlChangeOrFailAsync(
+        this UITestContext context,
+        Func<Task> processAsync,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var originalUri = context.GetCurrentUri();
+
+        return context.DoWithRetriesOrFailAsync(
+            async () =>
+            {
+                try
+                {
+                    await processAsync();
+                }
+                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+                {
+                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                }
+
+                return context.GetCurrentUri() != originalUri;
+            },
+            timeout,
+            interval);
+    }
+
+    /// <summary>
     /// Executes the async process repeatedly while it's not successful, with the given timeout and retry intervals. If
     /// the operation didn't succeed then throws a <see cref="TimeoutException"/>.
     /// </summary>

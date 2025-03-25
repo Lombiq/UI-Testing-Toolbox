@@ -77,6 +77,17 @@ public static class FormUITestContextExtensions
                 interval));
     }
 
+    public static async Task ClickAndFillInWithScriptAsync(
+        this UITestContext context,
+        By by,
+        string text,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        await context.ClickOnWithScriptAsync(by);
+        context.FillInWithScript(by, text);
+    }
+
     /// <summary>
     /// Uses JavaScript to reinitialize the given field's EasyMDE instance and then access the internal CodeMirror
     /// editor to programmatically change the value. This is necessary, because otherwise the editor doesn't expose the
@@ -230,6 +241,15 @@ public static class FormUITestContextExtensions
             },
             timeout,
             interval));
+
+    /// <summary>
+    /// Fills a form field with the given text using JavaScript.
+    /// </summary>
+    public static void FillInWithScript(this UITestContext context, By by, string text) =>
+        context.ExecuteLogged(
+            nameof(FillInWithScript),
+            $"{by} - \"{text}\"",
+            () => context.ExecuteScript("arguments[0].value = arguments[1];", context.Get(by), text));
 
     /// <summary>
     /// Returns a value indicating whether the checkbox of <paramref name="by"/> is checked or not.
