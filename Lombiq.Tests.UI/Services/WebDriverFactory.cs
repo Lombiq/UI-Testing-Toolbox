@@ -158,6 +158,8 @@ public static class WebDriverFactory
         BrowserConfiguration configuration)
         where TDriverOptions : ChromiumOptions
     {
+        // For a list of all switches see https://peter.sh/experiments/chromium-command-line-switches/.
+
         options.AddArgument("--lang=" + configuration.AcceptLanguage);
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
@@ -187,6 +189,15 @@ public static class WebDriverFactory
 
         // The prompt requesting notifications may obscure UI elements.
         options.AddArgument("--disable-notifications");
+
+        // Test user credentials can cause Chromium browsers to display a warning about unsafe passwords, which dims the
+        // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them
+        // removed. So, leaving all of them here, since this won't cause any issues. --suppress-message-center-popups
+        // also hides all other toast notifications.
+        options.AddArgument("--disable-features=PasswordLeakDetection");
+        options.AddArgument("--disable-features=PasswordCheckup");
+        options.AddArgument("--password-store=basic --disable-password-manager");
+        options.AddArgument("--suppress-message-center-popups");
 
         if (configuration.FakeVideoSource is not null)
         {
