@@ -168,7 +168,7 @@ internal static class CloudflareHelper
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "Not removing the Cloudflare IP Access Rule for the IP range {0} (Rule ID: {1}) since the current reference count is NOT 0.",
                     currentIpRange,
-                    _ipAccessRuleIds[currentIpRange]);
+                    string.IsNullOrEmpty(oldIpAccessRuleId) ? "not available" : oldIpAccessRuleId);
             }
         }
     }
