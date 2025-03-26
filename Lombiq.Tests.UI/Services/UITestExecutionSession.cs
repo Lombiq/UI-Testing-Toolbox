@@ -937,7 +937,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 .TakeScreenshot()
                 .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount, "-" + suffix));
 
-            WindowsScreenCapture.CaptureScreen(GetScreenshotPath(screenshotsPath, _screenshotCount, "-FullScreen"));
+            UbuntuScreenCapture.CaptureScreen(GetScreenshotPath(screenshotsPath, _screenshotCount, "-FullScreen"));
 
             _testOutputHelper.WriteLineTimestampedAndDebug("Took screenshot #{0}.", _screenshotCount);
         }
