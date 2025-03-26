@@ -25,6 +25,13 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 )]
 
 [assembly: Feature(
+    Id = Deployment,
+    Name = "Deployment - Shortcuts - Lombiq UI Testing Toolbox",
+    Category = "Development",
+    Description = "Adds deployment-related features such as recipe steps, that have UI testing specific behavior."
+)]
+
+[assembly: Feature(
     Id = FeatureToggleTestBench,
     Name = "Feature Toggle Test Bench - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",

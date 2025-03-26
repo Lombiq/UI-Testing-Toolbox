@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OrchardCore.Data.YesSql;
 using OrchardCore.Modules;
+using OrchardCore.Recipes;
 using System;
 
 namespace Lombiq.Tests.UI.Shortcuts;
@@ -25,6 +26,13 @@ public sealed class Startup : StartupBase
 
     public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider) =>
         app.UseMiddleware<ExceptionContextLoggingMiddleware>();
+}
+
+[Feature(ShortcutsFeatureIds.Deployment)]
+public sealed class DeploymentStartup : StartupBase
+{
+    public override void ConfigureServices(IServiceCollection services) =>
+        services.AddRecipeExecutionStep<TestPrefixedElasticsearchIndexStep>();
 }
 
 [Feature(ShortcutsFeatureIds.Swagger)]
