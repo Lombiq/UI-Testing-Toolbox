@@ -937,6 +937,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 .TakeScreenshot()
                 .SaveAsFile(GetScreenshotPath(screenshotsPath, _screenshotCount, "-" + suffix));
 
+            WindowsScreenCapture.CaptureScreen(GetScreenshotPath(screenshotsPath, _screenshotCount, "-FullScreen"));
+
             _testOutputHelper.WriteLineTimestampedAndDebug("Took screenshot #{0}.", _screenshotCount);
         }
         catch (FormatException ex) when (ex.Message.Contains("The input is not a valid Base-64 string"))

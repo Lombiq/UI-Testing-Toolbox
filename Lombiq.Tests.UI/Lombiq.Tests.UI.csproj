@@ -86,6 +86,7 @@
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.1.0" />
     <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
     <!-- Needed only because Microsoft.SqlServer.DACFx depends on a vulnerable older version of it. -->
     <PackageReference Include="System.IO.Packaging" Version="8.0.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
