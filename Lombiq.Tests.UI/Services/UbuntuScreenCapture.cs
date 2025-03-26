@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -17,13 +18,17 @@ public static class UbuntuScreenCapture
             }
         }
 
-        string command = $"import -window root {filePath}";
+        // Ensure the file path is absolute
+        string fullPath = Path.GetFullPath(filePath);
+
+        // Run the screenshot command
+        string command = $"import -window root \"{fullPath}\"";
         int exitCode = ExecuteBashCommand(command);
 
-        if (exitCode == 0)
-            Console.WriteLine($"Screenshot saved: {filePath}");
+        if (exitCode == 0 && File.Exists(fullPath))
+            Console.WriteLine($"Screenshot saved: {fullPath}");
         else
-            Console.WriteLine("Failed to take screenshot on Ubuntu.");
+            Console.WriteLine($"Failed to take screenshot. File does not exist: {fullPath}");
     }
 
     private static bool IsImageMagickInstalled()
@@ -33,6 +38,7 @@ public static class UbuntuScreenCapture
 
     private static bool InstallImageMagick()
     {
+        Console.WriteLine("Running: sudo apt update && sudo apt install -y imagemagick");
         return ExecuteBashCommand("sudo apt update && sudo apt install -y imagemagick") == 0;
     }
 
