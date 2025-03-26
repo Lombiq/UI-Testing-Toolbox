@@ -38,6 +38,10 @@ public static class WebDriverFactory
             // Disables the default search engine selector splash screen.
             chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
 
+            // Disables the "Chrome for Testing vW.X.Y.Z is only for automated testing." and "Chrome is being controlled
+            // by automated test software." infobars.
+            chromeConfig.Options.AddArgument("disable-infobars");
+
             chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
             // The current versions can be retrieved here:
