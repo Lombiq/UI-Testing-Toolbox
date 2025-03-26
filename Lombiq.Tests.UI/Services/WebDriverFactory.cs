@@ -194,9 +194,11 @@ public static class WebDriverFactory
         // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them
         // removed. So, leaving all of them here, since this won't cause any issues. --suppress-message-center-popups
         // also hides all other toast notifications.
-        options.AddArgument("--disable-features=PasswordLeakDetection");
-        options.AddArgument("--disable-features=PasswordCheckup");
-        options.AddArgument("--password-store=basic --disable-password-manager");
+        options.AddArgument("--password-store=basic");
+        options.AddUserProfilePreference("credentials_enable_service", "false");
+        options.AddUserProfilePreference("profile.password_manager_enabled", "false");
+        options.AddUserProfilePreference("reduce-security-for-testing", "null");
+        options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
         options.AddArgument("--suppress-message-center-popups");
 
         if (configuration.FakeVideoSource is not null)
