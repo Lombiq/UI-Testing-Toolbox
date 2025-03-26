@@ -183,7 +183,7 @@ public static class WebDriverFactory
 
         // Previously this switch caused Chrome processes to remain open after test execution, see
         // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356, but it doesn't seem to be case anymore.
-        // Additionally, Ubuntu 2024-based GitHub Actions runners seem to require this flag to be set, see
+        // Additionally, Ubuntu 24.04-based GitHub Actions runners seem to require this flag to be set, see
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
         options.AddArgument("--no-sandbox");
 
