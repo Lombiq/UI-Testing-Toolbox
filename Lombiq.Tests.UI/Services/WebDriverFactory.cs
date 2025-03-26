@@ -201,6 +201,15 @@ public static class WebDriverFactory
         options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
         options.AddArgument("--suppress-message-center-popups");
 
+        // Disables the default browser check, which is useless during UI tests.
+        options.AddArgument("--no-default-browser-check");
+
+        // Skip First Run tasks as well as not showing additional dialogs, prompts or bubbles.
+        options.AddArgument("--no-first-run");
+
+        // Disables the service process from adding itself as an autorun process.
+        options.AddArgument("--no-service-autorun");
+
         if (configuration.FakeVideoSource is not null)
         {
             var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
