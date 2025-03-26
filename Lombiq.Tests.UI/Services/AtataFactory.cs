@@ -83,7 +83,7 @@ public static class AtataFactory
 
         // Without this, Selenium Manager may use the installed browser if the major-minor versions are matching (e.g.
         // it may use the installed 134.0.6998.166 version if 134.0.6998.165 is requested). This is to enforce that the
-        // exact version is used.
+        // exact version is used. See https://github.com/SeleniumHQ/selenium/issues/15517 for details.
         Environment.SetEnvironmentVariable("SE_FORCE_BROWSER_DOWNLOAD", "true");
 
         while (true)
