@@ -160,7 +160,7 @@ public static class WebDriverFactory
     {
         // For a list of all switches see https://peter.sh/experiments/chromium-command-line-switches/.
 
-        options.AddArgument("--lang=" + configuration.AcceptLanguage);
+        options.AddArgument("lang=" + configuration.AcceptLanguage);
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.AddArgument("disable-accelerated-2d-canvas");
@@ -185,30 +185,30 @@ public static class WebDriverFactory
         // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356, but it doesn't seem to be case anymore.
         // Additionally, Ubuntu 24.04-based GitHub Actions runners seem to require this flag to be set, see
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
-        options.AddArgument("--no-sandbox");
+        options.AddArgument("no-sandbox");
 
         // The prompt requesting notifications may obscure UI elements.
-        options.AddArgument("--disable-notifications");
+        options.AddArgument("disable-notifications");
 
         // Test user credentials can cause Chromium browsers to display a warning about unsafe passwords, which dims the
         // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them
         // removed. So, leaving all of them here, since this won't cause any issues. --suppress-message-center-popups
         // also hides all other toast notifications.
-        options.AddArgument("--password-store=basic");
+        options.AddArgument("password-store=basic");
         options.AddUserProfilePreference("credentials_enable_service", "false");
         options.AddUserProfilePreference("profile.password_manager_enabled", "false");
         options.AddUserProfilePreference("reduce-security-for-testing", "null");
         options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
-        options.AddArgument("--suppress-message-center-popups");
+        options.AddArgument("suppress-message-center-popups");
 
         // Disables the default browser check, which is useless during UI tests.
-        options.AddArgument("--no-default-browser-check");
+        options.AddArgument("no-default-browser-check");
 
         // Skip First Run tasks as well as not showing additional dialogs, prompts or bubbles.
-        options.AddArgument("--no-first-run");
+        options.AddArgument("no-first-run");
 
         // Disables the service process from adding itself as an autorun process.
-        options.AddArgument("--no-service-autorun");
+        options.AddArgument("no-service-autorun");
 
         if (configuration.FakeVideoSource is not null)
         {
