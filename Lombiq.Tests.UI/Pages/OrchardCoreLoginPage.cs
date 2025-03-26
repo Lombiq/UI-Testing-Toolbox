@@ -67,7 +67,7 @@ public class OrchardCoreLoginPage : Page<_>
             await context.ClickAndFillInWithScriptAsync(passwordBy, password);
         }
 
-        await context.ClickReliablyOnUntilPageLeaveAsync(ByHelper.ButtonText("Log in"));
+        await context.ClickReliablyOnUntilNavigationHasOccurredAsync(ByHelper.ButtonText("Log in"));
 
         context.RefreshCurrentAtataContext();
 
