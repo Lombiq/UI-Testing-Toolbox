@@ -297,60 +297,60 @@ public static class WebDriverFactory
 
 
 
-        // Disables all extensions, and also some built-in extensions that aren't affected by --disable-extensions.
-        options.AddArgument("disable-extensions");
-        options.AddArgument("disable-component-extensions-with-background-pages");
+        //// Disables all extensions, and also some built-in extensions that aren't affected by --disable-extensions.
+        //options.AddArgument("disable-extensions");
+        //options.AddArgument("disable-component-extensions-with-background-pages");
 
-        // Disables any of the default Chrome apps.
-        options.AddArgument("disable-default-apps");
+        //// Disables any of the default Chrome apps.
+        //options.AddArgument("disable-default-apps");
 
-        // Disables the Discover feed on the New Tab Page.
-        options.AddArgument("disable-features=InterestFeedContentSuggestion");
+        //// Disables the Discover feed on the New Tab Page.
+        //options.AddArgument("disable-features=InterestFeedContentSuggestion");
 
-        // Disables Chrome translation, both the manual option and the popup prompt when a page with differing language
-        // is detected.
-        options.AddArgument("disable-features=Translate");
+        //// Disables Chrome translation, both the manual option and the popup prompt when a page with differing language
+        //// is detected.
+        //options.AddArgument("disable-features=Translate");
 
-        // Avoids blue bubble "user education" nudges (eg., "… give your browser a new look", Memory Saver)
-        options.AddArgument("ash-no-nudges");
+        //// Avoids blue bubble "user education" nudges (eg., "… give your browser a new look", Memory Saver)
+        //options.AddArgument("ash-no-nudges");
 
-        // Disables all in-product help. See
-        // https://chromium.googlesource.com/chromium/src/+/master/components/feature_engagement/README.md.
-        options.AddArgument("propagate-iph-for-testing");
+        //// Disables all in-product help. See
+        //// https://chromium.googlesource.com/chromium/src/+/master/components/feature_engagement/README.md.
+        //options.AddArgument("propagate-iph-for-testing");
 
-        // Disables timers being throttled in background pages/tabs.
-        options.AddArgument("disable-background-timer-throttling");
+        //// Disables timers being throttled in background pages/tabs.
+        //options.AddArgument("disable-background-timer-throttling");
 
-        // Normally, Chrome will treat a 'foreground' tab instead as backgrounded if the surrounding window is occluded
-        // (aka visually covered) by another window. This flag disables that.
-        options.AddArgument("disable-backgrounding-occluded-windows");
+        //// Normally, Chrome will treat a 'foreground' tab instead as backgrounded if the surrounding window is occluded
+        //// (aka visually covered) by another window. This flag disables that.
+        //options.AddArgument("disable-backgrounding-occluded-windows");
 
-        //// Related to the previous one. Calculate window occlusion on Windows will be used in the future to throttle and
-        //// potentially unload foreground tabs in occluded windows. Disabling that.
-        //options.AddArgument("disable-features=CalculateNativeWinOcclusion");
+        // Related to the previous one. Calculate window occlusion on Windows will be used in the future to throttle and
+        // potentially unload foreground tabs in occluded windows. Disabling that.
+        options.AddArgument("disable-features=CalculateNativeWinOcclusion");
 
-        //// Suppresses hang monitor dialogs.
-        //options.AddArgument("disable-hang-monitor");
+        // Suppresses hang monitor dialogs.
+        options.AddArgument("disable-hang-monitor");
 
-        //// Related to the previous one. Disables non-foreground tabs from getting a lower process priority.
-        //options.AddArgument("disable-renderer-backgrounding");
+        // Related to the previous one. Disables non-foreground tabs from getting a lower process priority.
+        options.AddArgument("disable-renderer-backgrounding");
 
-        //// Disables site isolation between subdomains. Not needed during testing but it increases process count.
-        //options.AddArgument("disable-features=IsolateOrigins");
+        // Disables site isolation between subdomains. Not needed during testing but it increases process count.
+        options.AddArgument("disable-features=IsolateOrigins");
 
-        //// Related to the previous one. Disables site isolation completely:
-        //// https://www.chromium.org/Home/chromium-security/site-isolation/.
-        //options.AddArgument("disable-features=site-per-process");
+        // Related to the previous one. Disables site isolation completely:
+        // https://www.chromium.org/Home/chromium-security/site-isolation/.
+        options.AddArgument("disable-features=site-per-process");
 
-        //// Load all iframes immediately to reduce the flakiness of lazy loading.
-        //options.AddArgument("disable-features=LazyFrameLoading");
+        // Load all iframes immediately to reduce the flakiness of lazy loading.
+        options.AddArgument("disable-features=LazyFrameLoading");
 
-        //// Disables the "Enhanced ad privacy in Chrome" dialog.
-        //options.AddArgument("disable-features=PrivacySandboxSettings4");
+        // Disables the "Enhanced ad privacy in Chrome" dialog.
+        options.AddArgument("disable-features=PrivacySandboxSettings4");
 
-        //// Disables various background network services, including extension updating, safe browsing service, upgrade
-        //// detector, translate...
-        //options.AddArgument("disable-background-networking");
+        // Disables various background network services, including extension updating, safe browsing service, upgrade
+        // detector, translate...
+        options.AddArgument("disable-background-networking");
 
         //// Disables the crash reporting.
         //options.AddArgument("disable-breakpad");
