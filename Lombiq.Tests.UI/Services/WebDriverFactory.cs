@@ -156,6 +156,18 @@ public static class WebDriverFactory
 
         options.AddArgument("lang=" + configuration.AcceptLanguage);
 
+        // Linux-specific setting, may be necessary for running in containers, see
+        // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+        options.AddArgument("disable-dev-shm-usage");
+
+        // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
+        // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
+        // details.
+        options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
+
+        // Disables the default search engine selector splash screen.
+        options.AddArgument("disable-search-engine-choice-screen");
+
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.AddArgument("disable-accelerated-2d-canvas");
         options.AddArgument("disable-gpu");
@@ -221,18 +233,6 @@ public static class WebDriverFactory
 
         // Avoids blue bubble "user education" nudges (eg., "… give your browser a new look", Memory Saver)
         options.AddArgument("ash-no-nudges");
-
-        // Linux-specific setting, may be necessary for running in containers, see
-        // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-        options.AddArgument("disable-dev-shm-usage");
-
-        // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
-        // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
-        // details.
-        options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
-
-        // Disables the default search engine selector splash screen.
-        options.AddArgument("disable-search-engine-choice-screen");
 
         // Disables all in-product help. See
         // https://chromium.googlesource.com/chromium/src/+/master/components/feature_engagement/README.md.
