@@ -1,3 +1,4 @@
+using Lombiq.HelpfulLibraries.OrchardCore.DependencyInjection;
 using OrchardCore.Environment.Shell.Configuration;
 using OrchardCore.Recipes.Models;
 using OrchardCore.Recipes.Services;
@@ -22,12 +23,12 @@ public sealed class TestPrefixedElasticsearchIndexStep : NamedRecipeStepHandler
     public const string ConfigurationKey = "Lombiq_Tests_UI_Shortcuts_ElasticsearchPrefix";
 
     private readonly ElasticIndexingService _elasticIndexingService;
-    private readonly ElasticIndexManager _elasticIndexManager;
+    private readonly IElasticsearchIndexManager _elasticIndexManager;
     private readonly IShellConfiguration _shellConfiguration;
 
     public TestPrefixedElasticsearchIndexStep(
         ElasticIndexingService elasticIndexingService,
-        ElasticIndexManager elasticIndexManager,
+        IElasticsearchIndexManager elasticIndexManager,
         IShellConfiguration shellConfiguration)
         : base("ElasticIndexSettings")
     {
