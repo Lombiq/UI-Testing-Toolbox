@@ -376,27 +376,27 @@ public static class WebDriverFactory
         //// collection.
         //options.AddArgument("metrics-recording-only");
 
-        // Disables the Chrome Optimization Guide
-        // (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
-        // its service API.
-        options.AddArgument("disable-features=OptimizationHints");
+        //// Disables the Chrome Optimization Guide
+        //// (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
+        //// its service API.
+        //options.AddArgument("disable-features=OptimizationHints");
 
-        // Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
-        // connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
-        // cast targets.
-        options.AddArgument("disable-features=MediaRouter");
+        //// Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
+        //// connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
+        //// cast targets.
+        //options.AddArgument("disable-features=MediaRouter");
 
-        // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
-        // flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
-        // --deterministic-mode too in case it starts working again in the future.
-        options.AddArgument("deterministic-mode");
-        options.AddArgument("run-all-compositor-stages-before-draw");
-        options.AddArgument("disable-new-content-rendering-timeout");
-        options.AddArgument("enable-begin-frame-control");
-        options.AddArgument("disable-threaded-animation");
-        options.AddArgument("disable-threaded-scrolling");
-        options.AddArgument("disable-checker-imaging");
-        options.AddArgument("disable-image-animation-resync");
+        //// Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
+        //// flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
+        //// --deterministic-mode too in case it starts working again in the future.
+        //options.AddArgument("deterministic-mode");
+        //options.AddArgument("run-all-compositor-stages-before-draw");
+        //options.AddArgument("disable-new-content-rendering-timeout");
+        //options.AddArgument("enable-begin-frame-control");
+        //options.AddArgument("disable-threaded-animation");
+        //options.AddArgument("disable-threaded-scrolling");
+        //options.AddArgument("disable-checker-imaging");
+        //options.AddArgument("disable-image-animation-resync");
 
 
 
