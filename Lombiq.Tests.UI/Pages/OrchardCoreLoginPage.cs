@@ -67,7 +67,16 @@ public class OrchardCoreLoginPage : Page<_>
             await context.ClickAndFillInWithScriptAsync(passwordBy, password);
         }
 
-        await context.ClickReliablyOnUntilNavigationHasOccurredAsync(ByHelper.ButtonText("Log in"));
+        var buttonBy = ByHelper.ButtonText("Log in");
+
+        try
+        {
+            await context.ClickReliablyOnUntilNavigationHasOccurredAsync(buttonBy);
+        }
+        catch (TimeoutException)
+        {
+            await context.ClickOnWithScriptAsync(buttonBy);
+        }
 
         context.RefreshCurrentAtataContext();
 
