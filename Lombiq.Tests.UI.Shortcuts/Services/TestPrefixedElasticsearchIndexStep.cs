@@ -37,16 +37,9 @@ public sealed class TestPrefixedElasticsearchIndexStep : NamedRecipeStepHandler
         _elasticIndexingService = elasticIndexingService;
     }
 
-    [SuppressMessage(
-        "Globalization",
-        "CA1308:Normalize strings to uppercase",
-        Justification = "Elasticsearch indexes are lowercase only.")]
     protected override Task HandleAsync(RecipeExecutionContext context)
     {
-        var prefix = _shellConfiguration[ConfigurationKey]?
-            .ToLowerInvariant()
-            .RegexReplace("[^a-z0-9]+", "-")
-            .Trim('-');
+        var prefix = GetNormalizedPrefixFromConfiguration(_shellConfiguration);
         var hasPrefix = !string.IsNullOrWhiteSpace(prefix);
 
         // The term "Indices" is supported to maintain compatibility with Orchard Core's ElasticIndexSettings.
@@ -67,4 +60,14 @@ public sealed class TestPrefixedElasticsearchIndexStep : NamedRecipeStepHandler
         settings.IndexName = name;
         return settings;
     }
+
+    [SuppressMessage(
+        "Globalization",
+        "CA1308:Normalize strings to uppercase",
+        Justification = "Elasticsearch indexes are lowercase only.")]
+    public static string GetNormalizedPrefixFromConfiguration(IShellConfiguration configuration) =>
+        configuration[ConfigurationKey]?
+            .ToLowerInvariant()
+            .RegexReplace("[^a-z0-9]+", "-")
+            .Trim('-');
 }

@@ -31,8 +31,11 @@ public sealed class Startup : StartupBase
 [Feature(ShortcutsFeatureIds.Elastic)]
 public sealed class ElasticserachStartup : StartupBase
 {
-    public override void ConfigureServices(IServiceCollection services) =>
+    public override void ConfigureServices(IServiceCollection services)
+    {
         services.AddRecipeExecutionStep<TestPrefixedElasticsearchIndexStep>();
+        TestPrefixedElasticsearchIndexManager.ReplaceServiceImplementation(services);
+    }
 }
 
 [Feature(ShortcutsFeatureIds.Swagger)]
