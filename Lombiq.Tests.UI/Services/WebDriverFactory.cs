@@ -389,14 +389,14 @@ public static class WebDriverFactory
         // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
         // flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
         // --deterministic-mode too in case it starts working again in the future.
-        options.AddArgument("deterministic-mode");
-        options.AddArgument("run-all-compositor-stages-before-draw");
-        options.AddArgument("disable-new-content-rendering-timeout");
-        options.AddArgument("enable-begin-frame-control");
-        options.AddArgument("disable-threaded-animation");
-        options.AddArgument("disable-threaded-scrolling");
-        options.AddArgument("disable-checker-imaging");
-        options.AddArgument("disable-image-animation-resync");
+        //options.AddArgument("deterministic-mode");
+        //options.AddArgument("run-all-compositor-stages-before-draw");
+        //options.AddArgument("disable-new-content-rendering-timeout");
+        //options.AddArgument("enable-begin-frame-control");
+        //options.AddArgument("disable-threaded-animation");
+        //options.AddArgument("disable-threaded-scrolling");
+        //options.AddArgument("disable-checker-imaging");
+        //options.AddArgument("disable-image-animation-resync");
 
 
 
