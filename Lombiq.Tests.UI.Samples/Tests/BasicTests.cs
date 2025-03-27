@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using OpenQA.Selenium;
 using Shouldly;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -54,7 +53,14 @@ public class BasicTests : UITestBase
                 // Even clicking can be unreliable thus we have a helper for that too.
                 await context.ClickReliablyOnSubmitAsync();
 
-                throw new InvalidOperationException();
+                // At this point we should be logged in. So let's use a shortcut (from the Lombiq.Tests.UI.Shortcuts
+                // module) to see if it indeed happened.
+                (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
+
+                // Note that if you want the user to be logged in for the test (instead of testing the login feature
+                // itself), you don't need to log in via the login form every time: That would be slow and you'd test
+                // the login process multiple times. Use context.SignInDirectly() instead. Check out the
+                // ShortcutsShouldWork test below.
             });
 
     // Let's see if turning features on and off breaks something. Keep in mind that the Orchard logs are checked
