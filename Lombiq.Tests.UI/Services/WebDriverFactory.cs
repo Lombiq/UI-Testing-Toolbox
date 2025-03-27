@@ -325,56 +325,56 @@ public static class WebDriverFactory
         //// (aka visually covered) by another window. This flag disables that.
         //options.AddArgument("disable-backgrounding-occluded-windows");
 
-        // Related to the previous one. Calculate window occlusion on Windows will be used in the future to throttle and
-        // potentially unload foreground tabs in occluded windows. Disabling that.
-        options.AddArgument("disable-features=CalculateNativeWinOcclusion");
+        //// Related to the previous one. Calculate window occlusion on Windows will be used in the future to throttle and
+        //// potentially unload foreground tabs in occluded windows. Disabling that.
+        //options.AddArgument("disable-features=CalculateNativeWinOcclusion");
 
-        // Suppresses hang monitor dialogs.
-        options.AddArgument("disable-hang-monitor");
+        //// Suppresses hang monitor dialogs.
+        //options.AddArgument("disable-hang-monitor");
 
-        // Related to the previous one. Disables non-foreground tabs from getting a lower process priority.
-        options.AddArgument("disable-renderer-backgrounding");
+        //// Related to the previous one. Disables non-foreground tabs from getting a lower process priority.
+        //options.AddArgument("disable-renderer-backgrounding");
 
-        // Disables site isolation between subdomains. Not needed during testing but it increases process count.
-        options.AddArgument("disable-features=IsolateOrigins");
+        //// Disables site isolation between subdomains. Not needed during testing but it increases process count.
+        //options.AddArgument("disable-features=IsolateOrigins");
 
-        // Related to the previous one. Disables site isolation completely:
-        // https://www.chromium.org/Home/chromium-security/site-isolation/.
-        options.AddArgument("disable-features=site-per-process");
+        //// Related to the previous one. Disables site isolation completely:
+        //// https://www.chromium.org/Home/chromium-security/site-isolation/.
+        //options.AddArgument("disable-features=site-per-process");
 
-        // Load all iframes immediately to reduce the flakiness of lazy loading.
-        options.AddArgument("disable-features=LazyFrameLoading");
+        //// Load all iframes immediately to reduce the flakiness of lazy loading.
+        //options.AddArgument("disable-features=LazyFrameLoading");
 
-        // Disables the "Enhanced ad privacy in Chrome" dialog.
-        options.AddArgument("disable-features=PrivacySandboxSettings4");
+        //// Disables the "Enhanced ad privacy in Chrome" dialog.
+        //options.AddArgument("disable-features=PrivacySandboxSettings4");
 
-        //// Disables various background network services, including extension updating, safe browsing service, upgrade
-        //// detector, translate...
-        //options.AddArgument("disable-background-networking");
+        // Disables various background network services, including extension updating, safe browsing service, upgrade
+        // detector, translate...
+        options.AddArgument("disable-background-networking");
 
-        //// Disables the crash reporting.
-        //options.AddArgument("disable-breakpad");
+        // Disables the crash reporting.
+        options.AddArgument("disable-breakpad");
 
-        //// Don't update the browser components listed at chrome://components/.
-        //options.AddArgument("disable-component-update");
+        // Don't update the browser components listed at chrome://components/.
+        options.AddArgument("disable-component-update");
 
-        //// Related to the previous one. Disables the updater for
-        //// https://chromium.googlesource.com/chromium/src/+/lkgr/net/docs/certificate-transparency.md.
-        //options.AddArgument("disable-features=CertificateTransparencyComponentUpdater");
+        // Related to the previous one. Disables the updater for
+        // https://chromium.googlesource.com/chromium/src/+/lkgr/net/docs/certificate-transparency.md.
+        options.AddArgument("disable-features=CertificateTransparencyComponentUpdater");
 
-        //// Disables Domain Reliability Monitoring, which tracks whether the browser has difficulty contacting
-        //// Google-owned sites and uploads reports to Google.
-        //options.AddArgument("disable-domain-reliability");
+        // Disables Domain Reliability Monitoring, which tracks whether the browser has difficulty contacting
+        // Google-owned sites and uploads reports to Google.
+        options.AddArgument("disable-domain-reliability");
 
-        //// Disables autofill server communication.
-        //options.AddArgument("disable-features=AutofillServerCommunication");
+        // Disables autofill server communication.
+        options.AddArgument("disable-features=AutofillServerCommunication");
 
-        //// Disables syncing to a Google account.
-        //options.AddArgument("disable-sync");
+        // Disables syncing to a Google account.
+        options.AddArgument("disable-sync");
 
-        //// Disables reporting to Google User Metrics Analysis (see https://stackoverflow.com/a/39045389), but allows for
-        //// collection.
-        //options.AddArgument("metrics-recording-only");
+        // Disables reporting to Google User Metrics Analysis (see https://stackoverflow.com/a/39045389), but allows for
+        // collection.
+        options.AddArgument("metrics-recording-only");
 
         //// Disables the Chrome Optimization Guide
         //// (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
