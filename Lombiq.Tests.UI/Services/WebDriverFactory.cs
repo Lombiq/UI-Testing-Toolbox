@@ -391,10 +391,10 @@ public static class WebDriverFactory
         // --deterministic-mode too in case it starts working again in the future.
         //options.AddArgument("deterministic-mode");
         //options.AddArgument("run-all-compositor-stages-before-draw");
-        options.AddArgument("disable-new-content-rendering-timeout");
-        options.AddArgument("enable-begin-frame-control");
-        //options.AddArgument("disable-threaded-animation");
-        //options.AddArgument("disable-threaded-scrolling");
+        //options.AddArgument("disable-new-content-rendering-timeout");
+        //options.AddArgument("enable-begin-frame-control");
+        options.AddArgument("disable-threaded-animation");
+        options.AddArgument("disable-threaded-scrolling");
         //options.AddArgument("disable-checker-imaging");
         //options.AddArgument("disable-image-animation-resync");
 
