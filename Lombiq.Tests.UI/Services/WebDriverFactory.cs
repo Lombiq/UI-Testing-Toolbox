@@ -348,55 +348,55 @@ public static class WebDriverFactory
         //// Disables the "Enhanced ad privacy in Chrome" dialog.
         //options.AddArgument("disable-features=PrivacySandboxSettings4");
 
-        // Disables various background network services, including extension updating, safe browsing service, upgrade
-        // detector, translate...
-        options.AddArgument("disable-background-networking");
+        //// Disables various background network services, including extension updating, safe browsing service, upgrade
+        //// detector, translate...
+        //options.AddArgument("disable-background-networking");
 
-        // Disables the crash reporting.
-        options.AddArgument("disable-breakpad");
+        //// Disables the crash reporting.
+        //options.AddArgument("disable-breakpad");
 
-        // Don't update the browser components listed at chrome://components/.
-        options.AddArgument("disable-component-update");
+        //// Don't update the browser components listed at chrome://components/.
+        //options.AddArgument("disable-component-update");
 
-        // Related to the previous one. Disables the updater for
-        // https://chromium.googlesource.com/chromium/src/+/lkgr/net/docs/certificate-transparency.md.
-        options.AddArgument("disable-features=CertificateTransparencyComponentUpdater");
+        //// Related to the previous one. Disables the updater for
+        //// https://chromium.googlesource.com/chromium/src/+/lkgr/net/docs/certificate-transparency.md.
+        //options.AddArgument("disable-features=CertificateTransparencyComponentUpdater");
 
-        // Disables Domain Reliability Monitoring, which tracks whether the browser has difficulty contacting
-        // Google-owned sites and uploads reports to Google.
-        options.AddArgument("disable-domain-reliability");
+        //// Disables Domain Reliability Monitoring, which tracks whether the browser has difficulty contacting
+        //// Google-owned sites and uploads reports to Google.
+        //options.AddArgument("disable-domain-reliability");
 
-        // Disables autofill server communication.
-        options.AddArgument("disable-features=AutofillServerCommunication");
+        //// Disables autofill server communication.
+        //options.AddArgument("disable-features=AutofillServerCommunication");
 
-        // Disables syncing to a Google account.
-        options.AddArgument("disable-sync");
+        //// Disables syncing to a Google account.
+        //options.AddArgument("disable-sync");
 
-        // Disables reporting to Google User Metrics Analysis (see https://stackoverflow.com/a/39045389), but allows for
-        // collection.
-        options.AddArgument("metrics-recording-only");
+        //// Disables reporting to Google User Metrics Analysis (see https://stackoverflow.com/a/39045389), but allows for
+        //// collection.
+        //options.AddArgument("metrics-recording-only");
 
-        //// Disables the Chrome Optimization Guide
-        //// (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
-        //// its service API.
-        //options.AddArgument("disable-features=OptimizationHints");
+        // Disables the Chrome Optimization Guide
+        // (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
+        // its service API.
+        options.AddArgument("disable-features=OptimizationHints");
 
-        //// Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
-        //// connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
-        //// cast targets.
-        //options.AddArgument("disable-features=MediaRouter");
+        // Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
+        // connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
+        // cast targets.
+        options.AddArgument("disable-features=MediaRouter");
 
-        //// Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
-        //// flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
-        //// --deterministic-mode too in case it starts working again in the future.
-        //options.AddArgument("deterministic-mode");
-        //options.AddArgument("run-all-compositor-stages-before-draw");
-        //options.AddArgument("disable-new-content-rendering-timeout");
-        //options.AddArgument("enable-begin-frame-control");
-        //options.AddArgument("disable-threaded-animation");
-        //options.AddArgument("disable-threaded-scrolling");
-        //options.AddArgument("disable-checker-imaging");
-        //options.AddArgument("disable-image-animation-resync");
+        // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
+        // flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
+        // --deterministic-mode too in case it starts working again in the future.
+        options.AddArgument("deterministic-mode");
+        options.AddArgument("run-all-compositor-stages-before-draw");
+        options.AddArgument("disable-new-content-rendering-timeout");
+        options.AddArgument("enable-begin-frame-control");
+        options.AddArgument("disable-threaded-animation");
+        options.AddArgument("disable-threaded-scrolling");
+        options.AddArgument("disable-checker-imaging");
+        options.AddArgument("disable-image-animation-resync");
 
 
 
