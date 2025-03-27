@@ -25,10 +25,10 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 )]
 
 [assembly: Feature(
-    Id = Deployment,
-    Name = "Deployment - Shortcuts - Lombiq UI Testing Toolbox",
+    Id = Elastic,
+    Name = "Elasticsearch - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = "Adds deployment-related features such as recipe steps, that have UI testing specific behavior."
+    Description = "Adds specific fixes for namespacing Elasticsearch indexes by test."
 )]
 
 [assembly: Feature(
