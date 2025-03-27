@@ -308,7 +308,7 @@ public static class WebDriverFactory
 
         // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these and
         // --run-all-compositor-stages-before-draw, but that flag doesn't seem to exist anymore; so switching everything
-        // on manually. --run-all-compositor-stages-before-draw musn't be used, since it causes
+        // on manually. --run-all-compositor-stages-before-draw mustn't be used, since it causes
         // "OpenQA.Selenium.WebDriverTimeoutException: timeout: Timed out receiving message from renderer: 10.000"
         // exceptions when taking screenshots under Ubuntu.
         options.AddArgument("disable-new-content-rendering-timeout");
