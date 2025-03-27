@@ -217,86 +217,6 @@ public static class WebDriverFactory
         // Disables the service process from adding itself as an autorun process.
         options.AddArgument("no-service-autorun");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Disables all extensions, and also some built-in extensions that aren't affected by --disable-extensions.
         options.AddArgument("disable-extensions");
         options.AddArgument("disable-component-extensions-with-background-pages");
@@ -381,25 +301,22 @@ public static class WebDriverFactory
         // its service API.
         options.AddArgument("disable-features=OptimizationHints");
 
-        //// Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
-        //// connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
-        //// cast targets.
+        // Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
+        // connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
+        // cast targets.
         options.AddArgument("disable-features=MediaRouter");
 
-        // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these, but that
-        // flag doesn't seem to exist anymore; so switching everything on manually to be safe, but keeping
-        // --deterministic-mode too in case it starts working again in the future.
-        //options.AddArgument("deterministic-mode");
-        //options.AddArgument("run-all-compositor-stages-before-draw");
+        // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these and
+        // --run-all-compositor-stages-before-draw, but that flag doesn't seem to exist anymore; so switching everything
+        // on manually. --run-all-compositor-stages-before-draw musn't be used, since it causes
+        // "OpenQA.Selenium.WebDriverTimeoutException: timeout: Timed out receiving message from renderer: 10.000"
+        // exceptions when taking screenshots under Ubuntu.
         options.AddArgument("disable-new-content-rendering-timeout");
         options.AddArgument("enable-begin-frame-control");
         options.AddArgument("disable-threaded-animation");
         options.AddArgument("disable-threaded-scrolling");
         options.AddArgument("disable-checker-imaging");
         options.AddArgument("disable-image-animation-resync");
-
-
-
 
         if (configuration.FakeVideoSource is not null)
         {
