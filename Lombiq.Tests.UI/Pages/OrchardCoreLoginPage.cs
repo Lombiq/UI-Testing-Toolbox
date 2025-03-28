@@ -1,6 +1,7 @@
 using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -66,7 +67,16 @@ public class OrchardCoreLoginPage : Page<_>
             await context.ClickAndFillInWithScriptAsync(passwordBy, password);
         }
 
-        await context.ClickReliablyOnSubmitAsync();
+        var buttonBy = ByHelper.ButtonText("Log in");
+
+        try
+        {
+            await context.ClickReliablyOnUntilNavigationHasOccurredAsync(buttonBy);
+        }
+        catch (TimeoutException)
+        {
+            await context.ClickOnWithScriptAsync(buttonBy);
+        }
 
         context.RefreshCurrentAtataContext();
 

@@ -333,14 +333,9 @@ public static class FormUITestContextExtensions
     /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
     public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false)
     {
-        if (withJavaScript)
-        {
-            context.ExecuteScript("document.querySelector(\"button[type='submit']:not(form[action='/Users/LogOff'] button)\").click();");
-            return Task.CompletedTask;
-        }
+        var buttonBy = By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]");
 
-        return
-            context.ClickReliablyOnAsync(By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"));
+        return withJavaScript ? context.ClickOnWithScriptAsync(buttonBy) : context.ClickReliablyOnAsync(buttonBy);
     }
 
     /// <summary>

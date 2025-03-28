@@ -29,7 +29,9 @@
             ],
             // Renovate can't update the digest for some reason (it just fails).
             pinDigests: false,
-            prBodyNotes: 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
+            prBodyNotes: [
+                'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
+            ],
         },
         {
             groupName: 'Browsers',

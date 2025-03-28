@@ -26,17 +26,9 @@ public static class WebDriverFactory
 
             chromeConfig.Options.SetLoggingPreference(LogType.Browser, LogLevel.Info);
 
-            // Linux-specific setting, may be necessary for running in containers, see
-            // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
-            chromeConfig.Options.AddArgument("disable-dev-shm-usage");
-
-            // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
-            // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
-            // details.
-            chromeConfig.Options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
-
-            // Disables the default search engine selector splash screen.
-            chromeConfig.Options.AddArgument("disable-search-engine-choice-screen");
+            // Disables the "Chrome for Testing vW.X.Y.Z is only for automated testing." and "Chrome is being controlled
+            // by automated test software." infobars.
+            chromeConfig.Options.AddArgument("disable-infobars");
 
             chromeConfig.Options.SetCommonChromiumOptions(configuration);
 
@@ -45,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "134.0.6998.90";
+            chromeConfig.Options.BrowserVersion = "134.0.6998.165";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -76,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "134.0.3124.68";
+                var linuxEdgeVersion = "134.0.3124.83";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "134.0.3124.72";
+                var windowsEdgeVersion = "134.0.3124.83";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "134.0.3124.77";
+                var macOsEdgeVersion = "134.0.3124.83";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -158,7 +150,23 @@ public static class WebDriverFactory
         BrowserConfiguration configuration)
         where TDriverOptions : ChromiumOptions
     {
-        options.AddArgument("--lang=" + configuration.AcceptLanguage);
+        // For a list of all switches see https://peter.sh/experiments/chromium-command-line-switches/. Also see
+        // https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md for recommended
+        // switches; the appropriate ones are used here.
+
+        options.AddArgument("lang=" + configuration.AcceptLanguage);
+
+        // Linux-specific setting, may be necessary for running in containers, see
+        // https://developers.google.com/web/tools/puppeteer/troubleshooting#tips for more information.
+        options.AddArgument("disable-dev-shm-usage");
+
+        // Disables the "self-XSS" warning in dev tools (when you have to type "allow pasting"), see
+        // https://developer.chrome.com/blog/self-xss and https://issues.chromium.org/issues/41491762 for
+        // details.
+        options.AddArgument("unsafely-disable-devtools-self-xss-warnings");
+
+        // Disables the default search engine selector splash screen.
+        options.AddArgument("disable-search-engine-choice-screen");
 
         // Disabling hardware acceleration to avoid hardware dependent issues in rendering and visual validation.
         options.AddArgument("disable-accelerated-2d-canvas");
@@ -181,12 +189,134 @@ public static class WebDriverFactory
 
         // Previously this switch caused Chrome processes to remain open after test execution, see
         // https://github.com/Lombiq/UI-Testing-Toolbox/issues/356, but it doesn't seem to be case anymore.
-        // Additionally, Ubuntu 2024-based GitHub Actions runners seem to require this flag to be set, see
+        // Additionally, Ubuntu 24.04-based GitHub Actions runners seem to require this flag to be set, see
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
-        options.AddArgument("--no-sandbox");
+        options.AddArgument("no-sandbox");
 
         // The prompt requesting notifications may obscure UI elements.
-        options.AddArgument("--disable-notifications");
+        options.AddArgument("disable-notifications");
+
+        // Test user credentials can cause Chromium browsers to display a warning about unsafe passwords, which dims the
+        // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them
+        // removed. So, leaving all of them here, since this won't cause any issues. --suppress-message-center-popups
+        // also hides all other toast notifications.
+        options.AddArgument("password-store=basic");
+        options.AddArgument("use-mock-keychain");
+        options.AddUserProfilePreference("credentials_enable_service", "false");
+        options.AddUserProfilePreference("profile.password_manager_enabled", "false");
+        options.AddUserProfilePreference("reduce-security-for-testing", "null");
+        options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
+        options.AddArgument("suppress-message-center-popups");
+
+        // Disables the default browser check, which is useless during UI tests.
+        options.AddArgument("no-default-browser-check");
+
+        // Skip First Run tasks as well as not showing additional dialogs, prompts or bubbles.
+        options.AddArgument("no-first-run");
+
+        // Disables the service process from adding itself as an autorun process.
+        options.AddArgument("no-service-autorun");
+
+        // Disables all extensions, and also some built-in extensions that aren't affected by --disable-extensions.
+        options.AddArgument("disable-extensions");
+        options.AddArgument("disable-component-extensions-with-background-pages");
+
+        // Disables any of the default Chrome apps.
+        options.AddArgument("disable-default-apps");
+
+        // Disables the Discover feed on the New Tab Page.
+        options.AddArgument("disable-features=InterestFeedContentSuggestion");
+
+        // Disables Chrome translation, both the manual option and the popup prompt when a page with differing language
+        // is detected.
+        options.AddArgument("disable-features=Translate");
+
+        // Avoids blue bubble "user education" nudges (eg., "… give your browser a new look", Memory Saver)
+        options.AddArgument("ash-no-nudges");
+
+        // Disables all in-product help. See
+        // https://chromium.googlesource.com/chromium/src/+/master/components/feature_engagement/README.md.
+        options.AddArgument("propagate-iph-for-testing");
+
+        // Disables timers being throttled in background pages/tabs.
+        options.AddArgument("disable-background-timer-throttling");
+
+        // Normally, Chrome will treat a 'foreground' tab instead as backgrounded if the surrounding window is occluded
+        // (aka visually covered) by another window. This flag disables that.
+        options.AddArgument("disable-backgrounding-occluded-windows");
+
+        // Related to the previous one. Calculate window occlusion on Windows will be used in the future to throttle and
+        // potentially unload foreground tabs in occluded windows. Disabling that.
+        options.AddArgument("disable-features=CalculateNativeWinOcclusion");
+
+        // Suppresses hang monitor dialogs.
+        options.AddArgument("disable-hang-monitor");
+
+        // Related to the previous one. Disables non-foreground tabs from getting a lower process priority.
+        options.AddArgument("disable-renderer-backgrounding");
+
+        // Disables site isolation between subdomains. Not needed during testing but it increases process count.
+        options.AddArgument("disable-features=IsolateOrigins");
+
+        // Related to the previous one. Disables site isolation completely:
+        // https://www.chromium.org/Home/chromium-security/site-isolation/.
+        options.AddArgument("disable-features=site-per-process");
+
+        // Load all iframes immediately to reduce the flakiness of lazy loading.
+        options.AddArgument("disable-features=LazyFrameLoading");
+
+        // Disables the "Enhanced ad privacy in Chrome" dialog.
+        options.AddArgument("disable-features=PrivacySandboxSettings4");
+
+        // Disables various background network services, including extension updating, safe browsing service, upgrade
+        // detector, translate...
+        options.AddArgument("disable-background-networking");
+
+        // Disables the crash reporting.
+        options.AddArgument("disable-breakpad");
+
+        // Don't update the browser components listed at chrome://components/.
+        options.AddArgument("disable-component-update");
+
+        // Related to the previous one. Disables the updater for
+        // https://chromium.googlesource.com/chromium/src/+/lkgr/net/docs/certificate-transparency.md.
+        options.AddArgument("disable-features=CertificateTransparencyComponentUpdater");
+
+        // Disables Domain Reliability Monitoring, which tracks whether the browser has difficulty contacting
+        // Google-owned sites and uploads reports to Google.
+        options.AddArgument("disable-domain-reliability");
+
+        // Disables autofill server communication.
+        options.AddArgument("disable-features=AutofillServerCommunication");
+
+        // Disables syncing to a Google account.
+        options.AddArgument("disable-sync");
+
+        // Disables reporting to Google User Metrics Analysis (see https://stackoverflow.com/a/39045389), but allows for
+        // collection.
+        options.AddArgument("metrics-recording-only");
+
+        // Disables the Chrome Optimization Guide
+        // (https://chromium.googlesource.com/chromium/src/+/HEAD/components/optimization_guide/) and networking with
+        // its service API.
+        options.AddArgument("disable-features=OptimizationHints");
+
+        // Avoid the startup dialog for 'Do you want the application “Chromium.app” to accept incoming network
+        // connections?'. Also disables the Chrome Media Router which creates background networking activity to discover
+        // cast targets.
+        options.AddArgument("disable-features=MediaRouter");
+
+        // Making rendering (more) deterministic. --deterministic-mode is supposed to switch on all of these and
+        // --run-all-compositor-stages-before-draw, but that flag doesn't seem to exist anymore; so switching everything
+        // on manually. --run-all-compositor-stages-before-draw mustn't be used, since it causes
+        // "OpenQA.Selenium.WebDriverTimeoutException: timeout: Timed out receiving message from renderer: 10.000"
+        // exceptions when taking screenshots under Ubuntu.
+        options.AddArgument("disable-new-content-rendering-timeout");
+        options.AddArgument("enable-begin-frame-control");
+        options.AddArgument("disable-threaded-animation");
+        options.AddArgument("disable-threaded-scrolling");
+        options.AddArgument("disable-checker-imaging");
+        options.AddArgument("disable-image-animation-resync");
 
         if (configuration.FakeVideoSource is not null)
         {
@@ -200,6 +330,9 @@ public static class WebDriverFactory
             options.AddArgument($"use-file-for-fake-video-capture={fakeCameraSourceFilePath}");
         }
 
+        // Previously this was only "headless", then "headless=new" (see
+        // https://www.selenium.dev/blog/2023/headless-is-going-away/) but now just "headless" is enough too:
+        // https://developer.chrome.com/blog/removing-headless-old-from-chrome.
         if (configuration.Headless) options.AddArgument("headless");
 
         // Set the download path to inside the context-specific temp directory to avoid clashes from parallel tests, and
