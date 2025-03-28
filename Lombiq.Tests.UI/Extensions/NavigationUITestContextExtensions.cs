@@ -341,6 +341,7 @@ public static class NavigationUITestContextExtensions
         context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
+    [Obsolete("Use ClickReliablyOnUntilNavigationHasOccurredAsync instead.")]
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
