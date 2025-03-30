@@ -7,13 +7,7 @@ using Lombiq.Tests.UI.Services.Counters;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using OrchardCore.ContentFields.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -290,18 +284,13 @@ public static class NavigationUITestContextExtensions
 
     public static async Task SetContentPickerByDisplayTextAsync(this UITestContext context, string part, string field, string text)
     {
-        var searchUrl = context.Get(ByHelper.GetContentPickerSelector(part, field)).GetAttribute("data-search-url");
-        var index = await context.FetchWithBrowserContextAsync(
-            HttpMethod.Get,
-            searchUrl,
-            async response =>
-            {
-                var json = await response.Content.ReadAsStringAsync(context.Configuration.TestCancellationToken);
-                var result = JsonSerializer.Deserialize<IList<VueMultiselectItemViewModel>>(json, JOptions.Default);
-                return result.IndexOf(result.First(item => item.DisplayText == text));
-            });
+        var contentPickerBy = ByHelper.GetContentPickerSelector(part, field);
 
-        await context.SetContentPickerByIndexAsync(part, field, index);
+        await context.ClickAndFillInWithRetriesAsync(
+            contentPickerBy.Then(By.ClassName("multiselect__input")).OfAnyVisibility(),
+            text);
+
+        await SetFieldDropdownByTextAsync(context, contentPickerBy, text);
     }
 
     public static Task SetContentPickerByIndexAsync(this UITestContext context, string part, string field, int index)
@@ -356,6 +345,7 @@ public static class NavigationUITestContextExtensions
         context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
+    [Obsolete("Use ClickReliablyOnUntilNavigationHasOccurredAsync instead.")]
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
@@ -386,6 +376,14 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
         context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
+
+    /// <summary>
+    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
+    /// cref="NavigationWebElementExtensions.ClickWithScriptAsync(IWebElement, UITestContext)"/> so the <paramref
+    /// name="context"/> doesn't have to be passed twice.
+    /// </summary>
+    public static Task ClickOnWithScriptAsync(this UITestContext context, By by) =>
+        context.Get(by).ClickWithScriptAsync(context);
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
@@ -467,8 +465,8 @@ public static class NavigationUITestContextExtensions
     {
         await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
 
-        // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden,
-        // so we have to use JS to click on it.
+        // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
+        // have to use JS to click on it.
         context.ExecuteScript("document.getElementById('submitFilter').click();");
     }
 }

@@ -122,7 +122,35 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.Deserialize``1(System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.GetAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndGetResponseAsync(System.Net.Http.HttpClient,System.String,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.Object,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.String,System.String)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

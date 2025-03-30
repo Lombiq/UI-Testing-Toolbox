@@ -220,6 +220,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
         await _orchardApplication.DisposeAsync();
         _orchardApplication = null;
+        await OrchardCoreInstanceCounter.PortLeases.StopLeaseAsync(_url.Port, CancellationToken.None);
 
         _testOutputHelper.WriteLineTimestampedAndDebug("The Orchard Core instance was stopped.");
 
