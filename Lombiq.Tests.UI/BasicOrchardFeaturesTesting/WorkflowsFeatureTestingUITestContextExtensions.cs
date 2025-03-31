@@ -62,7 +62,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 // We need to save the workflow early, because sometimes the editor, thus the startup task button can be
                 // buggy during UI testing (it won't be clicked, even if we check for its existence). This way it's
                 // always clicked.
-                await context.ClickReliablyOnSubmitAsync();
+                await context.ClickReliablyOnSubmitAsync("Save");
                 context.ShouldBeSuccess("Workflow has been saved.");
 
                 await context.ClickReliablyOnAsync(By.XPath("//div[contains(@class, 'activity-event')]"));
@@ -71,8 +71,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
 
                 // Sometimes during this step the test can fail, so we are using JavaScript to click submit, this only
                 // happens here.
-                await context.ClickReliablyOnSubmitAsync(withJavaScript: true);
-
+                await context.ClickReliablyOnSubmitAsync("Save", withJavaScript: true);
                 context.ShouldBeSuccess("Workflow has been saved.");
 
                 var contentItemsPage = await context.GoToContentItemsPageAsync();

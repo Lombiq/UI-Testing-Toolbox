@@ -25,6 +25,7 @@ using _ = OrchardCoreLoginPage;
 public class OrchardCoreLoginPage : Page<_>
 {
     private const string DefaultUrl = "Login";
+    public const string DefaultLoginButtonText = "Log in";
 
     [FindById("LoginForm_UserName", nameof(UserName))]
     public TextInput<_> UserName { get; private set; }
@@ -46,8 +47,13 @@ public class OrchardCoreLoginPage : Page<_>
     public _ ShouldLeaveLoginPage() =>
         PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public async Task<_> LogInWithAsync(UITestContext context, string userName, string password)
+    public _ ShouldLeaveLoginPage(bool expected) =>
+        expected ? ShouldLeaveLoginPage() : ShouldStayOnLoginPage();
+
+    public async Task<_> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
     {
+        if (string.IsNullOrEmpty(loginButtonText)) loginButtonText = DefaultLoginButtonText;
+
         var userNameBy = By.Id("LoginForm_UserName");
         var passwordBy = By.Id("LoginForm_Password");
 
@@ -67,7 +73,7 @@ public class OrchardCoreLoginPage : Page<_>
             await context.ClickAndFillInWithScriptAsync(passwordBy, password);
         }
 
-        var buttonBy = ByHelper.ButtonText("Log in");
+        var buttonBy = ByHelper.ButtonText(loginButtonText);
 
         try
         {

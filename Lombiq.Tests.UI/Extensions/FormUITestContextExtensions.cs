@@ -331,12 +331,27 @@ public static class FormUITestContextExtensions
     /// Finds the first submit button (excluding any "Log off" buttons) and clicks on it reliably.
     /// </summary>
     /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
-    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false)
-    {
-        var buttonBy = By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]");
+    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false) =>
+        ClickReliablyWithSeleniumOrJavascriptAsync(
+            context,
+            By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"),
+            withJavaScript);
 
-        return withJavaScript ? context.ClickOnWithScriptAsync(buttonBy) : context.ClickReliablyOnAsync(buttonBy);
-    }
+    /// <summary>
+    /// Finds the first submit button with the provided <paramref name="label"/> and clicks on it reliably.
+    /// </summary>
+    /// <param name="label">The button is selected if it has this text.</param>
+    /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
+    public static Task ClickReliablyOnSubmitAsync(this UITestContext context, string label, bool withJavaScript = false) =>
+        ClickReliablyWithSeleniumOrJavascriptAsync(
+            context,
+            By.XPath($"//button[@type='submit' and normalize-space(.) = {JsonSerializer.Serialize(label)}]"),
+            withJavaScript);
+
+    private static Task ClickReliablyWithSeleniumOrJavascriptAsync(UITestContext context, By by, bool withJavascript) =>
+        withJavascript
+            ? context.ClickOnWithScriptAsync(by)
+            : context.ClickReliablyOnAsync(by);
 
     /// <summary>
     /// Finds the "Add New" button.
