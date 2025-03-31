@@ -16,12 +16,15 @@ public class OrchardCoreSetupParameters
     public string Email { get; set; } = DefaultUser.Email;
     public string Password { get; set; } = DefaultUser.Password;
     public bool RunSetupOnCurrentPage { get; set; }
+    public bool SkipSetup { get; set; }
+    public bool SkipRegistration { get; set; }
+    public bool SkipFrontend { get; set; }
 
     public OrchardCoreSetupParameters()
     {
     }
 
-    public OrchardCoreSetupParameters(UITestContext context)
+    public OrchardCoreSetupParameters(UITestContext context, string recipeId = null)
     {
         DatabaseProvider = context.Configuration.UseSqlServer
             ? OrchardCoreSetupPage.DatabaseType.SqlServer
@@ -30,5 +33,7 @@ public class OrchardCoreSetupParameters
         ConnectionString = context.Configuration.UseSqlServer
             ? context.SqlServerRunningContext.ConnectionString
             : null;
+
+        if (!string.IsNullOrEmpty(recipeId)) RecipeId = recipeId;
     }
 }
