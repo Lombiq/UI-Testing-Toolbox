@@ -346,17 +346,15 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
                 var loginPage = await context.GoToLoginPageAsync();
                 loginPage = await loginPage.LogInWithAsync(context, userName, password, loginButtonText);
+                loginPage.ShouldLeaveLoginPage(shouldBeSuccess);
 
                 var currentUser = await context.GetCurrentUserNameAsync();
-
                 if (shouldBeSuccess)
                 {
-                    loginPage.ShouldLeaveLoginPage();
                     currentUser.ShouldBe(userName);
                 }
                 else
                 {
-                    loginPage.ShouldStayOnLoginPage();
                     currentUser.ShouldNotBe(userName);
                 }
             });

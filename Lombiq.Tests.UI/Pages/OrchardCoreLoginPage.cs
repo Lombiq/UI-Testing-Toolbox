@@ -47,6 +47,9 @@ public class OrchardCoreLoginPage : Page<_>
     public _ ShouldLeaveLoginPage() =>
         PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
+    public _ ShouldLeaveLoginPage(bool expected) =>
+        expected ? ShouldLeaveLoginPage() : ShouldStayOnLoginPage();
+
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
     {
         if (string.IsNullOrEmpty(loginButtonText)) loginButtonText = DefaultLoginButtonText;
