@@ -291,7 +291,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <param name="setupParameters">The setup parameters.</param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
-        context.TestSetupAsync(setupParameters, "Test setup");
+        context.TestSetupAsync(setupParameters, "Test setup", shouldBeSuccess: true);
 
     /// <summary>
     /// <para>
@@ -314,19 +314,20 @@ public static class BasicFeaturesTestingUITestContextExtensions
         setupParameters.Email = string.Empty;
         setupParameters.Password = string.Empty;
 
-        return context.TestSetupAsync(setupParameters, "Test setup with invalid data");
+        return context.TestSetupAsync(setupParameters, "Test setup with invalid data", shouldBeSuccess: false);
     }
 
     private static Task TestSetupAsync(
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters,
-        string testName) =>
+        string testName,
+        bool shouldBeSuccess) =>
         context.ExecuteTestAsync(
             testName,
             async () =>
             {
                 var setupPage = await context.GoToSetupPageAsync();
-                (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldLeaveSetupPage();
+                (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldLeaveSetupPage(shouldBeSuccess);
             });
 
     private static Task TestLoginAsync(

@@ -82,6 +82,9 @@ public sealed class OrchardCoreSetupPage : Page<_>
 
     public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
+    public _ ShouldLeaveSetupPage(bool expected) =>
+        expected ? ShouldLeaveSetupPage() : ShouldStayOnSetupPage();
+
     public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
     {
         parameters ??= new OrchardCoreSetupParameters(context);
