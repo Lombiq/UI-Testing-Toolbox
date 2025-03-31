@@ -57,7 +57,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         setupParameters ??= new(context);
-        await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
+
+        if (!setupParameters.SkipSetup)
+        {
+            await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
+        }
 
         if (!setupParameters.SkipRegistration)
         {
