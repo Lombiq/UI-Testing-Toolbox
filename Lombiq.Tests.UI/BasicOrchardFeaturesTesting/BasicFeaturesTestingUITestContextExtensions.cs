@@ -56,15 +56,16 @@ public static class BasicFeaturesTestingUITestContextExtensions
         OrchardCoreSetupParameters setupParameters = null,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
+        setupParameters ??= new(context);
         await context.TestSetupWithInvalidAndValidDataAsync(setupParameters);
 
-        if (setupParameters?.SkipRegistration != true)
+        if (!setupParameters.SkipRegistration)
         {
             await context.TestBasicOrchardRegistrationAsync();
         }
 
         await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
-            setupParameters?.SkipFrontend == true,
+            setupParameters,
             customPageHeaderCheckAsync);
     }
 
@@ -209,14 +210,28 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// TestContentOperationsAsync().
     /// </param>
     /// <returns>The same <see cref="UITestContext"/> instance.</returns>
-    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
+    [Obsolete(
+        $"This method will be removed to streamline the library. Use the overload with with " +
+        $"{nameof(OrchardCoreSetupParameters)} instead.")]
+    public static Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
         this UITestContext context,
         bool dontCheckFrontend,
+        Func<UITestContext, Task> customPageHeaderCheckAsync = null) =>
+        context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(new OrchardCoreSetupParameters(context)
+        {
+            SkipFrontend = dontCheckFrontend,
+        });
+
+    public static async Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters setupParameters = null,
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
-        await context.TestLoginWithInvalidDataAsync();
-        await context.TestLoginAsync();
-        await context.TestContentOperationsAsync(dontCheckFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
+        setupParameters ??= new(context);
+
+        await context.TestLoginWithInvalidDataAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
+        await context.TestLoginAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
+        await context.TestContentOperationsAsync(setupParameters.SkipFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
         await context.TestAuditTrailAsync();
@@ -321,7 +336,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         string password,
         bool signOut,
         bool shouldBeSuccess,
-        string logInButtonText) =>
+        string loginButtonText) =>
         context.ExecuteTestAsync(
             testName,
             async () =>
@@ -329,7 +344,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 if (signOut) await context.SignOutDirectlyAsync();
 
                 var loginPage = await context.GoToLoginPageAsync();
-                loginPage = await loginPage.LogInWithAsync(context, userName, password, logInButtonText);
+                loginPage = await loginPage.LogInWithAsync(context, userName, password, loginButtonText);
 
                 var currentUser = await context.GetCurrentUserNameAsync();
 
@@ -358,7 +373,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = OrchardCoreLoginPage.DefaultLogInButtonText,
+        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText,
         bool signOut = false) =>
         context.TestLoginAsync(
             "Test login",
@@ -381,12 +396,12 @@ public static class BasicFeaturesTestingUITestContextExtensions
     public static Task TestLoginWithInvalidDataAsync(
         this UITestContext context,
         string userName = DefaultUser.UserName,
-        string password = "WrongPass!",
-        string logInButtonText = OrchardCoreLoginPage.DefaultLogInButtonText) =>
+        string password = DefaultUser.Password,
+        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
         context.TestLoginAsync(
             "Test login with invalid data",
             userName,
-            password,
+            password + "WrongPass!",
             signOut: true,
             shouldBeSuccess: false,
             logInButtonText);
