@@ -704,12 +704,20 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange += OnAssertLogsAsync;
         }
 
-        if (_dumpConfiguration.CaptureScreenshots)
+        if (_dumpConfiguration.CaptureScreenshots &&
+            _configuration.CustomConfiguration.TryAdd("ScreenshotsOnPageChangeAndClickWereSetUp", value: true))
         {
-            _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
             _configuration.Events.AfterPageChange += TakeScreenshotIfEnabledAsync;
-            _configuration.Events.AfterClick -= TakeScreenshotIfEnabledAsync;
             _configuration.Events.AfterClick += TakeScreenshotIfEnabledAsync;
+        }
+
+        if (_configuration.CustomConfiguration.TryAdd("LoggingOnPageChangeWasSetUp", value: true))
+        {
+            _configuration.Events.AfterPageChange += context =>
+            {
+                _testOutputHelper.WriteLineTimestampedAndDebug("Page changed to {0}.", context.GetCurrentUri());
+                return Task.CompletedTask;
+            };
         }
 
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);

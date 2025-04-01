@@ -29,7 +29,7 @@ public sealed class ZapManager : IAsyncDisposable
     // file in the root too.
     // When updating this version, also regenerate the Automation Framework YAML config files so we don't miss any
     // changes to those.
-    private const string _zapImage = "zaproxy/zap-stable:2.16.0";
+    private const string _zapImage = "zaproxy/zap-stable:2.16.1";
     private const string _zapWorkingDirectoryPath = "/zap/wrk/";
     private const string _zapReportsDirectoryName = "reports";
     private const string _zapHomeDirectoryName = "home";
