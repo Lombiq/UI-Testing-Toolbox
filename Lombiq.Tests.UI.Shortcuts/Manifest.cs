@@ -28,7 +28,8 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
     Id = Elastic,
     Name = "Elasticsearch - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = "Adds specific fixes for namespacing Elasticsearch indexes by test."
+    Description = "Adds specific fixes for namespacing Elasticsearch indexes by test.",
+    Dependencies = ["OrchardCore.Search.Elasticsearch"]
 )]
 
 [assembly: Feature(
