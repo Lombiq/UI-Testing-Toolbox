@@ -34,7 +34,7 @@ public sealed class ElasticserachStartup : StartupBase
     public override void ConfigureServices(IServiceCollection services)
     {
         services.AddRecipeExecutionStep<TestPrefixedElasticsearchIndexStep>();
-        TestPrefixedElasticsearchIndexManager.ReplaceServiceImplementation(services);
+        services.AddTestPrefixedElasticsearchWrapperServices();
     }
 }
 

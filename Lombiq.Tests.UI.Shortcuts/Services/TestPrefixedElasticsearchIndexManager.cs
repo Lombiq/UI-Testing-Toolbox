@@ -4,6 +4,7 @@ using Nest;
 using OrchardCore.Environment.Shell.Configuration;
 using OrchardCore.Search.Elasticsearch;
 using OrchardCore.Search.Elasticsearch.Core.Services;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -29,17 +30,22 @@ public class TestPrefixedElasticsearchIndexManager : IElasticsearchIndexManager
     public Task<bool> ExistsAsync(string indexName) =>
         _manager.ExistsAsync(GetFullIndexName(indexName));
 
-    private string GetFullIndexName(string name)
+    private string GetFullIndexName(string name) =>
+        GetFullIndexName(name, _shellConfiguration);
+
+    public static string GetFullIndexName(string name, IShellConfiguration shellConfiguration)
     {
-        var prefix = TestPrefixedElasticsearchIndexStep.GetNormalizedPrefixFromConfiguration(_shellConfiguration);
+        var prefix = TestPrefixedElasticsearchIndexStep.GetNormalizedPrefixFromConfiguration(shellConfiguration);
         var hasPrefix = !string.IsNullOrWhiteSpace(prefix);
 
-        return hasPrefix ? $"{prefix}-{name}" : name;
+        return hasPrefix && !name.StartsWithOrdinal(prefix + '-')
+            ? $"{prefix}-{name}"
+            : name;
     }
 
-    public static void ReplaceServiceImplementation(IServiceCollection services)
+    public static void AddService(IServiceCollection services)
     {
-        services.RemoveImplementationsOf<IElasticsearchIndexManager>();
         services.AddScoped<IElasticsearchIndexManager, TestPrefixedElasticsearchIndexManager>();
+        services.AddScoped<IElasticsearchIndexingService, TestPrefixedElasticsearchIndexingService>();
     }
 }
