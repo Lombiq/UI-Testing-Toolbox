@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "134.0.6998.165";
+            chromeConfig.Options.BrowserVersion = "135.0.7049.42";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -118,7 +118,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "136.0.4";
+            firefoxOptions.BrowserVersion = "137.0";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
