@@ -154,6 +154,8 @@ public static class WebDriverFactory
         // https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md for recommended
         // switches; the appropriate ones are used here.
 
+        // --disable-notifications is not used because that could break apps that try to send browser notifications.
+
         options.AddArgument("lang=" + configuration.AcceptLanguage);
 
         // Linux-specific setting, may be necessary for running in containers, see
@@ -192,9 +194,6 @@ public static class WebDriverFactory
         // Additionally, Ubuntu 24.04-based GitHub Actions runners seem to require this flag to be set, see
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
         options.AddArgument("no-sandbox");
-
-        // The prompt requesting notifications may obscure UI elements.
-        options.AddArgument("disable-notifications");
 
         // Test user credentials can cause Chromium browsers to display a warning about unsafe passwords, which dims the
         // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them
