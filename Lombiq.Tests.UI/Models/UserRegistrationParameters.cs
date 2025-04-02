@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Pages;
 using System;
 
 namespace Lombiq.Tests.UI.Models;
@@ -9,6 +10,7 @@ public class UserRegistrationParameters
     public string Email { get; set; }
     public string Password { get; set; }
     public string ConfirmPassword { get; set; }
+    public string LogInButtonText { get; set; } = OrchardCoreLoginPage.DefaultLoginButtonText;
 
     [Obsolete("Use CreateTest() instead.")]
     public static UserRegistrationParameters CreateDefault() =>

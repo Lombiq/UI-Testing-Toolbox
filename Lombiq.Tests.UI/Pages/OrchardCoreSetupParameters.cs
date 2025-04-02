@@ -1,4 +1,5 @@
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 
 namespace Lombiq.Tests.UI.Pages;
@@ -37,4 +38,14 @@ public class OrchardCoreSetupParameters
 
         if (!string.IsNullOrEmpty(recipeId)) RecipeId = recipeId;
     }
+
+    public UserRegistrationParameters ToUserRegistrationParameters() =>
+        new()
+        {
+            UserName = UserName,
+            Email = Email,
+            Password = Password,
+            ConfirmPassword = Password,
+            LogInButtonText = LoginButtonText,
+        };
 }

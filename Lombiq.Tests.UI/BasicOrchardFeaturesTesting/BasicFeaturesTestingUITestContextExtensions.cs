@@ -65,7 +65,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
         if (!setupParameters.SkipRegistration)
         {
-            await context.TestBasicOrchardRegistrationAsync();
+            await context.TestBasicOrchardRegistrationAsync(setupParameters.ToUserRegistrationParameters());
         }
 
         await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
@@ -148,11 +148,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <summary>
     /// Tests the built-in registration feature in Orchard Core.
     /// </summary>
-    public static async Task TestBasicOrchardRegistrationAsync(this UITestContext context)
+    public static async Task TestBasicOrchardRegistrationAsync(
+        this UITestContext context,
+        UserRegistrationParameters parameters = null)
     {
-        await context.TestRegistrationWithInvalidDataAsync();
-        await context.TestRegistrationAsync();
-        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
+        await context.TestRegistrationWithInvalidDataAsync(parameters);
+        await context.TestRegistrationAsync(parameters);
+        await context.TestRegistrationWithAlreadyRegisteredEmailAsync(parameters);
     }
 
     /// <summary>
