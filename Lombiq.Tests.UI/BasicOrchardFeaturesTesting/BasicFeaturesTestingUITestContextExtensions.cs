@@ -233,8 +233,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
     {
         setupParameters ??= new(context);
 
-        await context.TestLoginWithInvalidDataAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
-        await context.TestLoginAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
+        await context.TestLoginWithInvalidDataAsync(setupParameters.UserName, setupParameters.Password, setupParameters.LoginButtonText);
+        await context.TestLoginAsync(setupParameters.UserName, setupParameters.Password, setupParameters.LoginButtonText);
         await context.TestContentOperationsAsync(setupParameters.SkipFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();

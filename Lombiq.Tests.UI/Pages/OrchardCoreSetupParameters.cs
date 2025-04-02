@@ -19,8 +19,6 @@ public class OrchardCoreSetupParameters
     public bool SkipSetup { get; set; }
     public bool SkipRegistration { get; set; }
     public bool SkipFrontend { get; set; }
-    public string LoginUserName { get; set; } = DefaultUser.UserName;
-    public string LoginPassword { get; set; } = DefaultUser.Password;
     public string LoginButtonText { get; set; } = OrchardCoreLoginPage.DefaultLoginButtonText;
 
     public OrchardCoreSetupParameters()
