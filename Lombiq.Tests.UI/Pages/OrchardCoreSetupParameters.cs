@@ -6,7 +6,7 @@ namespace Lombiq.Tests.UI.Pages;
 
 public class OrchardCoreSetupParameters
 {
-    private UserRegistrationParameters _userRegistrationParameters = UserRegistrationParameters.CreateTest();
+    private UserRegistrationParameters _userRegistrationParameters;
 
     public string LanguageValue { get; set; } = "en";
     public string SiteName { get; set; } = "Test Site";
@@ -29,8 +29,9 @@ public class OrchardCoreSetupParameters
     /// </summary>
     public UserRegistrationParameters UserRegistrationParameters
     {
-        get => _userRegistrationParameters;
-        set => _userRegistrationParameters = value ?? UserRegistrationParameters.CreateTest();
+        get => _userRegistrationParameters ??
+               (SkipRegistration ? UserRegistrationParameters.CreateTest() : new(UserName, Email, Password));
+        set => _userRegistrationParameters = value;
     }
 
     public OrchardCoreSetupParameters(UITestContext context = null, string recipeId = null)
