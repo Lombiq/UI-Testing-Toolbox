@@ -65,7 +65,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
         if (!setupParameters.SkipRegistration)
         {
-            await context.TestBasicOrchardRegistrationAsync(setupParameters.ToUserRegistrationParameters());
+            await context.TestBasicOrchardRegistrationAsync(setupParameters.UserRegistrationParameters);
         }
 
         await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
@@ -234,9 +234,10 @@ public static class BasicFeaturesTestingUITestContextExtensions
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         setupParameters ??= new(context);
+        var login = setupParameters.UserRegistrationParameters;
 
-        await context.TestLoginWithInvalidDataAsync(setupParameters.UserName, setupParameters.Password, setupParameters.LoginButtonText);
-        await context.TestLoginAsync(setupParameters.UserName, setupParameters.Password, setupParameters.LoginButtonText);
+        await context.TestLoginWithInvalidDataAsync(login.UserName, login.Password, login.LoginButtonText);
+        await context.TestLoginAsync(login.UserName, login.Password, login.LoginButtonText);
         await context.TestContentOperationsAsync(setupParameters.SkipFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();

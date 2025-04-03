@@ -6,6 +6,8 @@ namespace Lombiq.Tests.UI.Pages;
 
 public class OrchardCoreSetupParameters
 {
+    private UserRegistrationParameters _userRegistrationParameters = UserRegistrationParameters.CreateTest();
+
     public string LanguageValue { get; set; } = "en";
     public string SiteName { get; set; } = "Test Site";
     public string RecipeId { get; set; } = "SaaS";
@@ -20,32 +22,30 @@ public class OrchardCoreSetupParameters
     public bool SkipSetup { get; set; }
     public bool SkipRegistration { get; set; }
     public bool SkipFrontend { get; set; }
-    public string LoginButtonText { get; set; } = OrchardCoreLoginPage.DefaultLoginButtonText;
 
-    public OrchardCoreSetupParameters()
+    /// <summary>
+    /// Gets or sets the value of the parameters used for registration and login for a valid test user. By default, it
+    /// gets the <see cref="TestUser"/>, and it's reset to that value if set to <see langword="null"/>.
+    /// </summary>
+    public UserRegistrationParameters UserRegistrationParameters
     {
+        get => _userRegistrationParameters;
+        set => _userRegistrationParameters = value ?? UserRegistrationParameters.CreateTest();
     }
 
-    public OrchardCoreSetupParameters(UITestContext context, string recipeId = null)
+    public OrchardCoreSetupParameters(UITestContext context = null, string recipeId = null)
     {
-        DatabaseProvider = context.Configuration.UseSqlServer
-            ? OrchardCoreSetupPage.DatabaseType.SqlServer
-            : OrchardCoreSetupPage.DatabaseType.Sqlite;
+        if (context != null)
+        {
+            DatabaseProvider = context.Configuration.UseSqlServer
+                ? OrchardCoreSetupPage.DatabaseType.SqlServer
+                : OrchardCoreSetupPage.DatabaseType.Sqlite;
 
-        ConnectionString = context.Configuration.UseSqlServer
-            ? context.SqlServerRunningContext.ConnectionString
-            : null;
+            ConnectionString = context.Configuration.UseSqlServer
+                ? context.SqlServerRunningContext.ConnectionString
+                : null;
+        }
 
         if (!string.IsNullOrEmpty(recipeId)) RecipeId = recipeId;
     }
-
-    public UserRegistrationParameters ToUserRegistrationParameters() =>
-        new(UserName, Email, Password, Password, LoginButtonText)
-        {
-            UserName = UserName,
-            Email = Email,
-            Password = Password,
-            ConfirmPassword = Password,
-            LoginButtonText = LoginButtonText,
-        };
 }
