@@ -17,9 +17,9 @@ public record UserRegistrationParameters(
     public static UserRegistrationParameters CreateDefault() =>
         new("TestUser", "testuser@example.org");
 
-    public static UserRegistrationParameters CreateTest() =>
-        new(TestUser.UserName, TestUser.Email);
+    public static UserRegistrationParameters CreateTest(string loginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        new(TestUser.UserName, TestUser.Email, LoginButtonText: loginButtonText);
 
-    public static UserRegistrationParameters CreateDefaultUser() =>
-        new(DefaultUser.UserName, DefaultUser.Email);
+    public static UserRegistrationParameters CreateDefaultUser(string loginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        new(DefaultUser.UserName, DefaultUser.Email, LoginButtonText: loginButtonText);
 }
