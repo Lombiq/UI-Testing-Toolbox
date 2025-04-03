@@ -238,6 +238,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
         await context.TestLoginWithInvalidDataAsync(login.UserName, login.Password, login.LoginButtonText);
         await context.TestLoginAsync(login.UserName, login.Password, login.LoginButtonText);
+        await context.SignInDirectlyAsync(setupParameters.UserName);
         await context.TestContentOperationsAsync(setupParameters.SkipFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
