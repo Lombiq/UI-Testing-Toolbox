@@ -837,8 +837,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // Exclude any errors coming from the smtp4dev JS files.
         var indexFile = new Uri(smtpContext.WebUIUri, "/assets/index-").AbsoluteUri;
         _configuration.BrowserLogFilters[nameof(SmtpService)] = entry =>
-            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url is not { } errorUrl ||
-            (errorUrl.StartsWithOrdinalIgnoreCase(indexFile) && errorUrl.EndsWithOrdinalIgnoreCase(".js"));
+            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.StartsWithOrdinalIgnoreCase(indexFile) != true;
 
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
