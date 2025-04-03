@@ -9,14 +9,14 @@ namespace Lombiq.Tests.UI.Models;
 public record UserRegistrationParameters(
     string UserName,
     string Email,
-    string Password,
-    string? ConfirmPassword,
+    string Password = DefaultUser.Password,
+    string? ConfirmPassword = DefaultUser.Password,
     string LoginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText)
 {
     [Obsolete("Use CreateTest() instead.")]
     public static UserRegistrationParameters CreateDefault() =>
-        new("TestUser", "testuser@example.org", DefaultUser.Password, DefaultUser.Password);
+        new("TestUser", "testuser@example.org");
 
     public static UserRegistrationParameters CreateTest() =>
-        new(TestUser.UserName, TestUser.Email, TestUser.Password, TestUser.Password);
+        new(TestUser.UserName, TestUser.Email);
 }
