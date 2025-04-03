@@ -19,4 +19,7 @@ public record UserRegistrationParameters(
 
     public static UserRegistrationParameters CreateTest() =>
         new(TestUser.UserName, TestUser.Email);
+
+    public static UserRegistrationParameters CreateDefaultUser() =>
+        new(DefaultUser.UserName, DefaultUser.Email);
 }

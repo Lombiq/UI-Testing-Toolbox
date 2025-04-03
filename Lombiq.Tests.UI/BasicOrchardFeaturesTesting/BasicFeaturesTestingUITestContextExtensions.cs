@@ -234,7 +234,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         setupParameters ??= new(context);
-        var login = setupParameters.UserRegistrationParameters;
+        var login = setupParameters.UserLoginParameters;
 
         await context.TestLoginWithInvalidDataAsync(login.UserName, login.Password, login.LoginButtonText);
         await context.TestLoginAsync(login.UserName, login.Password, login.LoginButtonText);

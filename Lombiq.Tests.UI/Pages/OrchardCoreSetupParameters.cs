@@ -7,6 +7,7 @@ namespace Lombiq.Tests.UI.Pages;
 public class OrchardCoreSetupParameters
 {
     private UserRegistrationParameters _userRegistrationParameters;
+    private UserRegistrationParameters _userLoginParameters;
 
     public string LanguageValue { get; set; } = "en";
     public string SiteName { get; set; } = "Test Site";
@@ -24,14 +25,23 @@ public class OrchardCoreSetupParameters
     public bool SkipFrontend { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of the parameters used for registration and login for a valid test user. By default, it
-    /// gets the <see cref="TestUser"/>, and it's reset to that value if set to <see langword="null"/>.
+    /// Gets or sets the value of the parameters used for registration of a valid test user. By default, it gets the
+    /// <see cref="TestUser"/>, and it's reset to that value if set to <see langword="null"/>.
     /// </summary>
     public UserRegistrationParameters UserRegistrationParameters
     {
-        get => _userRegistrationParameters ??
-               (SkipRegistration ? UserRegistrationParameters.CreateTest() : new(UserName, Email, Password));
+        get => _userRegistrationParameters ?? UserRegistrationParameters.CreateTest();
         set => _userRegistrationParameters = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the value of the parameters used for login with a valid test user. By default, it gets the <see
+    /// cref="DefaultUser"/>, and it's reset to that value if set to <see langword="null"/>.
+    /// </summary>
+    public UserRegistrationParameters UserLoginParameters
+    {
+        get => _userLoginParameters ?? UserRegistrationParameters.CreateDefaultUser();
+        set => _userLoginParameters = value;
     }
 
     public OrchardCoreSetupParameters(UITestContext context = null, string recipeId = null)
