@@ -40,12 +40,12 @@ public class OrchardCoreSetupParameters
     }
 
     public UserRegistrationParameters ToUserRegistrationParameters() =>
-        new()
+        new(UserName, Email, Password, Password, LoginButtonText)
         {
             UserName = UserName,
             Email = Email,
             Password = Password,
             ConfirmPassword = Password,
-            LogInButtonText = LoginButtonText,
+            LoginButtonText = LoginButtonText,
         };
 }

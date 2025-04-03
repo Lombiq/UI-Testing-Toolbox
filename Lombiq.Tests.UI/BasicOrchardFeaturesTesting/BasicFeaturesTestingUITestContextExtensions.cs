@@ -467,7 +467,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 await context.SignOutDirectlyAsync();
 
                 loginPage = await context.GoToLoginPageAsync();
-                await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LogInButtonText);
+                await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LoginButtonText);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
@@ -487,11 +487,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
     public static Task TestRegistrationWithInvalidDataAsync(
         this UITestContext context, UserRegistrationParameters parameters = null)
     {
-        parameters ??= new();
-        parameters.UserName = "InvalidUser";
-        parameters.Email = Randomizer.GetString("{0}@example.org", 25);
-        parameters.Password = "short";
-        parameters.ConfirmPassword = "short";
+        parameters = (parameters ?? UserRegistrationParameters.CreateTest()) with
+        {
+            UserName = "InvalidUser",
+            Email = Randomizer.GetString("{0}@example.org", 25),
+            Password = "short",
+            ConfirmPassword = "short",
+        };
 
         return context.ExecuteTestAsync(
             "Test registration with invalid data",
