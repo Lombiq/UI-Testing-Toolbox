@@ -469,7 +469,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 await context.SignOutDirectlyAsync();
 
                 loginPage = await context.GoToLoginPageAsync();
-                await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LoginButtonText);
+                await loginPage.LogInWithAsync(context, parameters);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();

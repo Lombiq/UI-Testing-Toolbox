@@ -2,6 +2,7 @@ using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -49,6 +50,12 @@ public class OrchardCoreLoginPage : Page<_>
 
     public _ ShouldLeaveLoginPage(bool expected) =>
         expected ? ShouldLeaveLoginPage() : ShouldStayOnLoginPage();
+
+    public Task<_> LogInWithAsync(UITestContext context, UserRegistrationParameters parameters = null)
+    {
+        parameters ??= UserRegistrationParameters.CreateDefaultUser();
+        return LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LoginButtonText);
+    }
 
     public async Task<_> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
     {
