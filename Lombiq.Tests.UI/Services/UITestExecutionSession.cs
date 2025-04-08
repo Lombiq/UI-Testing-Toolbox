@@ -834,6 +834,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var smtpContext = await _smtpService.StartAsync();
         _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
+        // Exclude any errors coming from the smtp4dev JS files.
+        var indexFile = new Uri(smtpContext.WebUIUri, "/assets/index-").AbsoluteUri;
+        _configuration.BrowserLogFilters[nameof(SmtpService)] = entry =>
+            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.StartsWithOrdinalIgnoreCase(indexFile) != true;
+
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;

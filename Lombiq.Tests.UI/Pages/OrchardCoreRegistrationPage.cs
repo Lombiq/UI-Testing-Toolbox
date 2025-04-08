@@ -64,7 +64,9 @@ public class OrchardCoreRegistrationPage : Page<_>
         await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
         await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
         await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_ConfirmPassword"), parameters.Password);
+        await context.ClickAndFillInWithRetriesAsync(
+            By.Id("RegisterUserForm_ConfirmPassword"),
+            parameters.ConfirmPassword ?? parameters.Password);
         await context.ClickReliablyOnSubmitAsync();
 
         context.RefreshCurrentAtataContext();

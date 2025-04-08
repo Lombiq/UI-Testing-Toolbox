@@ -13,6 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -322,14 +323,20 @@ public class UITestContext
             // originated from a different URL and shouldn't be ignored.
             await biDi.Log.OnEntryAddedAsync(entry =>
             {
-                if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
+                if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+                {
+                    context._cumulativeBrowserLog.Enqueue(entry);
+                }
             });
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
                 await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
                 {
-                    if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                    if (configuration.ResponseLogFilter(responseCompleted))
+                    {
+                        context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                    }
                 });
             }
         }
