@@ -13,7 +13,7 @@ public static class OrchardCoreConfigurationExtensions
     public static void ConfigureElasticSearchPrefix(this OrchardCoreConfiguration configuration, string prefix) =>
         configuration.BeforeAppStart += (_, arguments) =>
         {
-            arguments.AddWithValue($"OrchardCore:{TestPrefixedElasticsearchIndexStep.ConfigurationKey}", prefix);
+            arguments.AddWithValue("OrchardCore:OrchardCore_Elasticsearch:IndexPrefix", prefix);
             return Task.CompletedTask;
         };
 }
