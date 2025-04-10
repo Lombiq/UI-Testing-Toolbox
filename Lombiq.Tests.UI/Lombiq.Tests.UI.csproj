@@ -70,7 +70,7 @@
     <PackageReference Include="Atata.WebDriverExtras" Version="3.1.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
-    <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.298" />
+    <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.306" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
     <PackageReference Include="MailKit" Version="4.11.0" />
