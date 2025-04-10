@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
-using OpenQA.Selenium.BiDi.Modules.Log;
 using OpenQA.Selenium.BiDi.Modules.Network;
 using OrchardCore.Environment.Shell;
 using System;
@@ -23,7 +22,7 @@ public class UITestContext
 {
     // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
     // preserve the insertion order.
-    private readonly ConcurrentQueue<Entry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
     /// <summary>
@@ -116,7 +115,7 @@ public class UITestContext
     /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
     /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+    public IReadOnlyList<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
 
     /// <summary>
     /// Gets a cumulative log of browser HTTP responses filtered by <see
