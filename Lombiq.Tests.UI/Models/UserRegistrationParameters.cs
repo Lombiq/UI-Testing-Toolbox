@@ -1,31 +1,25 @@
+#nullable enable
+
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Pages;
 using System;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class UserRegistrationParameters
+public record UserRegistrationParameters(
+    string UserName,
+    string Email,
+    string Password = TestUser.Password,
+    string? ConfirmPassword = TestUser.Password,
+    string LoginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText)
 {
-    public string UserName { get; set; }
-    public string Email { get; set; }
-    public string Password { get; set; }
-    public string ConfirmPassword { get; set; }
-
     [Obsolete("Use CreateTest() instead.")]
     public static UserRegistrationParameters CreateDefault() =>
-        new()
-        {
-            UserName = "TestUser",
-            Email = "testuser@example.org",
-            Password = DefaultUser.Password,
-            ConfirmPassword = DefaultUser.Password,
-        };
+        new("TestUser", "testuser@example.org");
 
-    public static UserRegistrationParameters CreateTest() =>
-        new()
-        {
-            UserName = TestUser.UserName,
-            Email = TestUser.Email,
-            Password = TestUser.Password,
-            ConfirmPassword = TestUser.Password,
-        };
+    public static UserRegistrationParameters CreateTest(string loginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        new(TestUser.UserName, TestUser.Email, LoginButtonText: loginButtonText);
+
+    public static UserRegistrationParameters CreateDefaultUser(string loginButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        new(DefaultUser.UserName, DefaultUser.Email, LoginButtonText: loginButtonText);
 }

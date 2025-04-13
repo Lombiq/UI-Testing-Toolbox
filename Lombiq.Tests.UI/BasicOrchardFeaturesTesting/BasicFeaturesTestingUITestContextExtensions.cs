@@ -65,7 +65,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
         if (!setupParameters.SkipRegistration)
         {
-            await context.TestBasicOrchardRegistrationAsync();
+            await context.TestBasicOrchardRegistrationAsync(setupParameters.UserRegistrationParameters);
         }
 
         await context.TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
@@ -148,11 +148,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <summary>
     /// Tests the built-in registration feature in Orchard Core.
     /// </summary>
-    public static async Task TestBasicOrchardRegistrationAsync(this UITestContext context)
+    public static async Task TestBasicOrchardRegistrationAsync(
+        this UITestContext context,
+        UserRegistrationParameters parameters = null)
     {
-        await context.TestRegistrationWithInvalidDataAsync();
-        await context.TestRegistrationAsync();
-        await context.TestRegistrationWithAlreadyRegisteredEmailAsync();
+        await context.TestRegistrationWithInvalidDataAsync(parameters);
+        await context.TestRegistrationAsync(parameters);
+        await context.TestRegistrationWithAlreadyRegisteredEmailAsync(parameters);
     }
 
     /// <summary>
@@ -232,9 +234,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
         Func<UITestContext, Task> customPageHeaderCheckAsync = null)
     {
         setupParameters ??= new(context);
+        var login = setupParameters.UserLoginParameters;
 
-        await context.TestLoginWithInvalidDataAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
-        await context.TestLoginAsync(setupParameters.LoginUserName, setupParameters.LoginPassword, setupParameters.LoginButtonText);
+        await context.TestLoginWithInvalidDataAsync(login.UserName, login.Password, login.LoginButtonText);
+        await context.TestLoginAsync(login.UserName, login.Password, login.LoginButtonText);
+        await context.SignInDirectlyAsync(setupParameters.UserName);
         await context.TestContentOperationsAsync(setupParameters.SkipFrontend, customPageHeaderCheckAsync: customPageHeaderCheckAsync);
         await context.TestTurningFeatureOnAndOffAsync();
         await context.TestMediaOperationsAsync();
@@ -465,7 +469,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 await context.SignOutDirectlyAsync();
 
                 loginPage = await context.GoToLoginPageAsync();
-                await loginPage.LogInWithAsync(context, parameters.UserName, parameters.Password);
+                await loginPage.LogInWithAsync(context, parameters);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
@@ -485,11 +489,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
     public static Task TestRegistrationWithInvalidDataAsync(
         this UITestContext context, UserRegistrationParameters parameters = null)
     {
-        parameters ??= new();
-        parameters.UserName = "InvalidUser";
-        parameters.Email = Randomizer.GetString("{0}@example.org", 25);
-        parameters.Password = "short";
-        parameters.ConfirmPassword = "short";
+        parameters = (parameters ?? UserRegistrationParameters.CreateTest()) with
+        {
+            UserName = "InvalidUser",
+            Email = Randomizer.GetString("{0}@example.org", 25),
+            Password = "short",
+            ConfirmPassword = "short",
+        };
 
         return context.ExecuteTestAsync(
             "Test registration with invalid data",

@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "134.0.6998.165";
+            chromeConfig.Options.BrowserVersion = "135.0.7049.84";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -68,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "134.0.3124.95";
+                var linuxEdgeVersion = "135.0.3179.54";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "134.0.3124.93";
+                var windowsEdgeVersion = "135.0.3179.66";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "134.0.3124.95";
+                var macOsEdgeVersion = "135.0.3179.54";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -118,7 +118,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "136.0.4";
+            firefoxOptions.BrowserVersion = "137.0";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
@@ -153,6 +153,8 @@ public static class WebDriverFactory
         // For a list of all switches see https://peter.sh/experiments/chromium-command-line-switches/. Also see
         // https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md for recommended
         // switches; the appropriate ones are used here.
+
+        // --disable-notifications is not used because that could break apps that try to send browser notifications.
 
         options.AddArgument("lang=" + configuration.AcceptLanguage);
 
@@ -192,9 +194,6 @@ public static class WebDriverFactory
         // Additionally, Ubuntu 24.04-based GitHub Actions runners seem to require this flag to be set, see
         // https://github.com/actions/runner-images/issues/8268#issuecomment-2343831000.
         options.AddArgument("no-sandbox");
-
-        // The prompt requesting notifications may obscure UI elements.
-        options.AddArgument("disable-notifications");
 
         // Test user credentials can cause Chromium browsers to display a warning about unsafe passwords, which dims the
         // whole viewport. One of these disabled it but then couldn't reproduce the warning even with all of them

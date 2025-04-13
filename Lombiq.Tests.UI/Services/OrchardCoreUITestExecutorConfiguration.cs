@@ -36,26 +36,15 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<Entry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<Entry, bool> IsNonSuccessBrowserLogEntry =
+    public static readonly Func<LogEntry, bool> IsNonSuccessBrowserLogEntry =
         entry =>
             entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
             // every page.
-            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated") &&
-            // Smtp4dev uses "sanitize-html" (https://github.com/apostrophecms/sanitize-html) to sanitize the HTML
-            // content of the email body and this library has a list of tags that are considered vulnerable to XSS
-            // attacks. As a workaround, we are ignoring the warnings for these tags in the browser logs. Instead,
-            // Smtp4dev should use the "allowVulnerableTags" configuration property to not have these warnings in the
-            // first place. These could be removed if https://github.com/rnwood/smtp4dev/issues/1627 is fixed and
-            // "allowVulnerableTags" property is set to true.
-            !entry.Text.Equals("error", StringComparison.OrdinalIgnoreCase) &&
-            // Ignoring the warnings about the "script" and "style" tags being vulnerable to XSS attacks.
-            !((entry.Text.Contains("Your `allowedTags` option includes, `script`, which is inherently") ||
-                entry.Text.Contains("Your `allowedTags` option includes, `style`, which is inherently")) &&
-                entry.Text.Contains("vulnerable to XSS attacks. Please remove it from `allowedTags`."));
+            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated");
 
     // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
     // different URL.
@@ -99,12 +88,26 @@ public class OrchardCoreUITestExecutorConfiguration
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
 
     /// <summary>
-    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// Gets a collection of delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeBrowserLog"/>. If there are more than one, all of them must return <see
+    /// langword="true"/>.
+    /// </summary>
+    public IDictionary<string, Func<LogEntry, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<LogEntry, bool>>
+    {
+        [nameof(BrowserLogFilter)] = IsNonSuccessBrowserLogEntry,
+    };
+
+    /// <summary>
+    /// Gets or sets the primary delegate that selects which response data get saved to <see
     /// cref="UITestContext.CumulativeBrowserLog"/>.
     /// </summary>
-    public Func<Entry, bool> BrowserLogFilter { get; set; } = IsNonSuccessBrowserLogEntry;
+    public Func<LogEntry, bool> BrowserLogFilter
+    {
+        get => BrowserLogFilters[nameof(BrowserLogFilter)];
+        set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
+    }
 
-    public Action<IEnumerable<Entry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
     /// Gets or sets a delegate that selects which response data get saved to <see
