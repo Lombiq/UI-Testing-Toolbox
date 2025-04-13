@@ -38,19 +38,23 @@ public sealed class TestPrefixedElasticsearchIndexStep : NamedRecipeStepHandler
         _indexingService = indexingService;
     }
 
-    protected override Task HandleAsync(RecipeExecutionContext context)
+    protected override async Task HandleAsync(RecipeExecutionContext context)
     {
         // The term "Indices" is supported to maintain compatibility with Orchard Core's ElasticIndexSettings.
         var indexes = context.Step["Indexes"] as JsonArray ??
                       context.Step["Indices"] as JsonArray ??
                       [];
 
-        return indexes
+        var settings = indexes
             .SelectMany(index => index.ToObject<Dictionary<string, ElasticIndexSettings>>())
-            .Select(pair => WithIndexName(pair.Value, pair.Key))
-            .ToAsyncEnumerable()
-            .WhereNotAsync(settings => _indexManager.ExistsAsync(settings.IndexName))
-            .ForEachAwaitAsync(_indexingService.CreateIndexAsync);
+            .Select(pair => WithIndexName(pair.Value, pair.Key));
+        foreach (var setting in settings)
+        {
+            if (!await _indexManager.ExistsAsync(setting.IndexName))
+            {
+                await _indexingService.CreateIndexAsync(setting);
+            }
+        }
     }
 
     private static ElasticIndexSettings WithIndexName(ElasticIndexSettings settings, string name)
