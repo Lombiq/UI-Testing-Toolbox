@@ -7,7 +7,6 @@ public static class ShortcutsFeatureIds
     public const string Area = "Lombiq.Tests.UI.Shortcuts";
 
     public const string Default = Area;
-    public const string Elastic = $"{Default}.{nameof(Elastic)}";
     public const string FeatureToggleTestBench = $"{Default}.{nameof(FeatureToggleTestBench)}";
     public const string MediaCachePurge = $"{Default}.{nameof(MediaCachePurge)}";
     public const string ShiftTime = $"{Default}.{nameof(ShiftTime)}";

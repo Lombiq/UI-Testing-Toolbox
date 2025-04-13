@@ -28,16 +28,6 @@ public sealed class Startup : StartupBase
         app.UseMiddleware<ExceptionContextLoggingMiddleware>();
 }
 
-[Feature(ShortcutsFeatureIds.Elastic)]
-public sealed class ElasticserachStartup : StartupBase
-{
-    public override void ConfigureServices(IServiceCollection services)
-    {
-        services.AddRecipeExecutionStep<TestPrefixedElasticsearchIndexStep>();
-        services.AddTestPrefixedElasticsearchWrapperServices();
-    }
-}
-
 [Feature(ShortcutsFeatureIds.Swagger)]
 public sealed class SwaggerStartup : StartupBase
 {

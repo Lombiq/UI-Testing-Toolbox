@@ -25,14 +25,6 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 )]
 
 [assembly: Feature(
-    Id = Elastic,
-    Name = "Elasticsearch - Shortcuts - Lombiq UI Testing Toolbox",
-    Category = "Development",
-    Description = "Adds specific fixes for namespacing Elasticsearch indexes by test.",
-    Dependencies = ["OrchardCore.Search.Elasticsearch"]
-)]
-
-[assembly: Feature(
     Id = FeatureToggleTestBench,
     Name = "Feature Toggle Test Bench - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
