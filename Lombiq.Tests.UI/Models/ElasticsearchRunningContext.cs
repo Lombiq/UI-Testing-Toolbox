@@ -16,11 +16,16 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     private IndexName IndexName => Indices.Index($"{Prefix}_*");
 
     public Task BeforeTestAsync(UITestContext context) =>
-        context.Application.UsingScopeAsync(async shellScope =>
+        context.Application.UsingScopeAsync(async provider =>
         {
             var index = IndexName;
-            var client = shellScope.ServiceProvider.GetRequiredService<IElasticClient>();
             var cancellation = context.Configuration.TestCancellationToken;
+
+            if (GetClient(provider) is not { } client)
+            {
+                throw new InvalidOperationException(
+                    $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
+            }
 
             (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
             (await client.Indices.RefreshAsync(index, ct: cancellation)).ThrowIfFailed($"refresh index \"{index}\"");
@@ -33,8 +38,8 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     {
         try
         {
-            await context.Application.UsingScopeAsync(scope =>
-                WithPrefixElasticsearchIndexCleanupFinallyAsync(scope, context, IndexName));
+            await context.Application.UsingScopeAsync(provider =>
+                WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, IndexName));
         }
         catch (Exception inner)
         {
@@ -47,7 +52,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         "MA0040:Forward the CancellationToken parameter to methods that take one",
         Justification = "Cleanup code has no viable cancellation token because even failed tests should be cleaned up.")]
     private static async Task WithPrefixElasticsearchIndexCleanupFinallyAsync(
-        ShellScope shellScope,
+        IServiceProvider provider,
         UITestContext context,
         IndexName index)
     {
@@ -58,7 +63,11 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             return indices.Indices.Count > 0;
         }
 
-        var client = shellScope.ServiceProvider.GetRequiredService<IElasticClient>();
+        if (GetClient(provider) is not { } client)
+        {
+            throw new InvalidOperationException(
+                $"Couldn't resolve {nameof(IElasticClient)} while attempting to clean up \"{index}\".");
+        }
 
         if (!await CheckIfIndexExistsAsync(client, index))
         {
@@ -74,4 +83,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             throw new InvalidOperationException($"Couldn't delete indexes for \"{index.Name}\".");
         }
     }
+
+    private static IElasticClient GetClient(IServiceProvider provider) =>
+        provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>();
 }
