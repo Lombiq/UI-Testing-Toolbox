@@ -106,10 +106,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
-            if (_context.ElasticsearchRunningContext is { } elasticsearchRunningContext)
-            {
-                await elasticsearchRunningContext.BeforeTestAsync(_context);
-            }
+            var elasticsearchRunningContext = _context.ElasticsearchRunningContext;
+            if (elasticsearchRunningContext != null) await elasticsearchRunningContext.BeforeTestAsync(_context);
 
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
@@ -132,6 +130,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             // some way. So it's safe to await it here. It's also necessary to cleanly propagate any exceptions that may
             // have been thrown inside it.
             await testTask;
+
+            if (elasticsearchRunningContext != null) await elasticsearchRunningContext.AfterTestAsync(_context);
 
             await _context.AssertLogsAsync();
 

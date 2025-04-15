@@ -27,17 +27,20 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         });
 
     public Task AfterTestAsync(UITestContext context) =>
-        context.Application.UsingScopeAsync(async scope =>
+        context?.Application?.Services is { } ? AfterTestInnerAsync(context) : Task.CompletedTask;
+
+    private async Task AfterTestInnerAsync(UITestContext context)
+    {
+        try
         {
-            try
-            {
-                await WithPrefixElasticsearchIndexCleanupFinallyAsync(scope, context, IndexName);
-            }
-            catch (Exception inner)
-            {
-                context.Scope?.AtataContext?.Log?.Error(inner.ToString());
-            }
-        });
+            await context.Application.UsingScopeAsync(scope =>
+                WithPrefixElasticsearchIndexCleanupFinallyAsync(scope, context, IndexName));
+        }
+        catch (Exception inner)
+        {
+            context.Scope?.AtataContext?.Log?.Error(inner.ToString());
+        }
+    }
 
     [SuppressMessage(
         "Usage",
