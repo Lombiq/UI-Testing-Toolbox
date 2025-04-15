@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OrchardCore.Data.YesSql;
 using OrchardCore.Modules;
-using OrchardCore.Recipes;
 using System;
 
 namespace Lombiq.Tests.UI.Shortcuts;
