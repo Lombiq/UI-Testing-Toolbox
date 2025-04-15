@@ -21,14 +21,24 @@ public static class SetupHelpers
     // that from this test recipe.
     public const string RecipeId = "Lombiq.OSOCE.Tests";
 
-    public static async Task<Uri> RunSetupAsync(UITestContext context)
+    // Because we pass this method to UITestBase.ExecuteTestAfterSetupAsync() by reference, it can't have optional
+    // parameters. These shortcut methods are necessary so .NET can identify which setup method is used. An alternative
+    // to this approach is setting the configuration.SetupConfiguration.SetupOperationIdentifierCalculator property to a
+    // custom value, but that's only practical if you need many parameters in your setup script.
+    public static Task<Uri> RunSetupAsync(UITestContext context) =>
+        RunSetupInnerAsync(context, RecipeId);
+
+    public static Task<Uri> RunElasticsearchSetupAsync(UITestContext context) =>
+        RunSetupInnerAsync(context, "Lombiq.OSOCE.Tests.Elasticsearch");
+
+    public static async Task<Uri> RunSetupInnerAsync(UITestContext context, string recipeId)
     {
         // Running the setup. OrchardCoreSetupParameters will initialize some basic settings from the context.
         var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
             new OrchardCoreSetupParameters(context)
             {
                 SiteName = "Lombiq's OSOCE - UI Testing",
-                RecipeId = RecipeId,
+                RecipeId = recipeId,
                 // A table prefix is not really needed but this way we also check whether we've written any SQL that
                 // doesn't support prefixes.
                 TablePrefix = "OSOCE",
