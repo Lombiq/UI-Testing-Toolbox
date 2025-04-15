@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using TWP.Selenium.Axe.Html;
 using Xunit;
 using Xunit.v3;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -105,6 +106,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
+            if (_context.ElasticsearchRunningContext is { } elasticsearchRunningContext)
+            {
+                await elasticsearchRunningContext.BeforeTestAsync(_context);
+            }
+
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
             var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
@@ -158,20 +164,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 throw;
             }
 
-            LogRetry(retryCount);
-
-            if (_configuration.RetryInterval > TimeSpan.Zero)
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Waiting {0} before retrying the test.", _configuration.RetryInterval);
-
-                await Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
-            }
-            else
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "No retry interval is set, retrying the test immediately.");
-            }
+            await LogRetryAsync(retryCount);
         }
         finally
         {
@@ -235,6 +228,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
                     ex);
             }
+        }
+
+        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
+        {
+            await elasticsearchRunningContext.AfterTestAsync(_context);
         }
 
         _screenshotCount = 0;
@@ -475,7 +473,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private void LogRetry(int retryCount)
+    private Task LogRetryAsync(int retryCount)
     {
         _testOutputHelper.WriteLineTimestampedAndDebug(
             "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
@@ -488,12 +486,24 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             GitHubHelper.IsGitHubEnvironment)
         {
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
-                Microsoft.Extensions.Logging.LogLevel.Warning,
+                LogLevel.Warning,
                 "UI test may be flaky",
                 $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
                     "retried. This may indicate it being flaky.",
                 string.Empty);
         }
+
+        if (_configuration.RetryInterval > TimeSpan.Zero)
+        {
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                "Waiting {0} before retrying the test.", _configuration.RetryInterval);
+
+            return Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
+        }
+
+        _testOutputHelper.WriteLineTimestampedAndDebug(
+            "No retry interval is set, retrying the test immediately.");
+        return Task.CompletedTask;
     }
 
     private async Task SetupAsync()
@@ -655,13 +665,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
 
-        SqlServerRunningContext sqlServerContext = null;
-        AzureBlobStorageRunningContext azureBlobStorageContext = null;
-        SmtpServiceRunningContext smtpContext = null;
-
-        if (_configuration.UseSqlServer) sqlServerContext = await SetUpSqlServerAsync();
-        if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
-        if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
+        var sqlServerContext = _configuration.UseSqlServer ? await SetUpSqlServerAsync() : null;
+        var azureBlobStorageContext = _configuration.UseAzureBlobStorage ? await SetUpAzureBlobStorageAsync() : null;
+        var smtpContext = _configuration.UseSmtpService ? await StartSmtpServiceAsync() : null;
+        var elasticsearchContext = _configuration.UseElasticsearch ? SetUpElasticserach() : null;
 
         _zapManager = new ZapManager(_testOutputHelper);
 
@@ -729,7 +736,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _applicationInstance,
             atataScope,
             testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
-            new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+            new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
             _zapManager);
     }
 
@@ -857,6 +864,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
         return smtpContext;
+    }
+
+    private ElasticsearchRunningContext SetUpElasticserach()
+    {
+        var id = Guid.NewGuid();
+        var prefix = TestContext.Current.GetElasticserachSafeIndexName(id);
+
+        _configuration.OrchardCoreConfiguration.ConfigureElasticSearchPrefix(prefix);
+
+        return new(id, prefix);
     }
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)

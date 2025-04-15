@@ -186,6 +186,13 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     public bool UseAzureBlobStorage { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether Elasticsearch will be used. When enabled, the test will assign a unique
+    /// prefix to the test, ensure that Elasticserach caches are flushed before starting the test, and clean up the
+    /// indexes under the unique prefix at the end.
+    /// </summary>
+    public bool UseElasticsearch { get; set; }
+
     public AzureBlobStorageConfiguration AzureBlobStorageConfiguration { get; set; } = new();
 
     /// <summary>
