@@ -23,15 +23,11 @@ public static class SetupHelpers
 
     // Because we pass this method to UITestBase.ExecuteTestAfterSetupAsync() by reference, it can't have optional
     // parameters. These shortcut methods are necessary so .NET can identify which setup method is used. An alternative
-    // to this approach is setting the configuration.SetupConfiguration.SetupOperationIdentifierCalculator property to a
-    // custom value, but that's only practical if you need many parameters in your setup script.
+    // to this approach is setting the configuration.SetupConfiguration.SetupOperationIdentifierCalculator property.
     public static Task<Uri> RunSetupAsync(UITestContext context) =>
-        RunSetupInnerAsync(context, RecipeId);
+        RunSetupAsync(context, RecipeId);
 
-    public static Task<Uri> RunElasticsearchSetupAsync(UITestContext context) =>
-        RunSetupInnerAsync(context, "Lombiq.OSOCE.Tests.Elasticsearch");
-
-    public static async Task<Uri> RunSetupInnerAsync(UITestContext context, string recipeId)
+    public static async Task<Uri> RunSetupAsync(UITestContext context, string recipeId)
     {
         // Running the setup. OrchardCoreSetupParameters will initialize some basic settings from the context.
         var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
