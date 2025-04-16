@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using OrchardCore.Environment.Shell.Scope;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
