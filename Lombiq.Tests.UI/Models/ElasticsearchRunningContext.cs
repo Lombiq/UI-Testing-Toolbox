@@ -2,8 +2,8 @@ using Elasticsearch.Net;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SqlServer.Management.Dmf;
 using Nest;
-using OrchardCore.Environment.Shell.Configuration;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -23,9 +23,8 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
             if (GetClient(provider) is not { } client)
             {
-                context.Scope?.AtataContext?.Log?.Debug(
+                throw new InvalidOperandException(
                     $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
-                return;
             }
 
             (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
@@ -85,14 +84,6 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         }
     }
 
-    private static IElasticClient GetClient(IServiceProvider provider)
-    {
-        if ((provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>()) is { } service)
-        {
-            return service;
-        }
-
-        var shellConfiguration = provider.GetRequiredService<IShellConfiguration>();
-        return shellConfiguration.CreateElasticClient();
-    }
+    private static IElasticClient GetClient(IServiceProvider provider) =>
+        provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>();
 }
