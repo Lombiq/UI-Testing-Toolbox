@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
+using OrchardCore.Environment.Shell.Configuration;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -84,6 +85,14 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         }
     }
 
-    private static IElasticClient GetClient(IServiceProvider provider) =>
-        provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>();
+    private static IElasticClient GetClient(IServiceProvider provider)
+    {
+        if ((provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>()) is { } service)
+        {
+            return service;
+        }
+
+        var shellConfiguration = provider.GetRequiredService<IShellConfiguration>();
+        return shellConfiguration.CreateElasticClient();
+    }
 }
