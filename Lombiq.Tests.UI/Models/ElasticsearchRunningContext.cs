@@ -22,8 +22,9 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
             if (GetClient(provider) is not { } client)
             {
-                throw new InvalidOperationException(
+                context.Scope?.AtataContext?.Log?.Debug(
                     $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
+                return;
             }
 
             (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
