@@ -12,12 +12,17 @@ namespace Lombiq.Tests.UI.Models;
 
 public record ElasticsearchRunningContext(Guid Id, string Prefix)
 {
-    private IndexName IndexName => Indices.Index($"{Prefix}_*");
+    /// <summary>
+    /// Gets the expression that refers to all indexes that starts with <see cref="Prefix"/>. This should only be used
+    /// with <see cref="IElasticClient"/>, because the OrchardCore-specific services automatically apply the prefix from
+    /// configuration so it would result in double prefixing.
+    /// </summary>
+    private IndexName LowLevelIndexName => Indices.Index($"{Prefix}_*");
 
     public Task BeforeTestAsync(UITestContext context) =>
         context.Application.UsingScopeAsync(async provider =>
         {
-            var index = IndexName;
+            var index = LowLevelIndexName;
             var cancellation = context.Configuration.TestCancellationToken;
 
             if (GetClient(provider) is not { } client)
@@ -38,7 +43,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         try
         {
             await context.Application.UsingScopeAsync(provider =>
-                WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, IndexName));
+                WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, LowLevelIndexName));
         }
         catch (Exception inner)
         {
