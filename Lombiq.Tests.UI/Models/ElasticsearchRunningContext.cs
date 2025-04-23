@@ -2,7 +2,6 @@ using Elasticsearch.Net;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SqlServer.Management.Dmf;
 using Nest;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -23,7 +22,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
             if (GetClient(provider) is not { } client)
             {
-                throw new InvalidOperandException(
+                throw new InvalidOperationException(
                     $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
             }
 
