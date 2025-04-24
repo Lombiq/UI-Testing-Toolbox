@@ -3,8 +3,11 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
+using OrchardCore.Indexing;
+using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,6 +36,51 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
             (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
             (await client.Indices.RefreshAsync(index, ct: cancellation)).ThrowIfFailed($"refresh index \"{index}\"");
+
+            // Elasticserch indexing sometimes takes longer, and the testing starts before it finishes. To prevent that,
+            // we are checking if all of the indexing tasks are finished.
+            var elasticIndexManager = provider.GetRequiredService<ElasticIndexManager>();
+            var settingsService = provider.GetRequiredService<ElasticIndexSettingsService>();
+            var indexingTaskManager = provider.GetRequiredService<IIndexingTaskManager>();
+            var indexSettings = await settingsService.GetSettingsAsync();
+            var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
+
+            var startIndex = 0;
+            const int batchSize = 1000;
+            long lastTaskId = 0;
+            var taskCount = 0;
+
+            // We are getting the last indexing task (regardless of the state). This function works like a cursor, so
+            // there is no way to get directly the last task in the list. Since we have to give a "count" parameter, we
+            // are retrieving the indexing tasks by batches of 1000. Then if there is no more, we get the last one.
+            if (exactIndexName != null)
+            {
+                do
+                {
+                    var tasks = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize)).ToList();
+                    taskCount = tasks.Count;
+
+                    if (taskCount > 0)
+                    {
+                        lastTaskId = tasks[^1].Id;
+                        startIndex += batchSize;
+                    }
+                }
+                while (taskCount > 0);
+
+                long? lastFinishedTaskId = null;
+
+                // We have the id of the last indexing task that should happen, so we are waiting here for that task to
+                // complete, since "GetLastTaskId()" returns only completed tasks.
+                while (lastTaskId != lastFinishedTaskId)
+                {
+                    lastFinishedTaskId = await elasticIndexManager.GetLastTaskId(exactIndexName);
+
+                    // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
+                    // a delay.
+                    await Task.Delay(500, cancellation);
+                }
+            }
         });
 
     public Task AfterTestAsync(UITestContext context) =>
