@@ -74,7 +74,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
                 // We have the id of the last indexing task that should happen, so we are waiting here for that task to
                 // complete, since "GetLastTaskId()" returns only completed tasks.
-                while (lastTaskId < lastFinishedTaskId)
+                while (lastTaskId > lastFinishedTaskId)
                 {
                     lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
