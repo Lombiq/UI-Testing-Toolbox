@@ -74,7 +74,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 // complete, since "GetLastTaskId()" returns only completed tasks.
                 while (lastTaskId != lastFinishedTaskId)
                 {
-                    lastFinishedTaskId = await elasticIndexManager.GetLastTaskId(exactIndexName);
+                    lastFinishedTaskId = await TryGetLastTaskId(elasticIndexManager, exactIndexName);
 
                     // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
                     // a delay.
@@ -82,6 +82,21 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 }
             }
         });
+
+    // It takes time to "LastTaskId" to get set (0,5 - 1 seconds), until then it throws "InvalidOperationException", so
+    // we are retrieving it safely. This can happen if there are just a couple indexes, so we don't leave time for it to
+    // initialize.
+    private static async Task<long?> TryGetLastTaskId(ElasticIndexManager elasticIndexManager, string indexName)
+    {
+        try
+        {
+            return await elasticIndexManager.GetLastTaskId(indexName);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public Task AfterTestAsync(UITestContext context) =>
         context?.Application?.Services is { } ? AfterTestInnerAsync(context) : Task.CompletedTask;
