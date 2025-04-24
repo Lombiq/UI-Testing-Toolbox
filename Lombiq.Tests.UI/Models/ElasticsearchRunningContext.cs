@@ -92,7 +92,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         {
             return await elasticIndexManager.GetLastTaskId(indexName);
         }
-        catch
+        catch (InvalidOperationException)
         {
             return null;
         }
