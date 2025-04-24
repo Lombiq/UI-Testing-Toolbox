@@ -45,34 +45,36 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             var indexSettings = await settingsService.GetSettingsAsync();
             var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
 
-            var startIndex = 0;
             const int batchSize = 1000;
             long lastTaskId = 0;
-            var taskCount = 0;
+            bool hasTask = true;
 
             // We are getting the last indexing task (regardless of the state). This function works like a cursor, so
             // there is no way to get directly the last task in the list. Since we have to give a "count" parameter, we
             // are retrieving the indexing tasks by batches of 1000. Then if there is no more, we get the last one.
             if (exactIndexName != null)
             {
-                do
+                // We want to set "hasTask" inside the loop.
+#pragma warning disable S1994 // "for" loop increment clauses should modify the loops' counters
+                for (var startIndex = 0; hasTask; startIndex += batchSize)
                 {
-                    var tasks = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize)).ToList();
-                    taskCount = tasks.Count;
+                    var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize))
+                        .LastOrDefault();
 
-                    if (taskCount > 0)
+                    hasTask = lastTask != null;
+
+                    if (hasTask)
                     {
-                        lastTaskId = tasks[^1].Id;
-                        startIndex += batchSize;
+                        lastTaskId = lastTask.Id;
                     }
                 }
-                while (taskCount > 0);
+#pragma warning restore S1994 // "for" loop increment clauses should modify the loops' counters
 
                 long? lastFinishedTaskId = null;
 
                 // We have the id of the last indexing task that should happen, so we are waiting here for that task to
                 // complete, since "GetLastTaskId()" returns only completed tasks.
-                while (lastTaskId != lastFinishedTaskId)
+                while (lastTaskId < lastFinishedTaskId)
                 {
                     lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
@@ -84,7 +86,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         });
 
     /// <summary>
-    /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method 
+    /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method
     /// catches the exception and returns null instead so it can be safely retried.
     /// </summary>
     private static async Task<long?> TryGetLastTaskIdAsync(ElasticIndexManager elasticIndexManager, string indexName)
