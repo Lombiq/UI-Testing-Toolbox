@@ -83,9 +83,10 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             }
         });
 
-    // It takes time to "LastTaskId" to get set (0,5 - 1 seconds), until then it throws "InvalidOperationException", so
-    // we are retrieving it safely. This can happen if there are just a couple indexes, so we don't leave time for it to
-    // initialize.
+    /// <summary>
+    /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method 
+    /// catches the exception and returns null instead so it can be safely retried.
+    /// </summary>
     private static async Task<long?> TryGetLastTaskIdAsync(ElasticIndexManager elasticIndexManager, string indexName)
     {
         try
