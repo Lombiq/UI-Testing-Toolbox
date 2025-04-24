@@ -104,6 +104,11 @@ public class UITestContext
     public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
     /// <summary>
+    /// Gets the context for the currently used Elasticsearch configuration, if Elasticsearch is used for the test.
+    /// </summary>
+    public ElasticsearchRunningContext ElasticsearchRunningContext { get; }
+
+    /// <summary>
     /// Gets the service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances for
     /// security scanning. Usually, it's recommended to use the higher-level ZAP <see
     /// cref="SecurityScanningUITestContextExtensions"/> extension methods instead.
@@ -171,8 +176,10 @@ public class UITestContext
     /// </summary>
     public string DownloadsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Downloads);
 
-    // This is a central context object, we need the data to be passed in the constructor.
-#pragma warning disable S107 // Methods should not have too many parameters
+    [SuppressMessage(
+        "Major Code Smell",
+        "S107:Methods should not have too many parameters",
+        Justification = "This is a central context object, we need the data to be passed in the constructor.")]
     private UITestContext(
         string id,
         UITestManifest testManifest,
@@ -182,18 +189,21 @@ public class UITestContext
         Uri testStartUri,
         RunningContextContainer runningContextContainer,
         ZapManager zapManager)
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         Id = id;
         TestManifest = testManifest;
         Configuration = configuration;
-        SqlServerRunningContext = runningContextContainer.SqlServerRunningContext;
         Application = application;
         Scope = scope;
         TestStartUri = testStartUri;
-        SmtpServiceRunningContext = runningContextContainer.SmtpServiceRunningContext;
-        AzureBlobStorageRunningContext = runningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = zapManager;
+
+        (
+            SqlServerRunningContext,
+            SmtpServiceRunningContext,
+            AzureBlobStorageRunningContext,
+            ElasticsearchRunningContext
+        ) = runningContextContainer;
     }
 
     /// <summary>
