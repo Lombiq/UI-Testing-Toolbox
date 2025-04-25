@@ -92,6 +92,8 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                     // a delay.
                     await Task.Delay(500, cancellation);
                 }
+
+                stopWatch.Stop();
             }
         });
 
