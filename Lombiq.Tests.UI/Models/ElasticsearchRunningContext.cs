@@ -3,7 +3,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using OpenQA.Selenium;
 using OrchardCore.Indexing;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
