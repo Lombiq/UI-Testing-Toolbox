@@ -3,6 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
+using OpenQA.Selenium;
 using OrchardCore.Indexing;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
@@ -80,11 +81,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 // complete, since "GetLastTaskId()" returns only completed tasks.
                 while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
                 {
-                    if (stopWatch.Elapsed > timeout)
-                    {
-                        stopWatch.Stop();
-                        throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
-                    }
+                    IsTimeout(stopWatch, timeout);
 
                     lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
@@ -110,6 +107,15 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         catch (InvalidOperationException)
         {
             return null;
+        }
+    }
+
+    private static void IsTimeout(Stopwatch stopWatch, TimeSpan timeout)
+    {
+        if (stopWatch.Elapsed > timeout)
+        {
+            stopWatch.Stop();
+            throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
         }
     }
 
