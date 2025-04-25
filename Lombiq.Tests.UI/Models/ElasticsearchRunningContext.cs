@@ -6,6 +6,7 @@ using Nest;
 using OrchardCore.Indexing;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -72,10 +73,19 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
                 long? lastFinishedTaskId = null;
 
+                var timeout = TimeSpan.FromSeconds(60);
+                var stopWatch = Stopwatch.StartNew();
+
                 // We have the id of the last indexing task that should happen, so we are waiting here for that task to
                 // complete, since "GetLastTaskId()" returns only completed tasks.
                 while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
                 {
+                    if (stopWatch.Elapsed > timeout)
+                    {
+                        stopWatch.Stop();
+                        throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
+                    }
+
                     lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
                     // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
