@@ -80,6 +80,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 // complete, since "GetLastTaskId()" returns only completed tasks.
                 while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
                 {
+                    cancellation.ThrowIfCancellationRequested();
                     IsTimeout(stopWatch, timeout);
 
                     lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
