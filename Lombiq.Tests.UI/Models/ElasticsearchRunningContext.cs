@@ -78,19 +78,24 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
                 // We have the id of the last indexing task that should happen, so we are waiting here for that task to
                 // complete, since "GetLastTaskId()" returns only completed tasks.
-                while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
+                try
                 {
-                    cancellation.ThrowIfCancellationRequested();
-                    IsTimeout(stopWatch, timeout);
+                    while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
+                    {
+                        cancellation.ThrowIfCancellationRequested();
+                        IsTimeout(stopWatch, timeout);
 
-                    lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
+                        lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
-                    // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
-                    // a delay.
-                    await Task.Delay(500, cancellation);
+                        // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
+                        // a delay.
+                        await Task.Delay(500, cancellation);
+                    }
                 }
-
-                stopWatch.Stop();
+                finally
+                {
+                    stopWatch.Stop();
+                }
             }
         });
 
@@ -114,7 +119,6 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     {
         if (stopWatch.Elapsed > timeout)
         {
-            stopWatch.Stop();
             throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
         }
     }
