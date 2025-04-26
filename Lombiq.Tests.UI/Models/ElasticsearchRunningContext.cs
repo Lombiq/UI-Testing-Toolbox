@@ -3,8 +3,12 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
+using OrchardCore.Indexing;
+using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,7 +37,86 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
             (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
             (await client.Indices.RefreshAsync(index, ct: cancellation)).ThrowIfFailed($"refresh index \"{index}\"");
+
+            // Elasticserch indexing sometimes takes longer, and the testing starts before it finishes. To prevent that,
+            // we are checking if all of the indexing tasks are finished.
+            var elasticIndexManager = provider.GetRequiredService<ElasticIndexManager>();
+            var settingsService = provider.GetRequiredService<ElasticIndexSettingsService>();
+            var indexingTaskManager = provider.GetRequiredService<IIndexingTaskManager>();
+            var indexSettings = await settingsService.GetSettingsAsync();
+            var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
+
+            const int batchSize = 1000;
+            long lastTaskId = 0;
+            bool hasTask = true;
+
+            // We are getting the last indexing task (regardless of the state). This function works like a cursor, so
+            // there is no way to get directly the last task in the list. Since we have to give a "count" parameter, we
+            // are retrieving the indexing tasks by batches of 1000. Then if there is no more, we get the last one.
+            if (exactIndexName != null)
+            {
+                // We want to set "hasTask" inside the loop.
+#pragma warning disable S1994 // "for" loop increment clauses should modify the loops' counters
+                for (var startIndex = 0; hasTask; startIndex += batchSize)
+                {
+                    var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize))
+                        .LastOrDefault();
+
+                    hasTask = lastTask != null;
+
+                    if (hasTask)
+                    {
+                        lastTaskId = lastTask.Id;
+                    }
+                }
+#pragma warning restore S1994 // "for" loop increment clauses should modify the loops' counters
+
+                long? lastFinishedTaskId = null;
+
+                var timeout = TimeSpan.FromSeconds(60);
+                var stopWatch = Stopwatch.StartNew();
+
+                // We have the id of the last indexing task that should happen, so we are waiting here for that task to
+                // complete, since "GetLastTaskId()" returns only completed tasks.
+                while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
+                {
+                    IsTimeout(stopWatch, timeout);
+
+                    lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
+
+                    // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
+                    // a delay.
+                    await Task.Delay(500, cancellation);
+                }
+
+                stopWatch.Stop();
+            }
         });
+
+    /// <summary>
+    /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method
+    /// catches the exception and returns null instead so it can be safely retried.
+    /// </summary>
+    private static async Task<long?> TryGetLastTaskIdAsync(ElasticIndexManager elasticIndexManager, string indexName)
+    {
+        try
+        {
+            return await elasticIndexManager.GetLastTaskId(indexName);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    private static void IsTimeout(Stopwatch stopWatch, TimeSpan timeout)
+    {
+        if (stopWatch.Elapsed > timeout)
+        {
+            stopWatch.Stop();
+            throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
+        }
+    }
 
     public Task AfterTestAsync(UITestContext context) =>
         context?.Application?.Services is { } ? AfterTestInnerAsync(context) : Task.CompletedTask;
