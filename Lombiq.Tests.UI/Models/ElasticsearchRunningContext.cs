@@ -6,7 +6,6 @@ using Nest;
 using OrchardCore.Indexing;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -27,7 +26,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         context.Application.UsingScopeAsync(async provider =>
         {
             var index = LowLevelIndexName;
-            var cancellation = context.Configuration.TestCancellationToken;
+            var testCancellationToken = context.Configuration.TestCancellationToken;
 
             if (GetClient(provider) is not { } client)
             {
@@ -35,10 +34,10 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                     $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
             }
 
-            (await client.Indices.FlushAsync(index, ct: cancellation)).ThrowIfFailed($"flush index \"{index}\"");
-            (await client.Indices.RefreshAsync(index, ct: cancellation)).ThrowIfFailed($"refresh index \"{index}\"");
+            (await client.Indices.FlushAsync(index, ct: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
+            (await client.Indices.RefreshAsync(index, ct: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
 
-            // Elasticserch indexing sometimes takes longer, and the testing starts before it finishes. To prevent that,
+            // Elasticsearch indexing sometimes takes longer, and the testing starts before it finishes. To prevent that,
             // we are checking if all of the indexing tasks are finished.
             var elasticIndexManager = provider.GetRequiredService<ElasticIndexManager>();
             var settingsService = provider.GetRequiredService<ElasticIndexSettingsService>();
@@ -74,27 +73,34 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 long? lastFinishedTaskId = null;
 
                 var timeout = TimeSpan.FromSeconds(60);
-                var stopWatch = Stopwatch.StartNew();
 
-                // We have the id of the last indexing task that should happen, so we are waiting here for that task to
-                // complete, since "GetLastTaskId()" returns only completed tasks.
+                using var timeoutCancellationTokenSource = new CancellationTokenSource(timeout);
+                using var jointCancellationTokenSource = CancellationTokenSource
+                    .CreateLinkedTokenSource(testCancellationToken, timeoutCancellationTokenSource.Token);
+                var jointCancellationToken = jointCancellationTokenSource.Token;
+
                 try
                 {
+                    // We have the id of the last indexing task that should happen, so we are waiting here for that task to
+                    // complete, since "GetLastTaskId()" returns only completed tasks.
                     while (lastTaskId > lastFinishedTaskId || lastFinishedTaskId == null)
                     {
-                        cancellation.ThrowIfCancellationRequested();
-                        IsTimeout(stopWatch, timeout);
+                        jointCancellationToken.ThrowIfCancellationRequested();
 
                         lastFinishedTaskId = await TryGetLastTaskIdAsync(elasticIndexManager, exactIndexName);
 
                         // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
                         // a delay.
-                        await Task.Delay(500, cancellation);
+                        await Task.Delay(500, jointCancellationToken);
                     }
                 }
-                finally
+                catch (TaskCanceledException ex)
                 {
-                    stopWatch.Stop();
+                    throw new TaskCanceledException(
+                        "Elasticsearch indexing wasn't finished due to " +
+                            $"{(testCancellationToken.IsCancellationRequested ? "the test being canceled" : $"it not completing within {timeout}")}.",
+                        ex,
+                        jointCancellationToken);
                 }
             }
         });
@@ -112,14 +118,6 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         catch (InvalidOperationException)
         {
             return null;
-        }
-    }
-
-    private static void IsTimeout(Stopwatch stopWatch, TimeSpan timeout)
-    {
-        if (stopWatch.Elapsed > timeout)
-        {
-            throw new TimeoutException($"Last finished tasked id did not match with last task id within {timeout}.");
         }
     }
 
