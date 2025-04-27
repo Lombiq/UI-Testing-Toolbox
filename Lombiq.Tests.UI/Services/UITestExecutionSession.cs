@@ -668,7 +668,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var sqlServerContext = _configuration.UseSqlServer ? await SetUpSqlServerAsync() : null;
         var azureBlobStorageContext = _configuration.UseAzureBlobStorage ? await SetUpAzureBlobStorageAsync() : null;
         var smtpContext = _configuration.UseSmtpService ? await StartSmtpServiceAsync() : null;
-        var elasticsearchContext = _configuration.UseElasticsearch ? SetUpElasticserach() : null;
+        var elasticsearchContext = _configuration.UseElasticsearch ? SetUpElasticsearch() : null;
 
         _zapManager = new ZapManager(_testOutputHelper);
 
@@ -866,12 +866,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         return smtpContext;
     }
 
-    private ElasticsearchRunningContext SetUpElasticserach()
+    private ElasticsearchRunningContext SetUpElasticsearch()
     {
         var id = Guid.NewGuid();
-        var prefix = TestContext.Current.GetElasticserachSafeIndexName(id);
+        var prefix = TestContext.Current.GetElasticsearchSafeIndexName(id);
 
-        _configuration.OrchardCoreConfiguration.ConfigureElasticSearchPrefix(prefix);
+        _configuration.OrchardCoreConfiguration.ConfigureElasticsearchPrefix(prefix);
 
         return new(id, prefix);
     }
