@@ -188,7 +188,7 @@ public class OrchardCoreUITestExecutorConfiguration
 
     /// <summary>
     /// Gets or sets a value indicating whether Elasticsearch will be used. When enabled, the test will assign a unique
-    /// prefix to the index, ensure that Elasticserach caches are flushed before starting the test, and clean up the
+    /// prefix to the index, ensure that Elasticsearch caches are flushed before starting the test, and clean up the
     /// indexes under the unique prefix at the end.
     /// </summary>
     public bool UseElasticsearch { get; set; }
