@@ -60,7 +60,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             {
                 var lastTaskId = await GetLastTaskIdAsync(provider.GetRequiredService<IIndexingTaskManager>());
 
-                // We have the id of the last indexing task that should happen, so we are waiting here for that task to
+                // We have the ID of the last indexing task that should happen, so we are waiting here for that task to
                 // complete, since "GetLastTaskId()" returns only completed tasks.
                 while (lastFinishedTaskId < lastTaskId || lastFinishedTaskId == null)
                 {
