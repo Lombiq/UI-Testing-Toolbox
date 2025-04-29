@@ -22,8 +22,8 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     /// </summary>
     private IndexName LowLevelIndexName => Indices.Index($"{Prefix}_*");
 
-    // Elasticsearch indexing sometimes takes longer, and the testing starts before it finishes. To prevent that, we are
-    // checking if all of the indexing tasks are finished.
+    // Elasticsearch indexing sometimes takes longer, and the testing starts before indexing finishes. To prevent that,
+    // we are checking if all indexing tasks are finished.
     public Task BeforeTestAsync(UITestContext context) =>
         context.Application.UsingScopeAsync(async provider =>
         {
