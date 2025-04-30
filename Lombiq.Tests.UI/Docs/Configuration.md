@@ -41,7 +41,6 @@ Here's a full _TestConfiguration.json_ file example, something appropriate durin
     "OrchardCoreUITestExecutorConfiguration": {
       "MaxRetryCount": 0,
       "RetryIntervalSeconds": 0,
-      "MaxParallelTests": 0
     },
     "BrowserConfiguration": {
       "Headless": true
@@ -55,7 +54,6 @@ Recommendations and notes for such configuration:
 - This will execute tests in headless mode, so no browser windows will be opened (for browsers that support it). If you want to troubleshoot a failing test then disable headless mode.
 - We encourage you to experiment with a `RetryTimeoutSeconds` value suitable for your hardware. Higher, paradoxically, is usually less safe.
 - If you have several UI test projects it can be cumbersome to maintain a _TestConfiguration.json_ file for each. Instead you can set the value of the `LOMBIQ_UI_TESTING_TOOLBOX_SHARED_TEST_CONFIGURATION` environment variable to the absolute path of a central configuration file and then each project will look it up. If you place an individual _TestConfiguration.json_ into a test directory it will still take precedence in case you need special configuration for just that one.
-- `MaxParallelTests` sets how many UI tests should run at the same time. It is an important property if you want to run your UI tests in parallel, check out the inline documentation in [`OrchardCoreUITestExecutorConfiguration`](../Services/OrchardCoreUITestExecutorConfiguration.cs).
 
 ### HTML validation configuration
 

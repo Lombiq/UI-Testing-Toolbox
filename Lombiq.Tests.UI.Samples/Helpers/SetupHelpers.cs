@@ -15,10 +15,16 @@ namespace Lombiq.Tests.UI.Samples.Helpers;
 public static class SetupHelpers
 {
     // Specifying the recipe used for setup (it's in a const since we'll use it later too). Note how we use a recipe
-    // just for UI testing. This is recommended so you can do some testing-specific configuration. Check it out if
-    // you're interested. Notably, it turns off CDN usage and configures culture settings to make test execution
-    // consistent regardless of the host settings. If you use a setup recipe for local development then you can execute
-    // that from this test recipe.
+    // just for UI testing. This is recommended so you can do some testing-specific configuration. And if you put it
+    // into your web project (because you can also add recipes to test projects, like this one also has one) then you
+    // can also use try it out during development.
+
+    // Check it out if you're interested: It's in the Lombiq.OSOCE.Web project if you're now looking at the Lombiq's
+    // Open-Source Orchard Core Extensions solution, or under
+    // https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions/blob/dev/src/Lombiq.OSOCE.Web/Recipes/Lombiq.OSOCE.Tests.recipe.json
+    // otherwise. Notably, it turns off CDN usage and configures culture settings to make test execution consistent
+    // regardless of the host settings. If you use a setup recipe for local development then you can execute that from
+    // this test recipe too.
     public const string RecipeId = "Lombiq.OSOCE.Tests";
 
     // Because we pass this method to UITestBase.ExecuteTestAfterSetupAsync() by reference, it can't have optional
