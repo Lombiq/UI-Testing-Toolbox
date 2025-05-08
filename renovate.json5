@@ -48,8 +48,8 @@
         {
             depNameTemplate: 'Chrome for Testing .NET',
             customType: 'regex',
-            fileMatch: [
-                'WebDriverFactory\\.cs$',
+            managerFilePatterns: [
+                '/WebDriverFactory\\.cs$/',
             ],
             matchStrings: [
                 'chromeConfig\\.Options\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
@@ -62,11 +62,11 @@
         {
             depNameTemplate: 'Chrome for Testing JavaScript',
             customType: 'regex',
-            fileMatch: [
-                'ui-testing-toolkit\\.mjs$',
+            managerFilePatterns: [
+                '/ui-testing-toolkit\\.mjs$/',
             ],
             matchStrings: [
-                '\\.setBrowserVersion\\(\'(?<currentValue>[^\']+)\'\\)',
+                "\\.setBrowserVersion\\('(?<currentValue>[^']+)'\\)",
             ],
             datasourceTemplate: 'custom.chrome-for-testing',
             // Without support for four-segment version numbers, 'loose' needs to be used. See:
@@ -76,8 +76,8 @@
         {
             depNameTemplate: 'Edge Linux',
             customType: 'regex',
-            fileMatch: [
-                'WebDriverFactory\\.cs$',
+            managerFilePatterns: [
+                '/WebDriverFactory\\.cs$/',
             ],
             matchStrings: [
                 'linuxEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
@@ -90,8 +90,8 @@
         {
             depNameTemplate: 'Edge MacOS',
             customType: 'regex',
-            fileMatch: [
-                'WebDriverFactory\\.cs$',
+            managerFilePatterns: [
+                '/WebDriverFactory\\.cs$/',
             ],
             matchStrings: [
                 'macOsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
@@ -104,8 +104,8 @@
         {
             depNameTemplate: 'Edge Windows',
             customType: 'regex',
-            fileMatch: [
-                'WebDriverFactory\\.cs$',
+            managerFilePatterns: [
+                '/WebDriverFactory\\.cs$/',
             ],
             matchStrings: [
                 'windowsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
@@ -118,8 +118,8 @@
         {
             depNameTemplate: 'Firefox',
             customType: 'regex',
-            fileMatch: [
-                'WebDriverFactory\\.cs$',
+            managerFilePatterns: [
+                '/WebDriverFactory\\.cs$/',
             ],
             matchStrings: [
                 'firefoxOptions\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
@@ -129,14 +129,14 @@
         {
             depNameTemplate: 'zaproxy/zap-stable',
             customType: 'regex',
-            fileMatch: [
-                'ZapManager\\.cs$'
+            managerFilePatterns: [
+                '/ZapManager\\.cs$/',
             ],
             matchStrings: [
-                'private const string _zapImage\\s*=\\s*"zaproxy/zap-stable:(?<currentValue>[^"]+)";'
+                'private const string _zapImage\\s*=\\s*"zaproxy/zap-stable:(?<currentValue>[^"]+)";',
             ],
             datasourceTemplate: 'docker',
-        }
+        },
     ],
     customDatasources: {
         'chrome-for-testing': {
