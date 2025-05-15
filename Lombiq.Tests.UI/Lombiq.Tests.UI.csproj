@@ -115,7 +115,7 @@
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.2.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.2.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.2.0" />
-    <PackageReference Include="Lombiq.Npm.Targets" Version="1.4.0" />
+    <PackageReference Include="Lombiq.Npm.Targets" Version="1.5.0" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
