@@ -237,6 +237,13 @@ public static class FrontendUITestContextExtensions
             File.Copy(copyFrom, copyTo, overwrite: true);
         }
 
-        return context.SetupNodeDependenciesAsync(helper, workingDirectory, ["selenium-webdriver", .. otherDependencies]);
+        // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file in
+        // the root too.
+        const string seleniumWebDriverVersion = "4.32.0";
+
+        return context.SetupNodeDependenciesAsync(
+            helper,
+            workingDirectory,
+            [$"selenium-webdriver@{seleniumWebDriverVersion}", .. otherDependencies]);
     }
 }

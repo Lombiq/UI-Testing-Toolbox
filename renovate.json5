@@ -23,6 +23,22 @@
             ],
         },
         {
+            groupName: 'Browsers',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
+            ],
+        },
+        {
+            groupName: 'Selenium WebDriver NPM',
+            matchPackageNames: [
+                'selenium-webdriver',
+            ],
+        },
+        {
             groupName: 'ZAP',
             matchPackageNames: [
                 'zaproxy/zap-stable',
@@ -31,16 +47,6 @@
             pinDigests: false,
             prBodyNotes: [
                 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
-            ],
-        },
-        {
-            groupName: 'Browsers',
-            matchDatasources: [
-                'custom.chrome-for-testing',
-                'custom.edge-linux',
-                'custom.edge-macos',
-                'custom.edge-windows',
-                'custom.firefox',
             ],
         },
     ],
@@ -127,6 +133,17 @@
             datasourceTemplate: 'custom.firefox',
         },
         {
+            depNameTemplate: 'selenium-webdriver',
+            customType: 'regex',
+            managerFilePatterns: [
+                '/FrontendUITestContextExtensions\\.cs$/',
+            ],
+            matchStrings: [
+                'const string seleniumWebDriverVersion\\s*=\\s*"(?<currentValue>[^"]+)";',
+            ],
+            datasourceTemplate: 'docker',
+        },
+        {
             depNameTemplate: 'zaproxy/zap-stable',
             customType: 'regex',
             managerFilePatterns: [
@@ -135,7 +152,7 @@
             matchStrings: [
                 'private const string _zapImage\\s*=\\s*"zaproxy/zap-stable:(?<currentValue>[^"]+)";',
             ],
-            datasourceTemplate: 'docker',
+            datasourceTemplate: 'npm',
         },
     ],
     customDatasources: {
