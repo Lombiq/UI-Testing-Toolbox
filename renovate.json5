@@ -141,7 +141,7 @@
             matchStrings: [
                 'const string seleniumWebDriverVersion\\s*=\\s*"(?<currentValue>[^"]+)";',
             ],
-            datasourceTemplate: 'docker',
+            datasourceTemplate: 'npm',
         },
         {
             depNameTemplate: 'zaproxy/zap-stable',
@@ -152,7 +152,7 @@
             matchStrings: [
                 'private const string _zapImage\\s*=\\s*"zaproxy/zap-stable:(?<currentValue>[^"]+)";',
             ],
-            datasourceTemplate: 'npm',
+            datasourceTemplate: 'docker',
         },
     ],
     customDatasources: {
