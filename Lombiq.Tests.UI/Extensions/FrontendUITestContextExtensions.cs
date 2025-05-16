@@ -201,7 +201,7 @@ public static class FrontendUITestContextExtensions
     {
         var projectFilePath = Path.Join(workingDirectory, "package.json");
 
-        if (!Directory.Exists(projectFilePath))
+        if (!File.Exists(projectFilePath))
         {
             // lang=json
             await File.WriteAllTextAsync(projectFilePath, "{ \"private\": true }", context.Configuration.TestCancellationToken);
