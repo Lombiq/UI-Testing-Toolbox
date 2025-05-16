@@ -37,6 +37,9 @@
             matchPackageNames: [
                 'selenium-webdriver',
             ],
+            prBodyNotes: [
+                'For more details, see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/selenium-webdriver/CHANGES.md).',
+            ],
         },
         {
             groupName: 'ZAP',
