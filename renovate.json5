@@ -23,6 +23,25 @@
             ],
         },
         {
+            groupName: 'Browsers',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
+            ],
+        },
+        {
+            groupName: 'Selenium WebDriver NPM',
+            matchPackageNames: [
+                'selenium-webdriver',
+            ],
+            prBodyNotes: [
+                'For more details, see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/selenium-webdriver/CHANGES.md).',
+            ],
+        },
+        {
             groupName: 'ZAP',
             matchPackageNames: [
                 'zaproxy/zap-stable',
@@ -31,16 +50,6 @@
             pinDigests: false,
             prBodyNotes: [
                 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
-            ],
-        },
-        {
-            groupName: 'Browsers',
-            matchDatasources: [
-                'custom.chrome-for-testing',
-                'custom.edge-linux',
-                'custom.edge-macos',
-                'custom.edge-windows',
-                'custom.firefox',
             ],
         },
     ],
@@ -125,6 +134,17 @@
                 'firefoxOptions\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.firefox',
+        },
+        {
+            depNameTemplate: 'selenium-webdriver',
+            customType: 'regex',
+            managerFilePatterns: [
+                '/FrontendUITestContextExtensions\\.cs$/',
+            ],
+            matchStrings: [
+                'const string seleniumWebDriverVersion\\s*=\\s*"(?<currentValue>[^"]+)";',
+            ],
+            datasourceTemplate: 'npm',
         },
         {
             depNameTemplate: 'zaproxy/zap-stable',
