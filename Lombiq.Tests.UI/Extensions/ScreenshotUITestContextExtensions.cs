@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using SixLabors.ImageSharp;
@@ -60,7 +61,8 @@ public static class ScreenshotUITestContextExtensions
                 }
                 catch (Exception ex)
                 {
-                    screenShot.SaveAsFile("FailedScreenshot.png");
+                    FileSystemHelper.EnsureDirectoryExists(context.ScreenshotsDirectoryPath);
+                    screenShot.SaveAsFile(Path.Combine(context.ScreenshotsDirectoryPath, "FailedScreenshot.png"));
                     throw new InvalidOperationException("Loading the image from the screenshot failed. The requested "
                         + $" viewportSize was {viewportSize} and the screenshot was uploaded to the dump folder. "
                         + $" The screenshot as a byte array: {screenShot.AsByteArray}."
