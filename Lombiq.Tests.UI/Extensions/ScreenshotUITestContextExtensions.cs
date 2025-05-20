@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using SixLabors.ImageSharp;
@@ -6,6 +7,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -49,7 +51,23 @@ public static class ScreenshotUITestContextExtensions
             do
             {
                 lastScrollPosition = context.GetScrollPosition();
-                var image = context.TakeScreenshot().ToBitmap();
+                var screenShot = context.TakeScreenshot();
+                Image image;
+                try
+                {
+                    using var screenRaw = new MemoryStream(screenShot.AsByteArray);
+
+                    image = Image.Load(screenRaw);
+                }
+                catch (Exception ex)
+                {
+                    screenShot.SaveAsFile(Path.Combine(VisualVerificationMatchNames.DumpFolderName, "FailedScreenshot.png"));
+                    throw new InvalidOperationException("Loading the image from the screenshot failed. The requested "
+                        + $" viewportSize was {viewportSize} and the screenshot was uploaded to the dump folder. "
+                        + $" The screenshot as a byte array: {screenShot.AsByteArray}."
+                        + $" The inner exception: {ex}");
+                }
+
                 images.Add(currentScrollPosition, image);
 
                 requestedScrollPosition = new Point(
