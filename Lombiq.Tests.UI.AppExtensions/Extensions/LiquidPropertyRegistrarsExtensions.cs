@@ -1,4 +1,4 @@
-using Lombiq.Tests.UI.AppExtensions.PropertyRegistrars;
+using Lombiq.Tests.UI.AppExtensions.LiquidTags;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -6,11 +6,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class LiquidPropertyRegistrarsExtensions
 {
     /// <summary>
-    /// Adds the <see cref="IsUITestingLiquidPropertyRegistrar"/> property registrar.
+    /// Adds the <see cref="IsUITestingLiquidEmptyTag"/> property registrar.
     /// </summary>
-    public static OrchardCoreBuilder AddIsUITestingLiquidPropertyRegistrar(
+    public static OrchardCoreBuilder AddIsUITestingLiquidEmptyTag(
         this OrchardCoreBuilder orchardCoreBuilder,
         IConfiguration configuration) =>
         orchardCoreBuilder.ConfigureServices((services) =>
-            services.RegisterLiquidPropertyAccessor<IsUITestingLiquidPropertyRegistrar>("is_ui_testing"));
+            services.AddLiquidEmptyTag<IsUITestingLiquidEmptyTag>("is_ui_testing"));
 }
