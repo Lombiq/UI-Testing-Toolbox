@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class LiquidPropertyRegistrarsExtensions
+public static class LiquidTagExtensions
 {
     /// <summary>
     /// Adds the <see cref="IsUITestingLiquidEmptyTag"/> property registrar.
