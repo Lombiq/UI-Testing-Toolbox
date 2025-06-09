@@ -11,6 +11,6 @@ public static class LiquidTagExtensions
     public static OrchardCoreBuilder AddIsUITestingLiquidEmptyTag(
         this OrchardCoreBuilder orchardCoreBuilder,
         IConfiguration configuration) =>
-        orchardCoreBuilder.ConfigureServices((services) =>
-            services.AddLiquidEmptyTag<IsUITestingLiquidEmptyTag>("is_ui_testing"));
+            orchardCoreBuilder.ConfigureServices((services) =>
+                services.AddLiquidEmptyTag<IsUITestingLiquidEmptyTag>("is_ui_testing"));
 }
