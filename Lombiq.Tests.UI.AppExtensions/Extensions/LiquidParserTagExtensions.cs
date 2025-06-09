@@ -12,5 +12,5 @@ public static class LiquidParserTagExtensions
         this OrchardCoreBuilder orchardCoreBuilder,
         IConfiguration configuration) =>
         orchardCoreBuilder.ConfigureServices((services) =>
-            services.AddLiquidParserTag<IsUITestingLiquidParserTag>("is_ui_testing"));
+            services.AddLiquidEmptyTag<IsUITestingLiquidParserTag>("is_ui_testing"));
 }
