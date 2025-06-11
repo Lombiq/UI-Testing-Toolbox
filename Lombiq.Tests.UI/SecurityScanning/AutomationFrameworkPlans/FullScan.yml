@@ -65,7 +65,7 @@ jobs:
       # This rule generates false positives on UUIDs or random numeric sequences, see https://github.com/zaproxy/zaproxy/issues/8303.
       - id: 10062
         name: The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data.
-        threshold: off
+        threshold: 'off'
     name: passiveScan-config
     type: passiveScan-config
   - alertFilters:
