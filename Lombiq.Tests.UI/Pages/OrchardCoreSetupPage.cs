@@ -15,7 +15,7 @@ using _ = OrchardCoreSetupPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
 [VerifyTitle(values: [DefaultPageTitle, OlderPageTitle], Format = "{0}")]
-[VerifyH1(values: [DefaultPageTitle, OlderPageTitle])]
+[VerifyH1(DefaultPageTitle, OlderPageTitle)]
 [TermFindSettings(
     Case = TermCase.Pascal,
     TargetAllChildren = true,
