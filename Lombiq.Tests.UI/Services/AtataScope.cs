@@ -48,5 +48,15 @@ public sealed class AtataScope : IDisposable
     /// </summary>
     public void SetContextAsCurrent() => AtataContext.Current = AtataContext;
 
-    public void Dispose() => AtataContext.Dispose();
+    public void Dispose()
+    {
+        try
+        {
+            AtataContext.Dispose();
+        }
+        catch (NullReferenceException)
+        {
+            // The dispose can throw an NRE sometimes, but we can't do anything about it.
+        }
+    }
 }
