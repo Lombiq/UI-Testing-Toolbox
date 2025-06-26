@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="3.5.0" />
+    <PackageReference Include="Atata" Version="3.6.0" />
     <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="3.2.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.2.0" />
@@ -73,7 +73,7 @@
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.342" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
-    <PackageReference Include="MailKit" Version="4.12.1" />
+    <PackageReference Include="MailKit" Version="4.13.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
