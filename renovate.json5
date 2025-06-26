@@ -9,6 +9,8 @@
             matchPackageNames: [
                 'Atata*',
             ],
+            // Disabled and staying on 3.5.0 until this is fixed: https://github.com/atata-framework/atata/issues/857.
+            enabled: false,
         },
         {
             groupName: 'Deque.AxeCore',
