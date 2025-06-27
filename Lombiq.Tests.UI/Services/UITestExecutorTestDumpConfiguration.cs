@@ -4,6 +4,8 @@ namespace Lombiq.Tests.UI.Services;
 
 public class UITestExecutorTestDumpConfiguration
 {
+    public const string DefaultDumpsDirectoryPath = "TestDumps";
+
     /// <summary>
     /// Gets or sets a value indicating whether the subfolder of each test's dumps will use a shortened name, only
     /// containing the name of the test method suffixed with the test name's hash to make it unique, without the name of
@@ -12,7 +14,7 @@ public class UITestExecutorTestDumpConfiguration
     /// </summary>
     public bool UseShortNames { get; set; } = OperatingSystem.IsWindows();
 
-    public string DumpsDirectoryPath { get; set; } = "TestDumps";
+    public string DumpsDirectoryPath { get; set; } = DefaultDumpsDirectoryPath;
     public bool CreateTestDump { get; set; } = true;
     public bool CaptureAppSnapshot { get; set; } = true;
     public bool CaptureScreenshots { get; set; } = true;

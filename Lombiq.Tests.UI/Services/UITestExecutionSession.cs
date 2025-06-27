@@ -11,6 +11,7 @@ using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Internal.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -57,6 +58,20 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration = configuration;
         _dumpConfiguration = configuration.TestDumpConfiguration;
         _testOutputHelper = configuration.TestOutputHelper;
+    }
+
+    static UITestExecutionSession()
+    {
+        if (SeleniumLogConfiguration.IsEnabled)
+        {
+            Log.SetLevel(SeleniumLogConfiguration.LogEventLevel);
+
+            // There's no way to tell when the whole test suite ends. This needs to be disposed by the GC when ending
+            // the process.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            Log.Handlers.Add(new FileLogHandler(Path.Combine(UITestExecutorTestDumpConfiguration.DefaultDumpsDirectoryPath, "SeleniumLog.log")));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        }
     }
 
     public ValueTask DisposeAsync() => ShutdownAsync();
