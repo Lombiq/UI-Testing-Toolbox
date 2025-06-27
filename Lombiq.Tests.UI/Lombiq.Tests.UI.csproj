@@ -92,7 +92,7 @@
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.3" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.33.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.32.0" />
   </ItemGroup>
 
   <ItemGroup>
