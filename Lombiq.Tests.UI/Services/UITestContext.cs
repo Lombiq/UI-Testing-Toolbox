@@ -18,12 +18,14 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-public class UITestContext
+public sealed class UITestContext : IAsyncDisposable
 {
     // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
     // preserve the insertion order.
     private readonly ConcurrentQueue<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
+
+    private BiDi _biDi;
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -324,13 +326,13 @@ public class UITestContext
 
         if (context.IsBrowserConfigured)
         {
-            var biDi = await scope.Driver.AsBiDiAsync();
+            context._biDi = await scope.Driver.AsBiDiAsync();
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await biDi.Log.OnEntryAddedAsync(entry =>
+            await context._biDi.Log.OnEntryAddedAsync(entry =>
             {
                 if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
                 {
@@ -340,7 +342,7 @@ public class UITestContext
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+                await context._biDi.Network.OnResponseCompletedAsync(responseCompleted =>
                 {
                     if (configuration.ResponseLogFilter(responseCompleted))
                     {
@@ -381,5 +383,15 @@ public class UITestContext
         {
             return false;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_biDi != null) await _biDi.DisposeAsync();
+
+        Scope?.Dispose();
+
+        TestDumpContainer.Values.ForEach(value => value.Dispose());
+        TestDumpContainer.Clear();
     }
 }

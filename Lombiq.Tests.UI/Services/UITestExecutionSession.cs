@@ -209,10 +209,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_context != null)
         {
             contextId = _context.Id;
-            _context.Scope?.Dispose();
-
-            _context.TestDumpContainer.Values.ForEach(value => value.Dispose());
-            _context.TestDumpContainer.Clear();
+            await _context.DisposeAsync();
         }
 
         if (_sqlServerManager is not null)
