@@ -25,7 +25,7 @@ public sealed class UITestContext : IAsyncDisposable
     private readonly ConcurrentQueue<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
-    private BiDi _biDi;
+    private BiDi _biDirectionalDriver;
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -326,13 +326,13 @@ public sealed class UITestContext : IAsyncDisposable
 
         if (context.IsBrowserConfigured)
         {
-            context._biDi = await scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await context._biDi.Log.OnEntryAddedAsync(entry =>
+            await context._biDirectionalDriver.Log.OnEntryAddedAsync(entry =>
             {
                 if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
                 {
@@ -342,7 +342,7 @@ public sealed class UITestContext : IAsyncDisposable
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await context._biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
                 {
                     if (configuration.ResponseLogFilter(responseCompleted))
                     {
@@ -387,7 +387,7 @@ public sealed class UITestContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_biDi != null) await _biDi.DisposeAsync();
+        if (_biDirectionalDriver != null) await _biDirectionalDriver.DisposeAsync();
 
         Scope?.Dispose();
 
