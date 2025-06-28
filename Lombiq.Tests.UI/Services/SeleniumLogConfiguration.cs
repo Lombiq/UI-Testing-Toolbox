@@ -15,11 +15,13 @@ public static class SeleniumLogConfiguration
     /// </para>
     /// </remarks>
     public static bool IsEnabled { get; set; } =
-        TestConfigurationManager.GetBoolConfiguration("SeleniumLogConfiguration:IsEnabled", defaultValue: false);
+        TestConfigurationManager.GetBoolConfiguration(GetPrefixedKey("IsEnabled"), defaultValue: false);
 
     /// <summary>
     /// Gets or sets the <see cref="LogEventLevel"/> for the global Selenium log.
     /// </summary>
     public static LogEventLevel LogEventLevel { get; set; } =
-        TestConfigurationManager.GetConfiguration("SeleniumLogConfiguration:LogEventLevel", LogEventLevel.Trace);
+        TestConfigurationManager.GetConfiguration(GetPrefixedKey("LogEventLevel"), LogEventLevel.Trace);
+
+    private static string GetPrefixedKey(string key) => $"{nameof(SeleniumLogConfiguration)}:{key}";
 }
