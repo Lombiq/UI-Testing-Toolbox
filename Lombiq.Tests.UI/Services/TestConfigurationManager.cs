@@ -61,7 +61,6 @@ public static class TestConfigurationManager
         GetConfiguration(typeof(T).Name, new T());
 
     public static T GetConfiguration<T>(string key, T defaultValue)
-        where T : new()
     {
         var result = defaultValue;
 
