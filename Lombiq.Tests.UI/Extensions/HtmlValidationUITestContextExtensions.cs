@@ -25,7 +25,7 @@ public static class HtmlValidationUITestContextExtensions
         Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
         Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
     {
-        var validationResult = context.ValidateHtml(htmlValidationOptionsAdjuster);
+        var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
         var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
         try
@@ -47,7 +47,7 @@ public static class HtmlValidationUITestContextExtensions
     /// <param name="htmlValidationOptionsAdjuster">
     /// A delegate to adjust the <see cref="HtmlValidationOptions"/> instance supplied in the context.
     /// </param>
-    public static HtmlValidationResult ValidateHtml(
+    public static async Task<HtmlValidationResult> ValidateHtmlAsync(
         this UITestContext context,
         Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null)
     {
@@ -55,7 +55,7 @@ public static class HtmlValidationUITestContextExtensions
         htmlValidationOptionsAdjuster?.Invoke(options);
         try
         {
-            return new HtmlValidator(options).Validate(context.Driver.PageSource);
+            return await new HtmlValidator(options).ValidateAsync(context.Driver.PageSource);
         }
         catch (CliCommandException exception) when (exception.Message.Contains("'EACCES'"))
         {
