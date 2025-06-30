@@ -44,6 +44,9 @@ Here's a full _TestConfiguration.json_ file example, something appropriate durin
     },
     "BrowserConfiguration": {
       "Headless": true
+    },
+    "SeleniumLogConfiguration": {
+      "IsEnabled": true
     }
   }
 }

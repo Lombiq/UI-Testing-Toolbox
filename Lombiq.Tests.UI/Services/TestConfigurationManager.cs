@@ -48,7 +48,7 @@ public static class TestConfigurationManager
 
     public static string GetConfiguration(string key, bool throwIfNullOrEmpty = false)
     {
-        var prefixedKey = "Lombiq_Tests_UI:" + key;
+        var prefixedKey = GetPrefixedKey(key);
         var config = RootConfiguration.GetValue<string>(prefixedKey);
 
         return throwIfNullOrEmpty && string.IsNullOrEmpty(config)
@@ -57,11 +57,14 @@ public static class TestConfigurationManager
     }
 
     public static T GetConfiguration<T>()
-        where T : new()
-    {
-        var result = new T();
+        where T : new() =>
+        GetConfiguration(typeof(T).Name, new T());
 
-        var prefixedKey = "Lombiq_Tests_UI:" + typeof(T).Name;
+    public static T GetConfiguration<T>(string key, T defaultValue)
+    {
+        var result = defaultValue;
+
+        var prefixedKey = GetPrefixedKey(key);
         RootConfiguration.Bind(prefixedKey, result);
 
         return result;
@@ -83,4 +86,6 @@ public static class TestConfigurationManager
             .AddEnvironmentVariables()
             .Build();
     }
+
+    private static string GetPrefixedKey(string key) => "Lombiq_Tests_UI:" + key;
 }
