@@ -239,7 +239,7 @@ public static class FrontendUITestContextExtensions
 
         // If anything on this line is ever renamed, be sure to adjust the regex in the renovate.json5 config file in
         // the root too.
-        const string seleniumWebDriverVersion = "4.33.0";
+        const string seleniumWebDriverVersion = "4.34.0";
 
         return context.SetupNodeDependenciesAsync(
             helper,
