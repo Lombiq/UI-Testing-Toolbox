@@ -781,7 +781,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 Application = _applicationInstance,
                 Scope = atataScope,
                 TestStartUri = testStartRelativeUri is null ? appBaseUri : new Uri(appBaseUri, testStartRelativeUri.PathAndQuery),
-                RunningContextContainer = new RunningContextContainer(sqlServerContext, smtpContext, azureBlobStorageContext),
+                RunningContextContainer = new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
                 ZapManager = _zapManager,
                 CounterDataCollector = counterDataCollector,
             });

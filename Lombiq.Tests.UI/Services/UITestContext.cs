@@ -188,12 +188,9 @@ public sealed class UITestContext : IAsyncDisposable
         Id = parameters.Id;
         TestManifest = parameters.TestManifest;
         Configuration = parameters.Configuration;
-        SqlServerRunningContext = parameters.RunningContextContainer.SqlServerRunningContext;
         Application = parameters.Application;
         Scope = parameters.Scope;
         TestStartUri = parameters.TestStartUri;
-        SmtpServiceRunningContext = parameters.RunningContextContainer.SmtpServiceRunningContext;
-        AzureBlobStorageRunningContext = parameters.RunningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = parameters.ZapManager;
         CounterDataCollector = parameters.CounterDataCollector;
 
@@ -202,7 +199,7 @@ public sealed class UITestContext : IAsyncDisposable
             SmtpServiceRunningContext,
             AzureBlobStorageRunningContext,
             ElasticsearchRunningContext
-        ) = runningContextContainer;
+        ) = parameters.RunningContextContainer;
     }
 
     /// <summary>
@@ -304,7 +301,7 @@ public sealed class UITestContext : IAsyncDisposable
 
         if (context.IsBrowserConfigured)
         {
-            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await parameters.Scope.Driver.AsBiDiAsync();
 
             var configuration = parameters.Configuration;
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
