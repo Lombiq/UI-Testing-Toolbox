@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Samples.Constants;
 using System.IO;
 using System.Threading.Tasks;
@@ -33,7 +34,9 @@ public class DatabaseSnapshotTests : UITestBase
                 await context.Application.TakeSnapshotAsync(appForDatabaseTestFolder);
             });
 
-        await ExecuteTestFromExistingDBAsync(context => context.TestBasicOrchardFeaturesExceptSetupAsync(), appForDatabaseTestFolder);
+        await ExecuteTestFromExistingDBAsync(
+            context => context.TestBasicOrchardFeaturesAsync(new OrchardCoreSetupParameters { SkipSetup = true }),
+            appForDatabaseTestFolder);
     }
 }
 

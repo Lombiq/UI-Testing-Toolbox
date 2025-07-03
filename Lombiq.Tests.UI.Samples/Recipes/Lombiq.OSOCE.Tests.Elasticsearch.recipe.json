@@ -1,0 +1,63 @@
+{
+  // This recipe is only interesting for testing, so keeping it here in the test project, not in the web app one.
+  "name": "Lombiq.Tests.UI.Samples.Elasticsearch",
+  "displayName": "TEST: Elasticsearch Configuration",
+  "description": "Elasticsearch Configuration recipe for automated UI test execution.",
+  "author": "Lombiq Technologies",
+  "website": "https://github.com/Lombiq/UI-Testing-Toolbox",
+  "version": "1.0",
+  "issetuprecipe": true,
+  "categories": [
+    "test",
+    "elasticsearch"
+  ],
+  "tags": [
+    "test",
+    "elasticsearch"
+  ],
+  "steps": [
+    {
+      "name": "feature",
+      "disable": [],
+      "enable": [
+        "OrchardCore.Search.Elasticsearch",
+        "OrchardCore.Search"
+      ]
+    },
+    {
+      "name": "ElasticIndexSettings",
+      "Indices": [
+        {
+          "elasticsearchshouldwork": {
+            "AnalyzerName": "standard",
+            "IndexLatest": false,
+            "IndexedContentTypes": [
+              "BlogPost"
+            ],
+            "Culture": "any",
+            "StoreSourceData": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "ElasticSettings": {
+        "SearchIndex": "elasticsearchshouldwork",
+        "DefaultSearchFields": [
+          "Content.ContentItem.FullText"
+        ],
+        "AllowElasticQueryStringQueryInSearch": false
+      }
+    },
+    {
+      "name": "recipes",
+      "Values": [
+        {
+          "executionid": "Lombiq.OSOCE.Web",
+          "name": "Lombiq.OSOCE.Tests"
+        }
+      ]
+    }
+  ]
+}

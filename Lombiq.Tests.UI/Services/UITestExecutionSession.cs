@@ -12,6 +12,7 @@ using Lombiq.Tests.UI.Services.GitHub;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Internal.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ using System.Threading.Tasks;
 using TWP.Selenium.Axe.Html;
 using Xunit;
 using Xunit.v3;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -57,6 +59,20 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration = configuration;
         _dumpConfiguration = configuration.TestDumpConfiguration;
         _testOutputHelper = configuration.TestOutputHelper;
+    }
+
+    static UITestExecutionSession()
+    {
+        if (SeleniumLogConfiguration.IsEnabled)
+        {
+            Log.SetLevel(SeleniumLogConfiguration.LogEventLevel);
+
+            // There's no way to tell when the whole test suite ends. This needs to be disposed by the GC when ending
+            // the process.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            Log.Handlers.Add(new FileLogHandler(Path.Combine(UITestExecutorTestDumpConfiguration.DefaultDumpsDirectoryPath, "SeleniumLog.log")));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        }
     }
 
     public ValueTask DisposeAsync() => ShutdownAsync();
@@ -110,6 +126,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             if (_context.IsBrowserConfigured) _context.SetDefaultBrowserSize();
 
+            var elasticsearchRunningContext = _context.ElasticsearchRunningContext;
+            if (elasticsearchRunningContext != null) await elasticsearchRunningContext.BeforeTestAsync(_context);
+
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
             var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
@@ -131,6 +150,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             // some way. So it's safe to await it here. It's also necessary to cleanly propagate any exceptions that may
             // have been thrown inside it.
             await testTask;
+
+            if (elasticsearchRunningContext != null) await elasticsearchRunningContext.AfterTestAsync(_context);
 
             await _context.AssertLogsAsync();
 
@@ -165,20 +186,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 throw;
             }
 
-            LogRetry(retryCount);
-
-            if (_configuration.RetryInterval > TimeSpan.Zero)
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "Waiting {0} before retrying the test.", _configuration.RetryInterval);
-
-                await Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
-            }
-            else
-            {
-                _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "No retry interval is set, retrying the test immediately.");
-            }
+            await LogRetryAsync(retryCount);
         }
         finally
         {
@@ -223,10 +231,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_context != null)
         {
             contextId = _context.Id;
-            _context.Scope?.Dispose();
-
-            _context.TestDumpContainer.Values.ForEach(value => value.Dispose());
-            _context.TestDumpContainer.Clear();
+            await _context.DisposeAsync();
         }
 
         if (_sqlServerManager is not null)
@@ -257,6 +262,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
                     ex);
             }
+        }
+
+        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
+        {
+            await elasticsearchRunningContext.AfterTestAsync(_context);
         }
 
         _screenshotCount = 0;
@@ -497,7 +507,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
     }
 
-    private void LogRetry(int retryCount)
+    private Task LogRetryAsync(int retryCount)
     {
         _testOutputHelper.WriteLineTimestampedAndDebug(
             "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
@@ -510,12 +520,24 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             GitHubHelper.IsGitHubEnvironment)
         {
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
-                Microsoft.Extensions.Logging.LogLevel.Warning,
+                LogLevel.Warning,
                 "UI test may be flaky",
                 $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
                     "retried. This may indicate it being flaky.",
                 string.Empty);
         }
+
+        if (_configuration.RetryInterval > TimeSpan.Zero)
+        {
+            _testOutputHelper.WriteLineTimestampedAndDebug(
+                "Waiting {0} before retrying the test.", _configuration.RetryInterval);
+
+            return Task.Delay(_configuration.RetryInterval, _configuration.TestCancellationToken);
+        }
+
+        _testOutputHelper.WriteLineTimestampedAndDebug(
+            "No retry interval is set, retrying the test immediately.");
+        return Task.CompletedTask;
     }
 
     private async Task SetupAsync()
@@ -684,13 +706,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
 
-        SqlServerRunningContext sqlServerContext = null;
-        AzureBlobStorageRunningContext azureBlobStorageContext = null;
-        SmtpServiceRunningContext smtpContext = null;
-
-        if (_configuration.UseSqlServer) sqlServerContext = await SetUpSqlServerAsync();
-        if (_configuration.UseAzureBlobStorage) azureBlobStorageContext = await SetUpAzureBlobStorageAsync();
-        if (_configuration.UseSmtpService) smtpContext = await StartSmtpServiceAsync();
+        var sqlServerContext = _configuration.UseSqlServer ? await SetUpSqlServerAsync() : null;
+        var azureBlobStorageContext = _configuration.UseAzureBlobStorage ? await SetUpAzureBlobStorageAsync() : null;
+        var smtpContext = _configuration.UseSmtpService ? await StartSmtpServiceAsync() : null;
+        var elasticsearchContext = _configuration.UseElasticsearch ? SetUpElasticsearch() : null;
 
         _zapManager = new ZapManager(_testOutputHelper);
 
@@ -869,6 +888,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var smtpContext = await _smtpService.StartAsync();
         _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
+        // Exclude any errors coming from the smtp4dev JS files.
+        var indexFile = new Uri(smtpContext.WebUIUri, "/assets/index-").AbsoluteUri;
+        _configuration.BrowserLogFilters[nameof(SmtpService)] = entry =>
+            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.StartsWithOrdinalIgnoreCase(indexFile) != true;
+
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
@@ -887,6 +911,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeAppStart += SmtpServiceBeforeAppStartHandlerAsync;
 
         return smtpContext;
+    }
+
+    private ElasticsearchRunningContext SetUpElasticsearch()
+    {
+        var id = Guid.NewGuid();
+        var prefix = TestContext.Current.GetElasticsearchSafeIndexName(id);
+
+        _configuration.OrchardCoreConfiguration.ConfigureElasticsearchPrefix(prefix);
+
+        return new(id, prefix);
     }
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)

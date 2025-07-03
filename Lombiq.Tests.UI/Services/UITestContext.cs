@@ -6,24 +6,26 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
-using OpenQA.Selenium.BiDi.Modules.Log;
 using OpenQA.Selenium.BiDi.Modules.Network;
 using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
 
-public class UITestContext
+public sealed class UITestContext : IAsyncDisposable
 {
     // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
     // preserve the insertion order.
-    private readonly ConcurrentQueue<Entry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
+
+    private BiDi _biDirectionalDriver;
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -104,6 +106,11 @@ public class UITestContext
     public AzureBlobStorageRunningContext AzureBlobStorageRunningContext { get; }
 
     /// <summary>
+    /// Gets the context for the currently used Elasticsearch configuration, if Elasticsearch is used for the test.
+    /// </summary>
+    public ElasticsearchRunningContext ElasticsearchRunningContext { get; }
+
+    /// <summary>
     /// Gets the service to manage <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see> instances for
     /// security scanning. Usually, it's recommended to use the higher-level ZAP <see
     /// cref="SecurityScanningUITestContextExtensions"/> extension methods instead.
@@ -115,7 +122,7 @@ public class UITestContext
     /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
     /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<Entry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+    public IReadOnlyList<OpenQA.Selenium.BiDi.Modules.Log.LogEntry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
 
     /// <summary>
     /// Gets a cumulative log of browser HTTP responses filtered by <see
@@ -189,6 +196,13 @@ public class UITestContext
         AzureBlobStorageRunningContext = parameters.RunningContextContainer.AzureBlobStorageRunningContext;
         ZapManager = parameters.ZapManager;
         CounterDataCollector = parameters.CounterDataCollector;
+
+        (
+            SqlServerRunningContext,
+            SmtpServiceRunningContext,
+            AzureBlobStorageRunningContext,
+            ElasticsearchRunningContext
+        ) = runningContextContainer;
     }
 
     /// <summary>
@@ -290,23 +304,29 @@ public class UITestContext
 
         if (context.IsBrowserConfigured)
         {
-            var biDi = await parameters.Scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
 
             var configuration = parameters.Configuration;
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await biDi.Log.OnEntryAddedAsync(entry =>
+            await context._biDirectionalDriver.Log.OnEntryAddedAsync(entry =>
             {
-                if (configuration.BrowserLogFilter(entry)) context._cumulativeBrowserLog.Enqueue(entry);
+                if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+                {
+                    context._cumulativeBrowserLog.Enqueue(entry);
+                }
             });
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await biDi.Network.OnResponseCompletedAsync(responseCompleted =>
+                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
                 {
-                    if (configuration.ResponseLogFilter(responseCompleted)) context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                    if (configuration.ResponseLogFilter(responseCompleted))
+                    {
+                        context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                    }
                 });
             }
         }
@@ -342,5 +362,15 @@ public class UITestContext
         {
             return false;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_biDirectionalDriver != null) await _biDirectionalDriver.DisposeAsync();
+
+        Scope?.Dispose();
+
+        TestDumpContainer.Values.ForEach(value => value.Dispose());
+        TestDumpContainer.Clear();
     }
 }

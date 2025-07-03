@@ -1,10 +1,14 @@
 using Lombiq.Tests.UI.Constants;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 
 namespace Lombiq.Tests.UI.Pages;
 
 public class OrchardCoreSetupParameters
 {
+    private UserRegistrationParameters _userRegistrationParameters;
+    private UserRegistrationParameters _userLoginParameters;
+
     public string LanguageValue { get; set; } = "en";
     public string SiteName { get; set; } = "Test Site";
     public string RecipeId { get; set; } = "SaaS";
@@ -16,19 +20,43 @@ public class OrchardCoreSetupParameters
     public string Email { get; set; } = DefaultUser.Email;
     public string Password { get; set; } = DefaultUser.Password;
     public bool RunSetupOnCurrentPage { get; set; }
+    public bool SkipSetup { get; set; }
+    public bool SkipRegistration { get; set; }
+    public bool SkipFrontend { get; set; }
 
-    public OrchardCoreSetupParameters()
+    /// <summary>
+    /// Gets or sets the value of the parameters used for registration of a valid test user. By default, it gets the
+    /// <see cref="TestUser"/>, and it's reset to that value if set to <see langword="null"/>.
+    /// </summary>
+    public UserRegistrationParameters UserRegistrationParameters
     {
+        get => _userRegistrationParameters ?? UserRegistrationParameters.CreateTest();
+        set => _userRegistrationParameters = value;
     }
 
-    public OrchardCoreSetupParameters(UITestContext context)
+    /// <summary>
+    /// Gets or sets the value of the parameters used for login with a valid test user. By default, it gets the <see
+    /// cref="DefaultUser"/>, and it's reset to that value if set to <see langword="null"/>.
+    /// </summary>
+    public UserRegistrationParameters UserLoginParameters
     {
-        DatabaseProvider = context.Configuration.UseSqlServer
-            ? OrchardCoreSetupPage.DatabaseType.SqlServer
-            : OrchardCoreSetupPage.DatabaseType.Sqlite;
+        get => _userLoginParameters ?? UserRegistrationParameters.CreateDefaultUser();
+        set => _userLoginParameters = value;
+    }
 
-        ConnectionString = context.Configuration.UseSqlServer
-            ? context.SqlServerRunningContext.ConnectionString
-            : null;
+    public OrchardCoreSetupParameters(UITestContext context = null, string recipeId = null)
+    {
+        if (context != null)
+        {
+            DatabaseProvider = context.Configuration.UseSqlServer
+                ? OrchardCoreSetupPage.DatabaseType.SqlServer
+                : OrchardCoreSetupPage.DatabaseType.Sqlite;
+
+            ConnectionString = context.Configuration.UseSqlServer
+                ? context.SqlServerRunningContext.ConnectionString
+                : null;
+        }
+
+        if (!string.IsNullOrEmpty(recipeId)) RecipeId = recipeId;
     }
 }

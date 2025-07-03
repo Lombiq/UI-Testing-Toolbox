@@ -10,13 +10,13 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class SeleniumEntryExtensions
 {
-    public static string ToFormattedString(this IEnumerable<Entry> logEntries) =>
+    public static string ToFormattedString(this IEnumerable<LogEntry> logEntries) =>
         string.Join(Environment.NewLine, logEntries.Select(ToFormattedString));
 
-    public static string ToFormattedString(this Entry entry) =>
+    public static string ToFormattedString(this LogEntry entry) =>
         StringHelper.CreateInvariant($"{entry.Timestamp:yyyy-MM-dd HH:mm:ss} {entry.Level} {entry.Text}{FormatStackTrace(entry.StackTrace)}");
 
-    public static bool IsNonSuccessBrowserLogEntry(this Entry entry) =>
+    public static bool IsNonSuccessBrowserLogEntry(this LogEntry entry) =>
         OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(entry);
 
     private static string FormatStackTrace(StackTrace stackTrace)

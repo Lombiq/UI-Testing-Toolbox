@@ -154,6 +154,11 @@ public static class EmailUITestContextExtensions
         {
             await context.ClickReliablyOnAsync(By.ClassName("save"));
             context.Get(By.ClassName("validation-summary-errors").Safely())?.Text?.Trim().ShouldBeNullOrEmpty();
+
+            // "SMTP" is wired in so that we don't have to reference the 'OrchardCore.Email.Smtp' package just to use
+            // 'SmtpEmailProvider.TechnicalName'.
+            await context.SetDropdownByValueAsync(By.Id("ISite_EmailSettings_DefaultProvider"), "SMTP");
+            await context.ClickReliablyOnAsync(By.ClassName("save"));
         }
     }
 
