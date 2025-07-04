@@ -467,12 +467,12 @@ public static class NavigationUITestContextExtensions
     }
 
     /// <summary>
-    /// A method to filter for an item on the admin tenants page.
+    /// A method to filter for an item on the admin page with a search box that has search-box ID.
     /// </summary>
-    /// <param name="tenantName">Mostly should be used for tenant name, but can be anything that's appropriate in the search input.</param>
-    public static async Task FilterOnAdminTenantsPageAsync(this UITestContext context, string tenantName)
+    /// <param name="text">Can be anything that's appropriate in the search input.</param>
+    public static async Task FilterOnAdminWithSearchBoxAsync(this UITestContext context, string text)
     {
-        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), tenantName);
+        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), text);
 
         // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
         // have to use JS to click on it.
