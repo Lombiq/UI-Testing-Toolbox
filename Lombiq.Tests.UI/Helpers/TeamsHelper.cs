@@ -11,8 +11,8 @@ namespace Lombiq.Tests.UI.Helpers;
 public static class TeamsHelper
 {
     /// <summary>
-    /// Send a message to Teams about failing UI test in production using the <see cref="webhookUrl"/>. Uses the
-    /// <see cref="siteName"/> inside the message to specify which site the failing UI test was for. Includes a link to
+    /// Send a message to Teams about failing UI test in production using the <paramref name="webhookUrl"/>. Uses the
+    /// <paramref name="siteName"/> inside the message to specify which site the failing UI test was for. Includes a link to
     /// the workflow run that failed.
     /// <remarks>
     /// <para>
@@ -41,8 +41,8 @@ public static class TeamsHelper
     }
 
     /// <summary>
-    /// Send a simple message to Teams using the <see cref="webhookUrl"/>. Uses the <see cref="title"/> as the title of
-    /// the message, the <see cref="message"/> as the body, and the <see cref="urlText"/> and <see cref="url"/> as a link
+    /// Send a simple message to Teams using the <paramref name="webhookUrl"/>. Uses the <paramref name="title"/> as the title of
+    /// the message, the <paramref name="message"/> as the body, and the <paramref name="urlText"/> and <paramref name="url"/> as a link
     /// in the message.
     /// <remarks>
     /// <para>
