@@ -8,7 +8,7 @@ namespace Lombiq.Tests.UI;
 
 public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemoteUITestBase
 {
-    private static bool _teamsMessageWasSent;
+    protected static bool TeamsMessageWasSent { get; set; }
 
     protected abstract string SiteName { get; }
     protected abstract Uri BaseUri { get; }
@@ -41,9 +41,9 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
                     if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
                 });
         }
-        catch (Exception) when (!_teamsMessageWasSent && RunIsForProduction && !string.IsNullOrEmpty(TestFailedTeamsWebhookUrl))
+        catch (Exception) when (!TeamsMessageWasSent && RunIsForProduction && !string.IsNullOrEmpty(TestFailedTeamsWebhookUrl))
         {
-            _teamsMessageWasSent = true;
+            TeamsMessageWasSent = true;
 
             var isSuccessful = await TeamsHelper.SendFailedUiTestTeamsMessageAsync(TestFailedTeamsWebhookUrl, SiteName);
 
