@@ -1,37 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.Deserialize``1(System.String)</Target>
+    <Target>M:Lombiq.Tests.UI.Services.OrchardCoreHosting.OrchardApplicationFactory`1.#ctor(System.Action{Microsoft.Extensions.Configuration.IConfigurationBuilder},System.Action{Microsoft.AspNetCore.Hosting.IWebHostBuilder},System.Action{Microsoft.Extensions.Configuration.ConfigurationManager,Microsoft.Extensions.DependencyInjection.OrchardCoreBuilder},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.GetAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.String)</Target>
+    <Target>M:Lombiq.Tests.UI.Services.OrchardCoreInstance`1.#ctor(Lombiq.Tests.UI.Services.OrchardCoreConfiguration,System.String,Xunit.ITestOutputHelper)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.Object,System.String)</Target>
+    <Target>M:Lombiq.Tests.UI.Services.UITestContext.CreateAsync(System.String,Lombiq.Tests.UI.Models.UITestManifest,Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration,Lombiq.Tests.UI.Services.IWebApplicationInstance,Lombiq.Tests.UI.Services.AtataScope,System.Uri,Lombiq.Tests.UI.Models.RunningContextContainer,Lombiq.Tests.UI.SecurityScanning.ZapManager)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Extensions.HttpClientUITestContextExtensions.PostAndReadResponseContentAsync``1(Lombiq.Tests.UI.Services.UITestContext,System.Net.Http.HttpClient,System.String,System.String)</Target>
+    <Target>M:Lombiq.Tests.UI.Services.WebApplicationInstanceFactory.BeginInvoke(Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration,System.String,System.AsyncCallback,System.Object)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Lombiq.Tests.UI.Services.SmtpServiceRunningContext.#ctor(System.Int32,System.Uri)</Target>
+    <Target>M:Lombiq.Tests.UI.Services.WebApplicationInstanceFactory.Invoke(Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration,System.String)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
