@@ -23,12 +23,8 @@ public static class TeamsHelper
     /// </para>
     /// </remarks>
     /// </summary>
-    public static Task<HttpResponseMessage> SendFailedUiTestTeamsMessageAsync(string webhookUrl, string siteName)
+    public static Task<HttpResponseMessage> SendFailedUITestTeamsMessageAsync(string webhookUrl, string siteName)
     {
-        // This needs a workflow in Teams. Add one starting with the "When a Teams webhook request is received"
-        // trigger ("Who can trigger the flow?" -> Anyone). Then add the "Post card in a chat or channel" step with
-        // `@triggerBody()` (the @ is important) as the "Adaptive Card" value. Just paste this into the text box,
-        // trying to insert it as a dynamic content or expression value won't work.
         var runUrl =
             $"https://github.com/{Environment.GetEnvironmentVariable("GITHUB_REPOSITORY")}/actions/runs/" +
             $"{Environment.GetEnvironmentVariable("GITHUB_RUN_ID")}";
