@@ -1,8 +1,12 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.Counters;
 using Lombiq.Tests.UI.Services.Counters.Configuration;
+using Lombiq.Tests.UI.Services.Counters.Data;
 using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,6 +16,29 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // does not execute the same query multiple times, wasting time and computing resources.
 public class DuplicatedSqlQueryDetectorTests : UITestBase
 {
+    private const string WorkflowTypeStartActivitiesQuery =
+        "SELECT DISTINCT [Document].* FROM [Document] INNER JOIN [WorkflowTypeStartActivitiesIndex]"
+        + " AS [WorkflowTypeStartActivitiesIndex_a1]"
+        + " ON [WorkflowTypeStartActivitiesIndex_a1].[DocumentId] = [Document].[Id]"
+        + " WHERE (([WorkflowTypeStartActivitiesIndex_a1].[StartActivityName] = @p0)"
+        + " and ([WorkflowTypeStartActivitiesIndex_a1].[IsEnabled] = @p1))";
+
+    private static readonly IEnumerable<ICounterKey> CounterExcludeList =
+    [
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentCreatedEvent"),
+            new("p1", value: true)),
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentPublishedEvent"),
+            new("p1", value: true)),
+        new DbCommandExecuteCounterKey(
+            WorkflowTypeStartActivitiesQuery,
+            new("p0", "ContentUpdatedEvent"),
+            new("p1", value: true)),
+    ];
+
     public DuplicatedSqlQueryDetectorTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
@@ -88,7 +115,7 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
 
         var adminCounterConfiguration = new CounterConfiguration
         {
-            ExcludeFilter = OrchardCoreUITestExecutorConfiguration.DefaultCounterExcludeFilter,
+            ExcludeFilter = CounterExcludeList.Contains,
             SessionThreshold =
             {
                 // Let's enable and configure the counter thresholds for ORM sessions.
