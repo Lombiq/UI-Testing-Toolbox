@@ -45,11 +45,11 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
         {
             TeamsMessageWasSent = true;
 
-            var isSuccessful = await TeamsHelper.SendFailedUiTestTeamsMessageAsync(TestFailedTeamsWebhookUrl, SiteName);
+            var response = await TeamsHelper.SendFailedUITestTeamsMessageAsync(TestFailedTeamsWebhookUrl, SiteName);
 
-            if (!isSuccessful.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                _testOutputHelper.WriteLine($"Failed to send message to Teams with the following response: {isSuccessful}.");
+                _testOutputHelper.WriteLine($"Failed to send message to Teams with the following response: {response}.");
             }
 
             throw;
