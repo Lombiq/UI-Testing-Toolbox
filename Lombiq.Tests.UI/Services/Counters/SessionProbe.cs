@@ -42,6 +42,8 @@ public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, 
         _session.Import(item, id, version, collection);
     void ISession.Detach(object item, string collection) =>
         _session.Detach(item, collection);
+    void ISession.DetachAll(string collection) =>
+        _session.DetachAll(collection);
     Task<IEnumerable<T>> ISession.GetAsync<T>(long[] ids, string collection) =>
         _session.GetAsync<T>(ids, collection);
     IQuery ISession.Query(string collection) =>
@@ -49,6 +51,7 @@ public sealed class SessionProbe : CounterProbe, IOutOfTestContextCounterProbe, 
     IQuery<T> ISession.ExecuteQuery<T>(ICompiledQuery<T> compiledQuery, string collection) =>
         _session.ExecuteQuery(compiledQuery, collection);
     Task ISession.CancelAsync() => _session.CancelAsync();
+    Task ISession.ResetAsync() => _session.ResetAsync();
     Task ISession.FlushAsync() => _session.FlushAsync();
     Task ISession.SaveChangesAsync() => _session.SaveChangesAsync();
     Task<DbConnection> ISession.CreateConnectionAsync() => _session.CreateConnectionAsync();
