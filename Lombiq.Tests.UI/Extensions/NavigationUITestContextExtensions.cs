@@ -469,4 +469,17 @@ public static class NavigationUITestContextExtensions
         // have to use JS to click on it.
         context.ExecuteScript("document.getElementById('submitFilter').click();");
     }
+
+    /// <summary>
+    /// A method to filter for an item on the admin page with a search box that has search-box ID.
+    /// </summary>
+    /// <param name="text">Can be anything that's appropriate in the search input.</param>
+    public static async Task FilterOnAdminWithSearchBoxAsync(this UITestContext context, string text)
+    {
+        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), text);
+
+        // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
+        // have to use JS to click on it.
+        context.ExecuteScript("document.getElementById('submitFilter').click();");
+    }
 }
