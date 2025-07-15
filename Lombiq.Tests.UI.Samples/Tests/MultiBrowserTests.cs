@@ -27,14 +27,18 @@ public class MultiBrowserTests : UITestBase
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, Browser.Firefox);
 
     // This test is now marked not with the [Fact] attribute but [Theory]. With it, you can create so-called data-driven
-    // tests. [Chrome], [Firefox], and [Edge] are input parameters of the test, and thus in effect, you have now three
-    // tests: AnonymousHomePageShouldExistMultiBrowser once with Chrome, once with Firefox, and once with Edge. See here
-    // for more info:
-    // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/. Note that
-    // all browsers will be automatically installed (as isolated instances just used for testing) with the specific
-    // version pinned by the UI Testing Toolbox. So, you don't need to preinstall them, nor do you have to worry about
-    // browser updates breaking your tests.
-    [Theory, Chrome, Firefox, Edge]
+    // tests. [Chrome], [Firefox] are input parameters of the test, and thus in effect, you have now two tests:
+    // AnonymousHomePageShouldExistMultiBrowser once with Chrome and once with Firefox. See here for more info:
+    // https://andrewlock.net/creating-parameterised-tests-in-xunit-with-inlinedata-classdata-and-memberdata/.
+
+    // Note that all browsers will be automatically installed (as isolated instances just used for testing) with the
+    // specific version pinned by the UI Testing Toolbox. So, you don't need to preinstall them, nor do you have to
+    // worry about browser updates breaking your tests.
+
+    // [Edge] is also available for Microsoft Edge. However, due to the Edge driver's or the browser's download URL, and
+    // thus the automatic installation, routinely breaking (as of writing this, most recently:
+    // https://github.com/SeleniumHQ/selenium/issues/16055), we don't use it, nor do we recommend using it frequently.
+    [Theory, Chrome, Firefox]
     public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) =>
         ExecuteTestAfterSetupAsync(NavbarIsCorrect, browser);
 
