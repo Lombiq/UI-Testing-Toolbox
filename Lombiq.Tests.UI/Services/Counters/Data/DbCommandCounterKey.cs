@@ -21,12 +21,12 @@ public abstract class DbCommandCounterKey : CounterKey
     {
         if (ReferenceEquals(this, other)) return true;
 
-        return other is DbCommandCounterKey otherKey
-            && other.GetType() == GetType()
-            && GetType() == otherKey.GetType()
-            && string.Equals(CommandText, otherKey.CommandText, StringComparison.OrdinalIgnoreCase)
-            && Parameters.Any()
-            && Parameters
+        return other is DbCommandCounterKey otherKey &&
+            other.GetType() == GetType() &&
+            GetType() == otherKey.GetType() &&
+            string.Equals(CommandText, otherKey.CommandText, StringComparison.OrdinalIgnoreCase) &&
+            Parameters.Any() &&
+            Parameters
                 .Select(param => (param.Name, param.Value))
                 .SequenceEqual(otherKey.Parameters.Select(param => (param.Name, param.Value)));
     }

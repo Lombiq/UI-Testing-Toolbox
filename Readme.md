@@ -31,7 +31,7 @@ Highlights:
 - Use Elasticsearch and test your app's search and indexing in a reliable manner.
 - Test a headless app with a separate frontend. See a demo video [here](https://youtu.be/eK2C9BW98sM?si=Ehd_bbieXKOwm7vc&t=225).
 - Write Selenium tests not just in .NET but also in JavaScript. See a demo video [here](https://youtu.be/eK2C9BW98sM?si=m0TXkBVRsFGD8lfr&t=415).
-- Duplicate SQL query detector: Built-in infrastructure to detect N+1 queries.
+- Excessive SQL query detector: Built-in infrastructure to detect N+1 SQL queries and other database query issues.
 
 See a demo video of the project [here](https://www.youtube.com/watch?v=mEUg6-pad-E), and the Orchard Harvest 2023 conference talk about automated QA in Orchard Core [here](https://youtu.be/CHdhwD2NHBU). We also had an Orchard Harvest 2024 talk about security scanning [here](https://www.youtube.com/watch?v=FsOpo8EA4wE). Also, see our [Testing Toolbox](https://github.com/Lombiq/Testing-Toolbox) for similar features for lower-level tests.
 
@@ -57,12 +57,12 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Executing tests](Lombiq.Tests.UI/Docs/ExecutingTests.md)
 - [Fake video capture source](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md)
 - [Security scanning](Lombiq.Tests.UI/Docs/SecurityScanning.md)
+- [Counter infrastructure (excessive SQL query detector)](Lombiq.Tests.UI/Docs/CounterInfrastructure.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)
 - [Limits](Lombiq.Tests.UI/Docs/Limits.md)
 - [Tools we use](Lombiq.Tests.UI/Docs/Tools.md)
 - [Linux-specific considerations](Lombiq.Tests.UI/Docs/Linux.md)
 - [Version migration guide](Lombiq.Tests.UI/Docs/Migration.md)
-- [Duplicate SQL query detector](Lombiq.Tests.UI/Docs/CounterInfrastructure.md)
 
 ## Contributing and support
 

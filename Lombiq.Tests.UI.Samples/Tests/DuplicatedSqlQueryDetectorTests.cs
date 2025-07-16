@@ -12,8 +12,12 @@ using Xunit;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
-// Some times you may want to detect duplicated SQL queries. This can be useful if you want to make sure that your code
-// does not execute the same query multiple times, wasting time and computing resources.
+// Sometimes you may want to detect duplicated or otherwise excessive SQL queries. This can be useful if you want to
+// make sure that your code does not execute the same query multiple times or unnecessarily, wasting time and computing
+// resources.
+
+// This test class demonstrates how you can use the counter infrastructure of the UI Testing Toolbox to detect offending
+// SQL queries. You need to tune the thresholds for your app.
 public class DuplicatedSqlQueryDetectorTests : UITestBase
 {
     private const string WorkflowTypeStartActivitiesQuery =
@@ -83,15 +87,15 @@ public class DuplicatedSqlQueryDetectorTests : UITestBase
                     commandIncludingParametersThreshold: 2,
                     readerReadThreshold: 2)));
 
-    // This test will pass because not any of the Admin page was loaded where the SQL queries are under monitoring.
+    // This test will pass because none of the Admin pages were loaded where the SQL queries are monitored.
     [Fact]
     public Task PageWithoutDuplicatedSqlQueriesShouldPass() =>
         ExecuteTestAfterSetupAsync(
             context => context.GoToHomePageAsync(onlyIfNotAlreadyThere: false),
             configuration => ConfigureAsync(configuration));
 
-    // This test will pass because counter thresholds are exactly matching with the counter values captured during
-    // navigating to the Admin dashboard page.
+    // This test will pass because counter thresholds are exactly matching the counter values captured during navigating
+    // to the Admin dashboard page.
     [Fact]
     public Task PageWithMatchingCounterThresholdsShouldPass() =>
         ExecuteTestAfterSetupAsync(

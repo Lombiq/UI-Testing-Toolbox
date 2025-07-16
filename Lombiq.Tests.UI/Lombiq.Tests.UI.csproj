@@ -80,6 +80,8 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.0.94" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.76.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <!-- When updating the OrchardCore.* version numbers, also remove the dotnet-consolidation-exclude-project-path in
+    the OSOCE build-and-test GHA workflow. -->
     <PackageReference Include="OrchardCore.ContentFields" Version="2.1.7" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.1.7" />
     <PackageReference Include="OrchardCore.Abstractions" Version="2.1.7" />

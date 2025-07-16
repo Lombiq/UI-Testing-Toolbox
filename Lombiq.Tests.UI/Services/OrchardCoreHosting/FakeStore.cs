@@ -38,7 +38,7 @@ public sealed class FakeStore : IStore
         _store.RegisterIndexes(indexProviders, collection);
 
     public void Dispose() =>
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        // Do not change this code. Put cleanup code in the 'Dispose(bool disposing)' method.
         Dispose(disposing: true);
 
     private void Dispose(bool disposing)
@@ -52,11 +52,9 @@ public sealed class FakeStore : IStore
                     session.Dispose();
                 }
                 catch
-#pragma warning disable S108 // Nested blocks of code should not be left empty
                 {
-                    // The mocked session can cause exception, but we can't do anything with it here.
+                    // The mocked session can cause exceptions, but we can't do anything with it here.
                 }
-#pragma warning restore S108 // Nested blocks of code should not be left empty
             }
 
             _createdSessions.Clear();
