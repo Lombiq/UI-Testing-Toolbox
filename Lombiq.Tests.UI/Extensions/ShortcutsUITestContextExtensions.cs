@@ -490,7 +490,8 @@ public static class ShortcutsUITestContextExtensions
         this UITestContext context,
         string name,
         string urlPrefix,
-        OrchardCoreSetupParameters setupParameters)
+        OrchardCoreSetupParameters setupParameters,
+        string featureProfile = null)
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
@@ -511,6 +512,11 @@ public static class ShortcutsUITestContextExtensions
                 shellSettings.State = TenantState.Uninitialized;
 
                 shellSettings["RecipeName"] = setupParameters.RecipeId;
+
+                if (featureProfile != null)
+                {
+                    shellSettings["FeatureProfile"] = featureProfile;
+                }
 
                 await shellHost.UpdateShellSettingsAsync(shellSettings);
             });
