@@ -19,12 +19,15 @@ public static class NavigationUITestContextExtensions
     public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
         context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
 
+    public static Task GoToAdminAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
+
     public static Task GoToAdminRelativeUrlAsync(
         this UITestContext context,
         string urlWithoutAdminPrefix = null,
         bool onlyIfNotAlreadyThere = true)
     {
-        if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
+        urlWithoutAdminPrefix ??= string.Empty;
 
         return context.GoToAbsoluteUrlAsync(context.GetAbsoluteAdminUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
     }
@@ -68,7 +71,8 @@ public static class NavigationUITestContextExtensions
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
-        var combinedUriString = context.AdminUrlPrefix + adminRelativeUrl;
+        adminRelativeUrl ??= string.Empty;
+        var combinedUriString = context.AdminUrlPrefix + adminRelativeUrl.Trim();
 
         return context.GetAbsoluteUri(combinedUriString);
     }
@@ -220,7 +224,7 @@ public static class NavigationUITestContextExtensions
     public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Use {nameof(GoToAdminAsync)} method instead.")]
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
 

@@ -13,7 +13,7 @@ public static class CustomAdminPrefixTestCases
                 context.AdminUrlPrefix = "custom-admin";
 
                 await context.SignInDirectlyAsync();
-                await context.GoToDashboardAsync();
+                await context.GoToAdminAsync();
                 await context.GoToFeaturesAsync();
                 await context.GoToContentItemListAsync("Blog");
                 await context.GoToContentItemListAsync();

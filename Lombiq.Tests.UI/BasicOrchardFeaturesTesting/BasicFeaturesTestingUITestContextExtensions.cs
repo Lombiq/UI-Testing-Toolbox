@@ -415,15 +415,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test logout",
             async () =>
             {
-                var dashboard = await context.GoToDashboardAsync();
-
-                context.RefreshCurrentAtataContext();
-
-                dashboard
-                    .TopNavbar.Account.LogOff.Click()
-                    .ShouldLeaveAdminPage();
-
-                await context.TriggerAfterPageChangeEventAsync();
+                await context.GoToAdminAsync();
+                await context.SelectFromBootstrapDropdownReliablyAsync(
+                    context.Get(By.Id("navbarDropdown")),
+                    By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]"));
+                context.Driver.Url.ShouldNotContain(context.AdminUrlPrefix);
 
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
             });
