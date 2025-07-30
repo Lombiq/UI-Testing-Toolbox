@@ -106,7 +106,7 @@ public static class NavigationUITestContextExtensions
         string email = DefaultUser.UserName)
     {
         await context.SignInDirectlyAsync(email);
-        await context.GoToDashboardAsync();
+        await context.GoToAdminAsync();
     }
 
     public static async Task SignOutDirectlyThenSignInDirectlyAsync(
