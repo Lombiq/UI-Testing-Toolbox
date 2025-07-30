@@ -30,7 +30,6 @@ public sealed class OrchardCoreSetupPage : Page<OrchardCoreSetupPage>
         [Term("Sql Server")]
         SqlServer,
         Sqlite,
-        [Term("MySql")]
         MySql,
         Postgres,
         ProvidedByEnvironment,
@@ -97,9 +96,10 @@ public sealed class OrchardCoreSetupPage : Page<OrchardCoreSetupPage>
                 ".click()");
         }
 
-        if (parameters.DatabaseProvider != DatabaseType.ProvidedByEnvironment)
+        var databaseProvider = (DatabaseType)(int)parameters.DatabaseProvider;
+        if (databaseProvider != DatabaseType.ProvidedByEnvironment)
         {
-            DatabaseProvider.Set(parameters.DatabaseProvider);
+            DatabaseProvider.Set(databaseProvider);
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
@@ -107,7 +107,7 @@ public sealed class OrchardCoreSetupPage : Page<OrchardCoreSetupPage>
             SiteTimeZone.Set(parameters.SiteTimeZoneValue);
         }
 
-        if (parameters.DatabaseProvider is not DatabaseType.Sqlite and not DatabaseType.ProvidedByEnvironment)
+        if (databaseProvider is not DatabaseType.Sqlite and not DatabaseType.ProvidedByEnvironment)
         {
             if (string.IsNullOrEmpty(parameters.ConnectionString))
             {

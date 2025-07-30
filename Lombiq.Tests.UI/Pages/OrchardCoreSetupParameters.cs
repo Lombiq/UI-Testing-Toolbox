@@ -13,7 +13,7 @@ public class OrchardCoreSetupParameters
     public string SiteName { get; set; } = "Test Site";
     public string RecipeId { get; set; } = "SaaS";
     public string SiteTimeZoneValue { get; set; }
-    public OrchardCoreSetupPage.DatabaseType DatabaseProvider { get; set; } = OrchardCoreSetupPage.DatabaseType.Sqlite;
+    public DatabaseType DatabaseProvider { get; set; }
     public string ConnectionString { get; set; }
     public string TablePrefix { get; set; }
     public string UserName { get; set; } = DefaultUser.UserName;
@@ -49,8 +49,8 @@ public class OrchardCoreSetupParameters
         if (context != null)
         {
             DatabaseProvider = context.Configuration.UseSqlServer
-                ? OrchardCoreSetupPage.DatabaseType.SqlServer
-                : OrchardCoreSetupPage.DatabaseType.Sqlite;
+                ? DatabaseType.SqlServer
+                : DatabaseType.Sqlite;
 
             ConnectionString = context.Configuration.UseSqlServer
                 ? context.SqlServerRunningContext.ConnectionString
@@ -58,5 +58,14 @@ public class OrchardCoreSetupParameters
         }
 
         if (!string.IsNullOrEmpty(recipeId)) RecipeId = recipeId;
+    }
+
+    public enum DatabaseType
+    {
+        Sqlite,
+        SqlServer,
+        MySql,
+        Postgres,
+        ProvidedByEnvironment,
     }
 }

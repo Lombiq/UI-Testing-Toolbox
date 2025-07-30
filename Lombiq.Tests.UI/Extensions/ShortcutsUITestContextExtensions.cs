@@ -494,7 +494,7 @@ public static class ShortcutsUITestContextExtensions
         string featureProfile = null)
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
-        var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
+        var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupParameters.DatabaseType.SqlServer
             ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 

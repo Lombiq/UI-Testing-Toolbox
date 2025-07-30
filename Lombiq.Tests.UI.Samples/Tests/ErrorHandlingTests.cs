@@ -20,8 +20,8 @@ public class ErrorHandlingTests : UITestBase
     {
     }
 
-    // It's easier to diagnose a test failure if you know whether an element is missing because there something is
-    // actually missing or there was a server-side error. The below test visits a page where the action method throws an
+    // It's easier to diagnose a test failure if you know whether an element is missing because something is actually
+    // missing or because there was a server-side error. The below test visits a page where the action method throws an
     // exception.
     [Fact]
     public Task ServerSideErrorOnLoadedPageShouldHaltTest() =>
@@ -129,7 +129,7 @@ public class ErrorHandlingTests : UITestBase
                             {
                                 SiteName = "Setup Error Test",
                                 RecipeId = SetupHelpers.RecipeId,
-                                DatabaseProvider = OrchardCoreSetupPage.DatabaseType.SqlServer,
+                                DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlServer,
                                 ConnectionString = "An invalid connection string which causes an error during setup.",
                             });
 
