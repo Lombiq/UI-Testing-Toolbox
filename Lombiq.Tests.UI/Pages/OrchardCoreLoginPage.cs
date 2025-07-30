@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Pages;
 public class OrchardCoreLoginPage : Page<OrchardCoreLoginPage>
 {
     private const string DefaultUrl = "Login";
-    public const string DefaultLoginButtonText = "Log in";
+    public const string DefaultLoginButtonText = UserRegistrationParameters.DefaultLoginButtonText;
 
     [FindById("LoginForm_UserName", nameof(UserName))]
     public TextInput<OrchardCoreLoginPage> UserName { get; private set; }

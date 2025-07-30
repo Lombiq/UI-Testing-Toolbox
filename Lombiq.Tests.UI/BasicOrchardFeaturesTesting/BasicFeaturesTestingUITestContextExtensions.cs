@@ -380,7 +380,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText,
+        string logInButtonText = UserRegistrationParameters.DefaultLoginButtonText,
         bool signOut = false) =>
         context.TestLoginAsync(
             "Test login",
@@ -404,7 +404,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        string logInButtonText = UserRegistrationParameters.DefaultLoginButtonText) =>
         context.TestLoginAsync(
             "Test login with invalid data",
             userName,
