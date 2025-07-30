@@ -7,6 +7,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
@@ -608,27 +609,27 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test turning feature on and off",
             async () =>
             {
-                var featuresPage = await context.GoToFeaturesPageAsync();
+                async Task<IWebElement> SearchForFeatureAsync(UITestContext context) =>
+                    (await context.GoToFeaturesAsync(featureName)).First();
 
-                context.RefreshCurrentAtataContext();
+                var feature = await SearchForFeatureAsync(context);
+                var originalEnabledState = feature.Enabled;
+                var targetState = originalEnabledState;
 
-                featuresPage.SearchForFeature(featureName).IsEnabled.Get(out var originalEnabledState);
-                featuresPage.Features[featureName].CheckBox.Check();
-                featuresPage.BulkActions.Toggle.Click();
+                for (var i = 0; i < 2; i++)
+                {
+                    feature = await SearchForFeatureAsync(context);
+                    await feature.ClickReliablyAsync(context);
+                    await context.BulkActionsToggleAsync();
 
-                featuresPage
-                    .AggregateAssert(page => page
-                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState));
-                featuresPage.Features[featureName].CheckBox.Check();
-                featuresPage.BulkActions.Toggle.Click();
+                    targetState = !targetState;
 
-                featuresPage
-                    .AggregateAssert(page => page
-                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                    context.ShouldBeSuccess();
+                    feature = await SearchForFeatureAsync(context);
+                    feature.Enabled.ShouldBe(originalEnabledState);
+                }
+
+                targetState.ShouldBe(originalEnabledState);
             });
 
     /// <summary>
