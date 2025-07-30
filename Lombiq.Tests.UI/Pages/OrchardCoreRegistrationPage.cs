@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ using _ = OrchardCoreRegistrationPage;
     "Major Code Smell",
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
+[Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
 public class OrchardCoreRegistrationPage : Page<_>
 {
     public const string DefaultUrl = "Register";

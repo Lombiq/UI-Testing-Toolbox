@@ -1,18 +1,20 @@
 using Atata;
 using Atata.Bootstrap;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using _ = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
 
 namespace Lombiq.Tests.UI.Pages;
 
 // Atata convention.
 #pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreContentItemsPage;
 #pragma warning restore IDE0065 // Misplaced using directive
 
 [SuppressMessage(
     "Major Code Smell",
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
+[Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
 public class OrchardCoreContentItemsPage : OrchardCoreAdminPage<_>
 {
     [FindById("new-dropdown")]
