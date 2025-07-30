@@ -30,13 +30,7 @@ public static class AuditTrailFeatureTestingUITestContextExtensions
 
             context.SuccessMessageExists("Site settings updated successfully.");
 
-            var contentItemsPage = await context.GoToContentItemsPageAsync();
-            context.RefreshCurrentAtataContext();
-            contentItemsPage
-                .CreateNewPage()
-                    .Title.Set(auditTrailTestPageTitle)
-                    .Publish.ClickAndGo()
-                .AlertMessages.Should.Contain(message => message.IsSuccess);
+            await context.CreateNewPageContentItemAsync(auditTrailTestPageTitle);
 
             await context.GoToAdminRelativeUrlAsync(auditTrailPath);
 

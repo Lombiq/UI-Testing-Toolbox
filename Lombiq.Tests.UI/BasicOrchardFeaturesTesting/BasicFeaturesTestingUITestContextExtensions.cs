@@ -567,37 +567,24 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test content operations",
             async () =>
             {
-                var contentItemsPage = await context.GoToContentItemsPageAsync();
-                context.RefreshCurrentAtataContext();
-                contentItemsPage
-                    .CreateNewPage()
-                        .Title.Set(pageTitle)
-                        .Publish.ClickAndGo()
-                    .AlertMessages.Should.Contain(message => message.IsSuccess);
-
-                await context.TriggerAfterPageChangeEventAsync();
+                await context.CreateNewPageContentItemAsync(pageTitle);
 
                 if (dontCheckFrontend) return;
 
-                contentItemsPage.Items[item => item.Title == pageTitle].View.Click();
+                await context.GoToContentItemListAsync("Page");
+                await context.ClickReliablyOnAsync(By.CssSelector(".btn.view"));
 
-                await context.TriggerAfterPageChangeEventAsync();
+                context.SwitchToLastWindow();
+                context.Driver.Title.ShouldContain(pageTitle);
 
-                var page = new OrdinaryPage(pageTitle);
-
-                context.Scope.AtataContext.Go.ToNextWindow(page);
-                page.PageTitle.Should.Contain(pageTitle);
-
-                if (customPageHeaderCheckAsync == null)
+                customPageHeaderCheckAsync ??= context =>
                 {
-                    page.Find<H1<OrdinaryPage>>().Should.Equal(pageTitle);
-                }
-                else
-                {
-                    await customPageHeaderCheckAsync(context);
-                }
+                    context.Get(By.TagName("h1")).GetTextTrimmed().ShouldBe(pageTitle);
+                    return Task.CompletedTask;
+                };
 
-                page.CloseWindow();
+                await customPageHeaderCheckAsync(context);
+                if (context.Driver.WindowHandles.Count > 1) context.Driver.Close();
             });
 
     /// <summary>

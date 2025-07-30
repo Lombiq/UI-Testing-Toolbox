@@ -16,7 +16,7 @@ public static class CustomAdminPrefixTestCases
                 await context.GoToDashboardAsync();
                 await context.GoToFeaturesPageAsync();
                 await context.GoToContentItemListAsync("Blog");
-                await context.GoToContentItemsPageAsync();
+                await context.GoToContentItemListAsync();
             },
             browser,
             configuration =>
