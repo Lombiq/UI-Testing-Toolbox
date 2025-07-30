@@ -20,7 +20,7 @@ namespace Lombiq.Tests.UI.Pages;
 [Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
 public class OrchardCoreRegistrationPage : Page<OrchardCoreRegistrationPage>
 {
-    public const string DefaultUrl = "Register";
+    public const string DefaultUrl = UserRegistrationParameters.DefaultUrl;
 
     [FindById("RegisterUserForm_UserName")]
     public TextInput<OrchardCoreRegistrationPage> UserName { get; private set; }
@@ -52,22 +52,7 @@ public class OrchardCoreRegistrationPage : Page<OrchardCoreRegistrationPage>
     public async Task<OrchardCoreRegistrationPage> RegisterWithAsync(
         UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
-        if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
-        {
-            PrivacyPolicyAgreement.Click();
-        }
-
-        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
-        await context.ClickAndFillInWithRetriesAsync(
-            By.Id("RegisterUserForm_ConfirmPassword"),
-            parameters.ConfirmPassword ?? parameters.Password);
-        await context.ClickReliablyOnSubmitAsync();
-
-        context.RefreshCurrentAtataContext();
-
+        await parameters.RegisterWithAsync(context, checkPrivacyConsent, navigate: false);
         return this;
     }
 }

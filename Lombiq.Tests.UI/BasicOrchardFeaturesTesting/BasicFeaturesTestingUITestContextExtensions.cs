@@ -455,7 +455,9 @@ public static class BasicFeaturesTestingUITestContextExtensions
                     .RegisterAsNewUser.Should.BeVisible()
                     .RegisterAsNewUser.ClickAndGo()
                     .RegisterWithAsync(context, parameters);
-                registrationPage.ShouldLeaveRegistrationPage();
+
+                await parameters.RegisterWithAsync(context, navigate: false);
+                context.Driver.Url.ShouldNotBe(context.GetAbsoluteUri(UserRegistrationParameters.DefaultUrl).AbsoluteUri);
 
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
@@ -493,8 +495,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with invalid data",
             async () =>
             {
-                var registrationPage = await context.GoToRegistrationPageAsync();
-                await registrationPage.RegisterWithAsync(context, parameters);
+                await parameters.RegisterWithAsync(context);
                 context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
@@ -523,9 +524,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with already registered email",
             async () =>
             {
-                var registrationPage = await context.GoToRegistrationPageAsync();
-                await registrationPage.RegisterWithAsync(context, parameters);
-                context.RefreshCurrentAtataContext();
+                await parameters.RegisterWithAsync(context);
 
                 context
                     .Get(By.CssSelector(".text-danger.field-validation-error"))

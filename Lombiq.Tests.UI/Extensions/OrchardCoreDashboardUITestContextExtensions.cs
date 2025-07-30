@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -149,7 +150,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// Navigate to the Features admin configuration page.
     /// </summary>
     public static Task GoToFeaturesAsync(this UITestContext context) =>
-        context.GoToAdminRelativeUrlAsync("/Features");
+        context.GoToAdminRelativeUrlAsync("Features");
 
     /// <summary>
     /// Navigate to the Features admin configuration page and search for the provided text.
@@ -167,4 +168,10 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// </summary>
     public static Task BulkActionsToggleAsync(this UITestContext context) =>
         context.SelectFromBootstrapDropdownReliablyAsync(By.Id("bulk-action-menu-button"), "Toggle");
+
+    /// <summary>
+    /// Navigate to the Registration page.
+    /// </summary>
+    public static Task GoToRegistrationAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync(UserRegistrationParameters.DefaultUrl);
 }
