@@ -12,11 +12,6 @@ using Xunit;
 
 namespace Lombiq.Tests.UI.Pages;
 
-// Atata convention.
-#pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreLoginPage;
-#pragma warning restore IDE0065 // Misplaced using directive
-
 [Url(DefaultUrl)]
 [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByIdAttribute))]
 [SuppressMessage(
@@ -24,41 +19,41 @@ using _ = OrchardCoreLoginPage;
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
 [Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
-public class OrchardCoreLoginPage : Page<_>
+public class OrchardCoreLoginPage : Page<OrchardCoreLoginPage>
 {
     private const string DefaultUrl = "Login";
     public const string DefaultLoginButtonText = "Log in";
 
     [FindById("LoginForm_UserName", nameof(UserName))]
-    public TextInput<_> UserName { get; private set; }
+    public TextInput<OrchardCoreLoginPage> UserName { get; private set; }
 
     [FindById("LoginForm_Password", nameof(Password))]
-    public PasswordInput<_> Password { get; private set; }
+    public PasswordInput<OrchardCoreLoginPage> Password { get; private set; }
 
     [FindByAttribute("type", "submit")]
-    public Button<_> LogIn { get; private set; }
+    public Button<OrchardCoreLoginPage> LogIn { get; private set; }
 
     [FindByAttribute("href", TermMatch.Contains, "/" + OrchardCoreRegistrationPage.DefaultUrl)]
-    public Link<OrchardCoreRegistrationPage, _> RegisterAsNewUser { get; private set; }
+    public Link<OrchardCoreRegistrationPage, OrchardCoreLoginPage> RegisterAsNewUser { get; private set; }
 
-    public ValidationSummaryErrorList<_> ValidationSummaryErrors { get; private set; }
+    public ValidationSummaryErrorList<OrchardCoreLoginPage> ValidationSummaryErrors { get; private set; }
 
-    public _ ShouldStayOnLoginPage() =>
+    public OrchardCoreLoginPage ShouldStayOnLoginPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public _ ShouldLeaveLoginPage() =>
+    public OrchardCoreLoginPage ShouldLeaveLoginPage() =>
         PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public _ ShouldLeaveLoginPage(bool expected) =>
+    public OrchardCoreLoginPage ShouldLeaveLoginPage(bool expected) =>
         expected ? ShouldLeaveLoginPage() : ShouldStayOnLoginPage();
 
-    public Task<_> LogInWithAsync(UITestContext context, UserRegistrationParameters parameters = null)
+    public Task<OrchardCoreLoginPage> LogInWithAsync(UITestContext context, UserRegistrationParameters parameters = null)
     {
         parameters ??= UserRegistrationParameters.CreateDefaultUser();
         return LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LoginButtonText);
     }
 
-    public async Task<_> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
+    public async Task<OrchardCoreLoginPage> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
     {
         if (string.IsNullOrEmpty(loginButtonText)) loginButtonText = DefaultLoginButtonText;
 

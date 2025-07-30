@@ -11,11 +11,6 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
 
-// Atata convention.
-#pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreRegistrationPage;
-#pragma warning restore IDE0065 // Misplaced using directive
-
 [Url(DefaultUrl)]
 [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByNameAttribute))]
 [SuppressMessage(
@@ -23,38 +18,38 @@ using _ = OrchardCoreRegistrationPage;
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
 [Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
-public class OrchardCoreRegistrationPage : Page<_>
+public class OrchardCoreRegistrationPage : Page<OrchardCoreRegistrationPage>
 {
     public const string DefaultUrl = "Register";
 
     [FindById("RegisterUserForm_UserName")]
-    public TextInput<_> UserName { get; private set; }
+    public TextInput<OrchardCoreRegistrationPage> UserName { get; private set; }
 
     [FindById("RegisterUserForm_Email")]
     [SetsValueReliably]
-    public TextInput<_> Email { get; private set; }
+    public TextInput<OrchardCoreRegistrationPage> Email { get; private set; }
 
     [FindById("RegisterUserForm_Password")]
-    public PasswordInput<_> Password { get; private set; }
+    public PasswordInput<OrchardCoreRegistrationPage> Password { get; private set; }
 
     [FindById("RegisterUserForm_ConfirmPassword")]
-    public PasswordInput<_> ConfirmPassword { get; private set; }
+    public PasswordInput<OrchardCoreRegistrationPage> ConfirmPassword { get; private set; }
 
     [FindById("RegisterUserForm_RegistrationCheckbox")]
-    public CheckBox<_> PrivacyPolicyAgreement { get; private set; }
+    public CheckBox<OrchardCoreRegistrationPage> PrivacyPolicyAgreement { get; private set; }
 
     [FindByAttribute("type", "submit")]
-    public Button<_> Register { get; private set; }
+    public Button<OrchardCoreRegistrationPage> Register { get; private set; }
 
-    public ValidationMessageList<_> ValidationMessages { get; private set; }
+    public ValidationMessageList<OrchardCoreRegistrationPage> ValidationMessages { get; private set; }
 
-    public _ ShouldStayOnRegistrationPage() =>
+    public OrchardCoreRegistrationPage ShouldStayOnRegistrationPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public _ ShouldLeaveRegistrationPage() =>
+    public OrchardCoreRegistrationPage ShouldLeaveRegistrationPage() =>
         PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public async Task<_> RegisterWithAsync(
+    public async Task<OrchardCoreRegistrationPage> RegisterWithAsync(
         UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
         if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
