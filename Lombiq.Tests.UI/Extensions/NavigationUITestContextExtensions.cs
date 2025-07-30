@@ -116,7 +116,7 @@ public static class NavigationUITestContextExtensions
     // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
     // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
-
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
         where T : PageObject<T>
     {
@@ -132,6 +132,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
@@ -160,6 +161,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
@@ -189,9 +191,11 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context, bool navigate = true) =>
         context.GoToPageAsync<OrchardCoreSetupPage>(navigate);
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreLoginPage>();
 
@@ -212,15 +216,19 @@ public static class NavigationUITestContextExtensions
         return setupPage.PageUri.Value;
     }
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
 
