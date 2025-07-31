@@ -149,7 +149,7 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// Navigate to the Features admin configuration page.
     /// </summary>
     public static Task GoToFeaturesAsync(this UITestContext context) =>
-        context.GoToAdminRelativeUrlAsync("Features");
+        context.GoToAdminRelativeUrlAsync("/Features");
 
     /// <summary>
     /// Navigate to the Features admin configuration page and search for the provided text.
@@ -172,11 +172,11 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// Navigate to the Registration page.
     /// </summary>
     public static Task GoToRegistrationAsync(this UITestContext context) =>
-        context.GoToRelativeUrlAsync(UserRegistrationParameters.DefaultUrl);
+        context.GoToRelativeUrlAsync('/' + UserRegistrationParameters.DefaultUrl);
 
     /// <summary>
     /// Navigate to the Login page.
     /// </summary>
     public static Task GoToLoginAsync(this UITestContext context) =>
-        context.GoToRelativeUrlAsync("Login");
+        context.GoToRelativeUrlAsync("/Login");
 }
