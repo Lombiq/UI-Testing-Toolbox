@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
 using OpenQA.Selenium;
 using Shouldly;
 using System;

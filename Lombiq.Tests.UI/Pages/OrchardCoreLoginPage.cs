@@ -1,14 +1,11 @@
 using Atata;
 using Lombiq.Tests.UI.Components;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace Lombiq.Tests.UI.Pages;
 

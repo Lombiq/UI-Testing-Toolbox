@@ -29,7 +29,6 @@ public record UserRegistrationParameters(
     public static UserRegistrationParameters CreateDefaultUser(string loginButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         new(DefaultUser.UserName, DefaultUser.Email, LoginButtonText: loginButtonText);
 
-
     public async Task RegisterAsync(UITestContext context, bool checkPrivacyConsent = true, bool navigate = true)
     {
         if (navigate)
