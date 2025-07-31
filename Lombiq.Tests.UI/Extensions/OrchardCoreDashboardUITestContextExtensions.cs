@@ -173,5 +173,11 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// Navigate to the Registration page.
     /// </summary>
     public static Task GoToRegistrationAsync(this UITestContext context) =>
-        context.GoToAdminRelativeUrlAsync(UserRegistrationParameters.DefaultUrl);
+        context.GoToRelativeUrlAsync(UserRegistrationParameters.DefaultUrl);
+
+    /// <summary>
+    /// Navigate to the Login page.
+    /// </summary>
+    public static Task GoToLoginAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync("Login");
 }

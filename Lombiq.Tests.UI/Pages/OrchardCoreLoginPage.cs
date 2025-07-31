@@ -22,7 +22,7 @@ namespace Lombiq.Tests.UI.Pages;
 public class OrchardCoreLoginPage : Page<OrchardCoreLoginPage>
 {
     private const string DefaultUrl = "Login";
-    public const string DefaultLoginButtonText = UserRegistrationParameters.DefaultLoginButtonText;
+    public const string DefaultLoginButtonText = UserLoginParameters.DefaultLoginButtonText;
 
     [FindById("LoginForm_UserName", nameof(UserName))]
     public TextInput<OrchardCoreLoginPage> UserName { get; private set; }
@@ -53,42 +53,15 @@ public class OrchardCoreLoginPage : Page<OrchardCoreLoginPage>
         return LogInWithAsync(context, parameters.UserName, parameters.Password, parameters.LoginButtonText);
     }
 
-    public async Task<OrchardCoreLoginPage> LogInWithAsync(UITestContext context, string userName, string password, string loginButtonText = DefaultLoginButtonText)
+    public async Task<OrchardCoreLoginPage> LogInWithAsync(
+        UITestContext context,
+        string userName,
+        string password,
+        string loginButtonText = DefaultLoginButtonText)
     {
-        if (string.IsNullOrEmpty(loginButtonText)) loginButtonText = DefaultLoginButtonText;
-
-        var userNameBy = By.Id("LoginForm_UserName");
-        var passwordBy = By.Id("LoginForm_Password");
-
-        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu, but sometimes even
-        // ClickAndFillInWithRetriesAsync can fail and stuck failing, even with retried tests.
-        try
-        {
-            await context.ClickAndFillInWithRetriesAsync(userNameBy, userName);
-            await context.ClickAndFillInWithRetriesAsync(passwordBy, password);
-        }
-        catch (TimeoutException)
-        {
-            context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                "Failed to fill in the login form, retrying with JavaScript.");
-
-            await context.ClickAndFillInWithScriptAsync(userNameBy, userName);
-            await context.ClickAndFillInWithScriptAsync(passwordBy, password);
-        }
-
-        var buttonBy = ByHelper.ButtonText(loginButtonText);
-
-        try
-        {
-            await context.ClickReliablyOnUntilNavigationHasOccurredAsync(buttonBy);
-        }
-        catch (TimeoutException)
-        {
-            await context.ClickOnWithScriptAsync(buttonBy);
-        }
+        await new UserLoginParameters(userName, password, loginButtonText).LogInAsync(context);
 
         context.RefreshCurrentAtataContext();
-
         return this;
     }
 }

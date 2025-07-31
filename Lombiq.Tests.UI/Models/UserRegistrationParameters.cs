@@ -15,23 +15,22 @@ public record UserRegistrationParameters(
     string Email,
     string Password = TestUser.Password,
     string? ConfirmPassword = TestUser.Password,
-    string LoginButtonText = UserRegistrationParameters.DefaultLoginButtonText)
+    string LoginButtonText = UserLoginParameters.DefaultLoginButtonText)
 {
     public const string DefaultUrl = "Register";
-    public const string DefaultLoginButtonText = "Log in";
 
     [Obsolete("Use CreateTest() instead.")]
     public static UserRegistrationParameters CreateDefault() =>
         new("TestUser", "testuser@example.org");
 
-    public static UserRegistrationParameters CreateTest(string loginButtonText = DefaultLoginButtonText) =>
+    public static UserRegistrationParameters CreateTest(string loginButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         new(TestUser.UserName, TestUser.Email, LoginButtonText: loginButtonText);
 
-    public static UserRegistrationParameters CreateDefaultUser(string loginButtonText = DefaultLoginButtonText) =>
+    public static UserRegistrationParameters CreateDefaultUser(string loginButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         new(DefaultUser.UserName, DefaultUser.Email, LoginButtonText: loginButtonText);
 
 
-    public async Task RegisterWithAsync(UITestContext context, bool checkPrivacyConsent = true, bool navigate = true)
+    public async Task RegisterAsync(UITestContext context, bool checkPrivacyConsent = true, bool navigate = true)
     {
         if (navigate)
         {

@@ -52,7 +52,7 @@ public class OrchardCoreRegistrationPage : Page<OrchardCoreRegistrationPage>
     public async Task<OrchardCoreRegistrationPage> RegisterWithAsync(
         UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
-        await parameters.RegisterWithAsync(context, checkPrivacyConsent, navigate: false);
+        await parameters.RegisterAsync(context, checkPrivacyConsent, navigate: false);
         return this;
     }
 }

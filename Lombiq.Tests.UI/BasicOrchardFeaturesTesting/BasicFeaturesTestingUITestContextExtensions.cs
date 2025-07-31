@@ -4,6 +4,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -330,13 +331,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
         OrchardCoreSetupParameters setupParameters,
         string testName,
         bool shouldBeSuccess) =>
-        context.ExecuteTestAsync(
-            testName,
-            async () =>
-            {
-                var setupPage = await context.GoToSetupPageAsync();
-                (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldLeaveSetupPage(shouldBeSuccess);
-            });
+        context.ExecuteTestAsync(testName, () => context
+            .GoToSetupPageAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess));
 
     private static Task TestLoginAsync(
         this UITestContext context,
@@ -352,9 +348,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             {
                 if (signOut) await context.SignOutDirectlyAsync();
 
-                var loginPage = await context.GoToLoginPageAsync();
-                loginPage = await loginPage.LogInWithAsync(context, userName, password, loginButtonText);
-                loginPage.ShouldLeaveLoginPage(shouldBeSuccess);
+                await new UserLoginParameters(userName, password, loginButtonText).LogInAsync(context);
 
                 var currentUser = await context.GetCurrentUserNameAsync();
                 if (shouldBeSuccess)
@@ -376,7 +370,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = UserRegistrationParameters.DefaultLoginButtonText,
+        string logInButtonText = UserLoginParameters.DefaultLoginButtonText,
         bool signOut = false) =>
         context.TestLoginAsync(
             "Test login",
@@ -396,7 +390,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = UserRegistrationParameters.DefaultLoginButtonText) =>
+        string logInButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         context.TestLoginAsync(
             "Test login with invalid data",
             userName,
@@ -445,21 +439,15 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration",
             async () =>
             {
-                var loginPage = await context.GoToLoginPageAsync();
-                context.RefreshCurrentAtataContext();
-                var registrationPage = await loginPage
-                    .RegisterAsNewUser.Should.BeVisible()
-                    .RegisterAsNewUser.ClickAndGo()
-                    .RegisterWithAsync(context, parameters);
-
-                await parameters.RegisterWithAsync(context, navigate: false);
+                await context.GoToLoginAsync();
+                await context.ClickReliablyOnAsync(By.CssSelector("a[href*='/Register']"));
+                await parameters.RegisterAsync(context, navigate: false);
                 context.Driver.Url.ShouldNotBe(context.GetAbsoluteUri(UserRegistrationParameters.DefaultUrl).AbsoluteUri);
 
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
 
-                loginPage = await context.GoToLoginPageAsync();
-                await loginPage.LogInWithAsync(context, parameters);
+                await new UserLoginParameters(parameters).LogInAsync(context);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
@@ -491,7 +479,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with invalid data",
             async () =>
             {
-                await parameters.RegisterWithAsync(context);
+                await parameters.RegisterAsync(context);
                 context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
@@ -520,7 +508,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with already registered email",
             async () =>
             {
-                await parameters.RegisterWithAsync(context);
+                await parameters.RegisterAsync(context);
 
                 context
                     .Get(By.CssSelector(".text-danger.field-validation-error"))

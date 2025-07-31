@@ -212,12 +212,16 @@ public static class NavigationUITestContextExtensions
 
     public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
         this UITestContext context,
-        OrchardCoreSetupParameters parameters = null)
+        OrchardCoreSetupParameters parameters = null,
+        bool shouldBeSuccess = true)
     {
-        var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
-        setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
+        parameters ??= new(context);
 
-        return setupPage.PageUri.Value;
+        if (!parameters.RunSetupOnCurrentPage) await context.GoToRelativeUrlAsync("/");
+        await parameters.SetupOrchardCoreAsync(context);
+        context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
+
+        return new(context.Driver.Url);
     }
 
     [Obsolete("Methods using Page<> classes will be removed in the next version.")]
