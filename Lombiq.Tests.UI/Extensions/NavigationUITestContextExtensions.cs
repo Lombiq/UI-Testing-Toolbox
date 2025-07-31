@@ -217,7 +217,7 @@ public static class NavigationUITestContextExtensions
     {
         parameters ??= new(context);
 
-        if (!parameters.RunSetupOnCurrentPage) await context.GoToRelativeUrlAsync("/");
+        if (!parameters.RunSetupOnCurrentPage) await context.GoToAbsoluteUrlAsync(context.TestStartUri);
         await parameters.SetupOrchardCoreAsync(context);
         context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
 
