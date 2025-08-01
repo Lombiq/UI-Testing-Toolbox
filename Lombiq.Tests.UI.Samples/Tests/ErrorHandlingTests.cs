@@ -129,7 +129,7 @@ public class ErrorHandlingTests : UITestBase
                             {
                                 SiteName = "Setup Error Test",
                                 RecipeId = SetupHelpers.RecipeId,
-                                DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlServer,
+                                DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlConnection,
                                 ConnectionString = "An invalid connection string which causes an error during setup.",
                             });
 

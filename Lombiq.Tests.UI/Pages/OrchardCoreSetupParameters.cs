@@ -56,7 +56,7 @@ public class OrchardCoreSetupParameters
         if (context != null)
         {
             DatabaseProvider = context.Configuration.UseSqlServer
-                ? DatabaseType.SqlServer
+                ? DatabaseType.SqlConnection
                 : DatabaseType.Sqlite;
 
             ConnectionString = context.Configuration.UseSqlServer
@@ -116,7 +116,7 @@ public class OrchardCoreSetupParameters
     public enum DatabaseType
     {
         Sqlite,
-        SqlServer,
+        SqlConnection, // Technical name for SQL Server.
         MySql,
         Postgres,
         ProvidedByEnvironment,
