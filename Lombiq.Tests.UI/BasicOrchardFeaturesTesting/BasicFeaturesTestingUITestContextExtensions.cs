@@ -441,7 +441,9 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 await context.GoToLoginAsync();
                 await context.ClickReliablyOnAsync(By.CssSelector("a[href*='/Register']"));
                 await parameters.RegisterAsync(context, navigate: false);
-                context.Driver.Url.ShouldNotBe(context.GetAbsoluteUri(UserRegistrationParameters.DefaultUrl).AbsoluteUri);
+
+                var registerUrl = context.GetAbsoluteUri(UserRegistrationParameters.DefaultUrl).AbsoluteUri;
+                context.DoWithRetriesOrFail(() => !registerUrl.EqualsOrdinalIgnoreCase(context.Driver.Url));
 
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
