@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -144,23 +143,6 @@ public static class OrchardCoreDashboardUITestContextExtensions
 
     public static Task GoToContentItemDisplayByIdAsync(this UITestContext context, string contentItemId) =>
         context.GoToAdminRelativeUrlAsync($"/Contents/ContentItems/{contentItemId}/Display");
-
-    /// <summary>
-    /// Navigate to the Features admin configuration page.
-    /// </summary>
-    public static Task GoToFeaturesAsync(this UITestContext context) =>
-        context.GoToAdminRelativeUrlAsync("/Features");
-
-    /// <summary>
-    /// Navigate to the Features admin configuration page and search for the provided text.
-    /// </summary>
-    /// <returns>A collection of visible checkbox elements.</returns>
-    public static async Task<IEnumerable<IWebElement>> GoToFeaturesAsync(this UITestContext context, string search)
-    {
-        await context.GoToFeaturesAsync();
-        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), search);
-        return context.GetAll(By.Name("featureIds"));
-    }
 
     /// <summary>
     /// Clicks the "Toggle" option in the "Bulk actions" dropdown, found in the Features page.

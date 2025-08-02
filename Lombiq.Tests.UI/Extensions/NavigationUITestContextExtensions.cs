@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -239,6 +240,23 @@ public static class NavigationUITestContextExtensions
     [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
+
+    /// <summary>
+    /// Navigate to the Features admin configuration page.
+    /// </summary>
+    public static Task GoToFeaturesAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync("/Features");
+
+    /// <summary>
+    /// Navigate to the Features admin configuration page and search for the provided text.
+    /// </summary>
+    /// <returns>A collection of visible checkbox elements.</returns>
+    public static async Task<IEnumerable<IWebElement>> GoToFeaturesAsync(this UITestContext context, string search)
+    {
+        await context.GoToFeaturesAsync();
+        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), search);
+        return context.GetAll(By.Name("featureIds"));
+    }
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
