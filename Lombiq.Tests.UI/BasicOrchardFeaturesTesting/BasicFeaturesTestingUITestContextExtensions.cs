@@ -569,7 +569,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 };
 
                 await customPageHeaderCheckAsync(context);
-                if (context.Driver.WindowHandles.Count > 1) context.Driver.Close();
             });
 
     /// <summary>
