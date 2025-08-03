@@ -10,6 +10,8 @@ public static class FormWebDriverExtensions
     {
         element.ClearWithLogging();
 
+        if (string.IsNullOrEmpty(value)) return element;
+
         if (value.Contains('@', StringComparison.Ordinal))
         {
             // On some platforms, probably due to keyboard settings, the @ character can be missing from the address
