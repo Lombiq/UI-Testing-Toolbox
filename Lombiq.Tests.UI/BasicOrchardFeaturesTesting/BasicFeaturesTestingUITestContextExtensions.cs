@@ -395,7 +395,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test logout",
             async () =>
             {
-                await context.GoToAdminAsync();
+                await context.GoToDashboardAsync();
                 await context.SelectFromBootstrapDropdownReliablyAsync(
                     context.Get(By.Id("navbarDropdown")),
                     By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]"));

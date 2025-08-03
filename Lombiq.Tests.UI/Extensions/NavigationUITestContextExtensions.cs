@@ -21,9 +21,6 @@ public static class NavigationUITestContextExtensions
     public static Task GoToRelativeUrlAsync(this UITestContext context, string relativeUrl, bool onlyIfNotAlreadyThere = true) =>
         context.GoToAbsoluteUrlAsync(context.GetAbsoluteUri(relativeUrl), onlyIfNotAlreadyThere);
 
-    public static Task GoToAdminAsync(this UITestContext context) =>
-        context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
-
     public static Task GoToAdminRelativeUrlAsync(
         this UITestContext context,
         string urlWithoutAdminPrefix = null,
@@ -108,7 +105,7 @@ public static class NavigationUITestContextExtensions
         string email = DefaultUser.UserName)
     {
         await context.SignInDirectlyAsync(email);
-        await context.GoToAdminAsync();
+        await context.GoToDashboardAsync();
     }
 
     public static async Task SignOutDirectlyThenSignInDirectlyAsync(
@@ -169,7 +166,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminAsync)} instead.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminRelativeUrlAsync)} instead.")]
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
@@ -250,9 +247,12 @@ public static class NavigationUITestContextExtensions
     public static Task GoToRegistrationAsync(this UITestContext context) =>
         context.GoToRelativeUrlAsync('/' + UserRegistrationParameters.DefaultUrl);
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminAsync)} method instead.")]
-    public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToDashboardAsync)} method instead.")]
+    public static Task<OrchardCoreDashboardPage> GoToDashboardPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
+
+    public static Task GoToDashboardAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
 
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
               $"{nameof(OrchardCoreDashboardUITestContextExtensions.GoToContentItemListAsync)} instead")]

@@ -80,7 +80,7 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
                 WriteConsoleLog();
 
-                await context.GoToAdminAsync();
+                await context.GoToDashboardAsync();
 
                 WriteConsoleLog();
 

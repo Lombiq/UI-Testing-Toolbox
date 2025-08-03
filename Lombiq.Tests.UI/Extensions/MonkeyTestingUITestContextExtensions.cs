@@ -62,7 +62,7 @@ public static class MonkeyTestingUITestContextExtensions
     {
         if (!string.IsNullOrEmpty(signInDirectlyWithUserName)) await context.SignInDirectlyAsync(signInDirectlyWithUserName);
 
-        if (string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToAdminAsync();
+        if (string.IsNullOrEmpty(startingRelativeUrl)) await context.GoToDashboardAsync();
         else await context.GoToAdminRelativeUrlAsync(startingRelativeUrl);
 
         options ??= new MonkeyTestingOptions();
