@@ -416,7 +416,8 @@ public static class FormUITestContextExtensions
 
     private static IWebElement TryFillElement(UITestContext context, By by, string text)
     {
-        var element = context.Get(by.Unsafely());
+        var element = context.Get(by) ?? throw new ElementNotFoundException(
+            $"{nameof(TryFillElement)}: Couldn't find element for \"{by}\".");
 
         return context.Driver.TryFillElement(element, text);
     }
