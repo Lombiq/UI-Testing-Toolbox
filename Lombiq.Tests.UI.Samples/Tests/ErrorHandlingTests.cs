@@ -108,37 +108,46 @@ public class ErrorHandlingTests : UITestBase
             });
 
     [Fact]
-    public Task ErrorDuringSetupShouldHaltTest() =>
-        ExecuteTestAfterSetupAsync(
-            _ => throw new InvalidOperationException("This point shouldn't be reachable because setup fails."),
-            configuration =>
-            {
-                // The test is guaranteed to fail so we don't want to retry it needlessly.
-                configuration.MaxRetryCount = 0;
-
-                // Otherwise, a GitHub Actions error annotation would appear in the workflow run summary, indicating
-                // a problem, despite them being expected.
-                configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
-
-                // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
-                configuration.SetupConfiguration.SetupOperation = async context =>
+    public async Task ErrorDuringSetupShouldHaltTest()
+    {
+        try
+        {
+            await ExecuteTestAfterSetupAsync(
+                _ => throw new InvalidOperationException("This point shouldn't be reachable because setup fails."),
+                configuration =>
                 {
-                    await context.GoToSetupPageAndSetupOrchardCoreAsync(
-                        new OrchardCoreSetupParameters(context)
-                        {
-                            SiteName = "Setup Error Test",
-                            RecipeId = SetupHelpers.RecipeId,
-                            DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlConnection,
-                            ConnectionString = "An invalid connection string which causes an error during setup.",
-                        });
+                    // The test is guaranteed to fail so we don't want to retry it needlessly.
+                    configuration.MaxRetryCount = 0;
 
-                    throw new InvalidOperationException(
-                        "This point shouldn't be reachable if the logs are properly kept.");
-                };
+                    // Otherwise, a GitHub Actions error annotation would appear in the workflow run summary, indicating
+                    // a problem, despite them being expected.
+                    configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
 
-                // No need to create a failure dump folder for this test, since it'll always fail.
-                configuration.TestDumpConfiguration.CreateTestDump = false;
-            });
+                    // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
+                    configuration.SetupConfiguration.SetupOperation = async context =>
+                    {
+                        await context.GoToSetupPageAndSetupOrchardCoreAsync(
+                            new OrchardCoreSetupParameters(context)
+                            {
+                                SiteName = "Setup Error Test",
+                                RecipeId = SetupHelpers.RecipeId,
+                                DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlConnection,
+                                ConnectionString = "An invalid connection string which causes an error during setup.",
+                            });
+
+                        throw new InvalidOperationException(
+                            "This point shouldn't be reachable if the logs are properly kept.");
+                    };
+
+                    // No need to create a failure dump folder for this test, since it'll always fail.
+                    configuration.TestDumpConfiguration.CreateTestDump = false;
+                });
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException(e.ToString());
+        }
+    }
 }
 
 // END OF TRAINING SECTION: Error handling.
