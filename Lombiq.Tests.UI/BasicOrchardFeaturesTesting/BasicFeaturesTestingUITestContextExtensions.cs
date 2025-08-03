@@ -263,9 +263,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/> and tests the
-    /// site setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/> instance with empty
-    /// values of properties: </para>
+    /// <para>
+    /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/> and tests the site
+    /// setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/> instance with empty values of
+    /// the following properties:
+    /// </para>
     /// <list type="bullet">
     ///     <item><description><see cref="OrchardCoreSetupParameters.SiteName"/></description></item>
     ///     <item><description><see cref="OrchardCoreSetupParameters.UserName"/></description></item>
