@@ -143,9 +143,12 @@ public class ErrorHandlingTests : UITestBase
                     configuration.TestDumpConfiguration.CreateTestDump = false;
                 });
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new InvalidOperationException(e.ToString());
+            if (exception is not PageChangeAssertionException)
+            {
+                throw new InvalidOperationException(exception.ToString());
+            }
         }
     }
 }
