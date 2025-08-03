@@ -260,17 +260,6 @@ public static class NavigationUITestContextExtensions
         context.GoToAdminRelativeUrlAsync("/Features");
 
     /// <summary>
-    /// Navigate to the Features admin configuration page and search for the provided text.
-    /// </summary>
-    /// <returns>A collection of visible checkbox elements.</returns>
-    public static async Task<IEnumerable<IWebElement>> GoToFeaturesAsync(this UITestContext context, string search)
-    {
-        await context.GoToFeaturesAsync();
-        await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), search);
-        return context.GetAll(By.Name("featureIds"));
-    }
-
-    /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
     /// operations (like within a page class) when writing async code.
     /// </summary>

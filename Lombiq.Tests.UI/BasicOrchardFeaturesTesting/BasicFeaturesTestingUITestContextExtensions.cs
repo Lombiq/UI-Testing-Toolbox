@@ -594,8 +594,12 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test turning feature on and off",
             async () =>
             {
-                async Task<IWebElement> SearchForFeatureAsync(UITestContext context) =>
-                    (await context.GoToFeaturesAsync(featureName)).First();
+                async Task<IWebElement> SearchForFeatureAsync(UITestContext context)
+                {
+                    await context.GoToFeaturesAsync();
+                    await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), featureName);
+                    return context.Get(By.Name("featureIds"));
+                }
 
                 var feature = await SearchForFeatureAsync(context);
                 var originalEnabledState = feature.Enabled;
