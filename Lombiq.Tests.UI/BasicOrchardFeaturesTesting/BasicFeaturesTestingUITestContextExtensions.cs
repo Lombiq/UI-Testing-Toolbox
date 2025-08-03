@@ -26,7 +26,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
@@ -45,7 +44,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static async Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
@@ -79,7 +77,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks>
     /// <para>The test method assumes that the site is not set up.</para>
     /// <para>
@@ -115,7 +112,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks>
     /// <para>The test method assumes that the site is not set up.</para>
     /// <para>
@@ -160,7 +156,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// TestContentOperationsAsync().
     /// </param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is set up.</para></remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
@@ -186,7 +181,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is set up.</para></remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
@@ -204,7 +198,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks>
     /// <para>The test method assumes that the site is set up.</para>
     /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
@@ -252,7 +245,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/> and <see
     /// cref="OrchardCoreSetupParameters.Password"/>.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static async Task TestSetupWithInvalidAndValidDataAsync(
         this UITestContext context,
@@ -276,7 +268,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </list>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, string setupRecipeId) =>
         context.TestSetupWithInvalidAndValidDataAsync(new OrchardCoreSetupParameters(context, setupRecipeId));
@@ -285,7 +276,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupAsync(this UITestContext context, string setupRecipeId) =>
         context.TestSetupAsync(new OrchardCoreSetupParameters(context, setupRecipeId));
@@ -295,7 +285,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/>
     /// value.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
         context.TestSetupAsync(setupParameters, "Test setup", shouldBeSuccess: true);
@@ -312,7 +301,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     ///     <item><description><see cref="OrchardCoreSetupParameters.Password"/></description></item>
     /// </list>
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupWithInvalidDataAsync(
         this UITestContext context,
@@ -365,7 +353,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <summary>
     /// Tests the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLoginAsync(
         this UITestContext context,
@@ -385,7 +372,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// Tests the login negatively with the specified <paramref name="userName"/> and <paramref name="password"/>
     /// values.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLoginWithInvalidDataAsync(
         this UITestContext context,
@@ -403,7 +389,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <summary>
     /// Tests the logout.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLogoutAsync(this UITestContext context) =>
         context.ExecuteTestAsync(
@@ -431,7 +416,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
     {
         parameters ??= UserRegistrationParameters.CreateTest();
@@ -466,7 +450,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the "Users Registration" Orchard feature is enabled.</para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     public static Task TestRegistrationWithInvalidDataAsync(
         this UITestContext context, UserRegistrationParameters parameters = null)
     {
@@ -500,7 +483,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     public static Task TestRegistrationWithAlreadyRegisteredEmailAsync(
         this UITestContext context,
         UserRegistrationParameters parameters = null)
@@ -537,7 +519,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text.
     /// </param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks>
     /// <para>The test method assumes that the site is not set up.</para>
     /// <para>
@@ -586,7 +567,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </list>
     /// </summary>
     /// <param name="featureName">The name of the feature to use.</param>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     /// <remarks><para>The test method assumes that there is currently a logged in admin user session.</para></remarks>
     public static Task TestTurningFeatureOnAndOffAsync(
         this UITestContext context, string featureName = "Background Tasks") =>
@@ -624,7 +604,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <summary>
     /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
     /// </summary>
-    /// <returns>The instance passed to <paramref name="context"/>.</returns>
     public static Task ExecuteTestAsync(
         this UITestContext context, string testName, Func<Task> testFunctionAsync)
     {
