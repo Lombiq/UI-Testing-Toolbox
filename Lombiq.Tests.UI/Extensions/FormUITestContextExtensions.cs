@@ -174,14 +174,17 @@ public static class FormUITestContextExtensions
         By by,
         string text,
         TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        context.ExecuteLoggedAsync(
+        TimeSpan? interval = null)
+    {
+        text ??= String.Empty;
+        return context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesAsync),
             $"{by} - \"{text}\"",
             () => context.RetryIfStaleOrFailAsync(
                 () => Task.FromResult(TryFillElement(context, by, text).GetValue() == text),
                 timeout,
                 interval));
+    }
 
     /// <summary>
     /// Fills a form field with the given text, and retries if the field is left blank (but doesn't check the value).
