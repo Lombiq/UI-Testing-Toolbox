@@ -53,4 +53,7 @@ public record UserLoginParameters(
             await context.ClickOnWithScriptAsync(buttonBy);
         }
     }
+
+    public static implicit operator UserLoginParameters(UserRegistrationParameters parameters) =>
+        new(parameters);
 }

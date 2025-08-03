@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
 using Shouldly;
 using System.Threading.Tasks;

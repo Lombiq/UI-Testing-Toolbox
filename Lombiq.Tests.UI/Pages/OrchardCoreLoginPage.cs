@@ -56,7 +56,7 @@ public class OrchardCoreLoginPage : Page<OrchardCoreLoginPage>
         string password,
         string loginButtonText = DefaultLoginButtonText)
     {
-        await new UserLoginParameters(userName, password, loginButtonText).LogInAsync(context);
+        await context.LogInAsync(new(userName, password, loginButtonText));
 
         context.RefreshCurrentAtataContext();
         return this;

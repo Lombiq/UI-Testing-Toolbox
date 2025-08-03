@@ -3,13 +3,22 @@ using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
-using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading.Tasks;
+
+#pragma warning disable CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
+using OrchardCoreContentItemsPage = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
+using OrchardCoreDashboardPage = Lombiq.Tests.UI.Pages.OrchardCoreDashboardPage;
+using OrchardCoreFeaturesPage = Lombiq.Tests.UI.Pages.OrchardCoreFeaturesPage;
+using OrchardCoreLoginPage = Lombiq.Tests.UI.Pages.OrchardCoreLoginPage;
+using OrchardCoreRegistrationPage = Lombiq.Tests.UI.Pages.OrchardCoreRegistrationPage;
+using OrchardCoreSetupPage = Lombiq.Tests.UI.Pages.OrchardCoreSetupPage;
+using OrchardCoreSetupPageParameters = Lombiq.Tests.UI.Pages.OrchardCoreSetupParameters;
+#pragma warning restore CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -210,7 +219,7 @@ public static class NavigationUITestContextExtensions
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
         context.GoToSetupPageAndSetupOrchardCoreAsync(
-            new OrchardCoreSetupParameters(context)
+            new OrchardCoreSetupPageParameters(context)
             {
                 RecipeId = recipeId,
             });
@@ -218,7 +227,7 @@ public static class NavigationUITestContextExtensions
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
         this UITestContext context,
-        OrchardCoreSetupParameters parameters = null)
+        OrchardCoreSetupPageParameters parameters = null)
     {
         var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
         setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
@@ -234,7 +243,7 @@ public static class NavigationUITestContextExtensions
         parameters ??= new(context);
 
         if (!parameters.RunSetupOnCurrentPage) await context.GoToAbsoluteUrlAsync(context.TestStartUri);
-        await parameters.SetupOrchardCoreAsync(context);
+        await context.SetupOrchardCoreAsync(parameters);
         context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
 
         return new(context.Driver.Url);
@@ -396,8 +405,8 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext,
-    /// TimeSpan?, TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync"/> so the <paramref
+    /// name="context"/> doesn't have to be passed twice.
     /// </summary>
     public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
         this UITestContext context,
@@ -408,8 +417,8 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
-    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync"/> so the <paramref name="context"/>
+    /// doesn't have to be passed twice.
     /// </summary>
     public static Task ClickReliablyOnUntilUrlChangeAsync(
         this UITestContext context,

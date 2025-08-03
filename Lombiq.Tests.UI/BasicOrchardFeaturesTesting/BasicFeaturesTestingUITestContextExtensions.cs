@@ -2,12 +2,10 @@ using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
-using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
@@ -337,7 +335,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             {
                 if (signOut) await context.SignOutDirectlyAsync();
 
-                await new UserLoginParameters(userName, password, loginButtonText).LogInAsync(context);
+                await context.LogInAsync(new(userName, password, loginButtonText));
 
                 var currentUser = await context.GetCurrentUserNameAsync();
                 if (shouldBeSuccess)
@@ -434,7 +432,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
 
-                await new UserLoginParameters(parameters).LogInAsync(context);
+                await context.LogInAsync(parameters);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
