@@ -108,11 +108,9 @@ public class ErrorHandlingTests : UITestBase
             });
 
     [Fact]
-    public async Task ErrorDuringSetupShouldHaltTest()
-    {
-        try
-        {
-            await ExecuteTestAfterSetupAsync(
+    public Task ErrorDuringSetupShouldHaltTest() =>
+        Should.ThrowAsync<PageChangeAssertionException>(() =>
+            ExecuteTestAfterSetupAsync(
                 _ => throw new InvalidOperationException("This point shouldn't be reachable because setup fails."),
                 configuration =>
                 {
@@ -141,16 +139,7 @@ public class ErrorHandlingTests : UITestBase
 
                     // No need to create a failure dump folder for this test, since it'll always fail.
                     configuration.TestDumpConfiguration.CreateTestDump = false;
-                });
-        }
-        catch (Exception exception)
-        {
-            if (exception is not PageChangeAssertionException)
-            {
-                throw new InvalidOperationException(exception.ToString());
-            }
-        }
-    }
+                }));
 }
 
 // END OF TRAINING SECTION: Error handling.
