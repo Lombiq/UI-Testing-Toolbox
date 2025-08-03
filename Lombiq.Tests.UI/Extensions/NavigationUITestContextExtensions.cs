@@ -1,13 +1,14 @@
 using Atata;
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -121,7 +122,8 @@ public static class NavigationUITestContextExtensions
     // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
     // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
         where T : PageObject<T>
     {
@@ -137,7 +139,8 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
@@ -166,7 +169,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminAsync)} instead.")]
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
@@ -196,15 +199,18 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRelativeUrlAsync)}(\"/\") instead.")]
     public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context, bool navigate = true) =>
         context.GoToPageAsync<OrchardCoreSetupPage>(navigate);
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToLoginAsync)} instead.")]
     public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreLoginPage>();
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    public static Task GoToLoginAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync("/Login");
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
         context.GoToSetupPageAndSetupOrchardCoreAsync(
             new OrchardCoreSetupParameters(context)
@@ -212,7 +218,7 @@ public static class NavigationUITestContextExtensions
                 RecipeId = recipeId,
             });
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
         this UITestContext context,
         OrchardCoreSetupParameters parameters = null)
@@ -237,19 +243,23 @@ public static class NavigationUITestContextExtensions
         return new(context.Driver.Url);
     }
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRegistrationAsync)} instead.")]
     public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
-    [Obsolete($"Use {nameof(GoToAdminAsync)} method instead.")]
+    public static Task GoToRegistrationAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync('/' + UserRegistrationParameters.DefaultUrl);
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminAsync)} method instead.")]
     public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(OrchardCoreDashboardUITestContextExtensions.GoToContentItemListAsync)} instead")]
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
 
-    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToFeaturesAsync)} instead.")]
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
 
