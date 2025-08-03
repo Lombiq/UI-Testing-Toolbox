@@ -176,7 +176,7 @@ public static class FormUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        text ??= String.Empty;
+        text ??= string.Empty;
         return context.ExecuteLoggedAsync(
             nameof(FillInWithRetriesAsync),
             $"{by} - \"{text}\"",
