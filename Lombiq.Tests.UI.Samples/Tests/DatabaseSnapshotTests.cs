@@ -30,7 +30,7 @@ public class DatabaseSnapshotTests : UITestBase
         await ExecuteTestAsync(
             async context =>
             {
-                await context.GoToSetupPageAndSetupOrchardCoreAsync(RecipeIds.BasicOrchardFeaturesTests);
+                await context.GoToSetupAndSetupOrchardCoreAsync(new(context) { RecipeId = RecipeIds.BasicOrchardFeaturesTests });
                 await context.Application.TakeSnapshotAsync(appForDatabaseTestFolder);
             });
 

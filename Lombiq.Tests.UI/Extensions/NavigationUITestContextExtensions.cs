@@ -204,6 +204,7 @@ public static class NavigationUITestContextExtensions
     public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreLoginPage>();
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
         context.GoToSetupPageAndSetupOrchardCoreAsync(
             new OrchardCoreSetupParameters(context)
@@ -211,7 +212,18 @@ public static class NavigationUITestContextExtensions
                 RecipeId = recipeId,
             });
 
+    [Obsolete("Methods using Page<> classes will be removed in the next version.")]
     public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters parameters = null)
+    {
+        var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
+        setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
+
+        return setupPage.PageUri.Value;
+    }
+
+    public static async Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
         this UITestContext context,
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)

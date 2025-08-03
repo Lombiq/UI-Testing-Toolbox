@@ -124,7 +124,7 @@ public class ErrorHandlingTests : UITestBase
                     // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
                     configuration.SetupConfiguration.SetupOperation = async context =>
                     {
-                        await context.GoToSetupPageAndSetupOrchardCoreAsync(
+                        await context.GoToSetupAndSetupOrchardCoreAsync(
                             new OrchardCoreSetupParameters(context)
                             {
                                 SiteName = "Setup Error Test",

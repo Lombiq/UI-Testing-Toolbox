@@ -333,7 +333,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
         string testName,
         bool shouldBeSuccess) =>
         context.ExecuteTestAsync(testName, () => context
-            .GoToSetupPageAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess));
+            .GoToSetupAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess));
 
     private static Task TestLoginAsync(
         this UITestContext context,
