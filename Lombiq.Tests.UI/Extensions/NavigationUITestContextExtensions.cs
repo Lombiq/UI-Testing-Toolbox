@@ -235,6 +235,14 @@ public static class NavigationUITestContextExtensions
         return setupPage.PageUri.Value;
     }
 
+    public static Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
+        this UITestContext context,
+        string recipeId,
+        bool shouldBeSuccess = true) =>
+        context.GoToSetupAndSetupOrchardCoreAsync(
+            new OrchardCoreSetupParameters(context, recipeId),
+            shouldBeSuccess);
+
     public static async Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
         this UITestContext context,
         OrchardCoreSetupParameters parameters = null,
