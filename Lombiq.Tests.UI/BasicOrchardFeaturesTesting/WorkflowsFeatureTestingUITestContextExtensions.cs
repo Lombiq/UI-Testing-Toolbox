@@ -74,13 +74,7 @@ public static class WorkflowsFeatureTestingUITestContextExtensions
                 await context.ClickReliablyOnSubmitAsync("Save", withJavaScript: true);
                 context.ShouldBeSuccess("Workflow has been saved.");
 
-                var contentItemsPage = await context.GoToContentItemsPageAsync();
-                context.RefreshCurrentAtataContext();
-                contentItemsPage
-                    .CreateNewPage()
-                        .Title.Set("Workflows Test Page")
-                        .Publish.ClickAndGo();
-
+                await context.CreateNewPageContentItemAsync("Workflows Test Page", checkSuccess: false);
                 context.ShouldBeSuccess(contentItemPublishTestSuccessMessage);
 
                 // Checking if the workflow run was logged.

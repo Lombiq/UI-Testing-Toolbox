@@ -1,13 +1,24 @@
 using Atata;
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading.Tasks;
+
+#pragma warning disable CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
+using OrchardCoreContentItemsPage = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
+using OrchardCoreDashboardPage = Lombiq.Tests.UI.Pages.OrchardCoreDashboardPage;
+using OrchardCoreFeaturesPage = Lombiq.Tests.UI.Pages.OrchardCoreFeaturesPage;
+using OrchardCoreLoginPage = Lombiq.Tests.UI.Pages.OrchardCoreLoginPage;
+using OrchardCoreRegistrationPage = Lombiq.Tests.UI.Pages.OrchardCoreRegistrationPage;
+using OrchardCoreSetupPage = Lombiq.Tests.UI.Pages.OrchardCoreSetupPage;
+using OrchardCoreSetupPageParameters = Lombiq.Tests.UI.Pages.OrchardCoreSetupParameters;
+#pragma warning restore CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -24,7 +35,7 @@ public static class NavigationUITestContextExtensions
         string urlWithoutAdminPrefix = null,
         bool onlyIfNotAlreadyThere = true)
     {
-        if (string.IsNullOrEmpty(urlWithoutAdminPrefix)) return context.GoToDashboardAsync();
+        urlWithoutAdminPrefix ??= string.Empty;
 
         return context.GoToAbsoluteUrlAsync(context.GetAbsoluteAdminUri(urlWithoutAdminPrefix), onlyIfNotAlreadyThere);
     }
@@ -68,7 +79,8 @@ public static class NavigationUITestContextExtensions
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
-        var combinedUriString = context.AdminUrlPrefix + adminRelativeUrl;
+        adminRelativeUrl ??= string.Empty;
+        var combinedUriString = context.AdminUrlPrefix + adminRelativeUrl.Trim();
 
         return context.GetAbsoluteUri(combinedUriString);
     }
@@ -116,7 +128,8 @@ public static class NavigationUITestContextExtensions
     // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
     // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
-
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
         where T : PageObject<T>
     {
@@ -132,6 +145,8 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
     {
@@ -160,6 +175,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminRelativeUrlAsync)} instead.")]
     public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
         where T : PageObject<T>
     {
@@ -189,22 +205,29 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRelativeUrlAsync)}(\"/\") instead.")]
     public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context, bool navigate = true) =>
         context.GoToPageAsync<OrchardCoreSetupPage>(navigate);
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToLoginAsync)} instead.")]
     public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreLoginPage>();
 
+    public static Task GoToLoginAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync("/Login");
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
         context.GoToSetupPageAndSetupOrchardCoreAsync(
-            new OrchardCoreSetupParameters(context)
+            new OrchardCoreSetupPageParameters(context)
             {
                 RecipeId = recipeId,
             });
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
         this UITestContext context,
-        OrchardCoreSetupParameters parameters = null)
+        OrchardCoreSetupPageParameters parameters = null)
     {
         var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
         setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
@@ -212,17 +235,56 @@ public static class NavigationUITestContextExtensions
         return setupPage.PageUri.Value;
     }
 
+    public static Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
+        this UITestContext context,
+        string recipeId,
+        bool shouldBeSuccess = true) =>
+        context.GoToSetupAndSetupOrchardCoreAsync(
+            new OrchardCoreSetupParameters(context, recipeId),
+            shouldBeSuccess);
+
+    public static async Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters parameters = null,
+        bool shouldBeSuccess = true)
+    {
+        parameters ??= new(context);
+
+        if (!parameters.RunSetupOnCurrentPage) await context.GoToAbsoluteUrlAsync(context.TestStartUri);
+        await context.SetupOrchardCoreAsync(parameters);
+        context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
+
+        return new(context.Driver.Url);
+    }
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRegistrationAsync)} instead.")]
     public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
         context.GoToPageAsync<OrchardCoreRegistrationPage>();
 
-    public static Task<OrchardCoreDashboardPage> GoToDashboardAsync(this UITestContext context) =>
+    public static Task GoToRegistrationAsync(this UITestContext context) =>
+        context.GoToRelativeUrlAsync('/' + UserRegistrationParameters.DefaultUrl);
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToDashboardAsync)} method instead.")]
+    public static Task<OrchardCoreDashboardPage> GoToDashboardPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
 
+    public static Task GoToDashboardAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
+
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+              $"{nameof(OrchardCoreDashboardUITestContextExtensions.GoToContentItemListAsync)} instead")]
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
 
+    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToFeaturesAsync)} instead.")]
     public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
+
+    /// <summary>
+    /// Navigate to the Features admin configuration page.
+    /// </summary>
+    public static Task GoToFeaturesAsync(this UITestContext context) =>
+        context.GoToAdminRelativeUrlAsync("/Features");
 
     /// <summary>
     /// Reloads <see cref="AtataContext.Current"/> from the <see cref="UITestContext"/>. This is necessary during Atata
@@ -351,8 +413,8 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext,
-    /// TimeSpan?, TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync"/> so the <paramref
+    /// name="context"/> doesn't have to be passed twice.
     /// </summary>
     public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
         this UITestContext context,
@@ -363,8 +425,8 @@ public static class NavigationUITestContextExtensions
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync(IWebElement, UITestContext, TimeSpan?,
-    /// TimeSpan?)"/> so the <paramref name="context"/> doesn't have to be passed twice.
+    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync"/> so the <paramref name="context"/>
+    /// doesn't have to be passed twice.
     /// </summary>
     public static Task ClickReliablyOnUntilUrlChangeAsync(
         this UITestContext context,

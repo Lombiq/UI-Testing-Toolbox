@@ -1,9 +1,11 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using System;
 
 namespace Lombiq.Tests.UI.Pages;
 
+[Obsolete($"Use {nameof(Lombiq.Tests.UI.Models.OrchardCoreSetupParameters)} instead.")]
 public class OrchardCoreSetupParameters
 {
     private UserRegistrationParameters _userRegistrationParameters;

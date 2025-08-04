@@ -1,17 +1,14 @@
 using Atata;
+using System;
 
 namespace Lombiq.Tests.UI.Pages;
 
-// Atata convention.
-#pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreNewPageItemPage;
-#pragma warning restore IDE0065 // Misplaced using directive
-
-public class OrchardCoreNewPageItemPage : OrchardCoreAdminPage<_>
+[Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
+public class OrchardCoreNewPageItemPage : OrchardCoreAdminPage<OrchardCoreNewPageItemPage>
 {
     [FindByName("TitlePart.Title")]
-    public TextInput<_> Title { get; private set; }
+    public TextInput<OrchardCoreNewPageItemPage> Title { get; private set; }
 
     [FindByName("submit.Publish")]
-    public Button<OrchardCoreContentItemsPage, _> Publish { get; private set; }
+    public Button<OrchardCoreContentItemsPage, OrchardCoreNewPageItemPage> Publish { get; private set; }
 }

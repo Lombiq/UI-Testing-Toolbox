@@ -2,7 +2,7 @@ using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.Shortcuts.Models;
@@ -494,7 +494,7 @@ public static class ShortcutsUITestContextExtensions
         string featureProfile = null)
     {
         setupParameters ??= new OrchardCoreSetupParameters(context);
-        var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupPage.DatabaseType.SqlServer
+        var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupParameters.DatabaseType.SqlConnection
             ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 

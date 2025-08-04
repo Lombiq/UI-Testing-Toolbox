@@ -1,19 +1,13 @@
 using Atata;
 using Lombiq.Tests.UI.Attributes.Behaviors;
 using Lombiq.Tests.UI.Components;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
-
-// Atata convention.
-#pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreRegistrationPage;
-#pragma warning restore IDE0065 // Misplaced using directive
 
 [Url(DefaultUrl)]
 [TermFindSettings(Case = TermCase.Pascal, TargetAllChildren = true, TargetAttributeType = typeof(FindByNameAttribute))]
@@ -21,56 +15,42 @@ using _ = OrchardCoreRegistrationPage;
     "Major Code Smell",
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
-public class OrchardCoreRegistrationPage : Page<_>
+[Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
+public class OrchardCoreRegistrationPage : Page<OrchardCoreRegistrationPage>
 {
-    public const string DefaultUrl = "Register";
+    public const string DefaultUrl = UserRegistrationParameters.DefaultUrl;
 
     [FindById("RegisterUserForm_UserName")]
-    public TextInput<_> UserName { get; private set; }
+    public TextInput<OrchardCoreRegistrationPage> UserName { get; private set; }
 
     [FindById("RegisterUserForm_Email")]
     [SetsValueReliably]
-    public TextInput<_> Email { get; private set; }
+    public TextInput<OrchardCoreRegistrationPage> Email { get; private set; }
 
     [FindById("RegisterUserForm_Password")]
-    public PasswordInput<_> Password { get; private set; }
+    public PasswordInput<OrchardCoreRegistrationPage> Password { get; private set; }
 
     [FindById("RegisterUserForm_ConfirmPassword")]
-    public PasswordInput<_> ConfirmPassword { get; private set; }
+    public PasswordInput<OrchardCoreRegistrationPage> ConfirmPassword { get; private set; }
 
     [FindById("RegisterUserForm_RegistrationCheckbox")]
-    public CheckBox<_> PrivacyPolicyAgreement { get; private set; }
+    public CheckBox<OrchardCoreRegistrationPage> PrivacyPolicyAgreement { get; private set; }
 
     [FindByAttribute("type", "submit")]
-    public Button<_> Register { get; private set; }
+    public Button<OrchardCoreRegistrationPage> Register { get; private set; }
 
-    public ValidationMessageList<_> ValidationMessages { get; private set; }
+    public ValidationMessageList<OrchardCoreRegistrationPage> ValidationMessages { get; private set; }
 
-    public _ ShouldStayOnRegistrationPage() =>
+    public OrchardCoreRegistrationPage ShouldStayOnRegistrationPage() =>
         PageUrl.Should.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public _ ShouldLeaveRegistrationPage() =>
+    public OrchardCoreRegistrationPage ShouldLeaveRegistrationPage() =>
         PageUrl.Should.Not.StartWith(Context.BaseUrl + DefaultUrl);
 
-    public async Task<_> RegisterWithAsync(
+    public async Task<OrchardCoreRegistrationPage> RegisterWithAsync(
         UITestContext context, UserRegistrationParameters parameters, bool checkPrivacyConsent = true)
     {
-        if (PrivacyPolicyAgreement.Exists() && checkPrivacyConsent)
-        {
-            PrivacyPolicyAgreement.Click();
-        }
-
-        // The Atata input Set() and Click() are not always reliable in Chrome under Ubuntu.
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_UserName"), parameters.UserName);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Email"), parameters.Email);
-        await context.ClickAndFillInWithRetriesAsync(By.Id("RegisterUserForm_Password"), parameters.Password);
-        await context.ClickAndFillInWithRetriesAsync(
-            By.Id("RegisterUserForm_ConfirmPassword"),
-            parameters.ConfirmPassword ?? parameters.Password);
-        await context.ClickReliablyOnSubmitAsync();
-
-        context.RefreshCurrentAtataContext();
-
+        await parameters.RegisterAsync(context, checkPrivacyConsent, navigate: false);
         return this;
     }
 }

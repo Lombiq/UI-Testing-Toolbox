@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Pages;
 
-// Atata convention.
-#pragma warning disable IDE0065 // Misplaced using directive
-using _ = OrchardCoreSetupPage;
-#pragma warning restore IDE0065 // Misplaced using directive
-
 [VerifyTitle(values: [DefaultPageTitle, OlderPageTitle], Format = "{0}")]
 [VerifyH1(DefaultPageTitle, OlderPageTitle)]
 [TermFindSettings(
@@ -24,7 +19,8 @@ using _ = OrchardCoreSetupPage;
     "Major Code Smell",
     "S1144:Unused private types or members should be removed",
     Justification = "Atata requires private setters: https://atata.io/examples/page-object-inheritance/.")]
-public sealed class OrchardCoreSetupPage : Page<_>
+[Obsolete("Classes inheriting from Page<> will be removed in the next version.")]
+public sealed class OrchardCoreSetupPage : Page<OrchardCoreSetupPage>
 {
     public const string DefaultPageTitle = "Setup";
     public const string OlderPageTitle = "Orchard Setup";
@@ -34,7 +30,6 @@ public sealed class OrchardCoreSetupPage : Page<_>
         [Term("Sql Server")]
         SqlServer,
         Sqlite,
-        [Term("MySql")]
         MySql,
         Postgres,
         ProvidedByEnvironment,
@@ -42,50 +37,50 @@ public sealed class OrchardCoreSetupPage : Page<_>
 
     [FindById("culturesList")]
     [SelectsOptionByValue]
-    public Select<_> Language { get; private set; }
+    public Select<OrchardCoreSetupPage> Language { get; private set; }
 
     [FindByName]
-    public TextInput<_> SiteName { get; private set; }
+    public TextInput<OrchardCoreSetupPage> SiteName { get; private set; }
 
     [FindById("recipeButton")]
-    public BSDropdownToggle<_> Recipe { get; private set; }
+    public BSDropdownToggle<OrchardCoreSetupPage> Recipe { get; private set; }
 
     [FindById]
     [SelectsOptionByValue]
-    public Select<_> SiteTimeZone { get; private set; }
+    public Select<OrchardCoreSetupPage> SiteTimeZone { get; private set; }
 
     [FindById]
-    public Select<DatabaseType, _> DatabaseProvider { get; private set; }
+    public Select<DatabaseType, OrchardCoreSetupPage> DatabaseProvider { get; private set; }
 
     [FindById]
-    public PasswordInput<_> ConnectionString { get; private set; }
+    public PasswordInput<OrchardCoreSetupPage> ConnectionString { get; private set; }
 
     [FindById]
-    public TextInput<_> TablePrefix { get; private set; }
+    public TextInput<OrchardCoreSetupPage> TablePrefix { get; private set; }
 
     [FindByName]
-    public TextInput<_> UserName { get; private set; }
+    public TextInput<OrchardCoreSetupPage> UserName { get; private set; }
 
     [FindByName]
     [SetsValueReliably]
-    public EmailInput<_> Email { get; private set; }
+    public EmailInput<OrchardCoreSetupPage> Email { get; private set; }
 
     [FindByName]
-    public PasswordInput<_> Password { get; private set; }
+    public PasswordInput<OrchardCoreSetupPage> Password { get; private set; }
 
     [FindByName]
-    public PasswordInput<_> PasswordConfirmation { get; private set; }
+    public PasswordInput<OrchardCoreSetupPage> PasswordConfirmation { get; private set; }
 
-    public Button<_> FinishSetup { get; private set; }
+    public Button<OrchardCoreSetupPage> FinishSetup { get; private set; }
 
-    public _ ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
+    public OrchardCoreSetupPage ShouldStayOnSetupPage() => PageTitle.Should.Satisfy(title => IsExpectedTitle(title));
 
-    public _ ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
+    public OrchardCoreSetupPage ShouldLeaveSetupPage() => PageTitle.Should.Not.Satisfy(title => IsExpectedTitle(title));
 
-    public _ ShouldLeaveSetupPage(bool expected) =>
+    public OrchardCoreSetupPage ShouldLeaveSetupPage(bool expected) =>
         expected ? ShouldLeaveSetupPage() : ShouldStayOnSetupPage();
 
-    public async Task<_> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
+    public async Task<OrchardCoreSetupPage> SetupOrchardCoreAsync(UITestContext context, OrchardCoreSetupParameters parameters = null)
     {
         parameters ??= new OrchardCoreSetupParameters(context);
 
@@ -101,9 +96,10 @@ public sealed class OrchardCoreSetupPage : Page<_>
                 ".click()");
         }
 
-        if (parameters.DatabaseProvider != DatabaseType.ProvidedByEnvironment)
+        var databaseProvider = (DatabaseType)(int)parameters.DatabaseProvider;
+        if (databaseProvider != DatabaseType.ProvidedByEnvironment)
         {
-            DatabaseProvider.Set(parameters.DatabaseProvider);
+            DatabaseProvider.Set(databaseProvider);
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.SiteTimeZoneValue))
@@ -111,7 +107,7 @@ public sealed class OrchardCoreSetupPage : Page<_>
             SiteTimeZone.Set(parameters.SiteTimeZoneValue);
         }
 
-        if (parameters.DatabaseProvider is not DatabaseType.Sqlite and not DatabaseType.ProvidedByEnvironment)
+        if (databaseProvider is not DatabaseType.Sqlite and not DatabaseType.ProvidedByEnvironment)
         {
             if (string.IsNullOrEmpty(parameters.ConnectionString))
             {

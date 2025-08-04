@@ -14,6 +14,9 @@ public sealed class SetsValueReliablyAttribute : ValueSetBehaviorAttribute
         var element = component.Scope;
         var driver = component.Context.Driver;
 
+        // Prevent ambiguity between null or empty for the check below.
+        value ??= string.Empty;
+
         ReliabilityHelper.DoWithRetriesOrFail(
             () => driver.TryFillElement(element, value).GetValue() == value,
             cancellationToken: CancellationToken.None);

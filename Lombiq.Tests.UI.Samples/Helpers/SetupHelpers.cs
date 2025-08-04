@@ -1,7 +1,7 @@
 using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Pages;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -36,7 +36,7 @@ public static class SetupHelpers
     public static async Task<Uri> RunSetupAsync(UITestContext context, string recipeId)
     {
         // Running the setup. OrchardCoreSetupParameters will initialize some basic settings from the context.
-        var homepageUri = await context.GoToSetupPageAndSetupOrchardCoreAsync(
+        var homepageUri = await context.GoToSetupAndSetupOrchardCoreAsync(
             new OrchardCoreSetupParameters(context)
             {
                 SiteName = "Lombiq's OSOCE - UI Testing",

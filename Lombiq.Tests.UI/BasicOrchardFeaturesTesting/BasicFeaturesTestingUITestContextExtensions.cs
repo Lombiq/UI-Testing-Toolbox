@@ -2,7 +2,6 @@ using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
-using Lombiq.Tests.UI.Pages;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
@@ -17,18 +16,15 @@ namespace Lombiq.Tests.UI.BasicOrchardFeaturesTesting;
 public static class BasicFeaturesTestingUITestContextExtensions
 {
     /// <summary>
-    /// <para>
     /// Tests all the basic Orchard features. At first sets up Orchard with the recipe with the specified <paramref
     /// name="setupRecipeId"/>.
-    /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
         string setupRecipeId,
@@ -38,19 +34,15 @@ public static class BasicFeaturesTestingUITestContextExtensions
             customPageHeaderCheckAsync);
 
     /// <summary>
-    /// <para>
     /// Tests all the basic Orchard features. At first sets up Orchard with optionally specified <paramref
     /// name="setupParameters"/>. By default, uses new <see cref="OrchardCoreSetupParameters"/> instance with
-    /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
-    /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
+    /// <c>"SaaS"</c> <see cref="OrchardCoreSetupParameters.RecipeId"/> value.
     /// </summary>
-    /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static async Task TestBasicOrchardFeaturesAsync(
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null,
@@ -74,15 +66,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>
     /// Tests all the basic Orchard features except for registration. At first sets up Orchard with the recipe with the
     /// specified <paramref name="setupRecipeId"/>.
-    /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
-    /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
-    /// name="dontCheckFrontend"></paramref>> for this purpose.
-    /// </para>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
@@ -90,7 +75,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
+    /// </remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
         $"{nameof(OrchardCoreSetupParameters)}, and set the {nameof(OrchardCoreSetupParameters.SkipRegistration)} or " +
@@ -110,24 +101,22 @@ public static class BasicFeaturesTestingUITestContextExtensions
             customPageHeaderCheckAsync);
 
     /// <summary>
-    /// <para>
     /// Tests all the basic Orchard features except for registration. At first sets up Orchard with optionally specified
     /// <paramref name="setupParameters"/>. By default, uses new <see cref="OrchardCoreSetupParameters"/> instance with
     /// <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/> value.
-    /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
-    /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
-    /// name="dontCheckFrontend"></paramref>> for this purpose.
-    /// </para>
     /// </summary>
-    /// <param name="setupParameters">The setup parameters.</param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
+    /// </remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
         $"{nameof(OrchardCoreSetupParameters)}, and set the {nameof(OrchardCoreSetupParameters.SkipRegistration)} or " +
@@ -158,15 +147,14 @@ public static class BasicFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>Tests all the basic Orchard features except for setup.</para>
-    /// <para>The test method assumes that the site is set up.</para>
+    /// Tests all the basic Orchard features except for setup.
     /// </summary>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is set up.</para></remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
         $"{nameof(OrchardCoreSetupParameters)}, and set the {nameof(OrchardCoreSetupParameters.SkipSetup)} property.")]
@@ -186,13 +174,12 @@ public static class BasicFeaturesTestingUITestContextExtensions
 
     /// <summary>
     /// <para>Tests all the basic Orchard features except for setup.</para>
-    /// <para>The test method assumes that the site is set up.</para>
     /// </summary>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is set up.</para></remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use {nameof(TestBasicOrchardFeaturesAsync)} with " +
         $"{nameof(OrchardCoreSetupParameters)}, and set the {nameof(OrchardCoreSetupParameters.SkipSetup)} property.")]
@@ -202,20 +189,21 @@ public static class BasicFeaturesTestingUITestContextExtensions
         context.TestBasicOrchardFeaturesAsync(new OrchardCoreSetupParameters(context) { SkipSetup = true }, customPageHeaderCheckAsync);
 
     /// <summary>
-    /// <para>Tests all the basic Orchard features except for setup and registration.</para>
-    /// <para>The test method assumes that the site is set up.</para>
-    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
-    /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
-    /// name="dontCheckFrontend"></paramref>> for this purpose.
-    /// </para>
+    /// Tests all the basic Orchard features except for setup and registration.
     /// </summary>
     /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text. This ultimately gets passed to
     /// TestContentOperationsAsync().
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks>
+    /// <para>The test method assumes that the site is set up.</para>
+    /// <para>When running headless version of Orchard Core, ContentOperations shall be excluded.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref>> for this purpose.
+    /// </para>
+    /// </remarks>
     [Obsolete(
         $"This method will be removed to streamline the library. Use the overload with with " +
         $"{nameof(OrchardCoreSetupParameters)} instead.")]
@@ -248,16 +236,14 @@ public static class BasicFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>Tests the site setup with optionally set <paramref name="setupParameters"/>. By default, uses new <see
+    /// Tests the site setup with optionally set <paramref name="setupParameters"/>. By default, uses new <see
     /// cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/>
     /// value, and tests the site setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/>
     /// instance with empty values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>, <see
     /// cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/> and <see
-    /// cref="OrchardCoreSetupParameters.Password"/>.</para>
-    /// <para>The test method assumes that the site is not set up.</para>
+    /// cref="OrchardCoreSetupParameters.Password"/>.
     /// </summary>
-    /// <param name="setupParameters">The setup parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static async Task TestSetupWithInvalidAndValidDataAsync(
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null)
@@ -267,51 +253,53 @@ public static class BasicFeaturesTestingUITestContextExtensions
     }
 
     /// <summary>
-    /// <para>Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/> and tests the
-    /// site setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/> instance with empty
-    /// values of properties: <see cref="OrchardCoreSetupParameters.SiteName"/>, <see
-    /// cref="OrchardCoreSetupParameters.UserName"/>, <see cref="OrchardCoreSetupParameters.Email"/> and <see
-    /// cref="OrchardCoreSetupParameters.Password"/>.</para>
-    /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/> and tests the site
+    /// setup negatively. Negative test uses new <see cref="OrchardCoreSetupParameters"/> instance with empty values of
+    /// the following properties:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item><description><see cref="OrchardCoreSetupParameters.SiteName"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.UserName"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.Email"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.Password"/></description></item>
+    /// </list>
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupWithInvalidAndValidDataAsync(this UITestContext context, string setupRecipeId) =>
         context.TestSetupWithInvalidAndValidDataAsync(new OrchardCoreSetupParameters(context, setupRecipeId));
 
     /// <summary>
-    /// <para>Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.</para>
-    /// <para>The test method assumes that the site is not set up.</para>
+    /// Tests the site setup with the recipe with the specified <paramref name="setupRecipeId"/>.
     /// </summary>
     /// <param name="setupRecipeId">The ID of the recipe to be used to set up the site.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupAsync(this UITestContext context, string setupRecipeId) =>
         context.TestSetupAsync(new OrchardCoreSetupParameters(context, setupRecipeId));
 
     /// <summary>
-    /// <para>
     /// Tests the site setup with optionally set <paramref name="setupParameters"/>. By default, uses new <see
     /// cref="OrchardCoreSetupParameters"/> instance with <c>"SaaS"</c><see cref="OrchardCoreSetupParameters.RecipeId"/>
     /// value.
-    /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
     /// </summary>
-    /// <param name="setupParameters">The setup parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupAsync(this UITestContext context, OrchardCoreSetupParameters setupParameters = null) =>
         context.TestSetupAsync(setupParameters, "Test setup", shouldBeSuccess: true);
 
     /// <summary>
     /// <para>
     /// Tests the site setup negatively with optionally set <paramref name="setupParameters"/>. By default, uses new
-    /// <see cref="OrchardCoreSetupParameters"/> instance with empty values of properties: <see
-    /// cref="OrchardCoreSetupParameters.SiteName"/>, <see cref="OrchardCoreSetupParameters.UserName"/>, <see
-    /// cref="OrchardCoreSetupParameters.Email"/> and <see cref="OrchardCoreSetupParameters.Password"/>.
+    /// <see cref="OrchardCoreSetupParameters"/> instance with empty values of properties:
     /// </para>
-    /// <para>The test method assumes that the site is not set up.</para>
+    /// <list type="bullet">
+    ///     <item><description><see cref="OrchardCoreSetupParameters.SiteName"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.UserName"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.Email"/></description></item>
+    ///     <item><description><see cref="OrchardCoreSetupParameters.Password"/></description></item>
+    /// </list>
     /// </summary>
-    /// <param name="setupParameters">The setup parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestSetupWithInvalidDataAsync(
         this UITestContext context,
         OrchardCoreSetupParameters setupParameters = null)
@@ -330,13 +318,8 @@ public static class BasicFeaturesTestingUITestContextExtensions
         OrchardCoreSetupParameters setupParameters,
         string testName,
         bool shouldBeSuccess) =>
-        context.ExecuteTestAsync(
-            testName,
-            async () =>
-            {
-                var setupPage = await context.GoToSetupPageAsync();
-                (await setupPage.SetupOrchardCoreAsync(context, setupParameters)).ShouldLeaveSetupPage(shouldBeSuccess);
-            });
+        context.ExecuteTestAsync(testName, () => context
+            .GoToSetupAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess));
 
     private static Task TestLoginAsync(
         this UITestContext context,
@@ -352,9 +335,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             {
                 if (signOut) await context.SignOutDirectlyAsync();
 
-                var loginPage = await context.GoToLoginPageAsync();
-                loginPage = await loginPage.LogInWithAsync(context, userName, password, loginButtonText);
-                loginPage.ShouldLeaveLoginPage(shouldBeSuccess);
+                await context.LogInAsync(new(userName, password, loginButtonText));
 
                 var currentUser = await context.GetCurrentUserNameAsync();
                 if (shouldBeSuccess)
@@ -368,19 +349,14 @@ public static class BasicFeaturesTestingUITestContextExtensions
             });
 
     /// <summary>
-    /// <para>
     /// Tests the login with the specified <paramref name="userName"/> and <paramref name="password"/> values.
-    /// </para>
-    /// <para>The test method assumes that there is a registered user with the given credentials.</para>
     /// </summary>
-    /// <param name="userName">The user name.</param>
-    /// <param name="password">The password.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLoginAsync(
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText,
+        string logInButtonText = UserLoginParameters.DefaultLoginButtonText,
         bool signOut = false) =>
         context.TestLoginAsync(
             "Test login",
@@ -391,20 +367,15 @@ public static class BasicFeaturesTestingUITestContextExtensions
             logInButtonText);
 
     /// <summary>
-    /// <para>
     /// Tests the login negatively with the specified <paramref name="userName"/> and <paramref name="password"/>
     /// values.
-    /// </para>
-    /// <para>The test method assumes that there is no registered user with the given credentials.</para>
     /// </summary>
-    /// <param name="userName">The user name.</param>
-    /// <param name="password">The password.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLoginWithInvalidDataAsync(
         this UITestContext context,
         string userName = DefaultUser.UserName,
         string password = DefaultUser.Password,
-        string logInButtonText = OrchardCoreLoginPage.DefaultLoginButtonText) =>
+        string logInButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         context.TestLoginAsync(
             "Test login with invalid data",
             userName,
@@ -414,24 +385,19 @@ public static class BasicFeaturesTestingUITestContextExtensions
             logInButtonText);
 
     /// <summary>
-    /// <para>Tests the logout.</para>
-    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
+    /// Tests the logout.
     /// </summary>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that the site is not set up.</para></remarks>
     public static Task TestLogoutAsync(this UITestContext context) =>
         context.ExecuteTestAsync(
             "Test logout",
             async () =>
             {
-                var dashboard = await context.GoToDashboardAsync();
-
-                context.RefreshCurrentAtataContext();
-
-                dashboard
-                    .TopNavbar.Account.LogOff.Click()
-                    .ShouldLeaveAdminPage();
-
-                await context.TriggerAfterPageChangeEventAsync();
+                await context.GoToDashboardAsync();
+                await context.SelectFromBootstrapDropdownReliablyAsync(
+                    context.Get(By.Id("navbarDropdown")),
+                    By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]"));
+                context.Driver.Url.ShouldNotContain(context.AdminUrlPrefix);
 
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
             });
@@ -448,7 +414,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestRegistrationAsync(this UITestContext context, UserRegistrationParameters parameters = null)
     {
         parameters ??= UserRegistrationParameters.CreateTest();
@@ -457,19 +422,17 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration",
             async () =>
             {
-                var loginPage = await context.GoToLoginPageAsync();
-                context.RefreshCurrentAtataContext();
-                var registrationPage = await loginPage
-                    .RegisterAsNewUser.Should.BeVisible()
-                    .RegisterAsNewUser.ClickAndGo()
-                    .RegisterWithAsync(context, parameters);
-                registrationPage.ShouldLeaveRegistrationPage();
+                await context.GoToLoginAsync();
+                await context.ClickReliablyOnAsync(By.CssSelector("a[href*='/Register']"));
+                await parameters.RegisterAsync(context, navigate: false);
+
+                var registerUrl = context.GetAbsoluteUri(UserRegistrationParameters.DefaultUrl).AbsoluteUri;
+                context.DoWithRetriesOrFail(() => !registerUrl.EqualsOrdinalIgnoreCase(context.Driver.Url));
 
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
 
-                loginPage = await context.GoToLoginPageAsync();
-                await loginPage.LogInWithAsync(context, parameters);
+                await context.LogInAsync(parameters);
                 await context.TriggerAfterPageChangeEventAsync();
                 (await context.GetCurrentUserNameAsync()).ShouldBe(parameters.UserName);
                 await context.SignOutDirectlyAsync();
@@ -485,7 +448,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <para>The test method assumes that the "Users Registration" Orchard feature is enabled.</para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestRegistrationWithInvalidDataAsync(
         this UITestContext context, UserRegistrationParameters parameters = null)
     {
@@ -501,8 +463,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with invalid data",
             async () =>
             {
-                var registrationPage = await context.GoToRegistrationPageAsync();
-                await registrationPage.RegisterWithAsync(context, parameters);
+                await parameters.RegisterAsync(context);
                 context.Exists(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), ' validation-summary-errors ')]//li"));
             });
     }
@@ -520,7 +481,6 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </para>
     /// </summary>
     /// <param name="parameters">The user registration parameters.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task TestRegistrationWithAlreadyRegisteredEmailAsync(
         this UITestContext context,
         UserRegistrationParameters parameters = null)
@@ -531,9 +491,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test registration with already registered email",
             async () =>
             {
-                var registrationPage = await context.GoToRegistrationPageAsync();
-                await registrationPage.RegisterWithAsync(context, parameters);
-                context.RefreshCurrentAtataContext();
+                await parameters.RegisterAsync(context);
 
                 context
                     .Get(By.CssSelector(".text-danger.field-validation-error"))
@@ -549,22 +507,23 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <item><description>Create the page with the given <paramref name="pageTitle"/>.</description></item>
     /// <item><description>Publish the page.</description></item>
     /// <item><description>Verify that the page is created.</description></item>
-    ///  <item><description>Check whether frontend operations shall be executed.</description></item>
+    /// <item><description>Check whether frontend operations shall be executed.</description></item>
     /// <item><description>Navigate to view the published page.</description></item>
     /// <item><description>Verify the page title and header.</description></item>
     /// </list>
-    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
-    /// <para>
-    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
-    /// name="dontCheckFrontend"></paramref>> for this purpose.
-    /// </para>
     /// </summary>
-    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>>
+    /// <param name="dontCheckFrontend">Boolean to decide whether to check content on frontend.</param>
     /// <param name="pageTitle">The page title to enter.</param>
     /// <param name="customPageHeaderCheckAsync">
     /// The custom page header check logic to locate and/or check the header's text.
     /// </param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks>
+    /// <para>The test method assumes that the site is not set up.</para>
+    /// <para>
+    /// When running the headless version of Orchard Core, frontend operations shall be excluded. Utilize <paramref
+    /// name="dontCheckFrontend"></paramref> for this purpose.
+    /// </para>
+    /// </remarks>
     public static Task TestContentOperationsAsync(
         this UITestContext context,
         bool dontCheckFrontend = false,
@@ -574,37 +533,23 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test content operations",
             async () =>
             {
-                var contentItemsPage = await context.GoToContentItemsPageAsync();
-                context.RefreshCurrentAtataContext();
-                contentItemsPage
-                    .CreateNewPage()
-                        .Title.Set(pageTitle)
-                        .Publish.ClickAndGo()
-                    .AlertMessages.Should.Contain(message => message.IsSuccess);
-
-                await context.TriggerAfterPageChangeEventAsync();
+                await context.CreateNewPageContentItemAsync(pageTitle);
 
                 if (dontCheckFrontend) return;
 
-                contentItemsPage.Items[item => item.Title == pageTitle].View.Click();
+                await context.GoToContentItemListAsync("Page");
+                await context.ClickReliablyOnAsync(By.CssSelector(".btn.view"));
 
-                await context.TriggerAfterPageChangeEventAsync();
+                context.SwitchToLastWindow();
+                context.Driver.Title.ShouldContain(pageTitle);
 
-                var page = new OrdinaryPage(pageTitle);
-
-                context.Scope.AtataContext.Go.ToNextWindow(page);
-                page.PageTitle.Should.Contain(pageTitle);
-
-                if (customPageHeaderCheckAsync == null)
+                customPageHeaderCheckAsync ??= context =>
                 {
-                    page.Find<H1<OrdinaryPage>>().Should.Equal(pageTitle);
-                }
-                else
-                {
-                    await customPageHeaderCheckAsync(context);
-                }
+                    context.Get(By.TagName("h1")).GetTextTrimmed().ShouldBe(pageTitle);
+                    return Task.CompletedTask;
+                };
 
-                page.CloseWindow();
+                await customPageHeaderCheckAsync(context);
             });
 
     /// <summary>
@@ -618,45 +563,45 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// <item><description>Toggle the feature state again.</description></item>
     /// <item><description>Verify that the feature state is changed to the original.</description></item>
     /// </list>
-    /// <para>The test method assumes that there is currently a logged in admin user session.</para>
     /// </summary>
     /// <param name="featureName">The name of the feature to use.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
+    /// <remarks><para>The test method assumes that there is currently a logged in admin user session.</para></remarks>
     public static Task TestTurningFeatureOnAndOffAsync(
         this UITestContext context, string featureName = "Background Tasks") =>
         context.ExecuteTestAsync(
             "Test turning feature on and off",
             async () =>
             {
-                var featuresPage = await context.GoToFeaturesPageAsync();
+                async Task<IWebElement> SearchForFeatureAsync(UITestContext context)
+                {
+                    await context.GoToFeaturesAsync();
+                    await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), featureName);
+                    return context.Get(By.Name("featureIds"));
+                }
 
-                context.RefreshCurrentAtataContext();
+                var feature = await SearchForFeatureAsync(context);
+                var originalEnabledState = feature.Enabled;
+                var targetState = originalEnabledState;
 
-                featuresPage.SearchForFeature(featureName).IsEnabled.Get(out var originalEnabledState);
-                featuresPage.Features[featureName].CheckBox.Check();
-                featuresPage.BulkActions.Toggle.Click();
+                for (var i = 0; i < 2; i++)
+                {
+                    feature = await SearchForFeatureAsync(context);
+                    await feature.ClickReliablyAsync(context);
+                    await context.BulkActionsToggleAsync();
 
-                featuresPage
-                    .AggregateAssert(page => page
-                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(!originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(!originalEnabledState));
-                featuresPage.Features[featureName].CheckBox.Check();
-                featuresPage.BulkActions.Toggle.Click();
+                    targetState = !targetState;
 
-                featuresPage
-                    .AggregateAssert(page => page
-                        .ShouldContainSuccessAlertMessage(TermMatch.Contains, featureName)
-                        .AdminMenu.FindMenuItem(featureName).IsPresent.Should.Equal(originalEnabledState)
-                        .SearchForFeature(featureName).IsEnabled.Should.Equal(originalEnabledState));
+                    context.ShouldBeSuccess();
+                    feature = await SearchForFeatureAsync(context);
+                    feature.Enabled.ShouldBe(originalEnabledState);
+                }
+
+                targetState.ShouldBe(originalEnabledState);
             });
 
     /// <summary>
     /// Executes the <paramref name="testFunctionAsync"/> with the specified <paramref name="testName"/>.
     /// </summary>
-    /// <param name="testName">The test name.</param>
-    /// <param name="testFunctionAsync">The test action.</param>
-    /// <returns>The same <see cref="UITestContext"/> instance.</returns>
     public static Task ExecuteTestAsync(
         this UITestContext context, string testName, Func<Task> testFunctionAsync)
     {
