@@ -368,51 +368,6 @@ public static class FormUITestContextExtensions
     public static Task SelectAddNewDropdownAsync(this UITestContext context, By byLocalMenuItem = null) =>
         context.SelectFromBootstrapDropdownReliablyAsync(GetAddNewButton(context), byLocalMenuItem);
 
-    /// <summary>
-    /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears with retries and then
-    /// clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
-    /// </summary>
-    /// <param name="context">The current UI test context.</param>
-    /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
-    /// <param name="byLocalMenuItem">
-    /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and the
-    /// dropdown is left open.
-    /// </param>
-    public static Task SelectFromBootstrapDropdownReliablyAsync(
-        this UITestContext context,
-        IWebElement dropdownButton,
-        By byLocalMenuItem)
-    {
-        var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
-
-        return ReliabilityHelper.DoWithRetriesAndCatchesAsync(
-            async () =>
-            {
-                await dropdownButton.ClickReliablyAsync(context);
-
-                var dropdownMenu = dropdownButton.Get(byDropdownMenu);
-
-                if (byLocalMenuItem == null) return true;
-
-                await dropdownMenu.Get(byLocalMenuItem).ClickReliablyAsync(context);
-                return true;
-            },
-            cancellationToken: context.Configuration.TestCancellationToken);
-    }
-
-    /// <summary>
-    /// Clicks on the <paramref name="byDropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries) and
-    /// then clicks on the menu item with the <paramref name="menuItemLinkText"/> within the dropdown menu's context.
-    /// </summary>
-    /// <param name="context">The current UI test context.</param>
-    /// <param name="byDropdownButton">The path of the button that reveals the Bootstrap dropdown menu.</param>
-    /// <param name="menuItemLinkText">The text of the dropdown menu item.</param>
-    public static Task SelectFromBootstrapDropdownReliablyAsync(
-        this UITestContext context,
-        By byDropdownButton,
-        string menuItemLinkText) =>
-        SelectFromBootstrapDropdownReliablyAsync(context, context.Get(byDropdownButton), By.LinkText(menuItemLinkText));
-
     private static IWebElement TryFillElement(UITestContext context, By by, string text)
     {
         var element = context.Get(by.Unsafely());
