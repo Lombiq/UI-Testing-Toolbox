@@ -45,6 +45,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.FormUITestContextExtensions.SelectFromBootstrapDropdownReliablyAsync(Lombiq.Tests.UI.Services.UITestContext,OpenQA.Selenium.By,System.String)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.Extensions.FormUITestContextExtensions.SelectFromBootstrapDropdownReliablyAsync(Lombiq.Tests.UI.Services.UITestContext,OpenQA.Selenium.IWebElement,OpenQA.Selenium.By)</Target>
+    <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Lombiq.Tests.UI.Extensions.NavigationUITestContextExtensions.GoToDashboardAsync(Lombiq.Tests.UI.Services.UITestContext)</Target>
     <Left>lib/net8.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net8.0/Lombiq.Tests.UI.dll</Right>
