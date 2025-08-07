@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -370,8 +369,8 @@ public static class FormUITestContextExtensions
         context.SelectFromBootstrapDropdownReliablyAsync(GetAddNewButton(context), byLocalMenuItem);
 
     /// <summary>
-    /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears (up to 3 tries) and
-    /// then clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
+    /// Clicks on the <paramref name="dropdownButton"/> until the Bootstrap dropdown menu appears with retries and then
+    /// clicks on the <paramref name="byLocalMenuItem"/> within the dropdown menu's context.
     /// </summary>
     /// <param name="context">The current UI test context.</param>
     /// <param name="dropdownButton">The button that reveals the Bootstrap dropdown menu.</param>
@@ -379,29 +378,26 @@ public static class FormUITestContextExtensions
     /// The path inside the dropdown menu. If <see langword="null"/> then no selection (clicking) will be made, and the
     /// dropdown is left open.
     /// </param>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if clicking on the button didn't yield a dropdown menu even after retries.
-    /// </exception>
-    public static async Task SelectFromBootstrapDropdownReliablyAsync(
+    public static Task SelectFromBootstrapDropdownReliablyAsync(
         this UITestContext context,
         IWebElement dropdownButton,
         By byLocalMenuItem)
     {
         var byDropdownMenu = By.XPath("./following-sibling::*[contains(@class, 'dropdown-menu')]");
 
-        for (var i = 0; i < 3; i++)
-        {
-            await dropdownButton.ClickReliablyAsync(context);
-
-            var dropdownMenu = dropdownButton.GetAll(byDropdownMenu).SingleOrDefault();
-            if (dropdownMenu != null)
+        return ReliabilityHelper.DoWithRetriesAndCatchesAsync(
+            async () =>
             {
-                if (byLocalMenuItem != null) await dropdownMenu.Get(byLocalMenuItem).ClickReliablyAsync(context);
-                return;
-            }
-        }
+                await dropdownButton.ClickReliablyAsync(context);
 
-        throw new InvalidOperationException($"Couldn't open dropdown menu in 3 tries.");
+                var dropdownMenu = dropdownButton.Get(byDropdownMenu);
+
+                if (byLocalMenuItem == null) return true;
+
+                await dropdownMenu.Get(byLocalMenuItem).ClickReliablyAsync(context);
+                return true;
+            },
+            cancellationToken: context.Configuration.TestCancellationToken);
     }
 
     /// <summary>
