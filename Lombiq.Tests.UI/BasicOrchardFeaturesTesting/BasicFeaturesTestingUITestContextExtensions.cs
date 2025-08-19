@@ -397,6 +397,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 await context.SelectFromBootstrapDropdownReliablyAsync(
                     context.Get(By.Id("navbarDropdown")),
                     By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]"));
+                context.WaitForPageLoad();
                 context.Driver.Url.ShouldNotContain(context.AdminUrlPrefix);
 
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
