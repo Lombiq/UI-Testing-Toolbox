@@ -214,7 +214,7 @@ public static class NavigationUITestContextExtensions
         context.GoToPageAsync<OrchardCoreLoginPage>();
 
     public static Task GoToLoginAsync(this UITestContext context) =>
-        context.GoToRelativeUrlAsync("/Login");
+        context.GoToRelativeUrlAsync("/Login", onlyIfNotAlreadyThere: false);
 
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
     public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
