@@ -324,7 +324,13 @@ public static class NavigationUITestContextExtensions
     public static void SwitchToFrame0(this UITestContext context) =>
         context.SwitchTo(locator => locator.Frame(0), "frame 0");
 
-    // Taken from: https://stackoverflow.com/a/36590395
+    /// <summary>
+    /// Waits until the HTML document is ready, i.e. the page has fully loaded.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the page has loaded within the allotted time frame, <see langword="false"/> otherwise.
+    /// </returns>
+    // Taken from: https://stackoverflow.com/a/36590395.
     public static bool WaitForPageLoad(this UITestContext context) =>
         context.ExecuteLogged(
             nameof(WaitForPageLoad),

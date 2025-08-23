@@ -394,10 +394,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
             async () =>
             {
                 await context.GoToDashboardAsync();
-                await context.SelectFromBootstrapDropdownReliablyAsync(
-                    context.Get(By.Id("navbarDropdown")),
-                    By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]"));
-                context.Driver.Url.ShouldNotContain(context.AdminUrlPrefix);
+
+                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(() =>
+                    context.SelectFromBootstrapDropdownReliablyAsync(
+                        context.Get(By.Id("navbarDropdown")),
+                        By.XPath("//button[contains(@class, 'dropdown-item') and contains(., 'Log off')]")));
 
                 (await context.GetCurrentUserNameAsync()).ShouldBeNullOrEmpty();
             });
