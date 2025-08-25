@@ -29,6 +29,7 @@ public class OrchardCoreSetupParameters
     public bool SkipSetup { get; set; }
     public bool SkipRegistration { get; set; }
     public bool SkipFrontend { get; set; }
+    public Uri SetupUri { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the parameters used for registration of a valid test user. By default, it gets the
