@@ -6,15 +6,12 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using YesSql;
 
 namespace Lombiq.Tests.UI.Services.OrchardCoreHosting;
 
@@ -25,7 +22,6 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     private readonly Action<IWebHostBuilder> _configuration;
     private readonly Action<ConfigurationManager, OrchardCoreBuilder> _configureOrchard;
     private readonly CancellationToken _cancellationToken;
-    private readonly List<IStore> _createdStores = [];
 
     public OrchardApplicationFactory(
         Action<IConfigurationBuilder> configureHost,
@@ -98,37 +94,7 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
         _configureOrchard?.Invoke(configuration, builder);
 
-        builder.ConfigureServices(
-            builderServices =>
-            {
-                AddFakeStore(builderServices);
-                AddFakeViewCompilerProvider(builderServices);
-            },
-            int.MaxValue);
-    }
-
-    private void AddFakeStore(IServiceCollection services)
-    {
-        var storeDescriptor = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(IStore));
-
-        services.RemoveAll<IStore>();
-
-        services.AddSingleton<IStore>(serviceProvider =>
-        {
-            var store = (IStore)storeDescriptor.ImplementationFactory.Invoke(serviceProvider);
-            if (store is null)
-            {
-                return null;
-            }
-
-            lock (_createdStores)
-            {
-                var fakeStore = new FakeStore((IStore)storeDescriptor.ImplementationFactory.Invoke(serviceProvider));
-                _createdStores.Add(fakeStore);
-
-                return fakeStore;
-            }
-        });
+        builder.ConfigureServices(AddFakeViewCompilerProvider, int.MaxValue);
     }
 
     // This is required because OrchardCore adds OrchardCore.Mvc.SharedViewCompilerProvider as IViewCompilerProvider but
@@ -140,13 +106,6 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
     public override async ValueTask DisposeAsync()
     {
-        foreach (var store in _createdStores)
-        {
-            store.Dispose();
-        }
-
-        _createdStores.Clear();
-
         try
         {
             await base.DisposeAsync();
