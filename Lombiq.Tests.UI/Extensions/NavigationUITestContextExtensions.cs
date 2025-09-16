@@ -87,7 +87,7 @@ public static class NavigationUITestContextExtensions
             Port = context.Scope.BaseUri.Port,
             Path = string.IsNullOrEmpty(localPath) || localPath == "/"
                 ? path
-                : localPath.TrimStart('/') + "/" + path,
+                : localPath.TrimStart('/').TrimEnd('/') + "/" + path,
             Query = query,
         };
         return uriBuilder.Uri;
