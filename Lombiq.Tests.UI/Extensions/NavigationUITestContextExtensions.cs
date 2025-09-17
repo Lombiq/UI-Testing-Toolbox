@@ -75,7 +75,7 @@ public static class NavigationUITestContextExtensions
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
     public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
-        new(context.Scope.BaseUri.OriginalString + "/" + relativeUrl.TrimStart('/'));
+        new(context.Scope.BaseUri.OriginalString.TrimEnd('/') + "/" + relativeUrl.TrimStart('/'));
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
