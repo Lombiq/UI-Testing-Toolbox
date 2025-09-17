@@ -74,24 +74,8 @@ public static class NavigationUITestContextExtensions
 
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
-    public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl)
-    {
-        var localPath = context.Scope.BaseUri.LocalPath;
-        var splitRelativeUrl = relativeUrl.TrimStart('/').Split('?');
-        var query = splitRelativeUrl.Length > 1 ? splitRelativeUrl[1] : string.Empty;
-        var path = splitRelativeUrl[0];
-        var uriBuilder = new UriBuilder
-        {
-            Scheme = context.Scope.BaseUri.Scheme,
-            Host = context.Scope.BaseUri.Host,
-            Port = context.Scope.BaseUri.Port,
-            Path = string.IsNullOrEmpty(localPath) || localPath == "/"
-                ? path
-                : localPath.TrimStart('/').TrimEnd('/') + "/" + path,
-            Query = query,
-        };
-        return uriBuilder.Uri;
-    }
+    public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
+        new(context.Scope.BaseUri.OriginalString + "/" + relativeUrl.TrimStart('/'));
 
     public static Uri GetAbsoluteAdminUri(this UITestContext context, string adminRelativeUrl)
     {
