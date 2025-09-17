@@ -74,6 +74,8 @@ public static class NavigationUITestContextExtensions
 
     public static string GetCurrentAbsolutePath(this UITestContext context) => context.GetCurrentUri().AbsolutePath;
 
+    // A simple new(context.Scope.BaseUri, relativeUrl.TrimStart('/')) would work for most cases but not when using
+    // tenants with a RequestUrlPrefix, because relativeUrl would then be relative to the host.
     public static Uri GetAbsoluteUri(this UITestContext context, string relativeUrl) =>
         new(context.Scope.BaseUri.OriginalString.TrimEnd('/') + "/" + relativeUrl.TrimStart('/'));
 
