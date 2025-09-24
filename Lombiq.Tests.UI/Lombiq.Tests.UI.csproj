@@ -129,6 +129,7 @@
       <Link>Resources\gremlins.min.js</Link>
     </EmbeddedResource>
     <None Remove="node_modules\**" />
+    <EmbeddedResource Include="Resources\gremlin-summoning-circle.js" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="PermitNoTitleIframes.htmlvalidate.json" />

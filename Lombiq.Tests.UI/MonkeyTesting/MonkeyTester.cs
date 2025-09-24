@@ -154,6 +154,10 @@ internal sealed class MonkeyTester
         // If Gremlin interactions cause the new tabs/windows to open, we need to switch back to the original one.
         _context.SwitchToCurrentWindow();
 
+        // There might be scripts on the page that interfere with Gremlins.js, so we prepare the page first.
+        // Errors like "Uncaught ReferenceError: gremlins is not defined" can happen otherwise.
+        _context.ExecuteScript(GremlinsScripts.GremlinsPrepareScript);
+
         _context.ExecuteScript(GremlinsScripts.GremlinsScript);
 
         string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
