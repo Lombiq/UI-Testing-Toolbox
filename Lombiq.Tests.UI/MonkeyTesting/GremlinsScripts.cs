@@ -13,7 +13,7 @@ if (horde) horde.stop();";
     internal const string GetLastGremlinsClickLogMessageScript = "return sessionStorage.getItem('lastgremlinsclick');";
 
     private static readonly Lazy<string> _lazyGremlinsPrepareScript = new(
-        () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlin-summoning-circle.js"));
+        () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins-summoning-circle.js"));
 
     private static readonly Lazy<string> _lazyGremlinsScript = new(
         () => EmbeddedResourceProvider.ReadEmbeddedFile("gremlins.min.js"));
