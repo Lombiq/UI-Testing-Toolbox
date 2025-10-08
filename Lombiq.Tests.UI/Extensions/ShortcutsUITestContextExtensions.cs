@@ -259,7 +259,9 @@ public static class ShortcutsUITestContextExtensions
                 var shellFeatureManager = serviceProvider.GetRequiredService<IShellFeaturesManager>();
                 var extensionManager = serviceProvider.GetRequiredService<IExtensionManager>();
 
-                var feature = extensionManager.GetFeature(featureId);
+                var feature = extensionManager.GetFeature(featureId)
+                    ?? throw new InvalidOperationException(
+                        $"No feature found with the ID {featureId}. Check if its extension is added to the web project.");
 
                 return shellFeatureManager.EnableFeaturesAsync([feature], force: true);
             },
