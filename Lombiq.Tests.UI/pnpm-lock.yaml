@@ -1,28 +1,35 @@
-lockfileVersion: '6.0'
+lockfileVersion: '9.0'
 
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-dependencies:
-  gremlins.js:
-    specifier: 2.2.0
-    version: 2.2.0
+importers:
+
+  .:
+    dependencies:
+      gremlins.js:
+        specifier: 2.2.0
+        version: 2.2.0
 
 packages:
 
-  /chance@1.1.8:
-    resolution: {integrity: sha512-v7fi5Hj2VbR6dJEGRWLmJBA83LJMS47pkAbmROFxHWd9qmE1esHRZW8Clf1Fhzr3rjxnNZVCjOEv/ivFxeIMtg==}
-    dev: false
+  chance@1.1.13:
+    resolution: {integrity: sha512-V6lQCljcLznE7tUYUM9EOAnnKXbctE6j/rdQkYOHIWbfGQbrzTsAXNW9CdU5XCo4ArXQCj/rb6HgxPlmGJcaUg==}
 
-  /core-js@3.20.2:
-    resolution: {integrity: sha512-nuqhq11DcOAbFBV4zCbKeGbKQsUDRqTX0oqx7AttUBuqe3h20ixsE039QHelbL6P4h+9kytVqyEtyZ6gsiwEYw==}
-    requiresBuild: true
-    dev: false
+  core-js@3.46.0:
+    resolution: {integrity: sha512-vDMm9B0xnqqZ8uSBpZ8sNtRtOdmfShrvT6h2TuQGLs0Is+cR0DYbj/KWP6ALVNbWPpqA/qPLoOuppJN07humpA==}
 
-  /gremlins.js@2.2.0:
+  gremlins.js@2.2.0:
     resolution: {integrity: sha512-zVe4+WuCwTheg1OzBOdtiy7nZj52lWyWjCPMw/78wI1uAJdGlc97hVGYsZg0v75Hm+E91y5D+yG4U0lk7j/6xg==}
+
+snapshots:
+
+  chance@1.1.13: {}
+
+  core-js@3.46.0: {}
+
+  gremlins.js@2.2.0:
     dependencies:
-      chance: 1.1.8
-      core-js: 3.20.2
-    dev: false
+      chance: 1.1.13
+      core-js: 3.46.0
