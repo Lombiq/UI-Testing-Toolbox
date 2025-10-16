@@ -68,23 +68,23 @@
     <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="3.2.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.2.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.25.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.368" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
-    <PackageReference Include="MailKit" Version="4.14.0" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
-    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.1.61" />
+    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.2.70" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.76.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Abstractions" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.1.0" />
-    <PackageReference Include="Sarif.Sdk" Version="4.5.4" />
+    <PackageReference Include="Sarif.Sdk" Version="4.6.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
