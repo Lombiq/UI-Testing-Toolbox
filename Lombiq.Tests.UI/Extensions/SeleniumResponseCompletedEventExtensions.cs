@@ -1,6 +1,6 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium.BiDi.Modules.Network;
+using OpenQA.Selenium.BiDi.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;

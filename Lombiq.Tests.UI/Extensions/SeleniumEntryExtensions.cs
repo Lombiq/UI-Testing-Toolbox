@@ -1,7 +1,7 @@
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium.BiDi.Modules.Log;
-using OpenQA.Selenium.BiDi.Modules.Script;
+using OpenQA.Selenium.BiDi.Log;
+using OpenQA.Selenium.BiDi.Script;
 using System;
 using System.Collections.Generic;
 using System.Linq;

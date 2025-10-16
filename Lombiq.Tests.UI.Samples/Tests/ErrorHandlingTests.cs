@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
-using OpenQA.Selenium.BiDi.Modules.Log;
+using OpenQA.Selenium.BiDi.Log;
 using Shouldly;
 using System;
 using System.Linq;
