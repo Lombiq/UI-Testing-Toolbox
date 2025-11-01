@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "dependencies": {
-    "gremlins.js": "2.2.0"
-  },
-  "packageManager": "pnpm@9.15.9"
-}

@@ -1,0 +1,11 @@
+{
+  "version": "3.0",
+  "defaultProvider": "jsdelivr",
+  "defaultDestination": "node_modules/[Name]",
+  "libraries": [
+    {
+      "library": "gremlins.js@2.2.0",
+      "files": [ "dist/gremlins.min.js" ]
+    }
+  ]
+}

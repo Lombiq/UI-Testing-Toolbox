@@ -75,6 +75,7 @@
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
     <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.2.70" />
@@ -123,7 +124,6 @@
     <EmbeddedResource Include="node_modules\gremlins.js\dist\gremlins.min.js">
       <Link>Resources\gremlins.min.js</Link>
     </EmbeddedResource>
-    <None Remove="node_modules\**" />
     <EmbeddedResource Include="Resources\gremlins-summoning-circle.js" />
   </ItemGroup>
   <ItemGroup>
