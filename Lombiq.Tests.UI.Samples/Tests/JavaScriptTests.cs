@@ -1,8 +1,13 @@
 using Lombiq.Tests.UI.Extensions;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
+
+// Warning: This feature relies on PNPM and Node.js, and it was designed for projects that use Lombiq.NodeJs.Targets.
+//          Since the latter is deprecated and PNPM won't be shipped with future versions of Node.js either, this
+//          feature is no longer supported.
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -11,6 +16,8 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // discussed using a separate frontend server, with mention of technologies using Node.js. In that case the frontend
 // developers may be more familiar with JavaScript so it makes sense to write and debug the tests in Node.js so they
 // don't have to learn different tools and tech stacks just to create some UI tests.
+[SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "See note at the top of the file.")]
+[Obsolete("See note at the top of the file.")]
 public class JavaScriptTests : UITestBase
 {
     public JavaScriptTests(ITestOutputHelper testOutputHelper)
@@ -19,7 +26,7 @@ public class JavaScriptTests : UITestBase
     }
 
     // Using this approach you only have to write minimal C# boilerplate, which you can see below.
-    [Fact]
+    [Fact(Skip = "See note at the top of the file.")]
     public Task ExampleJavaScriptTestShouldWork() =>
         ExecuteTestAfterSetupAsync(context =>
         {
@@ -39,7 +46,6 @@ public class JavaScriptTests : UITestBase
     // information on how to start up test scripts from your GUI. It's an example of some tooling that can improve the
     // test developer's workflow.
     // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
-    [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
     [Fact(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI.")]
     public Task Sandbox() =>
         OpenSandboxAfterSetupAsync(async context =>

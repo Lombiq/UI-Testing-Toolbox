@@ -65,6 +65,8 @@ public static class FrontendUITestContextExtensions
         return Path.Join(service.DriverServicePath, service.DriverServiceExecutableName);
     }
 
+    #region Methods related to executing UI tests written in JavaScript. All of this is obsolete.
+
     private static (string WorkingDirectory, string[] Arguments) GetExecuteJavaScriptTestPaths(
         this UITestContext context,
         string scriptPath,
@@ -101,7 +103,7 @@ public static class FrontendUITestContextExtensions
     }
 
     // This uses a different casing of "JavaScript" to avoid breaking backwards compatibility.
-    [Obsolete($"Use {nameof(ExecuteJavaScriptTestAsync)} instead.")]
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static Task ExecuteJavascriptTestAsync(
         this UITestContext context,
         string scriptPath,
@@ -115,6 +117,7 @@ public static class FrontendUITestContextExtensions
     /// <param name="testOutputHelper">Needed to redirect the <c>node</c> output into the test logs.</param>
     /// <param name="scriptPath">The JavaScript source file to execute using <c>node</c>.</param>
     /// <param name="workingDirectory">The working directory where <c>node</c> is executed from.</param>
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static async Task ExecuteJavaScriptTestAsync(
         this UITestContext context,
         ITestOutputHelper testOutputHelper,
@@ -155,6 +158,7 @@ public static class FrontendUITestContextExtensions
     /// </summary>
     /// <param name="scriptPath">The relative or absolute path pointing to the test script file.</param>
     /// <param name="workingDirectory">The path where the test script should be executed, will be converted to absolute.</param>
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static Task SwitchToInteractiveWithJavaScriptTestInfoAsync(
         this UITestContext context,
         string scriptPath,
@@ -178,6 +182,7 @@ public static class FrontendUITestContextExtensions
     /// relative path based on the temp directory to conserve path length because long paths can be a problem in some
     /// operating systems.
     /// </param>
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static async Task SetupSeleniumAndExecuteJavaScriptTestAsync(
         this UITestContext context,
         ITestOutputHelper testOutputHelper,
@@ -193,6 +198,7 @@ public static class FrontendUITestContextExtensions
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory and
     /// installs the provided NPM <paramref name="dependencies"/> using <c>pnpm</c>.
     /// </summary>
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static async Task SetupNodeDependenciesAsync(
         this UITestContext context,
         ITestOutputHelper helper,
@@ -220,6 +226,7 @@ public static class FrontendUITestContextExtensions
     /// Creates a blank Node.js project in the current test session's <see cref="DirectoryPaths.Temp"/> directory, then
     /// installs <c>selenium-webdriver</c> and any additional NPM dependencies using <c>pnpm</c>.
     /// </summary>
+    [Obsolete("Tests written in JavaScript are no longer supported.")]
     public static Task SetupNodeSeleniumAsync(
         this UITestContext context,
         ITestOutputHelper helper,
@@ -246,4 +253,6 @@ public static class FrontendUITestContextExtensions
             workingDirectory,
             [$"selenium-webdriver@{seleniumWebDriverVersion}", .. otherDependencies]);
     }
+
+    #endregion
 }
