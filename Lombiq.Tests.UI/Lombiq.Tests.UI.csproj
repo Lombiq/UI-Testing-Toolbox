@@ -71,8 +71,8 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.368" />
-    <PackageReference Include="Deque.AxeCore.Commons" Version="4.10.1" />
-    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.10.1" />
+    <PackageReference Include="Deque.AxeCore.Commons" Version="4.11.0" />
+    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.11.0" />
     <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
@@ -88,7 +88,7 @@
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
-    <PackageReference Include="xunit.v3.extensibility.core" Version="3.1.0" />
+    <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
