@@ -853,10 +853,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var smtpContext = await _smtpService.StartAsync();
         _configuration.SmtpServiceConfiguration.Context = smtpContext;
 
-        // Exclude any errors coming from the smtp4dev JS files.
+        // Exclude any errors coming from the smtp4dev JS files. Worker-html related configurations can be removed
+        // after: https://github.com/rnwood/smtp4dev/issues/1917 is resolved and smtp4dev is updated.
         var indexFile = new Uri(smtpContext.WebUIUri, "/assets/index-").AbsoluteUri;
         _configuration.BrowserLogFilters[nameof(SmtpService)] = entry =>
-            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.StartsWithOrdinalIgnoreCase(indexFile) != true;
+            entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.StartsWithOrdinalIgnoreCase(indexFile) != true &&
+                !(entry.Text?.ContainsOrdinalIgnoreCase("Failed to execute 'importScripts' on 'WorkerGlobalScope'") == true &&
+                (entry.Text.ContainsOrdinalIgnoreCase("ace-builds/src-noconflict/worker-html.js") ||
+                    entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.ContainsOrdinalIgnoreCase(smtpContext.WebUIUri.AbsoluteUri) == true));
+
+        _configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedNotFoundResponse("/worker-html.js");
 
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
