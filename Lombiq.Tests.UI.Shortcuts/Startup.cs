@@ -4,7 +4,7 @@ using Lombiq.Tests.UI.Shortcuts.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using OrchardCore.Data.YesSql;
 using OrchardCore.Modules;
 using System;
