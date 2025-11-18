@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);.git*;node_modules\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,10 +21,6 @@
   <ItemGroup>
     <None Include="Readme.md" />
     <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="node_modules\**" />
   </ItemGroup>
 
   <ItemGroup>
