@@ -4,8 +4,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,9 +43,11 @@ internal static class CloudflareHelper
         var currentIp = await GetPublicIpAsync(cancellationToken);
         // The IP retrieved above and the one later seen by the app during browser interactions can be different for
         // some reason (perhaps different network routing). So, instead of creating a Cloudflare IP Access Rule just for
-        // the specific IP, we create it for the whole /24 subnet (i.e. X.Y.Z.*). In our experience, that always covers
-        // it, since the IPs are usually close to each other.
-        var currentIpRange = currentIp[0..currentIp.LastIndexOf('.')] + ".0/24";
+        // the specific IP, we create it for a subnet:
+        // - For IPv4: /24 subnet (i.e. X.Y.Z.*)
+        // - For IPv6: /64 subnet (standard subnet size for IPv6)
+        // In our experience, that always covers it, since the IPs are usually close to each other.
+        var currentIpRange = GetIpRange(currentIp);
 
         testOutputHelper.WriteLineTimestampedAndDebug(
             "Current public IP address of the runner is {0}. Using IP range {1}.", currentIp, currentIpRange);
@@ -219,6 +223,40 @@ internal static class CloudflareHelper
                 return deleteResponse.Success;
             },
             cancellationToken: cancellationToken);
+
+    private static string GetIpRange(string ip)
+    {
+        if (!IPAddress.TryParse(ip, out var ipAddress))
+        {
+            throw new ArgumentException($"Invalid IP address: {ip}", nameof(ip));
+        }
+
+        var bytes = ipAddress.GetAddressBytes();
+
+        if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            // For IPv6, use /64 subnet (standard subnet size).
+            // Keep the first 4 hextets (64 bits) and zero out the rest.
+
+            // Zero out the last 8 bytes (64 bits).
+            for (int i = 8; i < 16; i++)
+            {
+                bytes[i] = 0;
+            }
+
+            var subnetAddress = new IPAddress(bytes);
+            return string.Create(CultureInfo.InvariantCulture, $"{subnetAddress}/64");
+        }
+        else
+        {
+            // For IPv4, use /24 subnet (X.Y.Z.*).
+            // Keep the first 3 octets and zero out the last one.
+            bytes[3] = 0;
+
+            var subnetAddress = new IPAddress(bytes);
+            return string.Create(CultureInfo.InvariantCulture, $"{subnetAddress}/24");
+        }
+    }
 
     [Headers("Authorization: Bearer")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "It's an API client.")]

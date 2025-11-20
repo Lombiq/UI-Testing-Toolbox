@@ -492,7 +492,27 @@ public static class NavigationUITestContextExtensions
     /// <summary>
     /// Refreshes (reloads) the current page.
     /// </summary>
+    [Obsolete("Use RefreshAsync instead. That also runs NavigationEventHandlers, including checking the browser logs.")]
     public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
+
+    /// <summary>
+    /// Refreshes (reloads) the current page.
+    /// </summary>
+    public static Task RefreshAsync(this UITestContext context) =>
+        context.ExecuteLoggedAsync(
+            nameof(RefreshAsync),
+            async () =>
+            {
+                var absoluteUri = context.GetCurrentUri();
+
+                await context.Configuration.Events.BeforeNavigation
+                    .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
+
+                context.Scope.Driver.Navigate().Refresh();
+
+                await context.Configuration.Events.AfterNavigation
+                    .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
+            });
 
     /// <summary>
     /// Checks whether the current page is the Orchard setup page.

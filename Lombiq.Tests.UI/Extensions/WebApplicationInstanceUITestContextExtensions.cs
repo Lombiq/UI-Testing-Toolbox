@@ -11,6 +11,6 @@ public static class WebApplicationInstanceUITestContextExtensions
     public static async Task RestartAndWarmUpApplicationAsync(this UITestContext context)
     {
         await context.Application.RestartAsync();
-        context.Refresh();
+        await context.RefreshAsync();
     }
 }
