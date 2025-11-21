@@ -1,37 +1,29 @@
-(function () {
+(function gremlinSummoningCircle() {
     // Disable AMD (RequireJS/Dojo) so UMD scripts attach to window. Try catch is needed because sometimes they cause
     // errors, but it doesn't matter.
-    try
-    {
+    try {
         window.define = undefined;
     }
-    catch
-    {
-        try
-        {
+    catch {
+        try {
             if (window.define) window.define.amd = undefined;
         }
-        catch
-        {
+        catch {
             // Nothing to do here.
         }
     }
 
-    try
-    {
+    try {
         window.require = undefined;
     }
-    catch
-    {
+    catch {
         // Nothing to do here.
     }
 
-    try
-    {
+    try {
         window.requirejs = undefined;
     }
-    catch
-    {
+    catch {
         // Nothing to do here.
     }
 })();
