@@ -5,27 +5,33 @@
     {
         window.define = undefined;
     }
-    catch (_)
+    catch
     {
         try
         {
             if (window.define) window.define.amd = undefined;
         }
-        catch (_)
-        { }
+        catch
+        {
+            // Nothing to do here.
+        }
     }
 
     try
     {
         window.require = undefined;
     }
-    catch (_)
-    { }
+    catch
+    {
+        // Nothing to do here.
+    }
 
     try
     {
         window.requirejs = undefined;
     }
-    catch (_)
-    { }
+    catch
+    {
+        // Nothing to do here.
+    }
 })();
