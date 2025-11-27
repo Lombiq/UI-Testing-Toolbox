@@ -137,4 +137,13 @@
     <None Remove="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml" />
   </ItemGroup>
 
+  <!--  Needed for deployment.  -->
+  <Target Name="AddVendors" AfterTargets="LibraryManagerRestore">
+    <ItemGroup>
+      <Content Include="wwwroot\vendors\**">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+
 </Project>
