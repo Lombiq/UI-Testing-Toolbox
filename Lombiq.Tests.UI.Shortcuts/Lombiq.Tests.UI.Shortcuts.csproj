@@ -17,15 +17,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Tenants" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Themes" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Users" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Workflows" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Search.Elasticsearch.Core" Version="2.1.0" />
+    <PackageReference Include="OrchardCore.Tenants" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Themes" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Media.Abstractions" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Abstractions" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Workflows" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Search.Elasticsearch.Core" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
   </ItemGroup>
 
