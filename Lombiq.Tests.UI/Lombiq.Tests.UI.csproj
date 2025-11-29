@@ -1,6 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\..\src\Utilities\Lombiq.MSBuild.Targets\Lombiq.MSBuild.Core.Targets\Lombiq.MSBuild.Core.Targets.props" />
+  <PropertyGroup>
+    <ImportLombiqHelpfulLibrariesOrchardCore>true</ImportLombiqHelpfulLibrariesOrchardCore>
+    <ImportLombiqHelpfulLibrariesRefit>true</ImportLombiqHelpfulLibrariesRefit>
+    <ImportLombiqTests>true</ImportLombiqTests>
+  </PropertyGroup>
+
+  <!-- Using the ImportLombiqTests property above is needed to import Lombiq.Tests instead of Lombiq.Tests.UI which
+       would be circular. -->
+  <Import Project="..\..\..\src\Utilities\Lombiq.MSBuild.Targets\Lombiq.MSBuild.Tests.UI.Targets\Lombiq.MSBuild.Tests.UI.Targets.props" />
 
   <PropertyGroup>
     <IsPublishable>false</IsPublishable>
@@ -94,17 +102,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference Include="..\..\Lombiq.Tests\Lombiq.Tests.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Cli\Lombiq.HelpfulLibraries.Cli.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Refit\Lombiq.HelpfulLibraries.Refit.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.Tests" Version="5.0.0" />
     <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.5.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.5.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.5.0" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
