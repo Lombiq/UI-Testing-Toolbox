@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPublishable>false</IsPublishable>
     <ImportLombiqHelpfulLibrariesOrchardCore>true</ImportLombiqHelpfulLibrariesOrchardCore>
   </PropertyGroup>
 
   <Import Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.Module.Targets/Lombiq.MSBuild.Module.Targets.props"
-          Condition="'$(NuGetBuild)' != 'true' "/>
+          Condition="'$(NuGetBuild)' != 'true'"/>
 
-  <PropertyGroup>
-    <IsPublishable>false</IsPublishable>
-  </PropertyGroup>
+  <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
+    <PackageReference Include="Lombiq.MSBuild.Module.Targets" Version="1.0.0-alpha.2.nest-643" />
+  </ItemGroup>
 
   <PropertyGroup>
     <Title>Lombiq UI Testing Toolbox - Shortcuts</Title>

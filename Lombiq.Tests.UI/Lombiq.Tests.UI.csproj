@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
     <ImportLombiqHelpfulLibrariesCli>true</ImportLombiqHelpfulLibrariesCli>
     <ImportLombiqHelpfulLibrariesOrchardCore>true</ImportLombiqHelpfulLibrariesOrchardCore>
     <ImportLombiqHelpfulLibrariesRefit>true</ImportLombiqHelpfulLibrariesRefit>
@@ -9,7 +10,12 @@
 
   <!-- Using the ImportLombiqTests property above is needed to import Lombiq.Tests instead of Lombiq.Tests.UI which
        would be circular. -->
-  <Import Project="..\..\..\src\Utilities\Lombiq.MSBuild.Targets\Lombiq.MSBuild.Tests.UI.Targets\Lombiq.MSBuild.Tests.UI.Targets.props" />
+  <Import Project="..\..\..\src\Utilities\Lombiq.MSBuild.Targets\Lombiq.MSBuild.Tests.UI.Targets\Lombiq.MSBuild.Tests.UI.Targets.props"
+          Condition="'$(NuGetBuild)' != 'true'"/>
+
+  <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
+    <PackageReference Include="Lombiq.MSBuild.Tests.UI.Targets" Version="1.0.0-alpha.2.nest-643" />
+  </ItemGroup>
 
   <PropertyGroup>
     <IsPublishable>false</IsPublishable>
