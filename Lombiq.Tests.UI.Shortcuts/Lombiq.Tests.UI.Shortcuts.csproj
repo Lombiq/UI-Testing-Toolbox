@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
     <ImportLombiqHelpfulLibrariesOrchardCore>true</ImportLombiqHelpfulLibrariesOrchardCore>
   </PropertyGroup>
@@ -14,6 +13,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
     <Title>Lombiq UI Testing Toolbox - Shortcuts</Title>
     <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
     <Description>Lombiq UI Testing Toolbox - Shortcuts: Provides some useful shortcuts for common operations that UI tests might want to do or check, e.g. turning features on or off, or logging in users. See the project website for detailed documentation.</Description>
@@ -36,6 +36,6 @@
   </ItemGroup>
 
   <Import Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.Module.Targets/Lombiq.MSBuild.Module.Targets.targets"
-          Condition="'$(NuGetBuild)' != 'true' "/>
+          Condition="'$(NuGetBuild)' != 'true'" />
 
 </Project>

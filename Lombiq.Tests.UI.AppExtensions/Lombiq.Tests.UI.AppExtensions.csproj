@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
     <ImportLombiqHelpfulLibrariesOrchardCore>true</ImportLombiqHelpfulLibrariesOrchardCore>
+    <ImportLombiqHelpfulLibrariesLinqToDb>true</ImportLombiqHelpfulLibrariesLinqToDb>
   </PropertyGroup>
 
   <Import Project="..\..\..\src\Utilities\Lombiq.MSBuild.Targets\Lombiq.MSBuild.Core.Targets\Lombiq.MSBuild.Core.Targets.props"
@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
     <Title>Lombiq UI Testing Toolbox - App Extensions</Title>
     <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
     <Description>Lombiq UI Testing Toolbox - App Extensions: UI testing-related configuration extensions for the web app under test. See the project website for detailed documentation.</Description>
