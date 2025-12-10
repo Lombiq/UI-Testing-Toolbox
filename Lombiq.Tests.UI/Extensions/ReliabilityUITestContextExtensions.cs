@@ -127,7 +127,9 @@ public static class ReliabilityUITestContextExtensions
                 }
                 catch (WebDriverException ex) when (ex.IsStateElementLikeException())
                 {
-                    // If navigation happened while retrying the click, the element will become stale, but that's normal.
+                    context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                        "Stale element exception with the message \"{0}\". This is normal if the process navigated away to a different URL.",
+                        ex.Message);
                 }
 
                 return context.GetCurrentUri() != originalUri;

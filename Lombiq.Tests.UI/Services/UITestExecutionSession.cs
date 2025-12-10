@@ -202,6 +202,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterPageChange -= OnAssertLogsAsync;
         }
 
+        if (_dumpConfiguration.CaptureScreenshots)
+        {
+            _configuration.CustomConfiguration.Remove("ScreenshotsOnPageChangeAndClickWereSetUp");
+
+            _configuration.Events.AfterPageChange -= TakeScreenshotIfEnabledAsync;
+            _configuration.Events.AfterClick -= TakeScreenshotIfEnabledAsync;
+        }
+
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
         string contextId = null;
