@@ -409,7 +409,7 @@ async function runTest(test, configureOptions = null) {
     // updated automatically by Renovate.
     // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the root
     // too.
-    options.setBrowserVersion('143.0.7499.40');
+    options.setBrowserVersion('143.0.7499.42');
 
     console.log(`Using Chrome version ${options.getBrowserVersion()}.`);
 
