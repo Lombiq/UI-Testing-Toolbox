@@ -67,7 +67,7 @@ jobs:
       # automated scans, and it can also break assertions.
       - name: ZAP is Out of Date
         id: 10116
-        threshold: "off"
+        threshold: 'off'
     name: passiveScan-config
     type: passiveScan-config
   - alertFilters:
