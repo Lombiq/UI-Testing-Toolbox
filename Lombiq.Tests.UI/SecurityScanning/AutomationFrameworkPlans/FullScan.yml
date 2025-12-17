@@ -66,11 +66,6 @@ jobs:
       - id: 10062
         name: The response contains Personally Identifiable Information, such as CC number, SSN and similar sensitive data.
         threshold: 'off'
-      # Adds an alert to the scan if a newer ZAP version is available, as soon as it's released. This isn't useful in
-      # automated scans, and it can also break assertions.
-      - name: ZAP is Out of Date
-        id: 10116
-        threshold: "off"
     name: passiveScan-config
     type: passiveScan-config
   - alertFilters:
