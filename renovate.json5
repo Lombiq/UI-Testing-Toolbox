@@ -9,6 +9,19 @@
             matchPackageNames: [
                 'Atata*',
             ],
+            prBodyNotes: [
+                'If Atata updated the Selenium version it uses, also see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/selenium-webdriver/CHANGES.md).',
+            ],
+        },
+        {
+            groupName: 'Browsers',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
+            ],
         },
         {
             groupName: 'Deque.AxeCore',
@@ -23,22 +36,13 @@
             ],
         },
         {
-            groupName: 'Browsers',
-            matchDatasources: [
-                'custom.chrome-for-testing',
-                'custom.edge-linux',
-                'custom.edge-macos',
-                'custom.edge-windows',
-                'custom.firefox',
-            ],
-        },
-        {
-            groupName: 'Selenium WebDriver NPM',
+            // No groupName, because we don't want these updates to be in their own groups, just want to add the note.
+            // Otherwise, the release is not linked for this package.
             matchPackageNames: [
-                'selenium-webdriver',
+                'rnwood.smtp4dev',
             ],
             prBodyNotes: [
-                'For more details, see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/selenium-webdriver/CHANGES.md).',
+                'For details about the `rnwood.smtp4dev` release, see [its release notes](https://github.com/rnwood/smtp4dev/releases/tag/{{newVersion}}).',
             ],
         },
         {
@@ -49,7 +53,7 @@
             // Renovate can't update the digest for some reason (it just fails).
             pinDigests: false,
             prBodyNotes: [
-                'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/).',
+                'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/{{newVersion}}/).',
             ],
         },
     ],
@@ -134,17 +138,6 @@
                 'firefoxOptions\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.firefox',
-        },
-        {
-            depNameTemplate: 'selenium-webdriver',
-            customType: 'regex',
-            managerFilePatterns: [
-                '/FrontendUITestContextExtensions\\.cs$/',
-            ],
-            matchStrings: [
-                'const string seleniumWebDriverVersion\\s*=\\s*"(?<currentValue>[^"]+)";',
-            ],
-            datasourceTemplate: 'npm',
         },
         {
             depNameTemplate: 'zaproxy/zap-stable',
