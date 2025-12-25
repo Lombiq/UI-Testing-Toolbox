@@ -3,6 +3,7 @@ using Lombiq.HelpfulLibraries.Cli;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ public sealed class SmtpService : IAsyncDisposable
     private static readonly PortLeaseManager _smtpPortLeaseManager;
     private static readonly PortLeaseManager _webUIPortLeaseManager;
     private static readonly PortLeaseManager _imapPortLeaseManager;
+    private static readonly PortLeaseManager _pop3PortLeaseManager;
     private static readonly SemaphoreSlim _restoreSemaphore = new(1, 1);
 
     private readonly SmtpServiceConfiguration _configuration;
@@ -44,6 +46,7 @@ public sealed class SmtpService : IAsyncDisposable
     private int _smtpPort;
     private int _webUIPort;
     private int _imapPort;
+    private int _pop3Port;
     private bool _isDisposed;
 
     static SmtpService()
@@ -52,6 +55,7 @@ public sealed class SmtpService : IAsyncDisposable
         _smtpPortLeaseManager = new PortLeaseManager(11000 + agentIndexTimesHundred, 11099 + agentIndexTimesHundred);
         _webUIPortLeaseManager = new PortLeaseManager(12000 + agentIndexTimesHundred, 12099 + agentIndexTimesHundred);
         _imapPortLeaseManager = new PortLeaseManager(16000 + agentIndexTimesHundred, 16099 + agentIndexTimesHundred);
+        _pop3PortLeaseManager = new PortLeaseManager(17000 + agentIndexTimesHundred, 17099 + agentIndexTimesHundred);
     }
 
     public SmtpService(SmtpServiceConfiguration configuration) => _configuration = configuration;
@@ -82,10 +86,9 @@ public sealed class SmtpService : IAsyncDisposable
         _smtpPort = await _smtpPortLeaseManager.LeaseAvailableRandomPortAsync(token);
         _webUIPort = await _webUIPortLeaseManager.LeaseAvailableRandomPortAsync(token);
         _imapPort = await _imapPortLeaseManager.LeaseAvailableRandomPortAsync(token);
+        _pop3Port = await _pop3PortLeaseManager.LeaseAvailableRandomPortAsync(token);
 
         var webUIPortString = _webUIPort.ToTechnicalString();
-        var smtpPortString = _smtpPort.ToTechnicalString();
-
         var webUIUri = new Uri("http://localhost:" + webUIPortString);
 
         try
@@ -105,12 +108,38 @@ public sealed class SmtpService : IAsyncDisposable
             _restoreSemaphore.Release();
         }
 
-        // Starting smtp4dev with a command like this:
+        // The "splash screen" lines smtp4dev outputs to stderr on startup:
+        // https://github.com/rnwood/smtp4dev/issues/1996.
+        string[] splashScreenStdErrLineStarts = [
+            "┌────────────.",
+            "|\\          / \\",
+            "| \\        /   \\",
+            "|  smtp4dev    /",
+            "|             /",
+            "└────────────'",
+            " > For help use argument --help"
+            ];
+
+        // Starting smtp4dev with a command similar to this (with more parameters, see below):
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
-        // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/Program.cs#L132.
+        // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/CommandLineParser.cs.
         await CliProgram.DotNet
-            .GetCommand("tool", "run", "smtp4dev", "--db", string.Empty, "--smtpport", _smtpPort, "--imapport", _imapPort, "--urls", webUIUri)
+            .GetCommand(
+                "tool",
+                "run",
+                "smtp4dev",
+                "--db",
+                string.Empty,
+                "--smtpport",
+                _smtpPort,
+                "--imapport",
+                _imapPort,
+                // We don't need POP3 but it can't be disabled: https://github.com/rnwood/smtp4dev/issues/1997.
+                "--pop3port",
+                _pop3Port,
+                "--urls",
+                webUIUri)
             .WithEnvironmentVariables(new Dictionary<string, string>
             {
                 ["ServerOptions__DisableMessageSanitisation"] = "true",
@@ -118,9 +147,18 @@ public sealed class SmtpService : IAsyncDisposable
             .ExecuteUntilOutputAsync(
                 "Now listening on:",
                 stdErr =>
+                {
+                    if (splashScreenStdErrLineStarts.Any(stdErrLineStart => stdErr.Text.StartsWithOrdinal(stdErrLineStart)) ||
+                        string.IsNullOrWhiteSpace(stdErr.Text))
+                    {
+                        return;
+                    }
+
                     throw new IOException(
-                        $"The smtp4dev service didn't start properly on SMTP port {smtpPortString} and web UI port " +
-                        $"{webUIPortString} due to the following error:{Environment.NewLine}{stdErr.Text}"),
+                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()}, " +
+                        $"web UI port {webUIPortString}, IMAP port {_imapPort.ToTechnicalString()}, and POP3 port " +
+                        $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{stdErr.Text}");
+                },
                 token);
 
         return new SmtpServiceRunningContext(_smtpPort, _imapPort, webUIUri);
