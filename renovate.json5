@@ -11,6 +11,16 @@
             ],
         },
         {
+            groupName: 'Browsers',
+            matchDatasources: [
+                'custom.chrome-for-testing',
+                'custom.edge-linux',
+                'custom.edge-macos',
+                'custom.edge-windows',
+                'custom.firefox',
+            ],
+        },
+        {
             groupName: 'Deque.AxeCore',
             matchPackageNames: [
                 'Deque.AxeCore.*',
@@ -23,13 +33,13 @@
             ],
         },
         {
-            groupName: 'Browsers',
-            matchDatasources: [
-                'custom.chrome-for-testing',
-                'custom.edge-linux',
-                'custom.edge-macos',
-                'custom.edge-windows',
-                'custom.firefox',
+            // No groupName, because we don't want these updates to be in their own groups, just want to add the note.
+            // Otherwise, the release is not linked for this package.
+            matchPackageNames: [
+                'rnwood.smtp4dev',
+            ],
+            prBodyNotes: [
+                'For details about the `rnwood.smtp4dev` release, see its [releases](https://github.com/rnwood/smtp4dev/releases).',
             ],
         },
         {
