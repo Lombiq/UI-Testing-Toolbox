@@ -56,6 +56,10 @@ jobs:
         name: script-src includes unsafe-inline
         threshold: 'off'
       # This is a low-risk alert, enforcing it is undesirable for branding.
+      - id: 10036
+        name: HTTP Server Response Header (Server Leaks Version Information via 'Server' HTTP Response Header Field)
+        threshold: 'off'
+      # This is a low-risk alert, enforcing it is undesirable for branding.
       - id: 10037
         name: Server Leaks Information via 'X-Powered-By' HTTP Response Header Field(s)
         threshold: 'off'

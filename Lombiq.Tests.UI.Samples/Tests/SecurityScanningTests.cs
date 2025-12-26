@@ -51,7 +51,8 @@ public class SecurityScanningTests : UITestBase
         // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
         // faster. However, you can opt to launch a browser to prepare the app for security scanning if necessary.
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync(),
+            context => context.RunAndAssertBaselineSecurityScanAsync(
+                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()),
             // You should configure the assertion that checks the app logs to accept some common cases that only should
             // appear during security scanning. If you launch a full scan, this is automatically configured by the
             // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
@@ -86,6 +87,7 @@ public class SecurityScanningTests : UITestBase
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
+                    .DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
                     .ModifyZapPlan(plan => plan
                         .AddFalsePositiveRuleFilter(
@@ -126,6 +128,7 @@ public class SecurityScanningTests : UITestBase
             context => context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
+                    .DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()
                     .ModifyZapPlan(plan =>
                     {
                         // "plan" here is a representation of the YAML document containing the plan. It's a low-level
@@ -178,6 +181,18 @@ public class SecurityScanningTests : UITestBase
 
                 await changeConfigurationAsync(configuration);
             });
+}
+
+internal static class SecurityScanConfigurationExtensions
+{
+    // Google Fonts resources lack subresource integrity attributes. This can't be fixed, see:
+    // https://github.com/google/fonts/issues/473.
+    public static SecurityScanConfiguration DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts(
+        this SecurityScanConfiguration configuration) =>
+        configuration.DisablePassiveScanRule(
+            90003,
+            "Sub Resource Integrity Attribute Missing for " +
+            "<link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>");
 }
 
 // END OF TRAINING SECTION: Security scanning.
