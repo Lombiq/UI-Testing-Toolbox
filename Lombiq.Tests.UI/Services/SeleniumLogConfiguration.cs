@@ -15,7 +15,7 @@ public static class SeleniumLogConfiguration
     /// </para>
     /// </remarks>
     public static bool IsEnabled { get; set; } =
-        TestConfigurationManager.GetBoolConfiguration(GetPrefixedKey("IsEnabled"), defaultValue: false);
+        TestConfigurationManager.GetBoolConfiguration(GetPrefixedKey("IsEnabled"), defaultValue: true);
 
     /// <summary>
     /// Gets or sets the <see cref="LogEventLevel"/> for the global Selenium log.
