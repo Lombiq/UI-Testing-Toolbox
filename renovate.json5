@@ -12,6 +12,10 @@
             prBodyNotes: [
                 'If Atata updated the Selenium version it uses, also see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/dotnet/CHANGELOG).',
             ],
+            // Selenium.WebDriver 4.39.0 causes JSON parsing issues (with 4.38.0 being safe), see:
+            // https://github.com/atata-framework/atata/discussions/862. Until this is resolved, Atata can't be updated.
+            // When this is fixed, remove both `enabled: false` and the Selenium.WebDriver section below.
+            enabled: false,
         },
         {
             groupName: 'Browsers',
@@ -34,6 +38,16 @@
             matchPackageNames: [
                 'Microsoft.Extensions.*',
             ],
+        },
+        {
+            matchPackageNames: [
+                'Selenium.WebDriver',
+            ],
+            // Selenium.WebDriver 4.39.0 causes JSON parsing issues (with 4.38.0 being safe), see:
+            // https://github.com/SeleniumHQ/selenium/issues/16801. Until this is resolved, it can't be updated.
+            // When this is fixed, remove both this section and the direct Selenium.WebDriver reference in
+            // Lombiq.Tests.UI.
+            enabled: false,
         },
         {
             // No groupName, because we don't want these updates to be in their own groups, just want to add the note.
