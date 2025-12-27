@@ -317,7 +317,8 @@ public static class WebDriverFactory
         options.AddArgument("disable-checker-imaging");
         options.AddArgument("disable-image-animation-resync");
 
-        // Disables all experiments set with chrome://flags.
+        // Disables all experiments set with chrome://flags. Not setting this and enable-benchmarking can cause visual
+        // glitches (like horizontal bars in images) and the file format of screenshots being wrong.
         options.AddArgument("no-experiments");
 
         // From https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md: "Enables the
