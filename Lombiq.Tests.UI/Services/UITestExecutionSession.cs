@@ -17,6 +17,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,10 +67,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             Log.SetLevel(SeleniumLogConfiguration.LogEventLevel);
 
+            // This is to distinguish Selenium logs created by different test assemblies (important when merging their
+            // TestDump folders in CI).
+            var entryAssemblyName = Assembly.GetEntryAssembly().ManifestModule.Name;
+
             // There's no way to tell when the whole test suite ends. This needs to be disposed by the GC when ending
             // the process.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            Log.Handlers.Add(new FileLogHandler(Path.Combine(UITestExecutorTestDumpConfiguration.DefaultDumpsDirectoryPath, "SeleniumLog.log")));
+            Log.Handlers.Add(new FileLogHandler(Path.Combine(
+                UITestExecutorTestDumpConfiguration.DefaultDumpsDirectoryPath,
+                $"SeleniumLog{entryAssemblyName}.log")));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }
     }
