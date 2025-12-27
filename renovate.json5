@@ -10,7 +10,7 @@
                 'Atata*',
             ],
             prBodyNotes: [
-                'If Atata updated the Selenium version it uses, also see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/selenium-webdriver/CHANGES.md).',
+                'If Atata updated the Selenium version it uses, also see the [Selenium release notes](https://github.com/SeleniumHQ/selenium/blob/trunk/dotnet/CHANGELOG).',
             ],
         },
         {
