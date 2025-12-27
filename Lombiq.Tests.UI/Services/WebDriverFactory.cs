@@ -317,6 +317,15 @@ public static class WebDriverFactory
         options.AddArgument("disable-checker-imaging");
         options.AddArgument("disable-image-animation-resync");
 
+        // Disables all experiments set with chrome://flags.
+        options.AddArgument("no-experiments");
+
+        // From https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md: "Enables the
+        // benchmarking extensions, disables field trials, and forces the use of the default variant. Uses settings that
+        // reduce noise/non-determinism in Chrome. Originally set via chrome://flags."
+        // There's no docs for this flag under https://peter.sh/experiments/chromium-command-line-switches/.
+        options.AddArgument("enable-benchmarking");
+
         if (configuration.FakeVideoSource is not null)
         {
             var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
