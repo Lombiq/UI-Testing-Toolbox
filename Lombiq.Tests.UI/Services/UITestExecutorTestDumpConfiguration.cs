@@ -17,7 +17,7 @@ public class UITestExecutorTestDumpConfiguration
     public string DumpsDirectoryPath { get; set; } = DefaultDumpsDirectoryPath;
     public bool CreateTestDump { get; set; } = true;
     public bool CaptureAppSnapshot { get; set; } = true;
-    public bool CaptureScreenshots { get; set; } = true;
+    public bool CaptureScreenshots { get; set; }
     public bool CaptureDownloads { get; set; } = true;
     public bool CaptureHtmlSource { get; set; } = true;
     public bool CaptureResponseLog { get; set; } = true;
