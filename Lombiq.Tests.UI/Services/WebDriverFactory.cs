@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "143.0.7499.146";
+            chromeConfig.Options.BrowserVersion = "143.0.7499.169";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -68,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "143.0.3650.80";
+                var linuxEdgeVersion = "143.0.3650.96";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "143.0.3650.80";
+                var windowsEdgeVersion = "143.0.3650.96";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "143.0.3650.80";
+                var macOsEdgeVersion = "143.0.3650.96";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -316,6 +316,16 @@ public static class WebDriverFactory
         options.AddArgument("disable-threaded-scrolling");
         options.AddArgument("disable-checker-imaging");
         options.AddArgument("disable-image-animation-resync");
+
+        // Disables all experiments set with chrome://flags. Not setting this and enable-benchmarking can cause visual
+        // glitches (like horizontal bars in images) and the file format of screenshots being wrong.
+        options.AddArgument("no-experiments");
+
+        // From https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md: "Enables the
+        // benchmarking extensions, disables field trials, and forces the use of the default variant. Uses settings that
+        // reduce noise/non-determinism in Chrome. Originally set via chrome://flags."
+        // There's no docs for this flag under https://peter.sh/experiments/chromium-command-line-switches/.
+        options.AddArgument("enable-benchmarking");
 
         if (configuration.FakeVideoSource is not null)
         {
