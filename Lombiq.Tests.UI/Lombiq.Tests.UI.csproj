@@ -90,8 +90,7 @@
     renovate.json5 for details. -->
     <!--<PackageReference Include="Selenium.WebDriver" Version="4.40.0-nightly202601030012" />-->
     <Reference Include="Selenium.WebDriver">
-      <HintPath>lib\Selenium.WebDriver.dll</HintPath>
-      <Private>true</Private>
+      <HintPath>lib\WebDriver.dll</HintPath>
     </Reference>
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="7.0.0" />
