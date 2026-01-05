@@ -270,6 +270,26 @@ public class SecurityScanConfiguration
             ".*fonts.googleapis.com.*");
 
     /// <summary>
+    /// Disables reCAPTCHA-related false positives. Use this if the app uses reCAPTCHA.
+    /// </summary>
+    public SecurityScanConfiguration DisableFalsePositivesForReCaptcha()
+    {
+        var reCaptchaEvidenceRegex = ".*www.google.com:443/recaptcha/api.js.*";
+
+        return
+            AddFalsePositiveRuleFilterForEvidence(
+                90003,
+                "Sub Resource Integrity Attribute Missing",
+                "ReCAPTCHA resources may be updated any time, and thus can't have subresource integrity attributes.",
+                reCaptchaEvidenceRegex)
+            .AddFalsePositiveRuleFilterForEvidence(
+                10017,
+                "Cross-Domain JavaScript Source File Inclusion",
+                "ReCAPTCHA needs cross-domain source inclusion.",
+                reCaptchaEvidenceRegex);
+    }
+
+    /// <summary>
     /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
     /// Automation Framework plan.
     /// </summary>
