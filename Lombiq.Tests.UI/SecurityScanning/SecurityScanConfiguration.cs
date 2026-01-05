@@ -258,6 +258,58 @@ public class SecurityScanConfiguration
     }
 
     /// <summary>
+    /// Disables the subresource integrity attribute missing alert for Google Fonts resources, since these can't have
+    /// such attributes (see <see href="https://github.com/google/fonts/issues/473"/>).
+    /// </summary>
+    public SecurityScanConfiguration DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts() =>
+        AddFalsePositiveRuleFilterForEvidence(
+            90003,
+            "Sub Resource Integrity Attribute Missing",
+            "Google Fonts resources lack subresource integrity attributes. This can't be fixed, see: " +
+                "https://github.com/google/fonts/issues/473.",
+            ".*fonts.googleapis.com.*");
+
+    /// <summary>
+    /// Adds an <see href="https://www.zaproxy.org/docs/desktop/addons/alert-filters/">Alert Filter</see> to the ZAP
+    /// Automation Framework plan.
+    /// </summary>
+    /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
+    /// <param name="ruleName">
+    /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
+    /// useful for the readability of the method call.
+    /// </param>
+    /// <param name="justification">
+    /// An informational text explaining why the alert in question is false positive. This helps the development of ZAP
+    /// by collecting which rules have the highest false positive rate (see <see
+    /// href="https://www.zaproxy.org/faq/how-do-i-handle-a-false-positive/"/>).
+    /// </param>
+    /// <param name="evidenceRegexPattern">
+    /// A regular expression pattern to match against the evidence field of the rule (this is available in the scan
+    /// results). You can use this to precisely target a given false positive.
+    /// </param>
+    /// <param name="urlRegexPattern">
+    /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
+    /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
+    /// </param>
+    public SecurityScanConfiguration AddFalsePositiveRuleFilterForEvidence(
+        int ruleId,
+        string ruleName,
+        string justification,
+        string evidenceRegexPattern,
+        string urlRegexPattern = ".*") =>
+        ModifyZapPlan(plan => plan
+            .AddFalsePositiveRuleFilter(
+                urlRegexPattern,
+                ruleId,
+                ruleName,
+                justification,
+                node =>
+                {
+                    node.Children["evidence"] = evidenceRegexPattern;
+                    node.Children["evidenceRegex"] = "true";
+                }));
+
+    /// <summary>
     /// Modifies the <see href="https://www.zaproxy.org/docs/automate/automation-framework/">Automation Framework</see>
     /// plan of <see href="https://www.zaproxy.org/">Zed Attack Proxy (ZAP)</see>, the tool used for the security scan.
     /// You can use this to do any arbitrary ZAP configuration.

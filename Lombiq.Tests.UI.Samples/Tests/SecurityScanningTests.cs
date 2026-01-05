@@ -69,7 +69,7 @@ public class SecurityScanningTests : UITestBase
     // - Adds a false positive rule filter for the Absence of Anti-CSRF Tokens rule, but only for the search form with
     //   the ID or class "my-search-form" which is displayed on every page. For less common filters (e.g., filters other
     //   than by URL), you can use the .ModifyZapPlan() and .AddFalsePositiveRuleFilter() extension methods to configure
-    //   the action filter YAML node directly.
+    //   the action filter YAML node directly, as the AddFalsePositiveRuleFilterForEvidence() method does.
     // - Configures sign in with a user account. This is what the scan will start with. This doesn't matter much with
     //   the Blog recipe, because nothing on the frontend will change. You can use this to scan authenticated features
     //   too. This is necessary because ZAP uses its own spider so it doesn't share session or cookies with the browser.
@@ -89,17 +89,11 @@ public class SecurityScanningTests : UITestBase
                     .DisablePassiveScanRule(10020, "The response does not include either Content-Security-Policy with 'frame-ancestors' directive.")
                     .DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()
                     .DisableScanRuleForUrlWithRegex(".*/about", 10038, "Content Security Policy (CSP) Header Not Set")
-                    .ModifyZapPlan(plan => plan
-                        .AddFalsePositiveRuleFilter(
-                            ".*",
-                            10202,
-                            "Absence of Anti-CSRF Tokens",
-                            "The search form doesn't alter the state of the application so anti-CSRF tokens are not needed.",
-                            node =>
-                            {
-                                node.Children["evidence"] = ".*my-search-form.*";
-                                node.Children["evidenceRegex"] = "true";
-                            }))
+                    .AddFalsePositiveRuleFilterForEvidence(
+                        10202,
+                        "Absence of Anti-CSRF Tokens",
+                        "The search form doesn't alter the state of the application so anti-CSRF tokens are not needed.",
+                        ".*my-search-form.*")
                     .SignIn(),
                 sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)),
             changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
@@ -181,18 +175,6 @@ public class SecurityScanningTests : UITestBase
 
                 await changeConfigurationAsync(configuration);
             });
-}
-
-internal static class SecurityScanConfigurationExtensions
-{
-    // Google Fonts resources lack subresource integrity attributes. This can't be fixed, see:
-    // https://github.com/google/fonts/issues/473.
-    public static SecurityScanConfiguration DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts(
-        this SecurityScanConfiguration configuration) =>
-        configuration.DisablePassiveScanRule(
-            90003,
-            "Sub Resource Integrity Attribute Missing for " +
-            "<link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>");
 }
 
 // END OF TRAINING SECTION: Security scanning.

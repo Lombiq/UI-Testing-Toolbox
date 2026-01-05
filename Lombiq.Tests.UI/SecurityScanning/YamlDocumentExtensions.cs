@@ -235,7 +235,7 @@ public static class YamlDocumentExtensions
     /// Automation Framework plan.
     /// </summary>
     /// <param name="ruleId">The ID of the rule. In the scan report, this is usually displayed as "Plugin Id".</param>
-    /// <param name="urlMatchingRegexPattern">
+    /// <param name="urlRegexPattern">
     /// A regular expression pattern to match URLs against. This should be a regex pattern that matches the whole
     /// absolute URL, so something like ".*blog.*" to match /blog, /blog/my-post, etc.
     /// </param>
@@ -243,9 +243,12 @@ public static class YamlDocumentExtensions
     /// The human-readable name of the rule. Not required to turn off the rule, and its value doesn't matter. It's just
     /// useful for the readability of the method call.
     /// </param>
+    /// <param name="configureFilter">
+    /// An optional action to further configure the alert filter node before it's added to the plan.
+    /// </param>
     public static YamlDocument AddDisableRuleFilter(
         this YamlDocument yamlDocument,
-        string urlMatchingRegexPattern,
+        string urlRegexPattern,
         int ruleId,
         string ruleName,
         Action<YamlMappingNode> configureFilter = null)
@@ -254,7 +257,7 @@ public static class YamlDocumentExtensions
         {
             { "ruleId", ruleId.ToTechnicalString() },
             { "ruleName", ruleName },
-            { "url", urlMatchingRegexPattern },
+            { "url", urlRegexPattern },
             { "urlRegex", "true" },
             { "newRisk", "Info" },
         };
@@ -272,13 +275,13 @@ public static class YamlDocumentExtensions
     /// </param>
     public static YamlDocument AddFalsePositiveRuleFilter(
         this YamlDocument yamlDocument,
-        string urlMatchingRegexPattern,
+        string urlRegexPattern,
         int ruleId,
         string ruleName,
         string justification,
         Action<YamlMappingNode> configureFilter = null) =>
         yamlDocument.AddDisableRuleFilter(
-            urlMatchingRegexPattern,
+            urlRegexPattern,
             ruleId,
             $"{ruleName}: {justification}",
             node =>
