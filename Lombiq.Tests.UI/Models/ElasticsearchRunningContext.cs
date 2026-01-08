@@ -17,7 +17,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 {
     /// <summary>
     /// Gets the expression that refers to all indexes that start with <see cref="Prefix"/>. This should only be used
-    /// with <see cref="IElasticClient"/>, because the OrchardCore-specific services automatically apply the prefix from
+    /// with <see cref="ElasticsearchClient"/>, because the OrchardCore-specific services automatically apply the prefix from
     /// configuration so it would result in double prefixing.
     /// </summary>
     private IndexName LowLevelIndexName => Indices.Index($"{Prefix}_*");
