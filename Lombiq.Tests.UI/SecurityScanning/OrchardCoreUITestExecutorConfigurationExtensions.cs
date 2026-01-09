@@ -1,5 +1,4 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Microsoft.Extensions.Logging;
@@ -73,7 +72,6 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             app.LogsShouldNotContainAsync(
                 logEntry =>
                     logEntry.Level >= LogLevel.Error &&
-                    AppLogAssertionHelper.NotMediaCacheEntries(logEntry) &&
                     !permittedErrorLinePatterns.Any(pattern =>
                         Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)),
                 TestContext.Current.CancellationToken);

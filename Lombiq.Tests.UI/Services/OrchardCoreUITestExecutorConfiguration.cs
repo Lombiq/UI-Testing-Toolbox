@@ -30,9 +30,10 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
-        app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
+        app => app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
+    [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
@@ -85,7 +86,7 @@ public class OrchardCoreUITestExecutorConfiguration
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
 
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsAreEmptyAsync;
 
     /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
