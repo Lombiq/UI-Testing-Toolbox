@@ -1,9 +1,11 @@
-using Elasticsearch.Net;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Core;
+using Elastic.Clients.Elasticsearch.IndexManagement;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Nest;
 using OrchardCore.Indexing;
+using OrchardCore.Search.Elasticsearch.Core.Models;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -29,19 +31,14 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         {
             var index = LowLevelIndexName;
             var testCancellationToken = context.Configuration.TestCancellationToken;
+            var client = GetClient(provider, index);
 
-            if (GetClient(provider) is not { } client)
-            {
-                throw new InvalidOperationException(
-                    $"Couldn't resolve {nameof(IElasticClient)} while waiting for \"{index}\".");
-            }
+            (await client.Indices.FlushAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
+            (await client.Indices.RefreshAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
 
-            (await client.Indices.FlushAsync(index, ct: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
-            (await client.Indices.RefreshAsync(index, ct: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
-
-            var settingsService = provider.GetRequiredService<ElasticIndexSettingsService>();
-            var indexSettings = await settingsService.GetSettingsAsync();
-            var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
+            var exactIndexName = (await provider.GetRequiredService<ElasticIndexSettingsService>().GetSettingsAsync())
+                .FirstOrDefault()
+                ?.IndexName;
 
             if (exactIndexName == null) return;
 
@@ -52,7 +49,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 .CreateLinkedTokenSource(testCancellationToken, timeoutCancellationTokenSource.Token);
             var jointCancellationToken = jointCancellationTokenSource.Token;
 
-            var elasticIndexManager = provider.GetRequiredService<ElasticIndexManager>();
+            var elasticIndexManager = provider.GetRequiredService<ElasticsearchIndexManager>();
 
             long? lastFinishedTaskId = null;
 
@@ -99,7 +96,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 #pragma warning disable S1994 // "for" loop increment clauses should modify the loops' counters
         for (var startIndex = 0; hasTask; startIndex += batchSize)
         {
-            var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize))
+            var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize, category: null))
                 .LastOrDefault();
 
             hasTask = lastTask != null;
@@ -118,7 +115,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method
     /// catches the exception and returns null instead so it can be safely retried.
     /// </summary>
-    private static async Task<long?> TryGetLastFinishedTaskIdAsync(ElasticIndexManager elasticIndexManager, string indexName)
+    private static async Task<long?> TryGetLastFinishedTaskIdAsync(ElasticsearchIndexManager elasticIndexManager, string indexName)
     {
         try
         {
@@ -152,18 +149,14 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         UITestContext context,
         IndexName index)
     {
-        static async Task<bool> CheckIfIndexExistsAsync(IElasticClient client, IndexName index)
+        static async Task<bool> CheckIfIndexExistsAsync(ElasticsearchClient client, IndexName index)
         {
-            var indices = (await client.Indices.GetAsync(index, ct: CancellationToken.None))
+            var indices = (await client.Indices.GetAsync(index, cancellationToken: CancellationToken.None))
                 .ThrowIfFailed($"query index \"{index}\"");
             return indices.Indices.Count > 0;
         }
 
-        if (GetClient(provider) is not { } client)
-        {
-            throw new InvalidOperationException(
-                $"Couldn't resolve {nameof(IElasticClient)} while attempting to clean up \"{index}\".");
-        }
+        var client = GetClient(provider, index);
 
         if (!await CheckIfIndexExistsAsync(client, index))
         {
@@ -180,6 +173,10 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         }
     }
 
-    private static IElasticClient GetClient(IServiceProvider provider) =>
-        provider.GetService<IElasticClient>() ?? provider.GetService<ElasticClient>();
+    private static ElasticsearchClient GetClient(IServiceProvider provider, IndexName index) =>
+        (provider.GetService<IElasticsearchClientFactory>() is { } factory
+            ? factory.Create(new ElasticsearchConnectionOptions())
+            : provider.GetService<ElasticsearchClient>()) ??
+        throw new InvalidOperationException(
+            $"Couldn't resolve {nameof(ElasticsearchClient)} while waiting for \"{index}\".");
 }
