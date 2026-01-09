@@ -500,7 +500,7 @@ public static class ShortcutsUITestContextExtensions
             ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 
-        await context.Application.UsingScopeAsync(
+        await context.Application.UsingScopeServiceProviderAsync(
             async serviceProvider =>
             {
                 var shellHost = serviceProvider.GetRequiredService<IShellHost>();
@@ -523,7 +523,7 @@ public static class ShortcutsUITestContextExtensions
                 await shellHost.UpdateShellSettingsAsync(shellSettings);
             });
 
-        await context.Application.UsingScopeAsync(
+        await context.Application.UsingScopeServiceProviderAsync(
             async serviceProvider =>
             {
                 var setupService = serviceProvider.GetRequiredService<ISetupService>();
@@ -702,7 +702,7 @@ public static class ShortcutsUITestContextExtensions
         tenant ??= context.TenantName;
         if (tenant.StartsWith('!')) tenant = ShellSettings.DefaultShellName;
 
-        return context.Application.UsingScopeAsync(execute, tenant, activateShell);
+        return context.Application.UsingScopeServiceProviderAsync(execute, tenant, activateShell);
     }
 
     /// <summary>

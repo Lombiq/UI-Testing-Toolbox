@@ -27,7 +27,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     // Elasticsearch indexing sometimes takes longer, and the testing starts before indexing finishes. To prevent that,
     // we are checking if all indexing tasks are finished.
     public Task BeforeTestAsync(UITestContext context) =>
-        context.Application.UsingScopeAsync(async provider =>
+        context.Application.UsingScopeServiceProviderAsync(async provider =>
         {
             var index = LowLevelIndexName;
             var testCancellationToken = context.Configuration.TestCancellationToken;
@@ -36,9 +36,9 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             (await client.Indices.FlushAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
             (await client.Indices.RefreshAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
 
-            var exactIndexName = (await provider.GetRequiredService<ElasticIndexSettingsService>().GetSettingsAsync())
-                .FirstOrDefault()
-                ?.IndexName;
+            var indexProfileStore = provider.GetRequiredService<IIndexProfileStore>();
+            var indexSettings = await indexProfileStore.GetAllElasticsearchIndexesAsync();
+            var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
 
             if (exactIndexName == null) return;
 
@@ -49,7 +49,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 .CreateLinkedTokenSource(testCancellationToken, timeoutCancellationTokenSource.Token);
             var jointCancellationToken = jointCancellationTokenSource.Token;
 
-            var elasticIndexManager = provider.GetRequiredService<ElasticsearchIndexManager>();
+            var elasticsearchDocumentIndexManager = provider.GetRequiredService<ElasticsearchDocumentIndexManager>();
 
             long? lastFinishedTaskId = null;
 
@@ -63,7 +63,10 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
                 {
                     jointCancellationToken.ThrowIfCancellationRequested();
 
-                    lastFinishedTaskId = await TryGetLastFinishedTaskIdAsync(elasticIndexManager, exactIndexName);
+                    lastFinishedTaskId = await TryGetLastFinishedTaskIdAsync(
+                        elasticsearchDocumentIndexManager,
+                        indexProfileStore,
+                        exactIndexName);
 
                     // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
                     // a delay.
@@ -115,11 +118,15 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method
     /// catches the exception and returns null instead so it can be safely retried.
     /// </summary>
-    private static async Task<long?> TryGetLastFinishedTaskIdAsync(ElasticsearchIndexManager elasticIndexManager, string indexName)
+    private static async Task<long?> TryGetLastFinishedTaskIdAsync(
+        ElasticsearchDocumentIndexManager elasticsearchDocumentIndexManager,
+        IIndexProfileStore indexProfileStore,
+        string indexName)
     {
         try
         {
-            return await elasticIndexManager.GetLastTaskId(indexName);
+            var indexProfile = await indexProfileStore.FindByNameAsync(indexName);
+            return await elasticsearchDocumentIndexManager.GetLastTaskIdAsync(indexProfile);
         }
         catch (InvalidOperationException)
         {
@@ -131,7 +138,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     {
         try
         {
-            await context.Application.UsingScopeAsync(provider =>
+            await context.Application.UsingScopeServiceProviderAsync(provider =>
                 WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, LowLevelIndexName));
         }
         catch (Exception inner)
@@ -164,12 +171,12 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             return;
         }
 
-        var deleteRequest = new DeleteIndexRequest(index) { ExpandWildcards = ExpandWildcards.All };
+        var deleteRequest = new DeleteIndexRequest(index) { ExpandWildcards = [ExpandWildcard.All] };
         (await client.Indices.DeleteAsync(deleteRequest)).ThrowIfFailed($"delete index \"{index}\"");
 
         if (await CheckIfIndexExistsAsync(client, index))
         {
-            throw new InvalidOperationException($"Couldn't delete indexes for \"{index.Name}\".");
+            throw new InvalidOperationException($"Couldn't delete indexes for \"{index}\".");
         }
     }
 
