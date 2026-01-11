@@ -13,7 +13,8 @@ public static class TenantsUITestContextExtensions
         string urlPrefix = "",
         string urlHost = "",
         string featureProfile = "",
-        bool navigate = true)
+        bool navigate = true,
+        bool enableFeature = true)
     {
         await context.CreateTenantManuallyAsync(name, urlPrefix, urlHost, featureProfile, navigate);
 
@@ -28,8 +29,15 @@ public static class TenantsUITestContextExtensions
         string urlPrefix = "",
         string urlHost = "",
         string featureProfile = "",
-        bool navigate = true)
+        bool navigate = true,
+        bool enableFeature = true)
     {
+        if (enableFeature)
+        {
+            await context.EnableTenantsFeatureAsync();
+            await context.EnableFeatureDirectlyAsync("OrchardCore.Tenants.FeatureProfiles");
+        }
+
         if (navigate)
         {
             await context.GoToAdminRelativeUrlAsync("/Tenants");
