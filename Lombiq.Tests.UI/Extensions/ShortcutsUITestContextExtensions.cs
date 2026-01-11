@@ -499,8 +499,14 @@ public static class ShortcutsUITestContextExtensions
         string name,
         string urlPrefix,
         OrchardCoreSetupParameters setupParameters,
-        string featureProfile = null)
+        string featureProfile = null,
+        bool enableFeature = true)
     {
+        if (enableFeature)
+        {
+            await context.EnableTenantsFeatureAsync();
+        }
+
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupParameters.DatabaseType.SqlConnection
             ? DatabaseProviderValue.SqlConnection
