@@ -152,7 +152,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// Gets the current tenant name. When testing sites with multi-tenancy use
     /// <see cref="SwitchCurrentTenant(string, string)"/>.
     /// </summary>
-    public string TenantName { get; private set; } = "Default";
+    public string TenantName { get; private set; } = ShellSettings.DefaultShellName;
 
     /// <summary>
     /// Gets or sets the prefix used for all relative URLs. It should neither start nor end with a slash.
