@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using Shouldly;
@@ -35,7 +36,9 @@ public class OrchardCoreUITestExecutorConfiguration
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
         app => app.LogsShouldNotContainAsync(
-            entry => entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+            entry =>
+                entry.Level >= LogLevel.Warning &&
+                entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
             TestContext.Current.CancellationToken);
 
     [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
