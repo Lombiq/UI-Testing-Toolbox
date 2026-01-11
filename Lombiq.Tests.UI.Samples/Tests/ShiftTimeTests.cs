@@ -35,10 +35,14 @@ public class ShiftTimeTests : UITestBase
                 await context.GoToAdminRelativeUrlAsync(
                     "/Contents/ContentTypes/LiquidWidget/Create?returnUrl=%2FAdmin%2FLayers&" +
                     "LayerMetadata.Zone=Content&LayerMetadata.Position=1");
+                await context.FillInWithRetriesAsync(By.Id("LayerMetadata_Title"), "Current Time Widget");
+                await context.SetDropdownByValueAsync(By.Id("LayerMetadata_LayerMetadata_Layer"), "Always");
                 await context.FillInCodeMirrorEditorWithRetriesAsync(
                     By.CssSelector(".CodeMirror.cm-s-default"),
                     "<div id=\"now\">{{ \"now\" | utc | date: \"%Y-%m-%d %H:%M\" }}</div>");
                 await context.ClickReliablyOnAsync(By.ClassName("publish"));
+                context.ShouldBeSuccess();
+                context.Missing(By.CssSelector(".validation-summary-errors ul li"));
 
                 var now = await GetNowAsync(context);
 
