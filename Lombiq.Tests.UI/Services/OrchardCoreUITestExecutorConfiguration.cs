@@ -33,6 +33,11 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
         app => app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
+        app => app.LogsShouldNotContainAsync(
+            entry => entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+            TestContext.Current.CancellationToken);
+
     [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
@@ -86,7 +91,7 @@ public class OrchardCoreUITestExecutorConfiguration
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
 
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsAreEmptyAsync;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainFeatureSkipAsync;
 
     /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
