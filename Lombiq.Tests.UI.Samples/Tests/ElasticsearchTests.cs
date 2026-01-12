@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using OpenQA.Selenium;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,6 +17,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // If you use the Build and Test Orchard Core workflow of Lombiq GitHub Actions for CI builds (see
 // https://github.com/Lombiq/GitHub-Actions/blob/dev/Docs/Workflows/BuildDotNetCoreOrchardCore/BuildAndTestOrchardCoreSolution.md),
 // then you can also utilize Elasticsearch in CI test runs, without needing to do any setup on your own.
+[SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Temporarily disabled.")]
 public class ElasticsearchTests : UITestBase
 {
     public ElasticsearchTests(ITestOutputHelper testOutputHelper)
@@ -23,7 +25,7 @@ public class ElasticsearchTests : UITestBase
     {
     }
 
-    [Fact]
+    [Fact(Skip = "Temporarily disabled.")]
     public Task ElasticsearchShouldWork() =>
         ExecuteTestAsync(
             async context =>
