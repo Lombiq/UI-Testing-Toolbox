@@ -55,12 +55,12 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        async Task ChangeConfigurationForCloudflareAsync(OrchardCoreUITestExecutorConfiguration configuration)
+        Task ChangeConfigurationForCloudflareAsync(OrchardCoreUITestExecutorConfiguration configuration)
         {
             // Cloudflare's e-mail address obfuscating feature creates invalid iframes.
             configuration.HtmlValidationConfiguration.WithRelativeConfigPath("PermitNoTitleIframes.htmlvalidate.json");
 
-            await changeConfigurationAsync.InvokeFuncAsync(configuration);
+            return changeConfigurationAsync.InvokeFuncAsync(configuration);
         }
 
         if (string.IsNullOrEmpty(CloudflareApiToken))
