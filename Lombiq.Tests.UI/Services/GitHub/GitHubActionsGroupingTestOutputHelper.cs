@@ -1,14 +1,9 @@
 using Lombiq.Tests.UI.Models;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
-[SuppressMessage(
-    "Performance",
-    "MA0182:Avoid unused internal types",
-    Justification = "False positive: https://github.com/meziantou/Meziantou.Analyzer/issues/970.")]
 internal sealed class GitHubActionsGroupingTestOutputHelper : ITestOutputHelperDecorator
 {
     private readonly string _groupName;
