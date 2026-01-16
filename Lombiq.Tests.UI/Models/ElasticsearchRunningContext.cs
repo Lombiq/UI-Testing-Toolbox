@@ -31,7 +31,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         {
             var index = LowLevelIndexName;
             var testCancellationToken = context.Configuration.TestCancellationToken;
-            var client = GetClient(provider, index);
+            var client = GetClient(provider);
 
             (await client.Indices.FlushAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
             (await client.Indices.RefreshAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
@@ -163,7 +163,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
             return indices.Indices.Count > 0;
         }
 
-        var client = GetClient(provider, index);
+        var client = GetClient(provider);
 
         if (!await CheckIfIndexExistsAsync(client, index))
         {
@@ -180,10 +180,20 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
         }
     }
 
-    private static ElasticsearchClient GetClient(IServiceProvider provider, IndexName index) =>
-        (provider.GetService<IElasticsearchClientFactory>() is { } factory
-            ? factory.Create(new ElasticsearchConnectionOptions())
-            : provider.GetService<ElasticsearchClient>()) ??
+    private static ElasticsearchClient GetClient(IServiceProvider provider)
+    {
+        if (provider.GetService<ElasticsearchClient>() is { } existingClient)
+        {
+            return existingClient;
+        }
+
+        if (provider.GetService<IElasticsearchClientFactory>() is { } factory &&
+            factory.Create(new ElasticsearchConnectionOptions()) is { } factoryClient)
+        {
+            return factoryClient;
+        }
+
         throw new InvalidOperationException(
-            $"Couldn't resolve {nameof(ElasticsearchClient)} while waiting for \"{index}\".");
+            $"Couldn't resolve {nameof(ElasticsearchClient)}.");
+    }
 }
