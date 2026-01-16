@@ -53,10 +53,10 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 )]
 
 [assembly: Feature(
-    Id = Swagger,
-    Name = "Swagger - Shortcuts - Lombiq UI Testing Toolbox",
+    Id = OpenApi,
+    Name = "OpenAPI - Shortcuts - Lombiq UI Testing Toolbox",
     Category = "Development",
-    Description = DescriptionUiTestWarning + "Provides a Swagger endpoint to generate a JSON OpenAPI definition for " +
+    Description = DescriptionUiTestWarning + "Provides an endpoint to generate a JSON OpenAPI definition for " +
                   "the web APIs available in the app. Used in security scanning."
 )]
 
