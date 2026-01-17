@@ -29,25 +29,119 @@
       "Indices": [
         {
           "elasticsearchshouldwork": {
-            "AnalyzerName": "standard",
-            "IndexLatest": false,
-            "IndexedContentTypes": [
-              "BlogPost"
-            ],
-            "Culture": "any",
-            "StoreSourceData": true
+            "Id": "elasticsearchshouldwork000",
+            "ProviderName": "Elasticsearch",
+            "Type": "Content",
+            "CreatedUtc": "2026-01-17T19:21:17Z",
+            "Properties": {
+              "ContentIndexMetadata": {
+                "IndexLatest": false,
+                "IndexedContentTypes": [
+                  "BlogPost"
+                ],
+                "Culture": "any"
+              },
+              "ElasticsearchIndexMetadata": {
+                "StoreSourceData": true,
+                "AnalyzerName": "standard",
+                "IndexMappings": {
+                  "KeyFieldName": "ContentItemId",
+                  "Mapping": {
+                    "dynamic_templates": [
+                      {
+                        "*.Inherited": {
+                          "mapping": {
+                            "type": "keyword"
+                          },
+                          "match_mapping_type": "string",
+                          "path_match": "*.Inherited"
+                        }
+                      },
+                      {
+                        "*.Ids": {
+                          "mapping": {
+                            "type": "keyword"
+                          },
+                          "match_mapping_type": "string",
+                          "path_match": "*.Ids"
+                        }
+                      },
+                      {
+                        "*.Location": {
+                          "mapping": {
+                            "type": "geo_point"
+                          },
+                          "match_mapping_type": "object",
+                          "path_match": "*.Location"
+                        }
+                      }
+                    ],
+                    "properties": {
+                      "ContentItemId": {
+                        "type": "keyword"
+                      },
+                      "ContentItemVersionId": {
+                        "type": "keyword"
+                      },
+                      "Content.ContentItem.Owner": {
+                        "type": "keyword"
+                      },
+                      "Content.ContentItem.FullText": {
+                        "type": "text"
+                      },
+                      "Content.ContentItem.ContainedPart": {
+                        "properties": {
+                          "Ids": {
+                            "type": "keyword"
+                          },
+                          "Order": {
+                            "type": "float"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "Content.ContentItem.DisplayText": {
+                        "properties": {
+                          "Analyzed": {
+                            "type": "text"
+                          },
+                          "Normalized": {
+                            "type": "keyword"
+                          },
+                          "Keyword": {
+                            "type": "keyword"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "Content.ContentItem.ContentType": {
+                        "type": "keyword"
+                      }
+                    },
+                    "_source": {
+                      "enabled": true,
+                      "excludes": [
+                        "Content.ContentItem.DisplayText.Analyzed"
+                      ]
+                    }
+                  }
+                }
+              },
+              "ElasticsearchDefaultQueryMetadata": {
+                "QueryAnalyzerName": "standard",
+                "DefaultSearchFields": [
+                  "Content.ContentItem.FullText"
+                ]
+              }
+            }
           }
         }
       ]
     },
     {
       "name": "Settings",
-      "ElasticSettings": {
-        "SearchIndex": "elasticsearchshouldwork",
-        "DefaultSearchFields": [
-          "Content.ContentItem.FullText"
-        ],
-        "AllowElasticQueryStringQueryInSearch": false
+      "SearchSettings": {
+        "DefaultIndexProfileName": "elasticsearchshouldwork"
       }
     },
     {

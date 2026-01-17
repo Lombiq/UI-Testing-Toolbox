@@ -29,7 +29,7 @@ public class ElasticsearchTests : UITestBase
             {
                 // Going to the built-in search feature. By default, it's not accessible for anonymous users, so we need
                 // to log in.
-                await context.SignInDirectlyAndGoToRelativeUrlAsync("/search/elasticsearchshouldwork");
+                await context.SignInDirectlyAndGoToRelativeUrlAsync("/search");
 
                 // Filling out the search form, looking for the sample blog post coming from the built-in Blog recipe.
                 await context.ClickAndFillInWithRetriesAsync(By.Name("Terms"), "exploration");
