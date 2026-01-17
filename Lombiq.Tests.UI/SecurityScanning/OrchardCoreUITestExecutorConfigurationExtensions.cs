@@ -50,6 +50,7 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
             "System.IO.IOException: Not a directory",
             "System.IO.IOException: The filename, directory name, or volume label syntax is incorrect",
             "System.IO.DirectoryNotFoundException: Could not find a part of the path",
+            "System.IO.IOException: The directory name is invalid.",
             // This happens when a request's model contains a dictionary and a key is missing. While this can be a
             // legitimate application error, during a security scan it's more likely the result of an incomplete
             // artificially constructed request. So the means the ASP.NET Core model binding is working as intended.
