@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Indexing;
+using OrchardCore.Indexing.Core;
 using OrchardCore.Search.Elasticsearch.Core.Models;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
@@ -99,7 +100,7 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 #pragma warning disable S1994 // "for" loop increment clauses should modify the loops' counters
         for (var startIndex = 0; hasTask; startIndex += batchSize)
         {
-            var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize, category: null))
+            var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize, IndexingConstants.ContentsIndexSource))
                 .LastOrDefault();
 
             hasTask = lastTask != null;
