@@ -217,6 +217,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterClick -= TakeScreenshotIfEnabledAsync;
         }
 
+        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
+        {
+            await elasticsearchRunningContext.AfterTestAsync(_context);
+        }
+
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
         string contextId = null;
@@ -255,11 +260,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
                     ex);
             }
-        }
-
-        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
-        {
-            await elasticsearchRunningContext.AfterTestAsync(_context);
         }
 
         _screenshotCount = 0;
@@ -901,12 +901,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private ElasticsearchRunningContext SetUpElasticsearch()
     {
-        var id = Guid.NewGuid();
-        var prefix = TestContext.Current.GetElasticsearchSafeIndexName(id);
+        var prefix = TestContext.Current.GetElasticsearchSafeIndexName();
 
         _configuration.OrchardCoreConfiguration.ConfigureElasticsearchPrefix(prefix);
 
-        return new(id, prefix);
+        return new(prefix);
     }
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)

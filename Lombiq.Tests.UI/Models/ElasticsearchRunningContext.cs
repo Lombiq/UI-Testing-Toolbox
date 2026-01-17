@@ -6,17 +6,21 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Indexing;
 using OrchardCore.Indexing.Core;
+using OrchardCore.Recipes.Models;
+using OrchardCore.Search.Elasticsearch.Core.Deployment;
 using OrchardCore.Search.Elasticsearch.Core.Models;
+using OrchardCore.Search.Elasticsearch.Core.Recipes;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Models;
 
-public record ElasticsearchRunningContext(Guid Id, string Prefix)
+public record ElasticsearchRunningContext(string Prefix)
 {
     /// <summary>
     /// Gets the expression that refers to all indexes that start with <see cref="Prefix"/>. This should only be used
@@ -30,121 +34,30 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
     public Task BeforeTestAsync(UITestContext context) =>
         context.Application.UsingScopeServiceProviderAsync(async provider =>
         {
-            var index = LowLevelIndexName;
-            var testCancellationToken = context.Configuration.TestCancellationToken;
-            var client = GetClient(provider);
-
-            (await client.Indices.FlushAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"flush index \"{index}\"");
-            (await client.Indices.RefreshAsync(index, cancellationToken: testCancellationToken)).ThrowIfFailed($"refresh index \"{index}\"");
-
-            var indexProfileStore = provider.GetRequiredService<IIndexProfileStore>();
-            var indexSettings = await indexProfileStore.GetAllElasticsearchIndexesAsync();
-            var exactIndexName = indexSettings.FirstOrDefault()?.IndexName;
-
-            if (exactIndexName == null) return;
-
-            var timeout = TimeSpan.FromSeconds(60);
-
-            using var timeoutCancellationTokenSource = new CancellationTokenSource(timeout);
-            using var jointCancellationTokenSource = CancellationTokenSource
-                .CreateLinkedTokenSource(testCancellationToken, timeoutCancellationTokenSource.Token);
-            var jointCancellationToken = jointCancellationTokenSource.Token;
-
-            var elasticsearchDocumentIndexManager = provider.GetRequiredService<ElasticsearchDocumentIndexManager>();
-
-            long? lastFinishedTaskId = null;
-
-            try
+            if (provider.GetService<IIndexProfileManager>() is { } indexProfileManager)
             {
-                var lastTaskId = await GetLastTaskIdAsync(provider.GetRequiredService<IIndexingTaskManager>());
-
-                // We have the ID of the last indexing task that should happen, so we are waiting here for that task to
-                // complete, since "GetLastTaskId()" returns only completed tasks.
-                while (lastFinishedTaskId < lastTaskId || lastFinishedTaskId == null)
-                {
-                    jointCancellationToken.ThrowIfCancellationRequested();
-
-                    lastFinishedTaskId = await TryGetLastFinishedTaskIdAsync(
-                        elasticsearchDocumentIndexManager,
-                        indexProfileStore,
-                        exactIndexName);
-
-                    // The indexing takes a couple of seconds, so there is no need to check them so fast: we are adding
-                    // a delay.
-                    await Task.Delay(500, jointCancellationToken);
-                }
+                await RebuildAllIndexesAsync(indexProfileManager, provider);
             }
-            catch (TaskCanceledException ex)
+
+            if (provider.GetService<ContentIndexingService>() is { } indexingService)
             {
-                throw new TaskCanceledException(
-                    "Elasticsearch indexing wasn't finished due to " +
-                        $"{(testCancellationToken.IsCancellationRequested ? "the test being canceled" : $"it not completing within {timeout}")}.",
-                    ex,
-                    jointCancellationToken);
+                await indexingService.ProcessRecordsForAllIndexesAsync();
             }
         });
 
-    public Task AfterTestAsync(UITestContext context) =>
-        context?.Application?.Services is { } ? AfterTestInnerAsync(context) : Task.CompletedTask;
-
-    private static async Task<long> GetLastTaskIdAsync(IIndexingTaskManager indexingTaskManager)
+    public async Task AfterTestAsync(UITestContext context)
     {
-        const int batchSize = 1000;
-        long lastTaskId = 0;
-        bool hasTask = true;
-
-        // We are getting the last indexing task (regardless of the state). This function works like a cursor, so
-        // there is no way to get the last task in the list directly. Since we have to provide a "count" parameter,
-        // we are retrieving the indexing tasks by batches of 1000. Then if there are no more, we get the last one.
-        // We want to set "hasTask" inside the loop.
-#pragma warning disable S1994 // "for" loop increment clauses should modify the loops' counters
-        for (var startIndex = 0; hasTask; startIndex += batchSize)
+        try
         {
-            var lastTask = (await indexingTaskManager.GetIndexingTasksAsync(startIndex, batchSize, IndexingConstants.ContentsIndexSource))
-                .LastOrDefault();
-
-            hasTask = lastTask != null;
-
-            if (hasTask)
+            if (context?.Application?.Services != null)
             {
-                lastTaskId = lastTask.Id;
+                await context.Application.UsingScopeServiceProviderAsync(provider =>
+                    WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, LowLevelIndexName));
             }
-        }
-#pragma warning restore S1994 // "for" loop increment clauses should modify the loops' counters
-
-        return lastTaskId;
-    }
-
-    /// <summary>
-    /// Asking for the last task ID can throw an exception if the underlying value is not initialized yet. This method
-    /// catches the exception and returns null instead so it can be safely retried.
-    /// </summary>
-    private static async Task<long?> TryGetLastFinishedTaskIdAsync(
-        ElasticsearchDocumentIndexManager elasticsearchDocumentIndexManager,
-        IIndexProfileStore indexProfileStore,
-        string indexName)
-    {
-        try
-        {
-            var indexProfile = await indexProfileStore.FindByNameAsync(indexName);
-            return await elasticsearchDocumentIndexManager.GetLastTaskIdAsync(indexProfile);
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-    }
-
-    private async Task AfterTestInnerAsync(UITestContext context)
-    {
-        try
-        {
-            await context.Application.UsingScopeServiceProviderAsync(provider =>
-                WithPrefixElasticsearchIndexCleanupFinallyAsync(provider, context, LowLevelIndexName));
         }
         catch (Exception inner)
         {
-            context.Scope?.AtataContext?.Log?.Error(inner.ToString());
+            context?.Scope?.AtataContext?.Log?.Error(inner.ToString());
         }
     }
 
@@ -196,5 +109,21 @@ public record ElasticsearchRunningContext(Guid Id, string Prefix)
 
         throw new InvalidOperationException(
             $"Couldn't resolve {nameof(ElasticsearchClient)}.");
+    }
+
+    private static Task RebuildAllIndexesAsync(
+        IIndexProfileManager indexProfileManager,
+        IServiceProvider serviceProvider)
+    {
+        var step = new ElasticsearchIndexRebuildStep(indexProfileManager, serviceProvider);
+        var model = new ElasticsearchIndexRebuildDeploymentStep { IncludeAll = true };
+        var context = new RecipeExecutionContext
+        {
+            ExecutionId = Guid.NewGuid().ToString(),
+            Name = "elastic-index-rebuild",
+            Step = (JsonObject)JsonSerializer.SerializeToNode(model),
+        };
+
+        return step.ExecuteAsync(context);
     }
 }
