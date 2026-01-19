@@ -13,6 +13,7 @@ using OrchardCore.Search.Elasticsearch.Core.Recipes;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -85,8 +86,11 @@ public record ElasticsearchRunningContext(string Prefix)
             return;
         }
 
-        var deleteRequest = new DeleteIndexRequest(index) { ExpandWildcards = [ExpandWildcard.All] };
-        (await client.Indices.DeleteAsync(deleteRequest)).ThrowIfFailed($"delete index \"{index}\"");
+        var getRequest = new GetIndexRequest(index) { ExpandWildcards = [ExpandWildcard.All], AllowNoIndices = true };
+        var getResponse = (await client.Indices.GetAsync(getRequest)).ThrowIfFailed($"get index \"{index}\"");
+
+        if (getResponse.Indices.Count == 0) return;
+        (await client.Indices.DeleteAsync(getResponse.Indices.Keys.ToArray())).ThrowIfFailed($"delete index \"{index}\"");
 
         if (await CheckIfIndexExistsAsync(client, index))
         {
