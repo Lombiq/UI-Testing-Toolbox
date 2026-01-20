@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <PackageReference Include="OrchardCore.Module.Targets" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Tenants" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Themes" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Users" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.1.0" />
