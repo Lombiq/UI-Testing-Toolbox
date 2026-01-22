@@ -31,7 +31,7 @@ public class TenantTests : UITestBase
                 await context.SignInDirectlyAsync();
 
                 // Create the tenant with a custom admin user.
-                await context.EnableTenantsFeatureAsync();
+                await context.EnableTenantsFeatureDirectlyAsync();
                 await context.CreateAndSwitchToTenantAsync(
                     TestTenantName,
                     TestTenantUrlPrefix,

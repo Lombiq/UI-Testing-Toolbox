@@ -133,6 +133,17 @@ public class HtmlValidationConfiguration
         return this;
     }
 
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/> with the <c>OC-15222</c> key to handle a specific bug.
+    /// </summary>
+    /// <remarks><para>
+    /// Rule exclusions due to https://github.com/OrchardCMS/OrchardCore/issues/15222, usages can be removed once it is
+    /// resolved.
+    /// </para></remarks>
+    public HtmlValidationConfiguration WithOC15222Filter() =>
+        WithFilters("OC-15222", error =>
+            error.RuleId is not ("prefer-native-element" or "text-content" or "no-redundant-role"));
+
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
         validationResult =>
         {

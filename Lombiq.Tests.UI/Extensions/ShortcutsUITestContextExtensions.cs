@@ -271,7 +271,7 @@ public static class ShortcutsUITestContextExtensions
     /// <summary>
     /// Enables the Tenants feature for the default tenant.
     /// </summary>
-    public static Task EnableTenantsFeatureAsync(this UITestContext context) =>
+    public static Task EnableTenantsFeatureDirectlyAsync(this UITestContext context) =>
         context.EnableFeatureDirectlyAsync("OrchardCore.Tenants", ShellSettings.DefaultShellName);
 
     /// <summary>
@@ -500,11 +500,11 @@ public static class ShortcutsUITestContextExtensions
         string urlPrefix,
         OrchardCoreSetupParameters setupParameters,
         string featureProfile = null,
-        bool enableFeature = true)
+        bool enableTenantsFeature = true)
     {
-        if (enableFeature)
+        if (enableTenantsFeature)
         {
-            await context.EnableTenantsFeatureAsync();
+            await context.EnableTenantsFeatureDirectlyAsync();
         }
 
         setupParameters ??= new OrchardCoreSetupParameters(context);
