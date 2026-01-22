@@ -109,9 +109,9 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.Tests" Version="5.0.1-alpha.0.osoe-925" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.5.1-alpha.2.osoe-925" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.5.1-alpha.2.osoe-925" />
-    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.5.1-alpha.2.osoe-925" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.5.1-alpha.6.osoe-925" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.5.1-alpha.6.osoe-925" />
+    <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.5.1-alpha.6.osoe-925" />
   </ItemGroup>
 
   <!-- These are necessary for symbols NuGet packaging, otherwise Shouldly would prevent PDBs to be packaged, see:
