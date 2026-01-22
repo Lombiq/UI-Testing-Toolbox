@@ -1,6 +1,5 @@
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Core;
-using Elastic.Clients.Elasticsearch.IndexManagement;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,6 @@ using OrchardCore.Search.Elasticsearch.Core.Recipes;
 using OrchardCore.Search.Elasticsearch.Core.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -66,7 +64,7 @@ public record ElasticsearchRunningContext(string Prefix)
         "Usage",
         "MA0040:Forward the CancellationToken parameter to methods that take one",
         Justification = "Cleanup code has no viable cancellation token because even failed tests should be cleaned up.")]
-    private static async Task WithPrefixElasticsearchIndexCleanupFinallyAsync(
+    private async Task WithPrefixElasticsearchIndexCleanupFinallyAsync(
         IServiceProvider provider,
         UITestContext context,
         IndexName index)
@@ -86,12 +84,7 @@ public record ElasticsearchRunningContext(string Prefix)
             return;
         }
 
-        var getRequest = new GetIndexRequest(index) { ExpandWildcards = [ExpandWildcard.All], AllowNoIndices = true };
-        var getResponse = (await client.Indices.GetAsync(getRequest)).ThrowIfFailed($"get index \"{index}\"");
-
-        if (getResponse.Indices.Count == 0) return;
-        (await client.Indices.DeleteAsync(getResponse.Indices.Keys.ToArray())).ThrowIfFailed($"delete index \"{index}\"");
-
+        await client.DeleteAllIndexesAsync(Prefix);
         if (await CheckIfIndexExistsAsync(client, index))
         {
             throw new InvalidOperationException($"Couldn't delete indexes for \"{index}\".");
