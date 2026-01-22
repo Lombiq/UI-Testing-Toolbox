@@ -2,8 +2,10 @@ using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -17,6 +19,8 @@ namespace Lombiq.Tests.UI.Services;
 /// </summary>
 public class HtmlValidationConfiguration
 {
+    private Func<HtmlValidationResult, Task> _assertHtmlValidationResultAsync = AssertHtmlValidationOutputIsEmptyAsync;
+
     /// <summary>
     /// Gets or sets a value indicating whether to create an HTML validation report if the given test fails HTML
     /// validation.
@@ -53,10 +57,41 @@ public class HtmlValidationConfiguration
     public Action<HtmlValidationOptions> HtmlValidationOptionsAdjuster { get; set; }
 
     /// <summary>
+    /// Gets a dictionary of filters. If not empty, it's used in <see
+    /// cref="HtmlValidationUITestContextExtensions.AssertHtmlValidityAsync"/> instead of  <see
+    /// cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
+    /// </summary>
+    public IDictionary<string, Func<JsonHtmlValidationError, bool>> HtmlValidationFilters { get; } =
+        new Dictionary<string, Func<JsonHtmlValidationError, bool>>();
+
+    /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
     /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
     /// </summary>
-    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; } = AssertHtmlValidationOutputIsEmptyAsync;
+    [Obsolete($"Use {nameof(HtmlValidationFilters)} instead. If it's populated this will throw a runtime exception.")]
+    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync
+    {
+        get
+        {
+            if (HtmlValidationFilters.Count > 0)
+            {
+                throw new InvalidOperationException($"{nameof(HtmlValidationFilters)} is already configured, so the " +
+                    $"value of {nameof(AssertHtmlValidationResultAsync)} will be ignored.");
+            }
+
+            return _assertHtmlValidationResultAsync;
+        }
+        set
+        {
+            if (HtmlValidationFilters.Count > 0)
+            {
+                throw new InvalidOperationException($"{nameof(HtmlValidationFilters)} is already configured, so the " +
+                    $"value of {nameof(AssertHtmlValidationResultAsync)} will be ignored.");
+            }
+
+            _assertHtmlValidationResultAsync = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes (either
@@ -88,6 +123,27 @@ public class HtmlValidationConfiguration
         return this;
     }
 
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/>.
+    /// </summary>
+    public HtmlValidationConfiguration WithFilters(string name, Func<JsonHtmlValidationError, bool> filter)
+    {
+        HtmlValidationFilters[name] = filter;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/> with the <c>OC-15222</c> key to handle a specific bug.
+    /// </summary>
+    /// <remarks><para>
+    /// Rule exclusions due to https://github.com/OrchardCMS/OrchardCore/issues/15222, usages can be removed once it is
+    /// resolved.
+    /// </para></remarks>
+    public HtmlValidationConfiguration WithOC15222Filter() =>
+        WithFilters("OC-15222", error =>
+            error.RuleId is not ("prefer-native-element" or "text-content" or "no-redundant-role"));
+
     public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
         validationResult =>
         {
@@ -95,7 +151,7 @@ public class HtmlValidationConfiguration
             if (validationResult.Output.Trim().StartsWith('[') ||
                 validationResult.Output.Trim().StartsWith('{'))
             {
-                var errors = validationResult.GetParsedErrors();
+                var errors = validationResult.GetParsedErrors()?.AsList() ?? [];
                 errors.ShouldBeEmpty(HtmlValidationResultExtensions.GetParsedErrorMessageString(errors));
             }
             else
