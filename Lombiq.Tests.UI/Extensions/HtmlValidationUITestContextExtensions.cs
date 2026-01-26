@@ -6,7 +6,6 @@ using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -32,26 +31,18 @@ public static class HtmlValidationUITestContextExtensions
         var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
         var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
 
+        assertHtmlValidationResultAsync ??= validationConfiguration.AssertHtmlValidationResultAsync;
+
         try
         {
-            if (assertHtmlValidationResultAsync == null &&
-                validationConfiguration.HtmlValidationFilters is { Count: > 0 } filters)
+            if (assertHtmlValidationResultAsync == null)
             {
                 var errors = validationResult.GetParsedErrors()?.AsList() ?? [];
-                if (errors.Count > 0) AssertHtmlValidityWithFilters(errors, filters);
+                if (errors.Count > 0) AssertHtmlValidityWithFilters(errors, validationConfiguration.HtmlValidationFilters);
             }
-            else
+            else if (assertHtmlValidationResultAsync is { } assert && assert(validationResult) is { } assertTask)
             {
-                // This is the only place where AssertHtmlValidationResultAsync should be used. When it's removed in the
-                // future, replace "validationConfiguration.AssertHtmlValidationResultAsync" below with
-                // "HtmlValidationConfiguration.AssertHtmlValidationOutputIsEmptyAsync" to maintain default behavior.
-#pragma warning disable CS0618 // Type or member is obsolete.
-                if ((assertHtmlValidationResultAsync ?? validationConfiguration.AssertHtmlValidationResultAsync) is { } assert &&
-                    assert(validationResult) is { } assertTask)
-                {
-                    await assertTask;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
+                await assertTask;
             }
         }
         catch (Exception exception)
@@ -64,11 +55,8 @@ public static class HtmlValidationUITestContextExtensions
         IList<JsonHtmlValidationError> errors,
         IDictionary<string, Func<JsonHtmlValidationError, bool>> filters)
     {
-        foreach (var filter in filters.Values.Where(filter => filter != null))
-        {
-            errors.RemoveAll(error => !filter(error));
-            if (errors.Count == 0) return;
-        }
+        errors.RemoveIfFalse(filters.Values);
+        if (errors.Count == 0) return;
 
         var humanReadableErrors = HtmlValidationResultExtensions.GetParsedErrorMessageString(errors);
         var filtersUsedMessage = $"The following {nameof(HtmlValidationConfiguration.HtmlValidationFilters)} were " +

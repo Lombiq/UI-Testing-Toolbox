@@ -1,9 +1,7 @@
 using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,8 +17,6 @@ namespace Lombiq.Tests.UI.Services;
 /// </summary>
 public class HtmlValidationConfiguration
 {
-    private Func<HtmlValidationResult, Task> _assertHtmlValidationResultAsync = AssertHtmlValidationOutputIsEmptyAsync;
-
     /// <summary>
     /// Gets or sets a value indicating whether to create an HTML validation report if the given test fails HTML
     /// validation.
@@ -57,41 +53,21 @@ public class HtmlValidationConfiguration
     public Action<HtmlValidationOptions> HtmlValidationOptionsAdjuster { get; set; }
 
     /// <summary>
-    /// Gets a dictionary of filters. If not empty, it's used in <see
-    /// cref="HtmlValidationUITestContextExtensions.AssertHtmlValidityAsync"/> instead of  <see
-    /// cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
+    /// Gets a dictionary of filters. If <see cref="AssertHtmlValidationResultAsync"/> is <see langword="null"/>, then
+    /// these are automatically used instead. The errors from the <see cref="HtmlValidationResult"/> are filtered by
+    /// each entry and validation only fails if there is still any errors left over. If you use a custom <see
+    /// cref="AssertHtmlValidationResultAsync"/> value, these will only apply if you explicitly call them.
     /// </summary>
     public IDictionary<string, Func<JsonHtmlValidationError, bool>> HtmlValidationFilters { get; } =
         new Dictionary<string, Func<JsonHtmlValidationError, bool>>();
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
-    /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
+    /// happens. If you only want to filter the validation errors, use <see cref="HtmlValidationFilters"/> or <see
+    /// cref="WithFilters"/> and keep this <see langword="null"/>. If you specify a custom value, consider using <see
+    /// cref="JsonHtmlValidationErrorExtensions.FilterWithConfiguration"/> in it to apply the filters.
     /// </summary>
-    [Obsolete($"Use {nameof(HtmlValidationFilters)} instead. If it's populated this will throw a runtime exception.")]
-    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync
-    {
-        get
-        {
-            if (HtmlValidationFilters.Count > 0)
-            {
-                throw new InvalidOperationException($"{nameof(HtmlValidationFilters)} is already configured, so the " +
-                    $"value of {nameof(AssertHtmlValidationResultAsync)} will be ignored.");
-            }
-
-            return _assertHtmlValidationResultAsync;
-        }
-        set
-        {
-            if (HtmlValidationFilters.Count > 0)
-            {
-                throw new InvalidOperationException($"{nameof(HtmlValidationFilters)} is already configured, so the " +
-                    $"value of {nameof(AssertHtmlValidationResultAsync)} will be ignored.");
-            }
-
-            _assertHtmlValidationResultAsync = value;
-        }
-    }
+    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes (either
@@ -143,24 +119,6 @@ public class HtmlValidationConfiguration
     public HtmlValidationConfiguration WithOC15222Filter() =>
         WithFilters("OC-15222", error =>
             error.RuleId is not ("prefer-native-element" or "text-content" or "no-redundant-role"));
-
-    public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        validationResult =>
-        {
-            // Keep supporting cases where output format is not set to JSON.
-            if (validationResult.Output.Trim().StartsWith('[') ||
-                validationResult.Output.Trim().StartsWith('{'))
-            {
-                var errors = validationResult.GetParsedErrors()?.AsList() ?? [];
-                errors.ShouldBeEmpty(HtmlValidationResultExtensions.GetParsedErrorMessageString(errors));
-            }
-            else
-            {
-                validationResult.Output.ShouldBeEmpty();
-            }
-
-            return Task.CompletedTask;
-        };
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
