@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.Models;
 
-public static class JsonHtmlValidationErrorExtensions
+public static class HtmlValidationErrorExtensions
 {
     /// <summary>
     /// Remove entries from <paramref name="errors"/> if they return <see langword="false"/> when passed into any of the
     /// <paramref name="filters"/>.
     /// </summary>
-    internal static IList<JsonHtmlValidationError> RemoveIfFalse(
-        this IList<JsonHtmlValidationError> errors,
-        IEnumerable<Func<JsonHtmlValidationError, bool>> filters)
+    internal static IList<HtmlValidationError> RemoveIfFalse(
+        this IList<HtmlValidationError> errors,
+        IEnumerable<Func<HtmlValidationError, bool>> filters)
     {
         foreach (var filter in filters.Where(filter => filter != null))
         {
@@ -27,8 +27,8 @@ public static class JsonHtmlValidationErrorExtensions
     /// <summary>
     /// Return a new list that filters out items using <see cref="HtmlValidationConfiguration.HtmlValidationFilters"/>.
     /// </summary>
-    public static IList<JsonHtmlValidationError> FilterWithConfiguration(
-        this IEnumerable<JsonHtmlValidationError> errors,
+    public static IList<HtmlValidationError> FilterWithConfiguration(
+        this IEnumerable<HtmlValidationError> errors,
         HtmlValidationConfiguration configuration) =>
         errors.ToList().RemoveIfFalse(configuration.HtmlValidationFilters.Values);
 }

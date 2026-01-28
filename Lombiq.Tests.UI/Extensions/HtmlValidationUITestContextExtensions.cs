@@ -52,8 +52,8 @@ public static class HtmlValidationUITestContextExtensions
     }
 
     private static void AssertHtmlValidityWithFilters(
-        IList<JsonHtmlValidationError> errors,
-        IDictionary<string, Func<JsonHtmlValidationError, bool>> filters)
+        IList<HtmlValidationError> errors,
+        IDictionary<string, Func<HtmlValidationError, bool>> filters)
     {
         errors.RemoveIfFalse(filters.Values);
         if (errors.Count == 0) return;

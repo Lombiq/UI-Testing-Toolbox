@@ -58,14 +58,14 @@ public class HtmlValidationConfiguration
     /// each entry and validation only fails if there is still any errors left over. If you use a custom <see
     /// cref="AssertHtmlValidationResultAsync"/> value, these will only apply if you explicitly call them.
     /// </summary>
-    public IDictionary<string, Func<JsonHtmlValidationError, bool>> HtmlValidationFilters { get; } =
-        new Dictionary<string, Func<JsonHtmlValidationError, bool>>();
+    public IDictionary<string, Func<HtmlValidationError, bool>> HtmlValidationFilters { get; } =
+        new Dictionary<string, Func<HtmlValidationError, bool>>();
 
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
     /// happens. If you only want to filter the validation errors, use <see cref="HtmlValidationFilters"/> or <see
     /// cref="WithFilters"/> and keep this <see langword="null"/>. If you specify a custom value, consider using <see
-    /// cref="JsonHtmlValidationErrorExtensions.FilterWithConfiguration"/> in it to apply the filters.
+    /// cref="HtmlValidationErrorExtensions.FilterWithConfiguration"/> in it to apply the filters.
     /// </summary>
     public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; }
 
@@ -102,7 +102,7 @@ public class HtmlValidationConfiguration
     /// <summary>
     /// Updates the <see cref="HtmlValidationFilters"/>.
     /// </summary>
-    public HtmlValidationConfiguration WithFilters(string name, Func<JsonHtmlValidationError, bool> filter)
+    public HtmlValidationConfiguration WithFilters(string name, Func<HtmlValidationError, bool> filter)
     {
         HtmlValidationFilters[name] = filter;
 
