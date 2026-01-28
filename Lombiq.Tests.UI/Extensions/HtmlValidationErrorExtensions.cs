@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,12 +22,4 @@ public static class HtmlValidationErrorExtensions
 
         return errors;
     }
-
-    /// <summary>
-    /// Return a new list that filters out items using <see cref="HtmlValidationConfiguration.HtmlValidationFilters"/>.
-    /// </summary>
-    public static IList<HtmlValidationError> FilterWithConfiguration(
-        this IEnumerable<HtmlValidationError> errors,
-        HtmlValidationConfiguration configuration) =>
-        errors.ToList().RemoveIfFalse(configuration.HtmlValidationFilters.Values);
 }

@@ -53,10 +53,8 @@ public class HtmlValidationConfiguration
     public Action<HtmlValidationOptions> HtmlValidationOptionsAdjuster { get; set; }
 
     /// <summary>
-    /// Gets a dictionary of filters. If <see cref="AssertHtmlValidationResultAsync"/> is <see langword="null"/>, then
-    /// these are automatically used instead. The errors from the <see cref="HtmlValidationResult"/> are filtered by
-    /// each entry and validation only fails if there is still any errors left over. If you use a custom <see
-    /// cref="AssertHtmlValidationResultAsync"/> value, these will only apply if you explicitly call them.
+    /// Gets a dictionary of filters. The errors from the <see cref="HtmlValidationResult"/> are filtered by
+    /// each entry and only those are kept that pass each filter entry.
     /// </summary>
     public IDictionary<string, Func<HtmlValidationError, bool>> HtmlValidationFilters { get; } =
         new Dictionary<string, Func<HtmlValidationError, bool>>();
@@ -64,10 +62,9 @@ public class HtmlValidationConfiguration
     /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
     /// happens. If you only want to filter the validation errors, use <see cref="HtmlValidationFilters"/> or <see
-    /// cref="WithFilters"/> and keep this <see langword="null"/>. If you specify a custom value, consider using <see
-    /// cref="HtmlValidationErrorExtensions.FilterWithConfiguration"/> in it to apply the filters.
+    /// cref="WithFilters"/>.
     /// </summary>
-    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; }
+    public Func<IList<HtmlValidationError>, Task> AssertHtmlValidationResultAsync { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes (either

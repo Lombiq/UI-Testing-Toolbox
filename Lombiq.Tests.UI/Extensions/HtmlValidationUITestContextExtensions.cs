@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -26,21 +27,33 @@ public static class HtmlValidationUITestContextExtensions
     public static async Task AssertHtmlValidityAsync(
         this UITestContext context,
         Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-        Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
+        Func<IList<HtmlValidationError>, Task> assertHtmlValidationResultAsync = null)
     {
-        var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
         var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
+        var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
+        if (validationResult?.GetParsedErrors()?.AsList() is not { Count: > 0 } errors) return;
 
+        var filters = validationConfiguration.HtmlValidationFilters;
         assertHtmlValidationResultAsync ??= validationConfiguration.AssertHtmlValidationResultAsync;
+        assertHtmlValidationResultAsync ??= errors =>
+        {
+            var humanReadableErrors = HtmlValidationResultExtensions.GetParsedErrorMessageString(errors);
+            var filtersUsedMessage = $"The following {nameof(HtmlValidationConfiguration.HtmlValidationFilters)} were " +
+                $"used: {string.Join(", ", filters.Keys)}";
+
+            errors.ShouldBeEmpty(filters.Count > 0 ? $"{humanReadableErrors}\n\n{filtersUsedMessage}" : humanReadableErrors);
+            return Task.CompletedTask;
+        };
 
         try
         {
-            if (assertHtmlValidationResultAsync == null)
+            foreach (var filter in filters.Values.Where(filter => filter != null))
             {
-                var errors = validationResult.GetParsedErrors()?.AsList() ?? [];
-                if (errors.Count > 0) AssertHtmlValidityWithFilters(errors, validationConfiguration.HtmlValidationFilters);
+                errors.RemoveAll(error => !filter(error));
+                if (errors.Count == 0) return;
             }
-            else if (assertHtmlValidationResultAsync is { } assert && assert(validationResult) is { } assertTask)
+
+            if (assertHtmlValidationResultAsync(errors) is { } assertTask)
             {
                 await assertTask;
             }
@@ -49,20 +62,6 @@ public static class HtmlValidationUITestContextExtensions
         {
             throw new HtmlValidationAssertionException(validationResult, validationConfiguration, exception);
         }
-    }
-
-    private static void AssertHtmlValidityWithFilters(
-        IList<HtmlValidationError> errors,
-        IDictionary<string, Func<HtmlValidationError, bool>> filters)
-    {
-        errors.RemoveIfFalse(filters.Values);
-        if (errors.Count == 0) return;
-
-        var humanReadableErrors = HtmlValidationResultExtensions.GetParsedErrorMessageString(errors);
-        var filtersUsedMessage = $"The following {nameof(HtmlValidationConfiguration.HtmlValidationFilters)} were " +
-            $"used: {string.Join(", ", filters.Keys)}";
-
-        errors.ShouldBeEmpty($"{humanReadableErrors}\n\n{filtersUsedMessage}");
     }
 
     /// <summary>
