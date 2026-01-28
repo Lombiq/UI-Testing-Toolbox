@@ -329,7 +329,7 @@ public static class WebDriverFactory
 
         if (configuration.FakeVideoSource is not null)
         {
-            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
+            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder(configuration.TempDirectoryPath);
 
             // In some cases the video would not start automatically. To avoid this scenario we are adding the
             // "disable-gesture-requirement-for-media-playback" flag.
@@ -389,7 +389,10 @@ public static class WebDriverFactory
 
     private static string PrepareDownloadDirectory(BrowserConfiguration configuration)
     {
-        var downloadPath = DirectoryPaths.GetTempDirectoryPath(configuration.UITestContextId, DirectoryPaths.Downloads);
+        var downloadPath = OrchardCoreUITestExecutorConfiguration.GetTempDirectoryPathWithFallback(
+            configuration.TempDirectoryPath,
+            configuration.UITestContextId,
+            DirectoryPaths.Downloads);
         FileSystemHelper.EnsureDirectoryExists(downloadPath);
         return downloadPath;
     }

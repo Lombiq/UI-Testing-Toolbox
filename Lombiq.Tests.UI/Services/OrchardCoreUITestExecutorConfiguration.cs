@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
@@ -9,6 +10,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -219,5 +221,32 @@ public class OrchardCoreUITestExecutorConfiguration
     {
         get => _testCancellationToken == default ? TestContext.Current.CancellationToken : _testCancellationToken;
         set => _testCancellationToken = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the value which will be copied into <see cref="UITestContext.TempDirectoryPath"/> upon creation.
+    /// </summary>
+    public string TempDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Gets <see cref="TempDirectoryPath"/> if it's not <see langword="null"/>, otherwise gets the path of the <see
+    /// cref="DirectoryPaths.Temp"/> in the current directory.
+    /// </summary>
+    public string GetTempDirectoryPathWithFallback(params string[] subDirectories) =>
+        GetTempDirectoryPathWithFallback(TempDirectoryPath, subDirectories);
+
+    /// <summary>
+    /// Gets <paramref name="tempDirectoryPath"/> if it's not <see langword="null"/>, otherwise gets the path of the
+    /// <see cref="DirectoryPaths.Temp"/> in the current directory.
+    /// </summary>
+    public static string GetTempDirectoryPathWithFallback(string tempDirectoryPath, params string[] subDirectories)
+    {
+        var path = string.IsNullOrEmpty(tempDirectoryPath)
+            ? Path.Combine(Environment.CurrentDirectory, DirectoryPaths.Temp)
+            : tempDirectoryPath;
+
+        if (subDirectories.Length > 0) path = Path.Combine([path, .. subDirectories]);
+
+        return path;
     }
 }

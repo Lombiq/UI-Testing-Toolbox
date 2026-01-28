@@ -201,6 +201,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async ValueTask ShutdownAsync()
     {
+        var tempDirectoryPath = _context?.TempDirectoryPath;
+
         _testOutputHelper.WriteLineTimestampedAndDebug("Shutting down the test execution session.");
 
         if (_configuration.RunAssertLogsOnAllPageChanges)
@@ -224,13 +226,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
-        string contextId = null;
-
-        if (_context != null)
-        {
-            contextId = _context.Id;
-            await _context.DisposeAsync();
-        }
+        if (_context != null) await _context.DisposeAsync();
 
         if (_sqlServerManager is not null)
         {
@@ -245,12 +241,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // handles to the temp folder, that can be cleaned up too. No need to do it on ephemeral GitHub runners, though,
         // also because the ZAP report's folder (like "2025-01-22-ZAP-Report-localhost") will remain unwritable (see the
         // comment in ZapManager).
-        if (!string.IsNullOrEmpty(contextId) && !GitHubHelper.IsGitHubEnvironment)
+        if (!string.IsNullOrEmpty(tempDirectoryPath) &&
+            Directory.Exists(tempDirectoryPath) &&
+            !GitHubHelper.IsGitHubEnvironment)
         {
             try
             {
                 // This is a clean-up method, no need to forward a CancellationToken.
-                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId), CancellationToken.None);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(tempDirectoryPath, CancellationToken.None);
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
@@ -689,8 +687,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var contextId = Guid.NewGuid().ToString();
         _configuration.BrowserConfiguration.UITestContextId = contextId;
-
-        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
+        _configuration.BrowserConfiguration.TempDirectoryPath = _configuration.TempDirectoryPath;
 
         var sqlServerContext = _configuration.UseSqlServer ? await SetUpSqlServerAsync() : null;
         var azureBlobStorageContext = _configuration.UseAzureBlobStorage ? await SetUpAzureBlobStorageAsync() : null;

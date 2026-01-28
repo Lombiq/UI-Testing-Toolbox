@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -167,6 +169,12 @@ public sealed class UITestContext : IAsyncDisposable
     public string AdminUrlPrefix { get; set; } = "/Admin";
 
     /// <summary>
+    /// Gets the path of the <see cref="DirectoryPaths.Temp"/> directory where running instances are stored. If
+    /// the internal value is set to <see langword="null"/> (which is the default), then <c>./Temp/</c> is used.
+    /// </summary>
+    public string TempDirectoryPath { get; }
+
+    /// <summary>
     /// Gets the absolute path of the <see cref="DirectoryPaths.Screenshots"/> subdirectory inside the current test
     /// instance's <see cref="DirectoryPaths.Temp"/> directory.
     /// </summary>
@@ -206,6 +214,8 @@ public sealed class UITestContext : IAsyncDisposable
             AzureBlobStorageRunningContext,
             ElasticsearchRunningContext
         ) = runningContextContainer;
+
+        TempDirectoryPath = configuration.GetTempDirectoryPathWithFallback();
     }
 
     /// <summary>
@@ -324,6 +334,8 @@ public sealed class UITestContext : IAsyncDisposable
             runningContextContainer,
             zapManager);
 
+        FileSystemHelper.EnsureDirectoryExists(context.TempDirectoryPath);
+
         if (context.IsBrowserConfigured)
         {
             context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
@@ -356,18 +368,18 @@ public sealed class UITestContext : IAsyncDisposable
     }
 
     /// <summary>
-    /// Returns the subdirectory described by <paramref name="subDirectoryNames"/> inside the current test instance's
-    /// <see cref="DirectoryPaths.Temp"/> directory.
+    /// Returns the subdirectory described by the <paramref name="subDirectoryNames"/> sub-path inside the <see
+    /// cref="TempDirectoryPath"/>/<see cref="Id"/> directory.
     /// </summary>
     public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
-        DirectoryPaths.GetTempDirectoryPath([Id, .. subDirectoryNames]);
+        Path.Combine([TempDirectoryPath, Id, .. subDirectoryNames]);
 
     /// <summary>
     /// Returns a path in the <see cref="DirectoryPaths.Downloads"/> subdirectory inside the current test instance's
     /// <see cref="DirectoryPaths.Temp"/> directory.
     /// </summary>
     public string GetDownloadFilePath(params string[] subDirectoryNames) =>
-        DirectoryPaths.GetTempDirectoryPath([Id, DirectoryPaths.Downloads, .. subDirectoryNames]);
+        Path.Combine([TempDirectoryPath, Id, DirectoryPaths.Downloads, .. subDirectoryNames]);
 
     private bool IsAlert()
     {
