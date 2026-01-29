@@ -1,6 +1,9 @@
+using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -54,6 +57,87 @@ public class SqlQueryMonitoringTests : UITestBase
                 // Commands returning more rows than expected (useful for spotting missing SQL filtering).
                 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
             });
+
+    // SQL monitoring is tenant-aware. This test creates a tenant, switches to it, and verifies monitoring still works.
+    [Fact]
+    public Task SqlQueryMonitoringShouldWorkOnAnotherTenant() =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                const string tenantName = "SqlMonitorTest";
+                const string tenantUrlPrefix = "sql-monitor-test";
+                const string tenantDisplayName = "Lombiq's OSOCE - SQL Monitoring Tenant";
+                const string tenantAdminName = "tenantSqlMonitorAdmin";
+
+                await context.SignInDirectlyAsync();
+                await context.CreateAndSwitchToTenantAsync(
+                    tenantName,
+                    tenantUrlPrefix,
+                    new OrchardCoreSetupParameters
+                    {
+                        SiteName = tenantDisplayName,
+                        RecipeId = "Lombiq.OSOCE.Tests",
+                        TablePrefix = tenantUrlPrefix,
+                        UserName = tenantAdminName,
+                    });
+
+                await context.GoToRelativeUrlAsync("/");
+
+                context.GetCurrentUri().AbsolutePath.ShouldStartWith($"/{tenantUrlPrefix}");
+
+                await context.AssertSqlQueryMonitoringAsync(summary =>
+                {
+                    summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
+                    return Task.CompletedTask;
+                });
+
+                context.SwitchCurrentTenantToDefault();
+                await context.GoToRelativeUrlAsync("/");
+
+                context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{tenantUrlPrefix}");
+
+                await context.AssertSqlQueryMonitoringAsync(summary =>
+                {
+                    summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
+                    return Task.CompletedTask;
+                });
+            },
+            configuration =>
+            {
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false;
+                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 30;
+                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 15;
+                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
+            });
+
+    // You can also customize which page changes should be monitored by configuring a predicate.
+    [Fact]
+    public Task SqlQueryMonitoringShouldRespectPageChangeRule()
+    {
+        var summaries = new List<SqlQueryMonitoringSummary>();
+
+        return ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                await context.GoToRelativeUrlAsync("/categories/travel");
+                await context.GoToRelativeUrlAsync("/about");
+
+                summaries.Count.ShouldBe(1);
+                summaries[0].RequestPath.ShouldContain("/categories");
+                summaries[0].Executions.ShouldNotBeEmpty(
+                    "SQL query monitoring should capture at least one command.");
+            },
+            configuration =>
+            {
+                configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
+                    context => context.GetCurrentUri().AbsolutePath.Contains("/categories");
+                configuration.SqlQueryMonitoringConfiguration.AssertSqlQueryMonitoringSummaryAsync = summary =>
+                {
+                    summaries.Add(summary);
+                    return Task.CompletedTask;
+                };
+            });
+    }
 }
 
 // END OF TRAINING SECTION: SQL query monitoring tests.
