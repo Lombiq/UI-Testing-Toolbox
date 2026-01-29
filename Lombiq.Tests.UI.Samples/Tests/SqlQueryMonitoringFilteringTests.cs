@@ -16,9 +16,15 @@ public class SqlQueryMonitoringFilteringTests : UITestBase
     [Fact]
     public Task SqlQueryMonitoringShouldAllowIgnoringKnownQueries() =>
         ExecuteTestAfterSetupAsync(
-            context => context.AssertSqlQueryMonitoringAsync(),
+            async context =>
+            {
+                await context.AssertSqlQueryMonitoringAsync();
+            },
             configuration =>
             {
+                // We'll assert explicitly so the automatic on-page-change assertion doesn't consume the summary.
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false;
+
                 // Keep thresholds low to make filtering behavior visible, but still high enough for stable tests.
                 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 5;
                 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 3;
@@ -37,3 +43,6 @@ public class SqlQueryMonitoringFilteringTests : UITestBase
                         @"FROM\s+\[AutoroutePartIndex\]");
             });
 }
+
+// END OF TRAINING SECTION: SQL query monitoring filtering.
+// NEXT STATION: Head over to Tests/TenantTests.cs.
