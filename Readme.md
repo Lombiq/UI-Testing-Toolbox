@@ -19,6 +19,7 @@ Highlights:
 - Built-in monkey testing functionality to try to break your app with random user interactions. Demo video [here](https://www.youtube.com/watch?v=pZbEsEz3tuE).
 - Check for web content accessibility so people with disabilities can use your app properly too. You can also create accessibility reports for all pages.
 - Check for the validity of the HTML markup either explicitly or automatically on all page changes.
+- Detect duplicate SQL queries and oversized result sets to catch SELECT N+1 issues and missing filters.
 - Reliability is built in, so you won't get false negatives.
 - Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
 - Ready to use GitHub Actions workflows for CI builds and support for test grouping and error annotations in [Lombiq GitHub Actions](https://github.com/features/actions). This feature is automatically enabled if a GitHub environment is detected.
@@ -54,6 +55,7 @@ Do you want to quickly try out this project and see it in action? Check it out i
 - [Creating tests](Lombiq.Tests.UI/Docs/CreatingTests.md)
 - [Configuration](Lombiq.Tests.UI/Docs/Configuration.md)
 - [Executing tests](Lombiq.Tests.UI/Docs/ExecutingTests.md)
+- [SQL query monitoring](Lombiq.Tests.UI/Docs/SqlQueryMonitoring.md)
 - [Fake video capture source](Lombiq.Tests.UI/Docs/FakeVideoCaptureSource.md)
 - [Security scanning](Lombiq.Tests.UI/Docs/SecurityScanning.md)
 - [Troubleshooting](Lombiq.Tests.UI/Docs/Troubleshooting.md)

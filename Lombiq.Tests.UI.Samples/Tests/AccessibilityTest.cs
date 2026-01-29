@@ -39,4 +39,4 @@ public class AccessibilityTest : UITestBase
 }
 
 // END OF TRAINING SECTION: Accessibility tests.
-// NEXT STATION: Head over to Tests/SqlServerTests.cs.
+// NEXT STATION: Head over to Tests/SqlQueryMonitoringTests.cs.

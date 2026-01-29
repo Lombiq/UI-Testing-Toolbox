@@ -732,6 +732,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.SetUpHtmlValidationAssertionOnPageChange();
         }
 
+        if (_configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
+        {
+            _configuration.SetUpSqlQueryMonitoringAssertionOnPageChange();
+        }
+
         if (_configuration.RunAssertLogsOnAllPageChanges &&
             _configuration.CustomConfiguration.TryAdd("LogsAssertionOnPageChangeWasSetUp", value: true))
         {
