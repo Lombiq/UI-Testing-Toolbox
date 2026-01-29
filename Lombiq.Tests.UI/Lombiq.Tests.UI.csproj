@@ -68,7 +68,7 @@
     <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="3.4.0" />
     <PackageReference Include="Atata.WebDriverExtras" Version="3.3.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.379" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.11.0" />
