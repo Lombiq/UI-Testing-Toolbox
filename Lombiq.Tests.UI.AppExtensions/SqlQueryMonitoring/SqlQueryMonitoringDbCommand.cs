@@ -17,7 +17,7 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
     public SqlQueryMonitoringDbCommand(DbCommand inner, IHttpContextAccessor httpContextAccessor)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        _httpContextAccessor = httpContextAccessor;
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
 
     [SuppressMessage(
@@ -126,7 +126,7 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         Justification = "Awaiting the underlying database operation is required to record the execution.")]
     private async Task<int> RecordAfterAsync(Task<int> task, int? rowCount)
     {
-        var result = await task.ConfigureAwait(false);
+        var result = await task;
         RecordExecution(rowCount);
         return result;
     }
@@ -137,7 +137,7 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         Justification = "Awaiting the underlying database operation is required to record the execution.")]
     private async Task<object> RecordAfterAsync(Task<object> task, int? rowCount)
     {
-        var result = await task.ConfigureAwait(false);
+        var result = await task;
         RecordExecution(rowCount);
         return result;
     }

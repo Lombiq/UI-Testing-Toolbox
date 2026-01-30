@@ -15,7 +15,7 @@ public sealed class SqlQueryMonitoringDbConnection : DbConnection
     public SqlQueryMonitoringDbConnection(DbConnection inner, IHttpContextAccessor httpContextAccessor)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        _httpContextAccessor = httpContextAccessor;
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
 
     public override string ConnectionString

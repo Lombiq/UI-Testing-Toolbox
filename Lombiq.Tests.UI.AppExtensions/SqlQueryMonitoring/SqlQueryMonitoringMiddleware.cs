@@ -44,12 +44,7 @@ public sealed class SqlQueryMonitoringMiddleware
     private static void EnsureConnectionFactoryWrapped(HttpContext context)
     {
         var store = context.RequestServices.GetService<IStore>();
-        if (store?.Configuration?.ConnectionFactory == null) return;
-
-        if (store.Configuration.ConnectionFactory is SqlQueryMonitoringConnectionFactory) return;
-
         var httpContextAccessor = context.RequestServices.GetRequiredService<IHttpContextAccessor>();
-        store.Configuration.ConnectionFactory =
-            new SqlQueryMonitoringConnectionFactory(store.Configuration.ConnectionFactory, httpContextAccessor);
+        SqlQueryMonitoringConnectionFactoryHelper.EnsureWrapped(store, httpContextAccessor);
     }
 }

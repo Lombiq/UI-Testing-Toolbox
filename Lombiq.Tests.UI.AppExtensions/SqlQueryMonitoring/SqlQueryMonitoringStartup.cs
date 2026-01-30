@@ -21,12 +21,7 @@ public sealed class SqlQueryMonitoringStartup : StartupBase
         app.UseMiddleware<SqlQueryMonitoringMiddleware>();
 
         var store = serviceProvider.GetService<IStore>();
-        if (store?.Configuration?.ConnectionFactory == null) return;
-
-        if (store.Configuration.ConnectionFactory is SqlQueryMonitoringConnectionFactory) return;
-
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-        store.Configuration.ConnectionFactory =
-            new SqlQueryMonitoringConnectionFactory(store.Configuration.ConnectionFactory, httpContextAccessor);
+        SqlQueryMonitoringConnectionFactoryHelper.EnsureWrapped(store, httpContextAccessor);
     }
 }
