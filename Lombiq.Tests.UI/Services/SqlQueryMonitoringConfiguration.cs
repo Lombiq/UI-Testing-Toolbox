@@ -142,7 +142,11 @@ public class SqlQueryMonitoringConfiguration
         if (patterns == null || patterns.Length == 0) return _ => true;
 
         var regexes = patterns.Select(pattern =>
-            new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).ToArray();
+            new Regex(
+                pattern,
+                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+                TimeSpan.FromSeconds(1)))
+            .ToArray();
 
         return entry => !regexes.Any(regex => regex.IsMatch(entry.CommandText));
     }
