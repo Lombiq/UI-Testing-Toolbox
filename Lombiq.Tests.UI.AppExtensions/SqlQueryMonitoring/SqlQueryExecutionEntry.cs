@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
-public sealed class SqlQueryExecutionEntry
+public sealed partial class SqlQueryExecutionEntry
 {
     private const int MaxParameterValueLength = 200;
 
@@ -46,7 +45,7 @@ public sealed class SqlQueryExecutionEntry
     }
 
     private static string NormalizeWhitespace(string text) =>
-        Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
+        WhitespaceRegex().Replace(text ?? string.Empty, " ").Trim();
 
     private static string BuildParameterSignature(DbParameterCollection parameters)
     {
@@ -57,7 +56,7 @@ public sealed class SqlQueryExecutionEntry
             .OrderBy(parameter => parameter.ParameterName, StringComparer.OrdinalIgnoreCase)
             .Select(parameter => $"{parameter.ParameterName}={NormalizeParameterValue(parameter.Value)}");
 
-        return string.Join("; ", items);
+        return string.Join(separator: "; ", values: items);
     }
 
     private static string NormalizeParameterValue(object value)
@@ -72,7 +71,7 @@ public sealed class SqlQueryExecutionEntry
 
         if (value is IFormattable formattable)
         {
-            var text = formattable.ToString(null, CultureInfo.InvariantCulture);
+            var text = formattable.ToString(format: null, CultureInfo.InvariantCulture);
             return TrimValue(text);
         }
 
@@ -87,4 +86,7 @@ public sealed class SqlQueryExecutionEntry
             ? value
             : value[..MaxParameterValueLength] + "...";
     }
+
+    [GeneratedRegex(@"\s+", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex WhitespaceRegex();
 }

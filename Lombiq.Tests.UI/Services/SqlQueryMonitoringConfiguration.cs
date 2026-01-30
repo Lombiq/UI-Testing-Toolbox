@@ -76,9 +76,10 @@ public class SqlQueryMonitoringConfiguration
 
             foreach (var group in duplicates)
             {
+                var count = group.Count().ToTechnicalString();
+                var threshold = duplicateThreshold.ToTechnicalString();
                 failures.Add(
-                    $"Command text executed {group.Count()} times (threshold: {duplicateThreshold}): " +
-                    $"{ShortenCommandText(group.First().CommandText)}");
+                    $"Command text executed {count} times (threshold: {threshold}): {ShortenCommandText(group.First().CommandText)}");
             }
         }
 
@@ -92,10 +93,10 @@ public class SqlQueryMonitoringConfiguration
             foreach (var group in duplicates)
             {
                 var sample = group.First();
-                failures.Add(
-                    $"Command text with parameters executed {group.Count()} times (threshold: " +
-                    $"{duplicateWithParametersThreshold}): {ShortenCommandText(sample.CommandText)} " +
-                    $"[{sample.ParameterSignature}]");
+                var count = group.Count().ToTechnicalString();
+                var threshold = duplicateWithParametersThreshold.ToTechnicalString();
+                failures.Add($"Command text with parameters executed {count} times (threshold: {threshold}):" +
+                    $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]");
             }
         }
 
@@ -107,27 +108,34 @@ public class SqlQueryMonitoringConfiguration
 
             foreach (var entry in oversizedResults)
             {
+                var threshold = resultSetThreshold.ToTechnicalString();
+                var rowCount = entry.RowCount.ToTechnicalString();
                 failures.Add(
-                    $"Command result set had {entry.RowCount} rows (threshold: {resultSetThreshold}): " +
-                    ShortenCommandText(entry.CommandText));
+                        $"Command result set had {rowCount} rows (threshold: {threshold}): " + ShortenCommandText(entry.CommandText));
             }
         }
 
-        failures.ShouldBeEmpty(
-            failures.Count == 0
-                ? null
-                : $"SQL query monitoring detected potential issues on {summary.RequestMethod} {summary.RequestPath}:{Environment.NewLine}" +
-                  string.Join(Environment.NewLine, failures));
+        string failureMessage = null;
+        if (failures.Count != 0)
+        {
+            failureMessage =
+                $"SQL query monitoring detected potential issues on {summary.RequestMethod} {summary.RequestPath}:{Environment.NewLine}" +
+                string.Join(Environment.NewLine, failures);
+        }
+
+        failures.ShouldBeEmpty(failureMessage);
 
         return Task.CompletedTask;
     }
 
-    private static string ShortenCommandText(string commandText) =>
-        string.IsNullOrWhiteSpace(commandText)
-            ? "(empty command)"
-            : commandText.Length <= 300
-                ? commandText
-                : commandText[..300] + "...";
+    private static string ShortenCommandText(string commandText)
+    {
+        if (string.IsNullOrWhiteSpace(commandText)) return "(empty command)";
+
+        return commandText.Length <= 300
+            ? commandText
+            : commandText[..300] + "...";
+    }
 
     public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
     {

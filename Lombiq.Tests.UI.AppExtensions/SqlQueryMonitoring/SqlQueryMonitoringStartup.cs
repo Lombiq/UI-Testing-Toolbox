@@ -8,18 +8,17 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
-public sealed class SqlQueryMonitoringStartup : IStartup
+public sealed class SqlQueryMonitoringStartup : StartupBase
 {
-    public int Order => -500;
-    public int ConfigureOrder => -500;
+    // We set the order so the startup runs before the YesSql configuration that uses the connection factory. This lets
+    // us wrap IStore.Configuration.ConnectionFactory early enough so all DB commands are intercepted. If the startup
+    // runs later, other components may already have captured the unwrapped connection factory, and our monitoring won’t
+    // see SQL at all (or will see it inconsistently).
+    public new int Order => -500;
 
-    public void ConfigureServices(IServiceCollection services)
+    public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
     {
-    }
-
-    public void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
-    {
-        builder.UseMiddleware<SqlQueryMonitoringMiddleware>();
+        app.UseMiddleware<SqlQueryMonitoringMiddleware>();
 
         var store = serviceProvider.GetService<IStore>();
         if (store?.Configuration?.ConnectionFactory == null) return;

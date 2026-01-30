@@ -2,13 +2,6 @@ using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
-public interface ISqlQueryMonitoringContext
-{
-    IReadOnlyList<SqlQueryExecutionEntry> Executions { get; }
-
-    void RecordExecution(SqlQueryExecutionEntry entry);
-}
-
 public sealed class SqlQueryMonitoringContext : ISqlQueryMonitoringContext
 {
     private readonly List<SqlQueryExecutionEntry> _executions = [];
@@ -20,7 +13,7 @@ public sealed class SqlQueryMonitoringContext : ISqlQueryMonitoringContext
         {
             lock (_lock)
             {
-                return _executions.ToArray();
+                return [.. _executions];
             }
         }
     }

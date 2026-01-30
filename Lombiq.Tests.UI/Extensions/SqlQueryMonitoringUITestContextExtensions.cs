@@ -50,8 +50,11 @@ public static class SqlQueryMonitoringUITestContextExtensions
         if (store == null)
         {
             await context.Application.UsingScopeAsync(
-                serviceProvider => Task.FromResult(
-                    store = serviceProvider.GetService<ISqlQueryMonitoringStore>()),
+                serviceProvider =>
+                {
+                    store = serviceProvider.GetService<ISqlQueryMonitoringStore>();
+                    return Task.CompletedTask;
+                },
                 tenant);
         }
 

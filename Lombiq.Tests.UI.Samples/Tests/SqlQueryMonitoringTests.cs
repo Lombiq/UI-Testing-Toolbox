@@ -1,7 +1,7 @@
 using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
-using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -58,6 +58,23 @@ public class SqlQueryMonitoringTests : UITestBase
                 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
             });
 
+    // It's useful to demonstrate how SQL monitoring failures get surfaced. Here we use low thresholds and assert that
+    // the monitoring throws, so the test itself still passes.
+    [Fact]
+    public Task SqlQueryMonitoringShouldSurfaceIssues() =>
+        ExecuteTestAfterSetupAsync(
+            context => Should.ThrowAsync<SqlQueryMonitoringAssertionException>(() => context.AssertSqlQueryMonitoringAsync()),
+            configuration =>
+            {
+                // We'll assert explicitly so the automatic on-page-change assertion doesn't consume the summary.
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false;
+
+                // Set deliberately low thresholds to trigger failures.
+                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 1;
+                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 1;
+                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 1;
+            });
+
     // SQL monitoring is tenant-aware. This test creates a tenant, switches to it, and verifies monitoring still works.
     [Fact]
     public Task SqlQueryMonitoringShouldWorkOnAnotherTenant() =>
@@ -109,6 +126,36 @@ public class SqlQueryMonitoringTests : UITestBase
                 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 15;
                 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
             });
+
+    // You can tune thresholds per page. Here we tighten them for the categories page while keeping others looser.
+    [Fact]
+    public Task SqlQueryMonitoringShouldAllowPerPageThresholds() =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                await context.GoToRelativeUrlAsync("/categories/travel");
+                await context.GoToRelativeUrlAsync("/about");
+            },
+            configuration =>
+                configuration.Events.BeforeNavigation += (_, targetUri) =>
+                {
+                    var thresholds = configuration.SqlQueryMonitoringConfiguration;
+
+                    if (targetUri.AbsolutePath.Contains("/categories"))
+                    {
+                        thresholds.DuplicateCommandThreshold = 20;
+                        thresholds.DuplicateCommandWithParametersThreshold = 10;
+                        thresholds.ResultSetRowCountThreshold = 100;
+                    }
+                    else
+                    {
+                        thresholds.DuplicateCommandThreshold = 30;
+                        thresholds.DuplicateCommandWithParametersThreshold = 15;
+                        thresholds.ResultSetRowCountThreshold = 200;
+                    }
+
+                    return Task.CompletedTask;
+                });
 
     // You can also customize which page changes should be monitored by configuring a predicate.
     [Fact]

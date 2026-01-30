@@ -2,15 +2,30 @@ using System.Collections.Concurrent;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
+/// <summary>
+/// Stores SQL query monitoring summaries for the current tenant scope.
+/// </summary>
 public interface ISqlQueryMonitoringStore
 {
+    /// <summary>
+    /// Adds a completed monitoring summary to the store.
+    /// </summary>
     void AddSummary(SqlQueryMonitoringSummary summary);
 
+    /// <summary>
+    /// Removes and returns the most recent summary from the store, if any.
+    /// </summary>
     bool TryDequeueLatest(out SqlQueryMonitoringSummary summary);
 
+    /// <summary>
+    /// Clears all stored summaries.
+    /// </summary>
     void Clear();
 }
 
+/// <summary>
+/// A thread-safe FIFO store of recent SQL query monitoring summaries.
+/// </summary>
 public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
     private const int MaxEntries = 50;
@@ -44,6 +59,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     {
         while (_summaries.TryDequeue(out _))
         {
+            // Drain the queue.
         }
     }
 
@@ -51,6 +67,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     {
         while (_summaries.Count > MaxEntries && _summaries.TryDequeue(out _))
         {
+            // Keep only the most recent entries.
         }
     }
 }

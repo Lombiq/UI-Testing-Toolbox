@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
-public sealed class SqlQueryMonitoringDbDataReader : DbDataReader
+public sealed class SqlQueryMonitoringDbDataReader : DbDataReader, IEnumerable<DbDataRecord>
 {
     private readonly DbDataReader _inner;
     private readonly Action<int> _onCompleted;
@@ -74,6 +75,11 @@ public sealed class SqlQueryMonitoringDbDataReader : DbDataReader
     public override bool IsDBNull(int ordinal) => _inner.IsDBNull(ordinal);
 
     public override IEnumerator GetEnumerator() => ((IEnumerable)_inner).GetEnumerator();
+
+    IEnumerator<DbDataRecord> IEnumerable<DbDataRecord>.GetEnumerator()
+    {
+        foreach (DbDataRecord record in _inner) yield return record;
+    }
 
     public override void Close()
     {

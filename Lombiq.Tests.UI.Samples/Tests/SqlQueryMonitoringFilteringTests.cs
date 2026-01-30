@@ -16,10 +16,7 @@ public class SqlQueryMonitoringFilteringTests : UITestBase
     [Fact]
     public Task SqlQueryMonitoringShouldAllowIgnoringKnownQueries() =>
         ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                await context.AssertSqlQueryMonitoringAsync();
-            },
+            context => context.AssertSqlQueryMonitoringAsync(),
             configuration =>
             {
                 // We'll assert explicitly so the automatic on-page-change assertion doesn't consume the summary.

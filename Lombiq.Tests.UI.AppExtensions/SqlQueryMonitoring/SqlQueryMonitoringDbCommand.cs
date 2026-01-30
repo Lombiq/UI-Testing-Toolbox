@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,6 +20,10 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         _httpContextAccessor = httpContextAccessor;
     }
 
+    [SuppressMessage(
+        "Security",
+        "CA2100:Review SQL queries for security vulnerabilities",
+        Justification = "Command text is set by the underlying data access layer, not user input.")]
     public override string CommandText
     {
         get => _inner.CommandText;
@@ -115,16 +120,24 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         base.Dispose(disposing);
     }
 
+    [SuppressMessage(
+        "Usage",
+        "VSTHRD003:Avoid awaiting foreign Tasks",
+        Justification = "Awaiting the underlying database operation is required to record the execution.")]
     private async Task<int> RecordAfterAsync(Task<int> task, int? rowCount)
     {
-        var result = await task;
+        var result = await task.ConfigureAwait(false);
         RecordExecution(rowCount);
         return result;
     }
 
+    [SuppressMessage(
+        "Usage",
+        "VSTHRD003:Avoid awaiting foreign Tasks",
+        Justification = "Awaiting the underlying database operation is required to record the execution.")]
     private async Task<object> RecordAfterAsync(Task<object> task, int? rowCount)
     {
-        var result = await task;
+        var result = await task.ConfigureAwait(false);
         RecordExecution(rowCount);
         return result;
     }
