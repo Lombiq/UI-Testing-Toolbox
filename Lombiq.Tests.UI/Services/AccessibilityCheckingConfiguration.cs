@@ -47,6 +47,20 @@ public class AccessibilityCheckingConfiguration
         EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule;
 
     /// <summary>
+    /// Gets a collection of delegates that select which <see cref="AxeResult.Incomplete"/> is retained. If there are
+    /// more than one filters, all of them must return <see langword="true"/>.
+    /// </summary>
+    public IDictionary<string, Func<AxeResultItem, bool>> AxeResultIncompleteFilters { get; } =
+        new Dictionary<string, Func<AxeResultItem, bool>>();
+
+    /// <summary>
+    /// Gets a collection of delegates that select which <see cref="AxeResult.Violations"/> is retained. If there are
+    /// more than one filters, all of them must return <see langword="true"/>.
+    /// </summary>
+    public IDictionary<string, Func<AxeResultItem, bool>> AxeResultViolationsFilters { get; } =
+        new Dictionary<string, Func<AxeResultItem, bool>>();
+
+    /// <summary>
     /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking happens.
     /// Defaults to <see cref="AssertAxeResultIsEmpty"/>.
     /// </summary>

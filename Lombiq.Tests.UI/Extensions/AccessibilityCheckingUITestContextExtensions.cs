@@ -3,8 +3,10 @@ using Deque.AxeCore.Selenium;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using TWP.Selenium.Axe.Html;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -33,6 +35,12 @@ public static class AccessibilityCheckingUITestContextExtensions
 
         try
         {
+            if (accessibilityConfiguration.AxeResultIncompleteFilters.Count > 0 ||
+                accessibilityConfiguration.AxeResultViolationsFilters.Count > 0)
+            {
+                axeResult = FilterAccessibilityResults(axeResult, accessibilityConfiguration);
+            }
+
             (assertAxeResult ?? accessibilityConfiguration.AssertAxeResult)?.Invoke(axeResult);
         }
         catch (Exception ex)
@@ -56,6 +64,33 @@ public static class AccessibilityCheckingUITestContextExtensions
 
             context.AppendTestDump(reportPath);
         }
+    }
+
+    private static AxeResult FilterAccessibilityResults(AxeResult axeResult, AccessibilityCheckingConfiguration accessibilityConfiguration)
+    {
+        var incomplete = axeResult.Incomplete.ToList();
+        var violations = axeResult.Violations.ToList();
+
+        foreach (var filter in accessibilityConfiguration.AxeResultIncompleteFilters.Values)
+        {
+            incomplete.RemoveAll(item => !filter(item));
+        }
+
+        foreach (var filter in accessibilityConfiguration.AxeResultViolationsFilters.Values)
+        {
+            violations.RemoveAll(item => !filter(item));
+        }
+
+        if (axeResult.Incomplete.Length != incomplete.Count ||
+            axeResult.Violations.Length != violations.Count)
+        {
+            var jObject = JObject.FromObject(axeResult);
+            jObject["Violations"] = JArray.FromObject(violations);
+            jObject["Incomplete"] = JArray.FromObject(incomplete);
+            axeResult = new AxeResult(jObject);
+        }
+
+        return axeResult;
     }
 
     /// <summary>
