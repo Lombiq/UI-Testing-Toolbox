@@ -201,7 +201,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async ValueTask ShutdownAsync()
     {
-        var tempDirectoryPath = _context?.TempDirectoryPath;
+        var tempSubDirectoryPath = _context?.GetTempSubDirectoryPath();
 
         _testOutputHelper.WriteLineTimestampedAndDebug("Shutting down the test execution session.");
 
@@ -241,14 +241,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // handles to the temp folder, that can be cleaned up too. No need to do it on ephemeral GitHub runners, though,
         // also because the ZAP report's folder (like "2025-01-22-ZAP-Report-localhost") will remain unwritable (see the
         // comment in ZapManager).
-        if (!string.IsNullOrEmpty(tempDirectoryPath) &&
-            Directory.Exists(tempDirectoryPath) &&
+        if (!string.IsNullOrEmpty(tempSubDirectoryPath) &&
+            Directory.Exists(tempSubDirectoryPath) &&
             !GitHubHelper.IsGitHubEnvironment)
         {
             try
             {
                 // This is a clean-up method, no need to forward a CancellationToken.
-                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(tempDirectoryPath, CancellationToken.None);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(tempSubDirectoryPath, CancellationToken.None);
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
