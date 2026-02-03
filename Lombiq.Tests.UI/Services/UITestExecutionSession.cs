@@ -725,7 +725,23 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var appBaseUri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
+        SetUpPageChangeAssertions();
 
+        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
+
+        return await UITestContext.CreateAsync(
+            contextId,
+            _testManifest,
+            _configuration,
+            _applicationInstance,
+            atataScope,
+            testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
+            new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
+            _zapManager);
+    }
+
+    private void SetUpPageChangeAssertions()
+    {
         if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
         {
             _configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
@@ -763,18 +779,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 return Task.CompletedTask;
             };
         }
-
-        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
-
-        return await UITestContext.CreateAsync(
-            contextId,
-            _testManifest,
-            _configuration,
-            _applicationInstance,
-            atataScope,
-            testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
-            new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
-            _zapManager);
     }
 
     private string GetSetupHashCode() =>
