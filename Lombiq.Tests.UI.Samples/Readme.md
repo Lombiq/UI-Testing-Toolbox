@@ -19,7 +19,7 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Basic Orchard features tests](Tests/BasicOrchardFeaturesTests.cs)
 - [E-mail tests](Tests/EmailTests.cs)
 - [Accessibility tests](Tests/AccessibilityTest.cs)
-- SQL query monitoring: [Basics](Tests/SqlQueryMonitoringBasicsTests.cs), [Failures](Tests/SqlQueryMonitoringFailureTests.cs), [Tenants](Tests/SqlQueryMonitoringTenantTests.cs), [Thresholds](Tests/SqlQueryMonitoringThresholdsTests.cs), [Page-change rules](Tests/SqlQueryMonitoringPageChangeRuleTests.cs), [Filtering](Tests/SqlQueryMonitoringFilteringTests.cs)
+- SQL query monitoring: [Basics](Tests/SqlQueryMonitoringBasicsTests.cs), [Disable collection](Tests/SqlQueryMonitoringDisableCollectionTests.cs), [Failures](Tests/SqlQueryMonitoringFailureTests.cs), [Tenants](Tests/SqlQueryMonitoringTenantTests.cs), [Thresholds](Tests/SqlQueryMonitoringThresholdsTests.cs), [Page-change rules](Tests/SqlQueryMonitoringPageChangeRuleTests.cs), [Filtering](Tests/SqlQueryMonitoringFilteringTests.cs)
 - [Using SQL Server](Tests/SqlServerTests.cs)
 - [Using Azure Blob Storage](Tests/AzureBlobStorageTests.cs)
 - [Error handling](Tests/ErrorHandlingTests.cs)
