@@ -8,8 +8,6 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed partial class SqlQueryExecutionEntry
 {
-    private const int MaxParameterValueLength = 200;
-
     public string CommandText { get; }
     public string NormalizedCommandText { get; }
     public string ParameterSignature { get; }
@@ -71,20 +69,10 @@ public sealed partial class SqlQueryExecutionEntry
 
         if (value is IFormattable formattable)
         {
-            var text = formattable.ToString(format: null, CultureInfo.InvariantCulture);
-            return TrimValue(text);
+            return formattable.ToString(format: null, CultureInfo.InvariantCulture);
         }
 
-        return TrimValue(value.ToString());
-    }
-
-    private static string TrimValue(string value)
-    {
-        if (string.IsNullOrEmpty(value)) return string.Empty;
-
-        return value.Length <= MaxParameterValueLength
-            ? value
-            : value[..MaxParameterValueLength] + "...";
+        return value.ToString();
     }
 
     [GeneratedRegex(@"\s+", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
