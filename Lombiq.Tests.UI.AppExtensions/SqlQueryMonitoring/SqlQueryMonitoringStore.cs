@@ -1,28 +1,6 @@
-using System;
 using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
-
-/// <summary>
-/// Stores SQL query monitoring summaries for the current tenant scope.
-/// </summary>
-public interface ISqlQueryMonitoringStore
-{
-    /// <summary>
-    /// Adds a completed monitoring summary to the store.
-    /// </summary>
-    void AddSummary(SqlQueryMonitoringSummary summary);
-
-    /// <summary>
-    /// Removes and returns the most recent summary from the store, if any.
-    /// </summary>
-    bool TryDequeueLatest(out SqlQueryMonitoringSummary summary);
-
-    /// <summary>
-    /// Clears all stored summaries.
-    /// </summary>
-    void Clear();
-}
 
 /// <summary>
 /// A thread-safe, bounded store of recent SQL query monitoring summaries.
@@ -31,107 +9,47 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
     private const int MaxEntries = 50;
 
-    private readonly BoundedRingBuffer<SqlQueryMonitoringSummary> _summaries = new(MaxEntries);
+    private readonly Queue<SqlQueryMonitoringSummary> _summaries = new();
+    private readonly object _lock = new();
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
     {
         if (summary == null) return;
 
-        _summaries.Add(summary);
+        lock (_lock)
+        {
+            _summaries.Enqueue(summary);
+            while (_summaries.Count > MaxEntries) _summaries.Dequeue();
+        }
     }
 
-    public bool TryDequeueLatest(out SqlQueryMonitoringSummary summary) =>
-        _summaries.TryTakeLatest(
-            candidate => candidate.Executions.Count != 0,
-            out summary);
-
-    public void Clear() => _summaries.Clear();
-
-    private sealed class BoundedRingBuffer<T>
+    public bool TryDequeueLatest(out SqlQueryMonitoringSummary summary)
     {
-        private readonly T[] _buffer;
-        private readonly object _lock = new();
-        private int _start;
-        private int _count;
-
-        public BoundedRingBuffer(int capacity)
+        lock (_lock)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
-            _buffer = new T[capacity];
-        }
-
-        public void Add(T item)
-        {
-            lock (_lock)
+            if (_summaries.Count == 0)
             {
-                var index = (_start + _count) % _buffer.Length;
-
-                if (_count == _buffer.Length)
-                {
-                    _buffer[_start] = item;
-                    _start = (_start + 1) % _buffer.Length;
-                }
-                else
-                {
-                    _buffer[index] = item;
-                    _count++;
-                }
-            }
-        }
-
-        public bool TryTakeLatest(Predicate<T> predicate, out T item)
-        {
-            lock (_lock)
-            {
-                if (_count == 0)
-                {
-                    item = default;
-                    return false;
-                }
-
-                var items = GetOrderedItems();
-                var index = items.FindLastIndex(candidate => candidate != null && predicate?.Invoke(candidate) != false);
-                if (index < 0) index = items.Count - 1;
-
-                item = items[index];
-                items.RemoveAt(index);
-                Rebuild(items);
-                return item != null;
-            }
-        }
-
-        public void Clear()
-        {
-            lock (_lock)
-            {
-                Array.Clear(_buffer, 0, _buffer.Length);
-                _start = 0;
-                _count = 0;
-            }
-        }
-
-        private List<T> GetOrderedItems()
-        {
-            var items = new List<T>(_count);
-            for (var i = 0; i < _count; i++)
-            {
-                var index = (_start + i) % _buffer.Length;
-                items.Add(_buffer[index]);
+                summary = null;
+                return false;
             }
 
-            return items;
+            var items = new List<SqlQueryMonitoringSummary>(_summaries);
+            var index = items.FindLastIndex(candidate => candidate?.Executions.Count != 0);
+            if (index < 0) index = items.Count - 1;
+
+            summary = items[index];
+            items.RemoveAt(index);
+            _summaries.Clear();
+            foreach (var item in items) _summaries.Enqueue(item);
+            return summary != null;
         }
+    }
 
-        private void Rebuild(List<T> items)
+    public void Clear()
+    {
+        lock (_lock)
         {
-            Array.Clear(_buffer, 0, _buffer.Length);
-            _start = 0;
-            _count = items.Count;
-
-            for (var i = 0; i < items.Count; i++)
-            {
-                _buffer[i] = items[i];
-            }
+            _summaries.Clear();
         }
     }
 }

@@ -20,15 +20,3 @@ public sealed class SqlQueryMonitoringConnectionFactory : IConnectionFactory
 
     public System.Type DbConnectionType => _connectionFactory.DbConnectionType;
 }
-
-internal static class SqlQueryMonitoringConnectionFactoryHelper
-{
-    public static void EnsureWrapped(IStore store, IHttpContextAccessor httpContextAccessor)
-    {
-        if (store?.Configuration?.ConnectionFactory == null) return;
-        if (store.Configuration.ConnectionFactory is SqlQueryMonitoringConnectionFactory) return;
-
-        store.Configuration.ConnectionFactory =
-            new SqlQueryMonitoringConnectionFactory(store.Configuration.ConnectionFactory, httpContextAccessor);
-    }
-}
