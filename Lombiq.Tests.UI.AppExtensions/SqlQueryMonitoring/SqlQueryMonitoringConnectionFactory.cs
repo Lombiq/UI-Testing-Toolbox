@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using System;
 using System.Data.Common;
 using YesSql;
 
@@ -7,19 +6,19 @@ namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringConnectionFactory : IConnectionFactory
 {
-    private readonly IConnectionFactory _inner;
+    private readonly IConnectionFactory _connectionFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public SqlQueryMonitoringConnectionFactory(IConnectionFactory inner, IHttpContextAccessor httpContextAccessor)
     {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        _connectionFactory = inner;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public DbConnection CreateConnection() =>
-        new SqlQueryMonitoringDbConnection(_inner.CreateConnection(), _httpContextAccessor);
+        new SqlQueryMonitoringDbConnection(_connectionFactory.CreateConnection(), _httpContextAccessor);
 
-    public System.Type DbConnectionType => _inner.DbConnectionType;
+    public System.Type DbConnectionType => _connectionFactory.DbConnectionType;
 }
 
 internal static class SqlQueryMonitoringConnectionFactoryHelper
