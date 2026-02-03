@@ -49,22 +49,25 @@ public class SqlQueryMonitoringConfiguration
     /// <summary>
     /// Gets or sets the threshold for how many times the same SQL command text can be executed in a single request,
     /// regardless of parameters. If the count is greater than or equal to this threshold, the assertion fails. Leave
-    /// this <see langword="null"/> to disable this check.
+    /// this <see langword="null"/> to disable this check. Defaults to 30, which is intentionally conservative to avoid
+    /// false positives on typical Orchard Core pages while still flagging obvious N+1 patterns.
     /// </summary>
-    public int? DuplicateCommandThreshold { get; set; }
+    public int? DuplicateCommandThreshold { get; set; } = 30;
 
     /// <summary>
     /// Gets or sets the threshold for how many times the same SQL command text can be executed with the same parameter
     /// values in a single request. If the count is greater than or equal to this threshold, the assertion fails.
-    /// Leave this <see langword="null"/> to disable this check.
+    /// Leave this <see langword="null"/> to disable this check. Defaults to 15, which matches the sample tests and keeps
+    /// cache-miss detection active without breaking typical pages.
     /// </summary>
-    public int? DuplicateCommandWithParametersThreshold { get; set; }
+    public int? DuplicateCommandWithParametersThreshold { get; set; } = 15;
 
     /// <summary>
     /// Gets or sets the threshold for how many rows a SQL command can return in a single request. If the count is
     /// greater than this threshold, the assertion fails. Leave this <see langword="null"/> to disable this check.
+    /// Defaults to 200, chosen to tolerate common list queries while still surfacing unbounded result sets.
     /// </summary>
-    public int? ResultSetRowCountThreshold { get; set; }
+    public int? ResultSetRowCountThreshold { get; set; } = 200;
 
     public SqlQueryMonitoringConfiguration() =>
         AssertSqlQueryMonitoringSummaryAsync = AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync;
