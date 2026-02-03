@@ -34,8 +34,25 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
     }
 
     /// <summary>
-    /// Configures SQL query monitoring thresholds based on the target URL, using regular expressions.
+    /// Configures SQL query monitoring thresholds per page based on the target URL, using regular expressions.
     /// </summary>
+    /// <param name="configuration">The test configuration to attach the rule to.</param>
+    /// <param name="defaultThresholds">
+    /// The thresholds to apply when no regex rule matches the requested URL.
+    /// </param>
+    /// <param name="rules">
+    /// A list of regex pattern/threshold pairs. The first matching pattern wins. The regex is matched against the
+    /// request path (e.g. <c>/categories/travel</c>).
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// This attaches a handler to <see cref="UITestExecutionEvents.BeforeNavigation"/> and updates the SQL monitoring
+    /// thresholds for the upcoming page change. Use this when you want to tune limits per feature or page.
+    /// </para>
+    /// <para>
+    /// The regex matching is case-insensitive and uses a 1-second timeout to prevent pathological patterns.
+    /// </para>
+    /// </remarks>
     public static void ConfigureSqlQueryMonitoringThresholdsForPages(
         this OrchardCoreUITestExecutorConfiguration configuration,
         SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds defaultThresholds,
@@ -48,7 +65,7 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
                     TimeSpan.FromSeconds(1)),
                 rule.Thresholds))
             .ToList()
-            ?? new List<(Regex Regex, SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds Thresholds)>();
+            ?? [];
 
         configuration.Events.BeforeNavigation += (_, targetUri) =>
         {
