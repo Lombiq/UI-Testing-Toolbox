@@ -124,11 +124,7 @@ Include it in the test project like this:
 ### SQL query monitoring configuration
 
 SQL query monitoring helps detect duplicate queries and oversized result sets in a single request. Configure it per
-test using `SqlQueryMonitoringConfiguration`:
-
-```csharp
-configuration => configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 20;
-```
+test using `SqlQueryMonitoringConfiguration`.
 
 See the dedicated [SQL query monitoring](SqlQueryMonitoring.md) docs for the full list of options and examples.
 
