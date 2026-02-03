@@ -12,6 +12,7 @@ public sealed class SqlQueryMonitoringDbDataReader : DbDataReader, IEnumerable<D
 {
     private readonly DbDataReader _dbDataReader;
     private readonly Action<int> _onCompleted;
+
     private int _rowCount;
     private bool _completed;
 
@@ -74,11 +75,22 @@ public sealed class SqlQueryMonitoringDbDataReader : DbDataReader, IEnumerable<D
     public override DateTime GetDateTime(int ordinal) => _dbDataReader.GetDateTime(ordinal);
     public override bool IsDBNull(int ordinal) => _dbDataReader.IsDBNull(ordinal);
 
-    public override IEnumerator GetEnumerator() => ((IEnumerable)_dbDataReader).GetEnumerator();
+    public override IEnumerator GetEnumerator()
+    {
+        foreach (var record in _dbDataReader)
+        {
+            _rowCount++;
+            yield return record;
+        }
+    }
 
     IEnumerator<DbDataRecord> IEnumerable<DbDataRecord>.GetEnumerator()
     {
-        foreach (DbDataRecord record in _dbDataReader) yield return record;
+        foreach (DbDataRecord record in _dbDataReader)
+        {
+            _rowCount++;
+            yield return record;
+        }
     }
 
     public override void Close()
