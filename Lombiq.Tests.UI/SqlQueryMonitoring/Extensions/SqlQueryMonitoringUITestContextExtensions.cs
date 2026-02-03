@@ -59,7 +59,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
                 tenant);
         }
 
-        if (store == null || !store.TryDequeueLatest(out var summary))
+        if (store == null || !store.TryDequeueMostRecentWithExecutions(out var summary))
         {
             throw new InvalidOperationException(
                 "No SQL query monitoring summary was captured. Ensure the page has finished loading, executes SQL " +

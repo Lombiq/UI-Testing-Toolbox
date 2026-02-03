@@ -23,7 +23,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
         }
     }
 
-    public bool TryDequeueLatest(out SqlQueryMonitoringSummary summary)
+    public bool TryDequeueMostRecentWithExecutions(out SqlQueryMonitoringSummary summary)
     {
         lock (_lock)
         {
@@ -34,7 +34,8 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
             }
 
             var items = new List<SqlQueryMonitoringSummary>(_summaries);
-            var index = items.Count - 1;
+            var index = items.FindLastIndex(candidate => candidate?.Executions.Count != 0);
+            if (index < 0) index = items.Count - 1;
             summary = items[index];
             items.RemoveAt(index);
             _summaries.Clear();
