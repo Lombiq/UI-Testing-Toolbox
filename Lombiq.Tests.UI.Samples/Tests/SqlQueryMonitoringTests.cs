@@ -1,12 +1,13 @@
-using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
-using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
+using Lombiq.Tests.UI.SqlQueryMonitoring;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using static Lombiq.Tests.UI.Services.SqlQueryMonitoringConfiguration;
+using static Lombiq.Tests.UI.SqlQueryMonitoring.Services.SqlQueryMonitoringConfiguration;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -169,18 +170,18 @@ public class SqlQueryMonitoringTests : UITestBase
                 await context.GoToRelativeUrlAsync("/");
             },
             configuration => configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
-                new SqlQueryMonitoringThresholds(
-                    DuplicateCommandThreshold: 30,
-                    DuplicateCommandWithParametersThreshold: 15,
-                    ResultSetRowCountThreshold: 200),
-                (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringThresholds(
-                    DuplicateCommandThreshold: 20,
-                    DuplicateCommandWithParametersThreshold: 10,
-                    ResultSetRowCountThreshold: 100)),
-                (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringThresholds(
-                    DuplicateCommandThreshold: 25,
-                    DuplicateCommandWithParametersThreshold: 12,
-                    ResultSetRowCountThreshold: 150))));
+                    new SqlQueryMonitoringThresholds(
+                        DuplicateCommandThreshold: 30,
+                        DuplicateCommandWithParametersThreshold: 15,
+                        ResultSetRowCountThreshold: 200),
+                    (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringThresholds(
+                        DuplicateCommandThreshold: 20,
+                        DuplicateCommandWithParametersThreshold: 10,
+                        ResultSetRowCountThreshold: 100)),
+                    (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringThresholds(
+                        DuplicateCommandThreshold: 25,
+                        DuplicateCommandWithParametersThreshold: 12,
+                        ResultSetRowCountThreshold: 150))));
 
     // You can also customize which page changes should be monitored by configuring a predicate.
     [Fact]

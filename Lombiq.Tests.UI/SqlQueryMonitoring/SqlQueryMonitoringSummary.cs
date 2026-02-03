@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringSummary
 {

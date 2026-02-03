@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using System.Threading.Tasks;
 using Xunit;
 

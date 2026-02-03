@@ -8,6 +8,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;

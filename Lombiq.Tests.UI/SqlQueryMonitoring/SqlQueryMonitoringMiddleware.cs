@@ -3,8 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using YesSql;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringMiddleware
 {

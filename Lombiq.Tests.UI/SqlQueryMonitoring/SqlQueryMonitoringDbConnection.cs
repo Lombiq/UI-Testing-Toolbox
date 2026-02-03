@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringDbConnection : DbConnection
 {

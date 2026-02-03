@@ -1,11 +1,13 @@
-using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
-using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.SqlQueryMonitoring;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Extensions;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 
 public static class SqlQueryMonitoringUITestContextExtensions
 {

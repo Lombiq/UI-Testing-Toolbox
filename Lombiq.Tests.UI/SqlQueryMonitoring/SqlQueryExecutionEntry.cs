@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed partial class SqlQueryExecutionEntry
 {

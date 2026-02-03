@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
 /// Holds SQL query monitoring data for the current request scope.

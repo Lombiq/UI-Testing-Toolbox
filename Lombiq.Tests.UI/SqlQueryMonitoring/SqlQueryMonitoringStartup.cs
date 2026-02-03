@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -6,7 +7,7 @@ using OrchardCore.Modules;
 using System;
 using YesSql;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringStartup : StartupBase
 {

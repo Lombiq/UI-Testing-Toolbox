@@ -1,4 +1,4 @@
-using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OrchardCore.Modules;

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Data.Common;
 using YesSql;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringConnectionFactory : IConnectionFactory
 {
@@ -18,5 +19,5 @@ public sealed class SqlQueryMonitoringConnectionFactory : IConnectionFactory
     public DbConnection CreateConnection() =>
         new SqlQueryMonitoringDbConnection(_connectionFactory.CreateConnection(), _httpContextAccessor);
 
-    public System.Type DbConnectionType => _connectionFactory.DbConnectionType;
+    public Type DbConnectionType => _connectionFactory.DbConnectionType;
 }

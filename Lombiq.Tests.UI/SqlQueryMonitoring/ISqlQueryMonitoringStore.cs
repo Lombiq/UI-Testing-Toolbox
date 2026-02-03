@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+﻿namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
 /// Stores SQL query monitoring summaries for the current tenant scope.

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
 /// A thread-safe, bounded store of recent SQL query monitoring summaries.

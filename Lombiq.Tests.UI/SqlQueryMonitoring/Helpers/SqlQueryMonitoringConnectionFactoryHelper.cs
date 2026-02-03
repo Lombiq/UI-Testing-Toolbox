@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using YesSql;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 
 internal static class SqlQueryMonitoringConnectionFactoryHelper
 {

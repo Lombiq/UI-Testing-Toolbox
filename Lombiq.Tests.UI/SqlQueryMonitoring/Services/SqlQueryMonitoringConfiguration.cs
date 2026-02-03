@@ -1,5 +1,7 @@
-using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.SqlQueryMonitoring;
+using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Lombiq.Tests.UI.Services;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 
 public class SqlQueryMonitoringConfiguration
 {

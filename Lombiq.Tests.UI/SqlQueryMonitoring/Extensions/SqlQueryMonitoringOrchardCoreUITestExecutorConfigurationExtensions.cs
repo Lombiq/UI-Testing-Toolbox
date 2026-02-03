@@ -1,11 +1,12 @@
-using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.Extensions;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 
 public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExtensions
 {

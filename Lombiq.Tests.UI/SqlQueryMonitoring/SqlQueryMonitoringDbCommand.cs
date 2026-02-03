@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringDbCommand : DbCommand
 {
