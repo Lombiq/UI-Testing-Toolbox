@@ -1,6 +1,6 @@
 using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
-using Shouldly;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,7 +18,19 @@ public class SqlQueryMonitoringFailureTests : UITestBase
     [Fact]
     public Task SqlQueryMonitoringShouldSurfaceIssues() =>
         ExecuteTestAfterSetupAsync(
-            context => Should.ThrowAsync<SqlQueryMonitoringAssertionException>(() => context.AssertSqlQueryMonitoringAsync()),
+            async context =>
+            {
+                try
+                {
+                    await context.AssertSqlQueryMonitoringAsync();
+                    throw new InvalidOperationException("The SQL monitoring assertion did not fail as expected.");
+                }
+                catch (SqlQueryMonitoringAssertionException)
+                {
+                    _testOutputHelper.WriteLineTimestampedAndDebug(
+                        "Caught SqlQueryMonitoringAssertionException as expected for the failure demo.");
+                }
+            },
             configuration =>
             {
                 // We'll assert explicitly so the automatic on-page-change assertion doesn't consume the summary.
