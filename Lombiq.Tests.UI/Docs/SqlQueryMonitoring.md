@@ -125,7 +125,7 @@ The first matching pattern wins. Patterns are matched against the request path (
 After each `AssertSqlQueryMonitoringAsync` call, the test output includes a compact counters snapshot to help with
 diagnostics. Example:
 
-```
+```text
 SQL monitoring counters after page change:
 - Request: GET /categories/travel
 - Executions: 42
@@ -148,12 +148,9 @@ Explanation:
 
 Use the failure category to guide your next step:
 
-- **Duplicate command text**: Look for SELECT N+1 patterns. In .NET Core code, common fixes include batching with
-  a single YesSql query or refactoring loops to query once.
-- **Duplicate command text with same parameters**: Look for missing caching or repeated calls from multiple sites.
-  In .NET Core, common fixes include using `IMemoryCache` or `IDistributedCache` or extracting shared query logic behind a service.
-- **Oversized result sets**: Look for missing SQL filters or ordering. In .NET Core, common fixes include adding
-  query filters or paging at the database level before projecting results.
+- **Duplicate command text**: Look for SELECT N+1 patterns. Common fixes include batching with a single YesSql query or refactoring loops to query once.
+- **Duplicate command text with same parameters**: Look for missing caching or repeated calls from multiple sites. Common fixes include using `IMemoryCache` or `IDistributedCache` or extracting shared query logic behind a service.
+- **Oversized result sets**: Look for missing SQL filters or ordering. Adding query filters or paging at the database level before projecting results.
 
 The failure message lists the exact queries that crossed the threshold so you can navigate to the call site.
 
