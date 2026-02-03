@@ -59,4 +59,4 @@ public class SqlQueryMonitoringBasicsTests : UITestBase
             });
 }
 
-// NEXT STATION: Head over to Tests/SqlQueryMonitoringFailureTests.cs.
+// NEXT STATION: Head over to Tests/SqlQueryMonitoringDisableCollectionTests.cs.

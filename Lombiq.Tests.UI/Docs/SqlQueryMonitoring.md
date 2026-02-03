@@ -55,6 +55,15 @@ You can also enable automatic assertions on every page change (enabled by defaul
 configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
 ```
 
+## Enabling/disable collection
+
+SQL query monitoring collection can be disabled for a test run. When disabled, the Orchard Core app does not register
+the SQL monitoring services or middleware, so there is no overhead and no summaries to assert.
+
+```csharp
+configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = false;
+```
+
 ## Filtering executions
 
 If a test environment runs some expected warm-up queries, you can ignore them while keeping the default assertions:
@@ -153,6 +162,7 @@ The failure message lists the exact queries that crossed the threshold so you ca
 See the sample tests for a fully documented example:
 
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringBasicsTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringDisableCollectionTests.cs`
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFailureTests.cs`
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTenantTests.cs`
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringThresholdsTests.cs`
