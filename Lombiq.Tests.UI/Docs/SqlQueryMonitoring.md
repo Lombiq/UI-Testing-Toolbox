@@ -1,7 +1,7 @@
 # SQL Query Monitoring
 
-The UI Testing Toolbox can monitor SQL commands executed during a request and help you detect potentially inefficient
-data access patterns. This is useful for catching:
+SQL query monitoring captures database activity during Orchard Core requests and lets your UI tests enforce
+performance‑oriented expectations. It helps you catch:
 
 - **SELECT N+1 queries**: The same SQL command text executed repeatedly with different parameters.
 - **Cacheable duplicates**: The same SQL command text executed repeatedly with identical parameters.
@@ -12,18 +12,28 @@ just like HTML validation and accessibility checking.
 
 ## How it works
 
-When UI testing is enabled, the app tracks SQL commands executed during each request. The test project then pulls the
-summary of the most recent request with SQL activity and applies configurable assertions.
+When UI testing is enabled, the Orchard Core app wraps the YesSql connection factory and records every executed
+`DbCommand` for the current request scope. After the request completes, the UI test project fetches the most recent
+summary and applies the configured assertions.
 
 Monitoring summaries are stored per request, so typically you should assert after each navigation (or after the action
 that should be checked).
 
-Row counts are based on how many rows were actually read from the data reader. If a query isn't fully enumerated, the
-recorded row count will be lower than the total result set size.
+Row counts are based on how many rows were actually read from the data reader. If a query is not fully enumerated, the
+recorded row count will be lower than the total result set size. The summaries are stored per request and consumed
+when you assert, so each request should be asserted once.
 
 ## Configuration
 
-Configure thresholds on a per-test basis via `SqlQueryMonitoringConfiguration`:
+Set thresholds per test with `SqlQueryMonitoringConfiguration` in the test configuration delegate passed to
+`ExecuteTestAfterSetupAsync`. Baseline defaults are provided and can be tuned per feature or per page. Defaults:
+
+- `DuplicateCommandThreshold`: 30
+- `DuplicateCommandWithParametersThreshold`: 15
+- `ResultSetRowCountThreshold`: 200
+
+Adjust thresholds when a page has known query volume (e.g., lists, dashboards) or when you want to tighten limits for a
+specific feature. The snippet below shows a typical override.
 
 ```csharp
 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 20;
@@ -39,7 +49,7 @@ Threshold semantics:
   executed **at least** this many times in a request.
 - **ResultSetRowCountThreshold**: Fails when a command returns **more** rows than this value.
 
-You can also enable automatic assertions on every page change:
+You can also enable automatic assertions on every page change (enabled by default):
 
 ```csharp
 configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
@@ -56,7 +66,8 @@ configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
         @"FROM\s+\[Document\].*RolesDocument");
 ```
 
-The filter runs before any thresholds are applied.
+The filter runs before any thresholds are applied, and patterns are matched with a 1-second regex timeout to avoid
+pathological patterns.
 
 ## Manual assertions
 
@@ -78,9 +89,68 @@ If you want the summary itself for custom reporting, you can use:
 var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
 ```
 
+## Per-page thresholds
+
+You can change thresholds based on the target URL using regex rules:
+
+```csharp
+configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
+    new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+        DuplicateCommandThreshold: 30,
+        DuplicateCommandWithParametersThreshold: 15,
+        ResultSetRowCountThreshold: 200),
+    (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+        DuplicateCommandThreshold: 20,
+        DuplicateCommandWithParametersThreshold: 10,
+        ResultSetRowCountThreshold: 100)),
+    (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+        DuplicateCommandThreshold: 25,
+        DuplicateCommandWithParametersThreshold: 12,
+        ResultSetRowCountThreshold: 150)));
+```
+
+The first matching pattern wins. Patterns are matched against the request path (e.g. `/categories/travel`).
+
+## Test output counters
+
+After each `AssertSqlQueryMonitoringAsync` call, the test output includes a compact counters snapshot to help with
+diagnostics. Example:
+
+```
+SQL monitoring counters after page change:
+- Request: GET /categories/travel
+- Executions: 42
+- Duplicate command groups: 3 (max group size: 10, threshold: 30)
+- Duplicate command+parameters groups: 2 (max group size: 6, threshold: 15)
+- Result set rows observed: 5 (max rows: 120, threshold: 200)
+```
+
+Explanation:
+
+- **Executions**: Total SQL commands recorded for the request after filtering.
+- **Duplicate command groups**: How many distinct command texts were repeated. “Max group size” is the highest repeat
+  count for any single command text, compared to the configured threshold.
+- **Duplicate command+parameters groups**: Same as above but includes parameter values. This is useful for spotting
+  missed caching.
+- **Result set rows observed**: How many commands produced rows based on actual enumeration. “Max rows” is the largest
+  observed row count for a single command, compared to the threshold.
+
+## Interpreting failures
+
+Use the failure category to guide your next step:
+
+- **Duplicate command text**: Look for SELECT N+1 patterns. In .NET Core code, common fixes include batching with
+  a single YesSql query or refactoring loops to query once.
+- **Duplicate command text with same parameters**: Look for missing caching or repeated calls from multiple sites.
+  In .NET Core, common fixes include using `IMemoryCache` or `IDistributedCache` or extracting shared query logic behind a service.
+- **Oversized result sets**: Look for missing SQL filters or ordering. In .NET Core, common fixes include adding
+  query filters or paging at the database level before projecting results.
+
+The failure message lists the exact queries that crossed the threshold so you can navigate to the call site.
+
 ## Sample
 
-See the sample test for a fully documented example:
+See the sample tests for a fully documented example:
 
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringBasicsTests.cs`
 - `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFailureTests.cs`
