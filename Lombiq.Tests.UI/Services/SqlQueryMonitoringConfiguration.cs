@@ -67,6 +67,10 @@ public class SqlQueryMonitoringConfiguration
         var failures = new List<string>();
         var executions = summary.Executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
 
+        var hasDuplicateCommandFailures = false;
+        var hasDuplicateCommandWithParametersFailures = false;
+        var hasResultSetFailures = false;
+
         if (DuplicateCommandThreshold is { } duplicateThreshold)
         {
             var duplicates = executions
@@ -78,6 +82,7 @@ public class SqlQueryMonitoringConfiguration
             {
                 var count = group.Count().ToTechnicalString();
                 var threshold = duplicateThreshold.ToTechnicalString();
+                hasDuplicateCommandFailures = true;
                 failures.Add(
                     $"Command text executed {count} times (threshold: {threshold}): {ShortenCommandText(group.First().CommandText)}");
             }
@@ -95,7 +100,8 @@ public class SqlQueryMonitoringConfiguration
                 var sample = group.First();
                 var count = group.Count().ToTechnicalString();
                 var threshold = duplicateWithParametersThreshold.ToTechnicalString();
-                failures.Add($"Command text with parameters executed {count} times (threshold: {threshold}):" +
+                hasDuplicateCommandWithParametersFailures = true;
+                failures.Add($"Command text with same parameters executed {count} times (threshold: {threshold}):" +
                     $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]");
             }
         }
@@ -110,6 +116,7 @@ public class SqlQueryMonitoringConfiguration
             {
                 var threshold = resultSetThreshold.ToTechnicalString();
                 var rowCount = entry.RowCount.ToTechnicalString();
+                hasResultSetFailures = true;
                 failures.Add(
                         $"Command result set had {rowCount} rows (threshold: {threshold}): " + ShortenCommandText(entry.CommandText));
             }
@@ -118,8 +125,49 @@ public class SqlQueryMonitoringConfiguration
         string failureMessage = null;
         if (failures.Count != 0)
         {
+            var header =
+                $"SQL query monitoring detected potential performance issues on {summary.RequestMethod} {summary.RequestPath}.";
+
+            var guidance = new List<string>();
+            var configuredThresholds = new List<string>();
+
+            if (hasDuplicateCommandFailures)
+            {
+                guidance.Add(
+                    "The same database query text was executed more times than the configured threshold allows. " +
+                    "This can indicate a SELECT N+1 problem or repeated queries that should be consolidated.");
+                configuredThresholds.Add(
+                    $"{nameof(DuplicateCommandThreshold)}={DuplicateCommandThreshold?.ToTechnicalString() ?? "null"}");
+            }
+
+            if (hasDuplicateCommandWithParametersFailures)
+            {
+                guidance.Add(
+                    "The same database query (with identical parameters) was executed repeatedly. " +
+                    "This can indicate missing caching or repeated queries from multiple call sites.");
+                configuredThresholds.Add(
+                    $"{nameof(DuplicateCommandWithParametersThreshold)}=" +
+                    $"{DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"}");
+            }
+
+            if (hasResultSetFailures)
+            {
+                guidance.Add(
+                    "Some queries returned more rows than the configured threshold allows. " +
+                    "This can indicate missing filtering in SQL and work being done in application code.");
+                configuredThresholds.Add(
+                    $"{nameof(ResultSetRowCountThreshold)}={ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"}");
+            }
+
             failureMessage =
-                $"SQL query monitoring detected potential issues on {summary.RequestMethod} {summary.RequestPath}:{Environment.NewLine}" +
+                header + Environment.NewLine +
+                "Triggered checks:" + Environment.NewLine +
+                string.Join(Environment.NewLine, guidance.Select((item, index) => $"{index + 1}. {item}")) +
+                Environment.NewLine +
+                "Threshold configuration:" + Environment.NewLine +
+                string.Join(Environment.NewLine, configuredThresholds.Select((item, index) => $"{index + 1}. {item}")) +
+                Environment.NewLine +
+                "See the details below:" + Environment.NewLine +
                 string.Join(Environment.NewLine, failures);
         }
 
