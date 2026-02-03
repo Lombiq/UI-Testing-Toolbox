@@ -1,6 +1,4 @@
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.Services;
 using Shouldly;
 using System;

@@ -1,5 +1,4 @@
 using Lombiq.Tests.UI.Exceptions;
-using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using System;
 
