@@ -6,6 +6,7 @@ using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using static Lombiq.Tests.UI.Services.SqlQueryMonitoringConfiguration;
 
 namespace Lombiq.Tests.UI.Samples.Tests;
 
@@ -156,6 +157,30 @@ public class SqlQueryMonitoringTests : UITestBase
 
                     return Task.CompletedTask;
                 });
+
+    // You can also configure per-page thresholds using regex rules for the URL.
+    [Fact]
+    public Task SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholds() =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                await context.GoToRelativeUrlAsync("/categories/travel");
+                await context.GoToRelativeUrlAsync("/about");
+                await context.GoToRelativeUrlAsync("/");
+            },
+            configuration => configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
+                new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 30,
+                    DuplicateCommandWithParametersThreshold: 15,
+                    ResultSetRowCountThreshold: 200),
+                (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 20,
+                    DuplicateCommandWithParametersThreshold: 10,
+                    ResultSetRowCountThreshold: 100)),
+                (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 25,
+                    DuplicateCommandWithParametersThreshold: 12,
+                    ResultSetRowCountThreshold: 150))));
 
     // You can also customize which page changes should be monitored by configuring a predicate.
     [Fact]

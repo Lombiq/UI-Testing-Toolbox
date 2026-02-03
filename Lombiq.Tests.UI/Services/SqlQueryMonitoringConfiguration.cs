@@ -13,6 +13,14 @@ namespace Lombiq.Tests.UI.Services;
 public class SqlQueryMonitoringConfiguration
 {
     /// <summary>
+    /// Holds threshold values for SQL query monitoring.
+    /// </summary>
+    public sealed record SqlQueryMonitoringThresholds(
+        int? DuplicateCommandThreshold,
+        int? DuplicateCommandWithParametersThreshold,
+        int? ResultSetRowCountThreshold);
+
+    /// <summary>
     /// Gets or sets a value indicating whether to automatically run SQL query monitoring assertions every time a page
     /// changes (either due to explicit navigation or clicks).
     /// </summary>
