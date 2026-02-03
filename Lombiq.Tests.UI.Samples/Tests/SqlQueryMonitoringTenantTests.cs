@@ -54,8 +54,9 @@ public class SqlQueryMonitoringTenantTests : UITestBase
                     return Task.CompletedTask;
                 });
             },
+            configuration =>
             // Disable automatic assertions on page changes to avoid interference with the explicit assertions in the test.
-            configuration => configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false);
+            configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false);
 }
 
 // NEXT STATION: Head over to Tests/SqlQueryMonitoringThresholdsTests.cs.
