@@ -37,9 +37,14 @@ public static class OrchardCoreBuilderExtensions
                 .AddSingleton<IModuleStaticFileProvider>(serviceProvider =>
                     new ModuleEmbeddedStaticFileProvider(serviceProvider.GetRequiredService<IApplicationContext>()));
 
-            services.AddSingleton<ISqlQueryMonitoringStore, SqlQueryMonitoringStore>();
-            services.AddScoped<ISqlQueryMonitoringContext, SqlQueryMonitoringContext>();
-            services.AddSingleton<IStartup, SqlQueryMonitoringStartup>();
+            var enableSqlQueryMonitoring =
+                configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: true);
+            if (enableSqlQueryMonitoring)
+            {
+                services.AddSingleton<ISqlQueryMonitoringStore, SqlQueryMonitoringStore>();
+                services.AddScoped<ISqlQueryMonitoringContext, SqlQueryMonitoringContext>();
+                services.AddSingleton<IStartup, SqlQueryMonitoringStartup>();
+            }
         });
 
         if (enableShortcutsDuringUITesting) builder.AddTenantFeatures("Lombiq.Tests.UI.Shortcuts");

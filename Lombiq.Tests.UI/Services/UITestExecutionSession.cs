@@ -705,6 +705,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
 
             arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddWithValue(
+                "Lombiq_Tests_UI:EnableSqlQueryMonitoring",
+                value: _configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
@@ -733,7 +736,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.SetUpHtmlValidationAssertionOnPageChange();
         }
 
-        if (_configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
+        if (_configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection &&
+            _configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
         {
             _configuration.SetUpSqlQueryMonitoringAssertionOnPageChange();
         }
