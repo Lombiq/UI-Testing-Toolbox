@@ -72,7 +72,7 @@ public class SqlQueryMonitoringConfiguration
     public SqlQueryMonitoringConfiguration() =>
         AssertSqlQueryMonitoringSummaryAsync = AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync;
 
-    public Task AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync(SqlQueryMonitoringSummary summary)
+    private Task AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync(SqlQueryMonitoringSummary summary)
     {
         if (summary == null) throw new InvalidOperationException("SQL query monitoring summary was not available.");
 
@@ -174,10 +174,10 @@ public class SqlQueryMonitoringConfiguration
             failureMessage =
                 header + Environment.NewLine +
                 "Triggered checks:" + Environment.NewLine +
-                string.Join(Environment.NewLine, guidance.Select((item, index) => $"{index + 1}. {item}")) +
+                string.Join(Environment.NewLine, guidance.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
                 Environment.NewLine +
                 "Threshold configuration:" + Environment.NewLine +
-                string.Join(Environment.NewLine, configuredThresholds.Select((item, index) => $"{index + 1}. {item}")) +
+                string.Join(Environment.NewLine, configuredThresholds.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
                 Environment.NewLine +
                 "See the details below:" + Environment.NewLine +
                 string.Join(Environment.NewLine, failures);

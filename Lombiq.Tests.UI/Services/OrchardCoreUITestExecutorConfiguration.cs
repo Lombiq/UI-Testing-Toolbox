@@ -1,8 +1,8 @@
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using Shouldly;

@@ -1,9 +1,9 @@
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using YesSql;
-using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 

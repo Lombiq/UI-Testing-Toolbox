@@ -1,6 +1,6 @@
-using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
-using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
