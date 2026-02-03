@@ -43,10 +43,8 @@ configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
 
 Threshold semantics:
 
-- **DuplicateCommandThreshold**: Fails when the same SQL command text is executed **at least** this many times in a
-  request, regardless of parameters.
-- **DuplicateCommandWithParametersThreshold**: Fails when the same SQL command text **and** parameter values are
-  executed **at least** this many times in a request.
+- **DuplicateCommandThreshold**: Fails when the same SQL command text is executed **at least** this many times in a request, regardless of parameters.
+- **DuplicateCommandWithParametersThreshold**: Fails when the same SQL command text **and** parameter values are executed **at least** this many times in a request.
 - **ResultSetRowCountThreshold**: Fails when a command returns **more** rows than this value.
 
 You can also enable automatic assertions on every page change (enabled by default):
@@ -137,12 +135,9 @@ SQL monitoring counters after page change:
 Explanation:
 
 - **Executions**: Total SQL commands recorded for the request after filtering.
-- **Duplicate command groups**: How many distinct command texts were repeated. “Max group size” is the highest repeat
-  count for any single command text, compared to the configured threshold.
-- **Duplicate command+parameters groups**: Same as above but includes parameter values. This is useful for spotting
-  missed caching.
-- **Result set rows observed**: How many commands produced rows based on actual enumeration. “Max rows” is the largest
-  observed row count for a single command, compared to the threshold.
+- **Duplicate command groups**: How many distinct command texts were repeated. “Max group size” is the highest repeat count for any single command text, compared to the configured threshold.
+- **Duplicate command+parameters groups**: Same as above but includes parameter values. This is useful for spotting missed caching.
+- **Result set rows observed**: How many commands produced rows based on actual enumeration. “Max rows” is the largest observed row count for a single command, compared to the threshold.
 
 ## Interpreting failures
 
