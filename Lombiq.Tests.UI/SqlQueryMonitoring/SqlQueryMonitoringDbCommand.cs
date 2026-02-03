@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,14 +18,14 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         _httpContextAccessor = httpContextAccessor;
     }
 
-    [SuppressMessage(
-        "Security",
-        "CA2100:Review SQL queries for security vulnerabilities",
-        Justification = "Command text is set by the underlying data access layer, not user input.")]
     public override string CommandText
     {
         get => _dbCommand.CommandText;
+
+        // Command text is set by the underlying data access layer, not user input.
+#pragma warning disable CA2100 // CA2100: Review if the query string passed to 'string DbCommand.CommandText' in 'set_CommandText'
         set => _dbCommand.CommandText = value;
+#pragma warning restore CA2100
     }
 
     public override int CommandTimeout
@@ -83,16 +82,18 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         return result;
     }
 
-    public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+    public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
     {
-        var task = _dbCommand.ExecuteNonQueryAsync(cancellationToken);
-        return RecordAfterAsync(task, rowCount: null);
+        var result = await _dbCommand.ExecuteNonQueryAsync(cancellationToken);
+        RecordExecution(rowCount: null);
+        return result;
     }
 
-    public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+    public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
     {
-        var task = _dbCommand.ExecuteScalarAsync(cancellationToken);
-        return RecordAfterAsync(task, rowCount: null);
+        var result = await _dbCommand.ExecuteScalarAsync(cancellationToken);
+        RecordExecution(rowCount: null);
+        return result;
     }
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
@@ -117,28 +118,6 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
     {
         if (disposing) _dbCommand.Dispose();
         base.Dispose(disposing);
-    }
-
-    [SuppressMessage(
-        "Usage",
-        "VSTHRD003:Avoid awaiting foreign Tasks",
-        Justification = "Awaiting the underlying database operation is required to record the execution.")]
-    private async Task<int> RecordAfterAsync(Task<int> task, int? rowCount)
-    {
-        var result = await task;
-        RecordExecution(rowCount);
-        return result;
-    }
-
-    [SuppressMessage(
-        "Usage",
-        "VSTHRD003:Avoid awaiting foreign Tasks",
-        Justification = "Awaiting the underlying database operation is required to record the execution.")]
-    private async Task<object> RecordAfterAsync(Task<object> task, int? rowCount)
-    {
-        var result = await task;
-        RecordExecution(rowCount);
-        return result;
     }
 
     private void RecordExecution(int? rowCount)

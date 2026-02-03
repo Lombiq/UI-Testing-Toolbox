@@ -62,6 +62,7 @@ public class SqlQueryMonitoringThresholdsTests : UITestBase
             configuration =>
             {
                 // Configure defaults first, then override them for specific routes via regex patterns.
+                // The first matching pattern wins, and patterns are evaluated against the request path.
                 configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
                     new SqlQueryMonitoringThresholds(
                         DuplicateCommandThreshold: 30,
@@ -75,8 +76,6 @@ public class SqlQueryMonitoringThresholdsTests : UITestBase
                         DuplicateCommandThreshold: 25,
                         DuplicateCommandWithParametersThreshold: 12,
                         ResultSetRowCountThreshold: 150)));
-
-                // The first matching pattern wins, and patterns are evaluated against the request path.
                 return Task.CompletedTask;
             });
 }

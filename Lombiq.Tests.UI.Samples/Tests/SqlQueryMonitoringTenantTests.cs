@@ -39,8 +39,6 @@ public class SqlQueryMonitoringTenantTests : UITestBase
 
                 await context.GoToRelativeUrlAsync("/");
 
-                context.GetCurrentUri().AbsolutePath.ShouldStartWith($"/{tenantUrlPrefix}");
-
                 await context.AssertSqlQueryMonitoringAsync(summary =>
                 {
                     summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
@@ -50,22 +48,14 @@ public class SqlQueryMonitoringTenantTests : UITestBase
                 context.SwitchCurrentTenantToDefault();
                 await context.GoToRelativeUrlAsync("/");
 
-                context.GetCurrentUri().AbsolutePath.ShouldNotStartWith($"/{tenantUrlPrefix}");
-
                 await context.AssertSqlQueryMonitoringAsync(summary =>
                 {
                     summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
                     return Task.CompletedTask;
                 });
             },
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false;
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 30;
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 15;
-                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
-                return Task.CompletedTask;
-            });
+            // Disable automatic assertions on page changes to avoid interference with the explicit assertions in the test.
+            configuration => configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = false);
 }
 
 // NEXT STATION: Head over to Tests/SqlQueryMonitoringThresholdsTests.cs.

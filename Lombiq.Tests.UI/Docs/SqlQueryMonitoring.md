@@ -19,9 +19,9 @@ summary and applies the configured assertions.
 Monitoring summaries are stored per request, so typically you should assert after each navigation (or after the action
 that should be checked).
 
-Row counts are based on how many rows were actually read from the data reader. If a query is not fully enumerated, the
-recorded row count will be lower than the total result set size. The summaries are stored per request and consumed
-when you assert, so each request should be asserted once.
+Row counts are based on how many rows were actually read from the data reader. Enumeration through `foreach` or LINQ
+also counts rows. If a query is not fully enumerated, the recorded row count will be lower than the total result set
+size. The summaries are stored per request and consumed when you assert, so each request should be asserted once.
 
 ## Configuration
 

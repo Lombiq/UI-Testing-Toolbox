@@ -27,7 +27,9 @@ public class SqlQueryMonitoringFilteringTests : UITestBase
                 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 3;
                 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 5;
 
-                // Ignore known Orchard Core warmup/document queries and index lookups to keep the sample stable.
+                // You can ignore specific commands by their command text using regex patterns. Here we ignore
+                // common queries that are known to be noisy in Orchard Core, e.g. queries loading content items of
+                // specific types or common indexes.
                 configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
                     SqlQueryMonitoringConfiguration.BuildIgnoreCommandTextPatternFilter(
                         @"FROM\s+\[Document\].*\[Type\]\s*=\s*@Type",

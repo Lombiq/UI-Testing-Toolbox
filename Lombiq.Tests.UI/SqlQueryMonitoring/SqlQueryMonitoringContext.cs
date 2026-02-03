@@ -7,8 +7,7 @@ public sealed class SqlQueryMonitoringContext : ISqlQueryMonitoringContext
 {
     private readonly ConcurrentQueue<SqlQueryExecutionEntry> _executions = new();
 
-    public IReadOnlyList<SqlQueryExecutionEntry> Executions
-        => [.. _executions];
+    public IReadOnlyList<SqlQueryExecutionEntry> Executions => [.. _executions];
 
     public void RecordExecution(SqlQueryExecutionEntry entry)
     {

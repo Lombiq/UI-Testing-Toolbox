@@ -15,9 +15,11 @@ public class SqlQueryMonitoringPageChangeRuleTests : UITestBase
     {
     }
 
+    // Here we'll only monitor SQL queries on page changes where the URL contains "/categories".
     [Fact]
     public Task SqlQueryMonitoringShouldRespectPageChangeRule()
     {
+        // We'll collect the summaries ourselves to assert on them later.
         var summaries = new List<SqlQueryMonitoringSummary>();
 
         return ExecuteTestAfterSetupAsync(
@@ -26,20 +28,25 @@ public class SqlQueryMonitoringPageChangeRuleTests : UITestBase
                 await context.GoToRelativeUrlAsync("/categories/travel");
                 await context.GoToRelativeUrlAsync("/about");
 
+                // Now we can assert that only /categories page change was monitored.
                 summaries.Count.ShouldBe(1);
                 summaries[0].RequestPath.ShouldContain("/categories");
-                summaries[0].Executions.ShouldNotBeEmpty(
-                    "SQL query monitoring should capture at least one command.");
+                summaries[0].Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
             },
             configuration =>
             {
+                // Only monitor page changes where the URL contains "/categories".
                 configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
                     context => context.GetCurrentUri().AbsolutePath.Contains("/categories");
+
+                // We'll run assertions ourselves in the test so the captured summaries don't get consumed by the
+                // automatic on-page-change assertions.
                 configuration.SqlQueryMonitoringConfiguration.AssertSqlQueryMonitoringSummaryAsync = summary =>
                 {
                     summaries.Add(summary);
                     return Task.CompletedTask;
                 };
+
                 return Task.CompletedTask;
             });
     }

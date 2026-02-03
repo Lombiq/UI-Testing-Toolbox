@@ -39,10 +39,10 @@ public static class SqlQueryMonitoringUITestContextExtensions
     /// <summary>
     /// Returns the SQL query monitoring summary recorded for the most recent request.
     /// </summary>
-    public static Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(this UITestContext context) =>
+    private static Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(this UITestContext context) =>
         GetLatestSqlQueryMonitoringSummaryAsync(context, tenant: context.TenantName);
 
-    public static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
+    private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
         this UITestContext context,
         string tenant)
     {
