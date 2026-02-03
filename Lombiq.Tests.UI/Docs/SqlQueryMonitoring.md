@@ -82,4 +82,9 @@ var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
 
 See the sample test for a fully documented example:
 
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringBasicsTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFailureTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTenantTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringThresholdsTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringPageChangeRuleTests.cs`
+- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFilteringTests.cs`

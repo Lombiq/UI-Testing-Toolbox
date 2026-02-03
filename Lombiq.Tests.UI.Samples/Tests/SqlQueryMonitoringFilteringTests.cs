@@ -1,4 +1,3 @@
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using System.Threading.Tasks;
@@ -42,5 +41,5 @@ public class SqlQueryMonitoringFilteringTests : UITestBase
             });
 }
 
-// END OF TRAINING SECTION: SQL query monitoring filtering.
-// NEXT STATION: Head over to Tests/TenantTests.cs.
+// END OF TRAINING SECTION: SQL query monitoring.
+// NEXT STATION: Head over to Tests/SqlServerTests.cs.

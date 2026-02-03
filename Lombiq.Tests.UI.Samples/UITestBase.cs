@@ -54,7 +54,7 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                 // default here. Apart from changing the code here, you can use a configuration file or environment
                 // variables, see the docs.
                 configuration.BrowserConfiguration.Headless =
-                    TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
+                    TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: true);
 
                 // There are event handlers that you can hook into, like
                 // configuration.OrchardCoreConfiguration.BeforeAppStart. But it is just one of many. Check out the
