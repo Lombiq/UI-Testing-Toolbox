@@ -22,6 +22,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
     {
         var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
         var configuration = context.Configuration.SqlQueryMonitoringConfiguration;
+        configuration.WriteSqlQueryMonitoringCounters(context.Configuration.TestOutputHelper, summary);
 
         try
         {

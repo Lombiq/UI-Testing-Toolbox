@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -176,6 +177,44 @@ public class SqlQueryMonitoringConfiguration
         return Task.CompletedTask;
     }
 
+    public void WriteSqlQueryMonitoringCounters(ITestOutputHelper testOutputHelper, SqlQueryMonitoringSummary summary)
+    {
+        if (testOutputHelper == null || summary == null) return;
+
+        var executions = summary.Executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
+
+        var duplicateCommandGroups = executions
+            .GroupBy(entry => entry.NormalizedCommandText)
+            .Select(group => group.Count())
+            .ToList();
+
+        var duplicateCommandWithParametersGroups = executions
+            .GroupBy(entry => (entry.NormalizedCommandText, entry.ParameterSignature))
+            .Select(group => group.Count())
+            .ToList();
+
+        var oversizedRowCounts = executions
+            .Where(entry => entry.RowCount is > 0)
+            .Select(entry => entry.RowCount.Value)
+            .ToList();
+
+        var message =
+            "SQL monitoring counters after page change:" + Environment.NewLine +
+            $"- Request: {summary.RequestMethod} {summary.RequestPath}" + Environment.NewLine +
+            $"- Executions: {executions.Count.ToTechnicalString()}" + Environment.NewLine +
+            $"- Duplicate command groups: {duplicateCommandGroups.Count.ToTechnicalString()} " +
+            $"(max group size: {GetMaxOrZero(duplicateCommandGroups).ToTechnicalString()}, " +
+            $"threshold: {DuplicateCommandThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"- Duplicate command+parameters groups: {duplicateCommandWithParametersGroups.Count.ToTechnicalString()} " +
+            $"(max group size: {GetMaxOrZero(duplicateCommandWithParametersGroups).ToTechnicalString()}, " +
+            $"threshold: {DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"- Result set rows observed: {oversizedRowCounts.Count.ToTechnicalString()} " +
+            $"(max rows: {GetMaxOrZero(oversizedRowCounts).ToTechnicalString()}, " +
+            $"threshold: {ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"})";
+
+        testOutputHelper.WriteLineTimestampedAndDebug(message);
+    }
+
     private static string ShortenCommandText(string commandText)
     {
         if (string.IsNullOrWhiteSpace(commandText)) return "(empty command)";
@@ -184,6 +223,9 @@ public class SqlQueryMonitoringConfiguration
             ? commandText
             : commandText[..300] + "...";
     }
+
+    private static int GetMaxOrZero(List<int> values) =>
+        values.Count == 0 ? 0 : values.Max();
 
     public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
     {
