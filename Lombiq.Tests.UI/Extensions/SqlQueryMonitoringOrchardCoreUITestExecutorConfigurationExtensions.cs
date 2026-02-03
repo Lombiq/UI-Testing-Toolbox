@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.AppExtensions.SqlQueryMonitoring;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -69,16 +68,9 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
 
         configuration.Events.BeforeNavigation += (_, targetUri) =>
         {
-            var thresholds = defaultThresholds;
-
-            foreach (var rule in compiledRules)
-            {
-                if (rule.Regex.IsMatch(targetUri.AbsolutePath))
-                {
-                    thresholds = rule.Thresholds;
-                    break;
-                }
-            }
+            var thresholds = compiledRules
+                .FirstOrDefault(rule => rule.Regex.IsMatch(targetUri.AbsolutePath))
+                .Thresholds ?? defaultThresholds;
 
             configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = thresholds.DuplicateCommandThreshold;
             configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold =
