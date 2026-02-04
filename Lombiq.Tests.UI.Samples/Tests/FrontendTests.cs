@@ -36,6 +36,9 @@ public class FrontendTests : FrontendUITestBase
             {
                 // Since this server is not our code, we should disable HTML validation.
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+
+                // Also, SQL query monitoring is not relevant in this scenario. And might cause unrelated failures.
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = false;
                 return Task.CompletedTask;
             });
 }
