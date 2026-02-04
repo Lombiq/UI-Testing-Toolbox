@@ -30,6 +30,9 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.WaitForPageLoad();
                 await context.ClickReliablyOnAsync(By.CssSelector("body"));
 
+                // Check for errors before validating the result to aim for most useful information in case of errors.
+                await context.AssertLogsAsync();
+                context.Missing(By.CssSelector("#mediaContainerMain .upload-list .text-danger"));
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
                 await context
