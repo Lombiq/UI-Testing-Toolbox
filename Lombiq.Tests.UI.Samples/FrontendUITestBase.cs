@@ -75,7 +75,7 @@ public abstract class FrontendUITestBase : UITestBase
                             // use the provided port number. Since this server uses HTTP instead of HTTPS, you have to
                             // set the frontend URL too. The backend URL is not changed, so pass null to leave it as-is.
                             configuration.SetFrontendAndBackendUris(
-                                frontendUrl: $"http://localhost:" + port,
+                                frontendUrl: "http://localhost:" + port,
                                 backendUrl: null);
                             return frontendCommand.WithArguments(["--yes", "http-server", "--port", port]);
                         },

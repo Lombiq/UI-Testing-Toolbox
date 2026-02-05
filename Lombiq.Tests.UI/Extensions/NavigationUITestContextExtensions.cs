@@ -130,7 +130,7 @@ public static class NavigationUITestContextExtensions
     // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
     // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
     // https://github.com/atata-framework/atata/issues/364.
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
               $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
         where T : PageObject<T>
@@ -147,7 +147,7 @@ public static class NavigationUITestContextExtensions
         return page;
     }
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
               $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
     public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
         where T : PageObject<T>
@@ -277,7 +277,7 @@ public static class NavigationUITestContextExtensions
     public static Task GoToDashboardAsync(this UITestContext context) =>
         context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use " +
+    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
               $"{nameof(OrchardCoreDashboardUITestContextExtensions.GoToContentItemListAsync)} instead")]
     public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
         context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
