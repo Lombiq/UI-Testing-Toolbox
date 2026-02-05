@@ -113,7 +113,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         string containerName = null,
         bool useCompressionIfAvailable = false)
     {
-        DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in TakeSnapshotAsync().");
+        DebugHelper.WriteLineTimestamped("Entering SqlServerManager semaphore in TakeSnapshotAsync().");
 
         await _semaphore.WaitAsync(_cancellationTokenSource.Token);
         try
@@ -174,12 +174,12 @@ public sealed class SqlServerManager : IAsyncDisposable
                     ? new InvalidOperationException($"A file wasn't created at \"{filePathLocal}\".")
                     : new FileNotFoundException(
                         $"A file was created at \"{filePathRemote}\" but it doesn't appear at \"{filePathLocal}\". " +
-                        $"Are the two bound together? If you are using Docker, did you set up the local volume?");
+                        "Are the two bound together? If you are using Docker, did you set up the local volume?");
             }
         }
         finally
         {
-            DebugHelper.WriteLineTimestamped($"Exiting SqlServerManager semaphore in TakeSnapshotAsync().");
+            DebugHelper.WriteLineTimestamped("Exiting SqlServerManager semaphore in TakeSnapshotAsync().");
             _semaphore.Release();
         }
     }
@@ -190,7 +190,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         string containerName,
         int maxRetries = 3)
     {
-        DebugHelper.WriteLineTimestamped($"Entering SqlServerManager semaphore in RestoreSnapshotAsync().");
+        DebugHelper.WriteLineTimestamped("Entering SqlServerManager semaphore in RestoreSnapshotAsync().");
 
         await _semaphore.WaitAsync(_cancellationTokenSource.Token);
         try
@@ -251,7 +251,7 @@ public sealed class SqlServerManager : IAsyncDisposable
         }
         finally
         {
-            DebugHelper.WriteLineTimestamped($"Exiting SqlServerManager semaphore in RestoreSnapshotAsync().");
+            DebugHelper.WriteLineTimestamped("Exiting SqlServerManager semaphore in RestoreSnapshotAsync().");
             _semaphore.Release();
         }
     }

@@ -41,7 +41,7 @@ internal sealed class MonkeyTester
 
     internal Task TestRecursivelyAsync() =>
         Log.ExecuteSectionAsync(
-            new LogSection($"Execute monkey testing recursively"),
+            new LogSection("Execute monkey testing recursively"),
             async () =>
             {
                 WriteOptionsToLog();

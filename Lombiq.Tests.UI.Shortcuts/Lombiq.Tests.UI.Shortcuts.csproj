@@ -40,7 +40,6 @@
     <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="3.0.0-preview-18907" />
     <PackageReference Include="OrchardCore.Workflows" Version="3.0.0-preview-18907" />
     <PackageReference Include="OrchardCore.Search.Elasticsearch.Core" Version="3.0.0-preview-18907" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
