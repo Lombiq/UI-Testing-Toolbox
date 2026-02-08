@@ -117,6 +117,16 @@ public class HtmlValidationConfiguration
         WithFilters("OC-15222", error =>
             error.RuleId is not ("prefer-native-element" or "text-content" or "no-redundant-role"));
 
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/> with the <c>OC-17907</c> key to handle a specific bug.
+    /// </summary>
+    /// <remarks><para>
+    /// Rule exclusions due to https://github.com/OrchardCMS/OrchardCore/issues/17907, usages can be removed once it is
+    /// resolved.
+    /// </para></remarks>
+    public HtmlValidationConfiguration WithOC17907Filter() =>
+        WithFilters("OC-17907", error => error.RuleId is not "attribute-misuse");
+
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
 }
