@@ -7,7 +7,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FakeBrowserVideoSourceExtensions
 {
-    [Obsolete($"Use the overload that specifies the Temp directory path instead.")]
+    [Obsolete("Use the overload that specifies the Temp directory path instead.")]
     public static string SaveVideoToTempFolder(this FakeBrowserVideoSource source) =>
         source.SaveVideoToTempFolder(tempDirectoryPath: null);
 
