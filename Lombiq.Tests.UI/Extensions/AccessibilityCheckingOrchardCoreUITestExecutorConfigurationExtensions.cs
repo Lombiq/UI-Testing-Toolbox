@@ -1,5 +1,5 @@
-using Deque.AxeCore.Commons;
 using Deque.AxeCore.Selenium;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ public static class AccessibilityCheckingOrchardCoreUITestExecutorConfigurationE
     public static void SetUpAccessibilityCheckingAssertionOnPageChange(
         this OrchardCoreUITestExecutorConfiguration configuration,
         Action<AxeBuilder> axeBuilderConfigurator = null,
-        Action<AxeResult> assertAxeResult = null)
+        Action<SimpleAxeResult> assertAxeResult = null)
     {
         if (!configuration.CustomConfiguration.TryAdd("AccessibilityCheckingAssertionOnPageChangeWasSetUp", value: true)) return;
 

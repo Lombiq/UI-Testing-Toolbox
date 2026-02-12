@@ -2,6 +2,7 @@ using Deque.AxeCore.Commons;
 using Deque.AxeCore.Selenium;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,24 +48,24 @@ public class AccessibilityCheckingConfiguration
         EnableOnValidatablePagesAccessibilityCheckingAndAssertionOnPageChangeRule;
 
     /// <summary>
-    /// Gets a collection of delegates that select which <see cref="AxeResult.Incomplete"/> is retained. If there are
-    /// more than one filters, all of them must return <see langword="true"/>.
+    /// Gets a collection of delegates that select which <see cref="SimpleAxeResult.Incomplete"/> is retained. If there
+    /// are more than one filters, all of them must return <see langword="true"/>.
     /// </summary>
     public IDictionary<string, Func<AxeResultItem, bool>> AxeResultIncompleteFilters { get; } =
         new Dictionary<string, Func<AxeResultItem, bool>>();
 
     /// <summary>
-    /// Gets a collection of delegates that select which <see cref="AxeResult.Violations"/> is retained. If there are
-    /// more than one filters, all of them must return <see langword="true"/>.
+    /// Gets a collection of delegates that select which <see cref="SimpleAxeResult.Violations"/> is retained. If there
+    /// are more than one filters, all of them must return <see langword="true"/>.
     /// </summary>
     public IDictionary<string, Func<AxeResultItem, bool>> AxeResultViolationsFilters { get; } =
         new Dictionary<string, Func<AxeResultItem, bool>>();
 
     /// <summary>
-    /// Gets or sets a delegate to run assertions on the <see cref="AxeResult"/> when accessibility checking happens.
-    /// Defaults to <see cref="AssertAxeResultIsEmpty"/>.
+    /// Gets or sets a delegate to run assertions on the <see cref="SimpleAxeResult"/> when accessibility checking
+    /// happens. Defaults to <see cref="AssertAxeResultIsEmpty"/>.
     /// </summary>
-    public Action<AxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
+    public Action<SimpleAxeResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 
     // Returns AxeBuilder so it can be chained.
     public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag21aa = axeBuilder =>
@@ -73,7 +74,7 @@ public class AccessibilityCheckingConfiguration
     public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag22aa = axeBuilder =>
         axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa");
 
-    public static readonly Action<AxeResult> AssertAxeResultIsEmpty = axeResult =>
+    public static readonly Action<SimpleAxeResult> AssertAxeResultIsEmpty = axeResult =>
     {
         axeResult.Violations.AxeResultItemsShouldBeEmpty();
         axeResult.Incomplete.AxeResultItemsShouldBeEmpty();
