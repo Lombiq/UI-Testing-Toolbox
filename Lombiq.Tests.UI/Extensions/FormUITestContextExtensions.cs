@@ -15,7 +15,7 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FormUITestContextExtensions
 {
-    public static By SubmitButtonBy = By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]");
+    public static readonly By SubmitButtonBy = By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]");
 
     public static async Task ClickAndFillInWithRetriesAsync(
         this UITestContext context,
