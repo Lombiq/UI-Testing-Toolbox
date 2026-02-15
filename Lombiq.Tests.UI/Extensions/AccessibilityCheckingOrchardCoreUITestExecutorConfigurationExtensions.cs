@@ -23,7 +23,7 @@ public static class AccessibilityCheckingOrchardCoreUITestExecutorConfigurationE
     public static void SetUpAccessibilityCheckingAssertionOnPageChange(
         this OrchardCoreUITestExecutorConfiguration configuration,
         Action<AxeBuilder> axeBuilderConfigurator = null,
-        Action<SimpleAxeResult> assertAxeResult = null)
+        Action<AccessibilityCheckingResult> assertAxeResult = null)
     {
         if (!configuration.CustomConfiguration.TryAdd("AccessibilityCheckingAssertionOnPageChangeWasSetUp", value: true)) return;
 

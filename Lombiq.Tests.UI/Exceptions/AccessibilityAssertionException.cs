@@ -7,13 +7,13 @@ namespace Lombiq.Tests.UI.Exceptions;
 public class AccessibilityAssertionException : Exception, IAssertionException
 {
     public AxeResult AxeResult { get; }
-    public SimpleAxeResult Result { get; }
+    public AccessibilityCheckingResult Result { get; }
 
     public AccessibilityAssertionException(AxeResult axeResult, bool createReportOnFailure, Exception innerException)
-        : this((SimpleAxeResult)axeResult, createReportOnFailure, innerException) =>
+        : this((AccessibilityCheckingResult)axeResult, createReportOnFailure, innerException) =>
         AxeResult = axeResult;
 
-    public AccessibilityAssertionException(SimpleAxeResult result, bool createReportOnFailure, Exception innerException)
+    public AccessibilityAssertionException(AccessibilityCheckingResult result, bool createReportOnFailure, Exception innerException)
         : base(
             "Asserting the accessibility analysis result failed." +
               (createReportOnFailure ? " Check the accessibility report failure dump for details." : string.Empty),

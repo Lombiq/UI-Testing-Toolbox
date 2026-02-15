@@ -28,10 +28,10 @@ public static class AccessibilityCheckingUITestContextExtensions
     public static void AssertAccessibility(
         this UITestContext context,
         Action<AxeBuilder> axeBuilderConfigurator = null,
-        Action<SimpleAxeResult> assertAxeResult = null)
+        Action<AccessibilityCheckingResult> assertAxeResult = null)
     {
         var axeResult = context.AnalyzeAccessibility(axeBuilderConfigurator);
-        var result = (SimpleAxeResult)axeResult;
+        var result = (AccessibilityCheckingResult)axeResult;
         var accessibilityConfiguration = context.Configuration.AccessibilityCheckingConfiguration;
 
         try
@@ -67,8 +67,8 @@ public static class AccessibilityCheckingUITestContextExtensions
         }
     }
 
-    private static SimpleAxeResult FilterAccessibilityResults(
-        SimpleAxeResult axeResult,
+    private static AccessibilityCheckingResult FilterAccessibilityResults(
+        AccessibilityCheckingResult axeResult,
         AccessibilityCheckingConfiguration accessibilityConfiguration)
     {
         foreach (var filter in accessibilityConfiguration.AxeResultIncompleteFilters.Values)

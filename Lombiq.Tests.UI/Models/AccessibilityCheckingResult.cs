@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class SimpleAxeResult
+public class AccessibilityCheckingResult
 {
     public IList<AxeResultItem> Violations { get; init; } = [];
     public IList<AxeResultItem> Passes { get; init; } = [];
@@ -17,7 +17,7 @@ public class SimpleAxeResult
     public AxeTestEngine TestEngine { get; set; }
     public object ToolOptions { get; set; }
 
-    public static implicit operator SimpleAxeResult(AxeResult axeResult) =>
+    public static implicit operator AccessibilityCheckingResult(AxeResult axeResult) =>
         new()
         {
             Violations = [.. axeResult.Violations],
