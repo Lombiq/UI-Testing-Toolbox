@@ -15,7 +15,6 @@ public class AccessibilityCheckingResult
     public AxeTestRunner TestRunner { get; set; }
     public string Url { get; set; }
     public AxeTestEngine TestEngine { get; set; }
-    public object ToolOptions { get; set; }
 
     public static implicit operator AccessibilityCheckingResult(AxeResult axeResult) =>
         new()
@@ -29,6 +28,5 @@ public class AccessibilityCheckingResult
             TestRunner = axeResult.TestRunner,
             Url = axeResult.Url,
             TestEngine = axeResult.TestEngine,
-            ToolOptions = axeResult.ToolOptions,
         };
 }
