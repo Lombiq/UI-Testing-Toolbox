@@ -245,7 +245,7 @@ internal static class CloudflareHelper
             }
 
             var subnetAddress = new IPAddress(bytes);
-            return string.Create(CultureInfo.InvariantCulture, $"{subnetAddress}/64");
+            return FormatExpandedIpv6(subnetAddress) + "/64";
         }
         else
         {
@@ -256,6 +256,18 @@ internal static class CloudflareHelper
             var subnetAddress = new IPAddress(bytes);
             return string.Create(CultureInfo.InvariantCulture, $"{subnetAddress}/24");
         }
+    }
+
+    // Formats an IPv6 address using fully expanded hextets to match Cloudflare's representation (that the CF API
+    // returns, e.g. "4000:1c1d:12e7:9200:0000:0000:0000:0000") instead of the default IPAddress string representation
+    // (e.g. "4000:1c1d:12e7:9200::"). This is necessary so existing rules will be found.
+    private static string FormatExpandedIpv6(IPAddress address)
+    {
+        var bytes = address.GetAddressBytes();
+
+        return
+            $"{bytes[0]:x2}{bytes[1]:x2}:{bytes[2]:x2}{bytes[3]:x2}:{bytes[4]:x2}{bytes[5]:x2}:{bytes[6]:x2}{bytes[7]:x2}:" +
+            $"{bytes[8]:x2}{bytes[9]:x2}:{bytes[10]:x2}{bytes[11]:x2}:{bytes[12]:x2}{bytes[13]:x2}:{bytes[14]:x2}{bytes[15]:x2}";
     }
 
     [Headers("Authorization: Bearer")]
