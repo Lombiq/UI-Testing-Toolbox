@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore" Version="3.0.0-preview-18914" />
-    <PackageReference Include="OrchardCore.Email.Abstractions" Version="3.0.0-preview-18914" />
-    <PackageReference Include="OrchardCore.Liquid" Version="3.0.0-preview-18914" />
+    <PackageReference Include="OrchardCore" Version="3.0.0-preview-18923" />
+    <PackageReference Include="OrchardCore.Email.Abstractions" Version="3.0.0-preview-18923" />
+    <PackageReference Include="OrchardCore.Liquid" Version="3.0.0-preview-18923" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
