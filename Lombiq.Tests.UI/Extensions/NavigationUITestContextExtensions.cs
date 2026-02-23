@@ -9,6 +9,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using OrchardCore.Environment.Shell;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -255,7 +256,8 @@ public static class NavigationUITestContextExtensions
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)
     {
-        if (context.Configuration.SetupConfiguration.SetupWithHttpClient)
+        if (context.Configuration.SetupConfiguration.SetupWithHttpClient &&
+            context.TenantName == ShellSettings.DefaultShellName)
         {
             return await context.SetupOrchardCoreWithHttpClientAsync(parameters, shouldBeSuccess);
         }
