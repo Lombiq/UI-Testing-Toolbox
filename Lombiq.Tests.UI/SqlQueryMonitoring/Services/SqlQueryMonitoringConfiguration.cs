@@ -22,9 +22,9 @@ public class SqlQueryMonitoringConfiguration
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run SQL query monitoring assertions every time a page
-    /// changes (either due to explicit navigation or clicks).
+    /// changes (either due to explicit navigation or clicks). Disabled by default.
     /// </summary>
-    public bool RunSqlQueryMonitoringAssertionOnAllPageChanges { get; set; } = true;
+    public bool RunSqlQueryMonitoringAssertionOnAllPageChanges { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether SQL query monitoring is enabled in the Orchard Core app for this test
@@ -51,6 +51,35 @@ public class SqlQueryMonitoringConfiguration
     /// executions.
     /// </summary>
     public Predicate<SqlQueryExecutionEntry> ExecutionFilter { get; set; } = _ => true;
+
+    /// <summary>
+    /// Gets or sets how long SQL monitoring assertion methods should wait for a matching request summary to appear in
+    /// the in-memory summary store.
+    /// </summary>
+    /// <remarks>
+    /// This timeout is used by methods in <c>SqlQueryMonitoringUITestContextExtensions</c> to mitigate timing races
+    /// right after navigation or request completion.
+    /// </remarks>
+    public TimeSpan SummaryLookupTimeout { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Gets or sets the polling interval used while waiting for SQL monitoring summaries to appear in the summary
+    /// store.
+    /// </summary>
+    /// <remarks>
+    /// Smaller values can reduce assertion latency but increase polling frequency.
+    /// </remarks>
+    public TimeSpan SummaryLookupInterval { get; set; } = TimeSpan.FromMilliseconds(100);
+
+    /// <summary>
+    /// Gets or sets how long to keep waiting for follow-up request summaries after the last captured summary when
+    /// using follow-up-inclusive assertions.
+    /// </summary>
+    /// <remarks>
+    /// When no new summary arrives during this quiet period, follow-up collection ends even if
+    /// <see cref="SummaryLookupTimeout"/> has not yet elapsed.
+    /// </remarks>
+    public TimeSpan FollowUpSummaryQuietPeriod { get; set; } = TimeSpan.FromMilliseconds(300);
 
     /// <summary>
     /// Gets or sets the threshold for how many times the same SQL command text can be executed in a single request,
@@ -170,7 +199,8 @@ public class SqlQueryMonitoringConfiguration
             var threshold = duplicateThreshold.ToTechnicalString();
             hasFailures = true;
             failures.Add(
-                $"Command text executed {count} times (threshold: {threshold}): {ShortenCommandText(group.First().CommandText)}");
+                $"Command text executed {count} times (threshold: {threshold}): {ShortenCommandText(group.First().CommandText)}" +
+                FormatCallStackDetails(group));
         }
 
         return hasFailures;
@@ -196,7 +226,8 @@ public class SqlQueryMonitoringConfiguration
             var threshold = duplicateWithParametersThreshold.ToTechnicalString();
             hasFailures = true;
             failures.Add($"Command text with same parameters executed {count} times (threshold: {threshold}):" +
-                $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]");
+                $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]" +
+                FormatCallStackDetails(group));
         }
 
         return hasFailures;
@@ -220,10 +251,40 @@ public class SqlQueryMonitoringConfiguration
             var rowCount = entry.RowCount.ToTechnicalString();
             hasFailures = true;
             failures.Add(
-                $"Command result set had {rowCount} rows (threshold: {threshold}): " + ShortenCommandText(entry.CommandText));
+                $"Command result set had {rowCount} rows (threshold: {threshold}): " +
+                ShortenCommandText(entry.CommandText) +
+                FormatCallStackDetails([entry]));
         }
 
         return hasFailures;
+    }
+
+    private static string FormatCallStackDetails(IEnumerable<SqlQueryExecutionEntry> entries)
+    {
+        var callStacks = entries
+            .Select(entry => entry.CallStack)
+            .Where(callStack => !string.IsNullOrWhiteSpace(callStack))
+            .ToList();
+
+        if (callStacks.Count == 0) return string.Empty;
+
+        return Environment.NewLine +
+            "Call stacks:" +
+            Environment.NewLine +
+            string.Join(
+                Environment.NewLine + Environment.NewLine,
+                callStacks.Select((callStack, index) =>
+                    $"{(index + 1).ToTechnicalString()}.{Environment.NewLine}{Indent(callStack, "   ")}"));
+    }
+
+    private static string Indent(string text, string indent)
+    {
+        var normalized = text.Replace("\r\n", "\n", StringComparison.Ordinal);
+        return string.Join(
+            Environment.NewLine,
+            normalized
+                .Split('\n')
+                .Select(line => indent + line));
     }
 
     private string BuildFailureMessage(
