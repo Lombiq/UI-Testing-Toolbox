@@ -205,7 +205,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
     /// </para>
     /// </remarks>
     [Obsolete(
-        $"This method will be removed to streamline the library. Use the overload with with " +
+        "This method will be removed to streamline the library. Use the overload with with " +
         $"{nameof(OrchardCoreSetupParameters)} instead.")]
     public static Task TestBasicOrchardFeaturesExceptSetupAndRegistrationAsync(
         this UITestContext context,

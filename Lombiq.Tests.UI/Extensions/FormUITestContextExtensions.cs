@@ -15,6 +15,8 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class FormUITestContextExtensions
 {
+    public static readonly By SubmitButtonBy = By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]");
+
     public static async Task ClickAndFillInWithRetriesAsync(
         this UITestContext context,
         By by,
@@ -334,10 +336,7 @@ public static class FormUITestContextExtensions
     /// </summary>
     /// <param name="withJavaScript">When set to <see langword="true"/> it clicks the button with JavaScript.</param>
     public static Task ClickReliablyOnSubmitAsync(this UITestContext context, bool withJavaScript = false) =>
-        ClickReliablyWithSeleniumOrJavascriptAsync(
-            context,
-            By.XPath("//button[@type='submit' and not(ancestor::form[@action='/Users/LogOff'])]"),
-            withJavaScript);
+        ClickReliablyWithSeleniumOrJavascriptAsync(context, SubmitButtonBy, withJavaScript);
 
     /// <summary>
     /// Finds the first submit button with the provided <paramref name="label"/> and clicks on it reliably.

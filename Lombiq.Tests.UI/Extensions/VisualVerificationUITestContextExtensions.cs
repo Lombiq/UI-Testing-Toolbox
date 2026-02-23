@@ -419,7 +419,7 @@ to customize the name of the dump item.";
                     messageIfExists: HintTestDumpItemAlreadyExists);
 
                 throw new VisualVerificationSourceInformationNotAvailableException(
-                    $"Source information not available, make sure you are compiling with full debug information."
+                    "Source information not available, make sure you are compiling with full debug information."
                     + $" Frame: {testFrame.MethodInfo.DeclaringType?.Name}.{testFrame.MethodInfo.Name}."
                     + $" The suggested baseline image was added to the test dump as {suggestedImageFileName}");
             }
