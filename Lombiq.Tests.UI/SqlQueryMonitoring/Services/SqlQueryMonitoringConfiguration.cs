@@ -39,7 +39,8 @@ public class SqlQueryMonitoringConfiguration
     /// <summary>
     /// Gets or sets a predicate that determines whether SQL query monitoring and asserting the results should run for
     /// the current page. This is only used if <see cref="RunSqlQueryMonitoringAssertionOnAllPageChanges"/> is set to
-    /// <see langword="true"/>. Defaults to <see cref="EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule"/>.
+    /// <see langword="true"/>. Defaults to
+    /// <see cref="EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule"/>.
     /// </summary>
     public Predicate<UITestContext> SqlQueryMonitoringAndAssertionOnPageChangeRule { get; set; } =
         EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule;
@@ -102,8 +103,8 @@ public class SqlQueryMonitoringConfiguration
     /// <summary>
     /// Gets or sets the threshold for how many times the same SQL command text can be executed with the same parameter
     /// values in a single request. If the count is greater than or equal to this threshold, the assertion fails.
-    /// Leave this <see langword="null"/> to disable this check. Defaults to 15, which matches the sample tests and keeps
-    /// cache-miss detection active without breaking typical pages.
+    /// Leave this <see langword="null"/> to disable this check. Defaults to 15, which matches the sample tests and
+    /// keeps cache-miss detection active without breaking typical pages.
     /// </summary>
     public int? DuplicateCommandWithParametersThreshold { get; set; } = 15;
 
