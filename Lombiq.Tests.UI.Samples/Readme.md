@@ -19,7 +19,6 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Basic Orchard features tests](Tests/BasicOrchardFeaturesTests.cs)
 - [E-mail tests](Tests/EmailTests.cs)
 - [Accessibility tests](Tests/AccessibilityTest.cs)
-- [SQL query monitoring](Tests/SqlQueryMonitoringBasicsTests.cs)
 - [Using SQL Server](Tests/SqlServerTests.cs)
 - [Using Azure Blob Storage](Tests/AzureBlobStorageTests.cs)
 - [Error handling](Tests/ErrorHandlingTests.cs)
