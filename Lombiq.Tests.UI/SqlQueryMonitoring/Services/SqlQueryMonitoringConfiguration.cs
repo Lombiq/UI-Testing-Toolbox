@@ -12,6 +12,10 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 
 public class SqlQueryMonitoringConfiguration
 {
+    public const string DuplicateCommandFailureCategory = "DuplicateCommandText";
+    public const string DuplicateCommandWithParametersFailureCategory = "DuplicateCommandWithParameters";
+    public const string ResultSetRowCountFailureCategory = "ResultSetRowCount";
+
     /// <summary>
     /// Holds threshold values for SQL query monitoring.
     /// </summary>
@@ -151,6 +155,11 @@ public class SqlQueryMonitoringConfiguration
             .Select(entry => entry.RowCount.Value)
             .ToList();
 
+        var triggeredFailureCategories = GetTriggeredFailureCategories(
+            duplicateCommandGroups,
+            duplicateCommandWithParametersGroups,
+            oversizedRowCounts);
+
         var message =
             "SQL monitoring counters after page change:" + Environment.NewLine +
             $"- Request: {summary.RequestMethod} {summary.RequestPath}" + Environment.NewLine +
@@ -163,7 +172,9 @@ public class SqlQueryMonitoringConfiguration
             $"threshold: {DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
             $"- Result set rows observed: {oversizedRowCounts.Count.ToTechnicalString()} " +
             $"(max rows: {GetMaxOrZero(oversizedRowCounts).ToTechnicalString()}, " +
-            $"threshold: {ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"})";
+            $"threshold: {ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"- Triggered failure categories (at current thresholds): " +
+            $"{(triggeredFailureCategories.Count == 0 ? "(none)" : string.Join(", ", triggeredFailureCategories))}";
 
         testOutputHelper.WriteLineTimestampedAndDebug(message);
     }
@@ -199,7 +210,8 @@ public class SqlQueryMonitoringConfiguration
             var threshold = duplicateThreshold.ToTechnicalString();
             hasFailures = true;
             failures.Add(
-                $"Command text executed {count} times (threshold: {threshold}): {ShortenCommandText(group.First().CommandText)}" +
+                $"[{DuplicateCommandFailureCategory}] Command text executed {count} times (threshold: {threshold}): " +
+                $"{ShortenCommandText(group.First().CommandText)}" +
                 FormatCallStackDetails(group));
         }
 
@@ -225,7 +237,8 @@ public class SqlQueryMonitoringConfiguration
             var count = group.Count().ToTechnicalString();
             var threshold = duplicateWithParametersThreshold.ToTechnicalString();
             hasFailures = true;
-            failures.Add($"Command text with same parameters executed {count} times (threshold: {threshold}):" +
+            failures.Add($"[{DuplicateCommandWithParametersFailureCategory}] " +
+                $"Command text with same parameters executed {count} times (threshold: {threshold}):" +
                 $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]" +
                 FormatCallStackDetails(group));
         }
@@ -251,7 +264,7 @@ public class SqlQueryMonitoringConfiguration
             var rowCount = entry.RowCount.ToTechnicalString();
             hasFailures = true;
             failures.Add(
-                $"Command result set had {rowCount} rows (threshold: {threshold}): " +
+                $"[{ResultSetRowCountFailureCategory}] Command result set had {rowCount} rows (threshold: {threshold}): " +
                 ShortenCommandText(entry.CommandText) +
                 FormatCallStackDetails([entry]));
         }
@@ -299,23 +312,28 @@ public class SqlQueryMonitoringConfiguration
         var header =
             $"SQL query monitoring detected potential performance issues on {summary.RequestMethod} {summary.RequestPath}.";
 
-        var guidance = new List<string>();
+        var categoryGuide = new List<string>();
+        var triggeredCategories = new List<string>();
         var configuredThresholds = new List<string>();
 
         if (hasDuplicateCommandFailures)
         {
-            guidance.Add(
+            categoryGuide.Add(
+                $"[{DuplicateCommandFailureCategory}] " +
                 "The same database query text was executed more times than the configured threshold allows. " +
                 "This can indicate a SELECT N+1 problem or repeated queries that should be consolidated.");
+            triggeredCategories.Add(DuplicateCommandFailureCategory);
             configuredThresholds.Add(
                 $"{nameof(DuplicateCommandThreshold)}={DuplicateCommandThreshold?.ToTechnicalString() ?? "null"}");
         }
 
         if (hasDuplicateCommandWithParametersFailures)
         {
-            guidance.Add(
+            categoryGuide.Add(
+                $"[{DuplicateCommandWithParametersFailureCategory}] " +
                 "The same database query (with identical parameters) was executed repeatedly. " +
                 "This can indicate missing caching or repeated queries from multiple call sites.");
+            triggeredCategories.Add(DuplicateCommandWithParametersFailureCategory);
             configuredThresholds.Add(
                 $"{nameof(DuplicateCommandWithParametersThreshold)}=" +
                 $"{DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"}");
@@ -323,23 +341,56 @@ public class SqlQueryMonitoringConfiguration
 
         if (hasResultSetFailures)
         {
-            guidance.Add(
+            categoryGuide.Add(
+                $"[{ResultSetRowCountFailureCategory}] " +
                 "Some queries returned more rows than the configured threshold allows. " +
                 "This can indicate missing filtering in SQL and work being done in application code.");
+            triggeredCategories.Add(ResultSetRowCountFailureCategory);
             configuredThresholds.Add(
                 $"{nameof(ResultSetRowCountThreshold)}={ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"}");
         }
 
         return
             header + Environment.NewLine +
-            "Triggered checks:" + Environment.NewLine +
-            string.Join(Environment.NewLine, guidance.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
+            "Triggered failure categories:" + Environment.NewLine +
+            string.Join(Environment.NewLine, triggeredCategories.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
+            Environment.NewLine +
+            "Category guide:" + Environment.NewLine +
+            string.Join(Environment.NewLine, categoryGuide.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
             Environment.NewLine +
             "Threshold configuration:" + Environment.NewLine +
             string.Join(Environment.NewLine, configuredThresholds.Select((item, index) => $"{(index + 1).ToTechnicalString()}. {item}")) +
             Environment.NewLine +
             "See the details below:" + Environment.NewLine +
             string.Join(Environment.NewLine, failures);
+    }
+
+    private List<string> GetTriggeredFailureCategories(
+        List<int> duplicateCommandGroups,
+        List<int> duplicateCommandWithParametersGroups,
+        List<int> rowCounts)
+    {
+        var categories = new List<string>();
+
+        if (DuplicateCommandThreshold is { } duplicateCommandThreshold &&
+            duplicateCommandGroups.Any(groupSize => groupSize >= duplicateCommandThreshold))
+        {
+            categories.Add(DuplicateCommandFailureCategory);
+        }
+
+        if (DuplicateCommandWithParametersThreshold is { } duplicateWithParametersThreshold &&
+            duplicateCommandWithParametersGroups.Any(groupSize => groupSize >= duplicateWithParametersThreshold))
+        {
+            categories.Add(DuplicateCommandWithParametersFailureCategory);
+        }
+
+        if (ResultSetRowCountThreshold is { } resultSetThreshold &&
+            rowCounts.Any(rowCount => rowCount > resultSetThreshold))
+        {
+            categories.Add(ResultSetRowCountFailureCategory);
+        }
+
+        return categories;
     }
 
     public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
