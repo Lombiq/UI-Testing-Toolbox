@@ -61,8 +61,10 @@ public class SqlQueryMonitoringConfiguration
     /// the in-memory summary store.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// This timeout is used by methods in <c>SqlQueryMonitoringUITestContextExtensions</c> to mitigate timing races
     /// right after navigation or request completion.
+    /// </para>
     /// </remarks>
     public TimeSpan SummaryLookupTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
@@ -71,7 +73,9 @@ public class SqlQueryMonitoringConfiguration
     /// store.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Smaller values can reduce assertion latency but increase polling frequency.
+    /// </para>
     /// </remarks>
     public TimeSpan SummaryLookupInterval { get; set; } = TimeSpan.FromMilliseconds(100);
 
@@ -80,8 +84,10 @@ public class SqlQueryMonitoringConfiguration
     /// using follow-up-inclusive assertions.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// When no new summary arrives during this quiet period, follow-up collection ends even if
     /// <see cref="SummaryLookupTimeout"/> has not yet elapsed.
+    /// </para>
     /// </remarks>
     public TimeSpan FollowUpSummaryQuietPeriod { get; set; } = TimeSpan.FromMilliseconds(300);
 
@@ -173,7 +179,7 @@ public class SqlQueryMonitoringConfiguration
             $"- Result set rows observed: {oversizedRowCounts.Count.ToTechnicalString()} " +
             $"(max rows: {GetMaxOrZero(oversizedRowCounts).ToTechnicalString()}, " +
             $"threshold: {ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
-            $"- Triggered failure categories (at current thresholds): " +
+            "- Triggered failure categories (at current thresholds): " +
             $"{(triggeredFailureCategories.Count == 0 ? "(none)" : string.Join(", ", triggeredFailureCategories))}";
 
         testOutputHelper.WriteLineTimestampedAndDebug(message);
@@ -290,14 +296,14 @@ public class SqlQueryMonitoringConfiguration
                     $"{(index + 1).ToTechnicalString()}.{Environment.NewLine}{Indent(callStack, "   ")}"));
     }
 
-    private static string Indent(string text, string indent)
+    private static string Indent(string text, string indentationPrefix)
     {
         var normalized = text.Replace("\r\n", "\n", StringComparison.Ordinal);
         return string.Join(
             Environment.NewLine,
             normalized
                 .Split('\n')
-                .Select(line => indent + line));
+                .Select(line => indentationPrefix + line));
     }
 
     private string BuildFailureMessage(

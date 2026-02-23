@@ -44,10 +44,11 @@ public static class SqlQueryMonitoringUITestContextExtensions
         var summaries = new List<SqlQueryMonitoringSummary> { summary };
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
         var lastSummaryCapturedUtc = DateTime.UtcNow;
+        var shouldContinuePolling = true;
 
         // After we captured the initial page/request summary, keep polling briefly so client-side follow-up requests
         // (for example fetch/XHR calls triggered right after navigation) can be included in one combined assertion.
-        while (DateTime.UtcNow < deadline)
+        while (shouldContinuePolling && DateTime.UtcNow < deadline)
         {
             if (TryDequeueMostRecentAvailable(store, out var additionalSummary))
             {
@@ -60,9 +61,13 @@ public static class SqlQueryMonitoringUITestContextExtensions
                 continue;
             }
 
-            if (DateTime.UtcNow - lastSummaryCapturedUtc >= sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod) break;
+            shouldContinuePolling =
+                DateTime.UtcNow - lastSummaryCapturedUtc < sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
 
-            await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
+            if (shouldContinuePolling)
+            {
+                await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
+            }
         }
 
         var summaryToAssert = summaries.Count == 1
