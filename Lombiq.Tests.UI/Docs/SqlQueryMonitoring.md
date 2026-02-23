@@ -1,7 +1,6 @@
 # SQL Query Monitoring
 
-SQL query monitoring captures database activity during Orchard Core requests and lets UI tests enforce
-performance-oriented expectations.
+SQL query monitoring captures database activity during Orchard Core requests and lets UI tests enforce performance-oriented expectations.
 
 It detects:
 
@@ -54,8 +53,7 @@ When a check fails:
 SQL monitoring is request-scoped. Middleware is needed to:
 
 - Ensure SQL monitoring wrappers are active for the current request.
-- Finalize request-level summaries at end of pipeline with:
-  `RequestPath`, `RequestMethod`, `TraceIdentifier`, completion time, and executions.
+- Finalize request-level summaries at end of pipeline with: `RequestPath`, `RequestMethod`, `TraceIdentifier`, completion time, and executions.
 
 Without middleware, assertions cannot reliably separate SQL activity per request.
 
@@ -74,8 +72,7 @@ Defaults:
 How to think about these settings:
 
 - `DuplicateCommandThreshold` is a broad duplicate-query guard. Lower it when you want earlier N+1 detection.
-- `DuplicateCommandWithParametersThreshold` is stricter for exact repeat calls. Lower it when cache-related regressions
-  are important.
+- `DuplicateCommandWithParametersThreshold` is stricter for exact repeat calls. Lower it when cache-related regressions are important.
 - `ResultSetRowCountThreshold` guards unbounded reads. Lower it on list endpoints that should always be paged/filtered.
 - `SummaryLookupTimeout` and `SummaryLookupInterval` control summary lookup stability right after navigation.
 - `FollowUpSummaryQuietPeriod` controls how long follow-up-inclusive assertions keep waiting for late async requests.
@@ -113,11 +110,9 @@ When enabled, page-change hooks use follow-up-inclusive assertions by default.
 
 ## Filtering Known Noisy Queries
 
-Use filtering when a query pattern is expected, stable, and not actionable for the test goal. Typical examples are
-framework warm-up queries or metadata lookups that are known and benign in your environment.
+Use filtering when a query pattern is expected, stable, and not actionable for the test goal. Typical examples are framework warm-up queries or metadata lookups that are known and benign in your environment.
 
-Filtering is applied before thresholds are evaluated. This means filtered executions do not contribute to duplicate or
-row-count failures.
+Filtering is applied before thresholds are evaluated. This means filtered executions do not contribute to duplicate or row-count failures.
 
 Good filtering practices:
 
@@ -139,8 +134,7 @@ configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
 
 ## Per-Page Thresholds
 
-Use per-page thresholds when different routes legitimately have different SQL profiles. This keeps global checks strict
-while giving targeted flexibility for heavy but valid pages.
+Use per-page thresholds when different routes legitimately have different SQL profiles. This keeps global checks strict while giving targeted flexibility for heavy but valid pages.
 
 How matching works:
 
