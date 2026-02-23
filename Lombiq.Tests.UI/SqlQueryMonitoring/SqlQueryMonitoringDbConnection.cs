@@ -8,43 +8,49 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 public sealed class SqlQueryMonitoringDbConnection : DbConnection
 {
-    private readonly DbConnection _dbConnection;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
     public SqlQueryMonitoringDbConnection(DbConnection dbConnection, IHttpContextAccessor httpContextAccessor)
     {
-        _dbConnection = dbConnection;
-        _httpContextAccessor = httpContextAccessor;
+        InnerConnection = dbConnection;
+        HttpContextAccessor = httpContextAccessor;
     }
+
+    internal DbConnection InnerConnection { get; }
+
+    private IHttpContextAccessor HttpContextAccessor { get; }
+
+    internal static DbConnection Unwrap(DbConnection dbConnection) =>
+        dbConnection is SqlQueryMonitoringDbConnection monitoringDbConnection
+            ? monitoringDbConnection.InnerConnection
+            : dbConnection;
 
     public override string ConnectionString
     {
-        get => _dbConnection.ConnectionString;
-        set => _dbConnection.ConnectionString = value;
+        get => InnerConnection.ConnectionString;
+        set => InnerConnection.ConnectionString = value;
     }
 
-    public override string Database => _dbConnection.Database;
-    public override string DataSource => _dbConnection.DataSource;
-    public override string ServerVersion => _dbConnection.ServerVersion;
-    public override ConnectionState State => _dbConnection.State;
+    public override string Database => InnerConnection.Database;
+    public override string DataSource => InnerConnection.DataSource;
+    public override string ServerVersion => InnerConnection.ServerVersion;
+    public override ConnectionState State => InnerConnection.State;
 
-    public override void ChangeDatabase(string databaseName) => _dbConnection.ChangeDatabase(databaseName);
+    public override void ChangeDatabase(string databaseName) => InnerConnection.ChangeDatabase(databaseName);
 
-    public override void Close() => _dbConnection.Close();
+    public override void Close() => InnerConnection.Close();
 
-    public override void Open() => _dbConnection.Open();
+    public override void Open() => InnerConnection.Open();
 
-    public override Task OpenAsync(CancellationToken cancellationToken) => _dbConnection.OpenAsync(cancellationToken);
+    public override Task OpenAsync(CancellationToken cancellationToken) => InnerConnection.OpenAsync(cancellationToken);
 
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
-        _dbConnection.BeginTransaction(isolationLevel);
+        new SqlQueryMonitoringDbTransaction(InnerConnection.BeginTransaction(isolationLevel), this);
 
     protected override DbCommand CreateDbCommand() =>
-        new SqlQueryMonitoringDbCommand(_dbConnection.CreateCommand(), _httpContextAccessor);
+        new SqlQueryMonitoringDbCommand(InnerConnection.CreateCommand(), HttpContextAccessor);
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) _dbConnection.Dispose();
+        if (disposing) InnerConnection.Dispose();
         base.Dispose(disposing);
     }
 }

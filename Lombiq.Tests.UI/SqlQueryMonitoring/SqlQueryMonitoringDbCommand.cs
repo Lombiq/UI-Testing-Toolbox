@@ -55,13 +55,13 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
     protected override DbConnection DbConnection
     {
         get => _dbCommand.Connection;
-        set => _dbCommand.Connection = value;
+        set => _dbCommand.Connection = SqlQueryMonitoringDbConnection.Unwrap(value);
     }
 
     protected override DbTransaction DbTransaction
     {
         get => _dbCommand.Transaction;
-        set => _dbCommand.Transaction = value;
+        set => _dbCommand.Transaction = SqlQueryMonitoringDbTransaction.Unwrap(value);
     }
 
     protected override DbParameterCollection DbParameterCollection => _dbCommand.Parameters;
