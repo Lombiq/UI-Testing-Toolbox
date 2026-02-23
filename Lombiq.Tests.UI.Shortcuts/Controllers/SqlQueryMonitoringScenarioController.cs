@@ -9,6 +9,9 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 
+/// <summary>
+/// Test-only endpoints used by SQL monitoring UI tests to exercise different query execution paths.
+/// </summary>
 [AllowAnonymous]
 [DevelopmentAndLocalhostOnly]
 [Route("Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario")]
@@ -28,6 +31,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         _dbConnectionAccessor = dbConnectionAccessor;
     }
 
+    /// <summary>
+    /// Renders a page that executes a standard YesSql query so page-change SQL monitoring assertions can run on HTML.
+    /// </summary>
     [HttpGet("Index")]
     public async Task<IActionResult> Index()
     {
@@ -35,6 +41,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         return View(model: contentItemCount);
     }
 
+    /// <summary>
+    /// Executes the same YesSql query as <see cref="Index"/> but returns JSON to simulate a follow-up async request.
+    /// </summary>
     [HttpGet("AsyncQuery")]
     public async Task<IActionResult> AsyncQuery()
     {
@@ -42,6 +51,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         return Ok(contentItemCount);
     }
 
+    /// <summary>
+    /// Executes a raw SQL read query for source coverage tests.
+    /// </summary>
     [HttpGet("RawQuery")]
     public async Task<IActionResult> RawQuery()
     {
@@ -49,6 +61,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         return Ok(contentItemCount);
     }
 
+    /// <summary>
+    /// Executes a raw SQL write command.
+    /// </summary>
     [HttpGet("RawExecuteNonQuery")]
     public async Task<IActionResult> RawExecuteNonQuery()
     {
@@ -58,6 +73,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         return Ok(affectedRows);
     }
 
+    /// <summary>
+    /// Executes a YesSql query from a manually created session to verify custom-session instrumentation.
+    /// </summary>
     [HttpGet("CustomSessionQuery")]
     public async Task<IActionResult> CustomSessionQuery()
     {
@@ -66,6 +84,9 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
         return Ok(contentItemCount);
     }
 
+    /// <summary>
+    /// Executes a direct ADO.NET query through <see cref="IDbConnectionAccessor"/> to cover low-level SQL access.
+    /// </summary>
     [HttpGet("DirectConnectionQuery")]
     public async Task<IActionResult> DirectConnectionQuery(CancellationToken cancellationToken)
     {
