@@ -1,3 +1,5 @@
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
@@ -7,9 +9,12 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
-
+using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
 using OrchardCoreContentItemsPage = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
 using OrchardCoreDashboardPage = Lombiq.Tests.UI.Pages.OrchardCoreDashboardPage;
@@ -250,6 +255,11 @@ public static class NavigationUITestContextExtensions
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)
     {
+        if (context.Configuration.SetupConfiguration.SetupWithHttpClient)
+        {
+            return await context.SetupOrchardCoreWithHttpClientAsync(parameters, shouldBeSuccess);
+        }
+
         parameters ??= new(context);
 
         if (!parameters.RunSetupOnCurrentPage)
@@ -261,6 +271,66 @@ public static class NavigationUITestContextExtensions
         context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
 
         return new(context.Driver.Url);
+    }
+
+    public static async Task<Uri> SetupOrchardCoreWithHttpClientAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters parameters = null,
+        bool shouldBeSuccess = true)
+    {
+        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query)
+        {
+            using (response)
+            {
+                await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+                var document = await new HtmlParser().ParseDocumentAsync(stream);
+                return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
+            }
+        }
+
+        parameters ??= new(context);
+
+        var cancellationToken = context.Configuration.TestCancellationToken;
+
+        var uri = parameters.RunSetupOnCurrentPage
+            ? context.GetCurrentUri()
+            : parameters.SetupUri ?? context.TestStartUri;
+
+        using var client = context.Configuration.BrowserConfiguration.Browser == Browser.None
+            ? context.CreateHttpClient()
+            : context.CreateHttpClientWithBrowserContext();
+
+        var verificationToken = (await GetElementAsync(
+                await client.GetAsync(uri, cancellationToken),
+                "input[name=__RequestVerificationToken]"))?
+            .GetAttribute("value");
+
+        var formData = new Dictionary<string, string>
+        {
+            ["SiteName"] = parameters.SiteName,
+            ["RecipeName"] = parameters.RecipeId,
+            ["SiteTimeZone"] = parameters.SiteTimeZoneValue,
+            ["DatabaseProvider"] = parameters.DatabaseProvider.ToString(),
+            ["TablePrefix"] = parameters.TablePrefix,
+            ["ConnectionString"] = parameters.ConnectionString,
+            ["Schema"] = string.Empty,
+            ["UserName"] = parameters.UserName,
+            ["Email"] = parameters.Email,
+            ["Password"] = parameters.Password,
+            ["PasswordConfirmation"] = parameters.Password,
+            ["Secret"] = string.Empty,
+            ["__RequestVerificationToken"] = verificationToken,
+        };
+
+        using var formContent = new FormUrlEncodedContent(formData);
+        var responseSetupScript = await GetElementAsync(
+            await client.PostAsync(uri, formContent, cancellationToken),
+            "script[src*='OrchardCore.Setup']");
+
+        (responseSetupScript == null).ShouldBe(shouldBeSuccess);
+
+        context.Driver.Url = uri.AbsoluteUri;
+        return uri;
     }
 
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRegistrationAsync)} instead.")]

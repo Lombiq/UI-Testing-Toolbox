@@ -318,8 +318,11 @@ public static class BasicFeaturesTestingUITestContextExtensions
         OrchardCoreSetupParameters setupParameters,
         string testName,
         bool shouldBeSuccess) =>
-        context.ExecuteTestAsync(testName, () => context
-            .GoToSetupAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess));
+        context.ExecuteTestAsync(testName, () =>
+        {
+            context.Configuration.SetupConfiguration.SetupWithHttpClient = false;
+            return context.GoToSetupAndSetupOrchardCoreAsync(setupParameters, shouldBeSuccess);
+        });
 
     private static Task TestLoginAsync(
         this UITestContext context,
