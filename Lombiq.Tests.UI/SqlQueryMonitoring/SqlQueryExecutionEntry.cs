@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,17 +13,20 @@ public sealed partial class SqlQueryExecutionEntry
     public string NormalizedCommandText { get; }
     public string ParameterSignature { get; }
     public int? RowCount { get; }
+    public string CallStack { get; }
 
     public SqlQueryExecutionEntry(
         string commandText,
         string normalizedCommandText,
         string parameterSignature,
-        int? rowCount)
+        int? rowCount,
+        string callStack)
     {
         CommandText = commandText;
         NormalizedCommandText = normalizedCommandText;
         ParameterSignature = parameterSignature;
         RowCount = rowCount;
+        CallStack = callStack;
     }
 
     public static SqlQueryExecutionEntry FromCommand(DbCommand command, int? rowCount)
@@ -30,8 +34,9 @@ public sealed partial class SqlQueryExecutionEntry
         var commandText = NormalizeCommandText(command.CommandText);
         var normalized = NormalizeWhitespace(commandText);
         var parameterSignature = BuildParameterSignature(command.Parameters);
+        var callStack = CaptureCallStack();
 
-        return new SqlQueryExecutionEntry(commandText, normalized, parameterSignature, rowCount);
+        return new SqlQueryExecutionEntry(commandText, normalized, parameterSignature, rowCount, callStack);
     }
 
     private static string NormalizeCommandText(string commandText)
@@ -44,6 +49,12 @@ public sealed partial class SqlQueryExecutionEntry
 
     private static string NormalizeWhitespace(string text) =>
         WhitespaceRegex().Replace(text ?? string.Empty, " ").Trim();
+
+    private static string CaptureCallStack()
+    {
+        var stackTrace = new StackTrace(fNeedFileInfo: true).ToString().TrimEnd();
+        return string.IsNullOrWhiteSpace(stackTrace) ? null : stackTrace;
+    }
 
     private static string BuildParameterSignature(DbParameterCollection parameters)
     {
