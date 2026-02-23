@@ -45,6 +45,9 @@ Set thresholds per test with `SqlQueryMonitoringConfiguration` in the test confi
 - `DuplicateCommandThreshold`: 30
 - `DuplicateCommandWithParametersThreshold`: 15
 - `ResultSetRowCountThreshold`: 200
+- `SummaryLookupTimeout`: 2 seconds
+- `SummaryLookupInterval`: 100 milliseconds
+- `FollowUpSummaryQuietPeriod`: 300 milliseconds
 
 Typical override:
 
@@ -52,6 +55,14 @@ Typical override:
 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 20;
 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 10;
 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
+```
+
+Timing override example:
+
+```csharp
+configuration.SqlQueryMonitoringConfiguration.SummaryLookupTimeout = TimeSpan.FromSeconds(5);
+configuration.SqlQueryMonitoringConfiguration.SummaryLookupInterval = TimeSpan.FromMilliseconds(200);
+configuration.SqlQueryMonitoringConfiguration.FollowUpSummaryQuietPeriod = TimeSpan.FromMilliseconds(500);
 ```
 
 Threshold semantics:
@@ -133,7 +144,8 @@ If you want the summary itself for custom reporting:
 var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
 ```
 
-If your test triggers API calls without browser navigation (for example through `HttpClient`), assert by request path:
+If your test triggers API calls without browser navigation (for example with browser-side `fetch`), assert by request
+path:
 
 ```csharp
 await context.AssertSqlQueryMonitoringForRequestAsync(
@@ -144,8 +156,6 @@ await context.AssertSqlQueryMonitoringForRequestAsync(
 For non-HTML endpoints (for example plain text sample actions), you can:
 
 - Disable HTML validation for the test and navigate directly, then use `AssertSqlQueryMonitoringAsync()`.
-- Keep HTML validation enabled, trigger the endpoint via `HttpClient`, then use
-  `AssertSqlQueryMonitoringForRequestAsync(path, method)`.
 
 ## Per-Page Thresholds
 
@@ -183,18 +193,11 @@ Use the failure category to guide your next step:
 - **Oversized result sets**: Look for missing SQL filters, ordering, or paging.
 
 The failure message lists the exact queries that crossed thresholds so you can navigate to the call site.
+Each failure also includes the captured SQL execution call stack(s), untrimmed, to help identify where the command
+originated.
 
 ## Samples
 
-See the sample tests for a complete walkthrough:
+See the SQL monitoring scenario catalog in:
 
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringBasicsTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringDisableCollectionTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFailureTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTenantTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringThresholdsTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringPageChangeRuleTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringFilteringTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringLinqToDbTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringAdditionalQuerySourcesTests.cs`
-- `Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringRequestMatchingTests.cs`
+- `test/Lombiq.OSOCE.Tests.UI/Tests/SqlMonitoringTests/README.md`

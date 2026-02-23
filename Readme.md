@@ -20,7 +20,8 @@ Highlights:
 - Check for web content accessibility so people with disabilities can use your app properly too. You can also create accessibility reports for all pages.
 - Check for the validity of the HTML markup either explicitly or automatically on all page changes.
 - Detect duplicate SQL queries and oversized result sets to catch SELECT N+1 issues and missing filters, with
-  page-change assertions, request-specific assertions, and combined follow-up request assertions.
+  page-change assertions, request-specific assertions, combined follow-up request assertions, configurable summary
+  lookup timings, and callstack diagnostics in failures.
 - Reliability is built in, so you won't get false negatives.
 - Use shortcuts for common Orchard Core operations like logging in or enabling features instead of going through the UI so you only test what you want, and it's also faster.
 - Ready to use GitHub Actions workflows for CI builds and support for test grouping and error annotations in [Lombiq GitHub Actions](https://github.com/features/actions). This feature is automatically enabled if a GitHub environment is detected.
