@@ -27,7 +27,8 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
         {
             if (configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule?.Invoke(context) == true)
             {
-                await context.AssertSqlQueryMonitoringAsync(assertSqlQueryMonitoringSummaryAsync);
+                // Page-change assertions are intentionally aggressive: include immediate follow-up async requests too.
+                await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(assertSqlQueryMonitoringSummaryAsync);
             }
         };
     }
