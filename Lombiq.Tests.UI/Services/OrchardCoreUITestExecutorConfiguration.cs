@@ -128,6 +128,7 @@ public class OrchardCoreUITestExecutorConfiguration
         new Dictionary<string, Func<ResponseCompletedEventArgs, bool>>
         {
             [nameof(IsNonSuccessResponse)] = IsNonSuccessResponse,
+            ["Ignore missing favicon."] = eventArgs => !eventArgs.Response.Url.ContainsOrdinalIgnoreCase("favicon.ico"),
         };
 
     /// <summary>
