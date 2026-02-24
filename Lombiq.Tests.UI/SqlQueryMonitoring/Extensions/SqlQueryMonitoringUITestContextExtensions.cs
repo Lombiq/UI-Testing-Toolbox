@@ -106,7 +106,8 @@ public static class SqlQueryMonitoringUITestContextExtensions
             tenant: context.TenantName,
             expectedPathAndQuery,
             expectedPath,
-            requestMethod);
+            requestMethod,
+            allowMostRelevantFallback: false);
         await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
     }
 
@@ -139,14 +140,16 @@ public static class SqlQueryMonitoringUITestContextExtensions
             tenant: context.TenantName,
             expectedPathAndQuery: context.GetCurrentUri().PathAndQuery,
             expectedPath: context.GetCurrentUri().AbsolutePath,
-            requestMethod: null);
+            requestMethod: null,
+            allowMostRelevantFallback: true);
 
     private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
         this UITestContext context,
         string tenant,
         string expectedPathAndQuery,
         string expectedPath,
-        string requestMethod)
+        string requestMethod,
+        bool allowMostRelevantFallback)
     {
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
         var store = await context.GetSqlQueryMonitoringStoreAsync(tenant)
@@ -172,7 +175,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
         }
 
-        if (TryDequeueMostRelevantFallback(store, out var fallbackSummary))
+        if (allowMostRelevantFallback && TryDequeueMostRelevantFallback(store, out var fallbackSummary))
         {
             return fallbackSummary;
         }
@@ -255,6 +258,13 @@ public static class SqlQueryMonitoringUITestContextExtensions
         if (string.Equals(requestPath, expectedPathAndQuery, StringComparison.OrdinalIgnoreCase))
         {
             return true;
+        }
+
+        // If the caller specified a query string, this must be an exact path+query match to avoid selecting an
+        // unrelated request with the same path but different query parameters.
+        if (expectedPathAndQuery.Contains('?', StringComparison.Ordinal))
+        {
+            return false;
         }
 
         var queryStringStartIndex = requestPath.IndexOf('?', StringComparison.Ordinal);
