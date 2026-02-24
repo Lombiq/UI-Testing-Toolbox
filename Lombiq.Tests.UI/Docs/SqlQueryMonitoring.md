@@ -24,13 +24,6 @@ Use these assertion methods based on request flow:
 - `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Includes immediate follow-up async requests.
 - `AssertSqlQueryMonitoringForRequestAsync(path, method)`: Match a specific request path/method explicitly.
 
-For non-HTML endpoints, disable HTML validation for that test and navigate directly, then assert:
-
-```csharp
-await context.GoToRelativeUrlAsync("/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/RawQuery");
-await context.AssertSqlQueryMonitoringAsync();
-```
-
 ## Debugging Failed Checks
 
 When a check fails:
