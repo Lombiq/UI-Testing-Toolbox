@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.ContentManagement.Records;
 using OrchardCore.Data;
-using System.Threading;
 using System.Threading.Tasks;
 using YesSql;
 
