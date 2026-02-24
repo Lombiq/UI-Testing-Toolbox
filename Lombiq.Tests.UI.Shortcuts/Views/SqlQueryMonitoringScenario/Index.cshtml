@@ -1,3 +1,5 @@
+@using Lombiq.Tests.UI.Shortcuts
+@using OrchardCore
 @model int
 
 <h1>SQL Query Monitoring Scenario</h1>
@@ -9,7 +11,10 @@
 (() => {
     const statusElement = document.getElementById("async-query-status");
     const resultElement = document.getElementById("async-query-result");
-    const endpointUrl = "@Url.Content("~/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/AsyncQuery")";
+    const endpointUrl = "@Url.Action(
+        nameof(SqlQueryMonitoringScenarioController.AsyncQuery),
+        typeof(SqlQueryMonitoringScenarioController).ControllerName(),
+        new { area = ShortcutsFeatureIds.Area })";
 
     fetch(endpointUrl)
         .then(response => response.ok ? response.text() : Promise.reject())

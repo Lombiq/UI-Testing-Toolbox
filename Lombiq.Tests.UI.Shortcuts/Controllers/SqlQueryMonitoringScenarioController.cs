@@ -14,7 +14,6 @@ namespace Lombiq.Tests.UI.Shortcuts.Controllers;
 /// </summary>
 [AllowAnonymous]
 [DevelopmentAndLocalhostOnly]
-[Route("Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario")]
 public sealed class SqlQueryMonitoringScenarioController : Controller
 {
     private readonly ISession _session;
@@ -34,7 +33,6 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Renders a page that executes a standard YesSql query so page-change SQL monitoring assertions can run on HTML.
     /// </summary>
-    [HttpGet("Index")]
     public async Task<IActionResult> Index()
     {
         var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync();
@@ -44,7 +42,6 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Executes the same YesSql query as <see cref="Index"/> but returns JSON to simulate a follow-up async request.
     /// </summary>
-    [HttpGet("AsyncQuery")]
     public async Task<IActionResult> AsyncQuery()
     {
         var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync();
@@ -54,7 +51,6 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Executes a raw SQL read query for source coverage tests.
     /// </summary>
-    [HttpGet("RawQuery")]
     public async Task<IActionResult> RawQuery()
     {
         var contentItemCount = await _session.RawQueryAsync<int>($"SELECT COUNT(*) FROM {nameof(ContentItemIndex)}");
@@ -64,7 +60,6 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Executes a raw SQL write command.
     /// </summary>
-    [HttpGet("RawExecuteNonQuery")]
     public async Task<IActionResult> RawExecuteNonQuery()
     {
         var affectedRows = await _session.RawExecuteNonQueryAsync((_, prefix) =>
@@ -76,7 +71,6 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Executes a YesSql query from a manually created session to verify custom-session instrumentation.
     /// </summary>
-    [HttpGet("CustomSessionQuery")]
     public async Task<IActionResult> CustomSessionQuery()
     {
         await using var session = _store.CreateSession();
@@ -87,18 +81,17 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// <summary>
     /// Executes a direct ADO.NET query through <see cref="IDbConnectionAccessor"/> to cover low-level SQL access.
     /// </summary>
-    [HttpGet("DirectConnectionQuery")]
-    public async Task<IActionResult> DirectConnectionQuery(CancellationToken cancellationToken)
+    public async Task<IActionResult> DirectConnectionQuery()
     {
         await using var connection = _dbConnectionAccessor.CreateConnection();
-        await connection.OpenAsync(cancellationToken);
+        await connection.OpenAsync(HttpContext.RequestAborted);
 
         await using var command = connection.CreateCommand();
 #pragma warning disable CA2100 // SQL uses trusted internal table metadata only.
         command.CommandText = $"SELECT COUNT(*) FROM {GetContentItemIndexTableName(_store.Configuration.TablePrefix)}";
 #pragma warning restore CA2100
 
-        var contentItemCount = await command.ExecuteScalarAsync(cancellationToken);
+        var contentItemCount = await command.ExecuteScalarAsync(HttpContext.RequestAborted);
         return Ok(contentItemCount);
     }
 

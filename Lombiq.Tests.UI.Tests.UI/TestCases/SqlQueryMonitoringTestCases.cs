@@ -1,7 +1,9 @@
+using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
@@ -367,10 +369,10 @@ public static class SqlQueryMonitoringTestCases
         executeTestAfterSetupAsync(
             async context =>
             {
-                const string pagePath = "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/Index";
-                const string asyncApiPath = "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/AsyncQuery";
+                var asyncApiPath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
 
-                await context.GoToRelativeUrlAsync(pagePath);
+                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+                var pagePath = context.GetCurrentUri().AbsolutePath;
 
                 context.DoWithRetriesOrFail(() =>
                     string.Equals(context.GetText(By.Id("async-query-status")), "Completed", StringComparison.Ordinal));
@@ -404,9 +406,8 @@ public static class SqlQueryMonitoringTestCases
         executeTestAfterSetupAsync(
             async context =>
             {
-                const string pagePath = "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/Index";
-
-                await context.GoToRelativeUrlAsync(pagePath);
+                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+                var pagePath = context.GetCurrentUri().AbsolutePath;
 
                 var exception = await Should.ThrowAsync<SqlQueryMonitoringAssertionException>(
                     () => context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync());
@@ -432,9 +433,7 @@ public static class SqlQueryMonitoringTestCases
         executeTestAfterSetupAsync(
             async context =>
             {
-                const string pagePath = "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/Index";
-
-                await context.GoToRelativeUrlAsync(pagePath);
+                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
 
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
                 {
@@ -487,7 +486,7 @@ public static class SqlQueryMonitoringTestCases
         ExecuteSqlMonitoringScenarioAsync(
             executeTestAfterSetupAsync,
             browser,
-            requestPath: "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/RawQuery",
+            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery()),
             entry =>
                 entry.CommandText.Contains("SELECT", StringComparison.OrdinalIgnoreCase) &&
                 entry.CommandText.Contains("ContentItemIndex", StringComparison.OrdinalIgnoreCase),
@@ -499,7 +498,8 @@ public static class SqlQueryMonitoringTestCases
         ExecuteSqlMonitoringScenarioAsync(
             executeTestAfterSetupAsync,
             browser,
-            requestPath: "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/RawExecuteNonQuery",
+            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+                controller => controller.RawExecuteNonQuery()),
             entry =>
                 entry.CommandText.Contains("DELETE", StringComparison.OrdinalIgnoreCase) &&
                 entry.CommandText.Contains("ContentItemIndex", StringComparison.OrdinalIgnoreCase),
@@ -511,7 +511,8 @@ public static class SqlQueryMonitoringTestCases
         ExecuteSqlMonitoringScenarioAsync(
             executeTestAfterSetupAsync,
             browser,
-            requestPath: "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/CustomSessionQuery",
+            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+                controller => controller.CustomSessionQuery()),
             entry => entry.CommandText.Contains("ContentItemIndex", StringComparison.OrdinalIgnoreCase),
             "Queries executed through a manually created YesSql session should be captured.");
 
@@ -521,7 +522,8 @@ public static class SqlQueryMonitoringTestCases
         ExecuteSqlMonitoringScenarioAsync(
             executeTestAfterSetupAsync,
             browser,
-            requestPath: "/Lombiq.Tests.UI.Shortcuts/SqlQueryMonitoringScenario/DirectConnectionQuery",
+            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+                controller => controller.DirectConnectionQuery()),
             entry =>
                 entry.CommandText.Contains("SELECT", StringComparison.OrdinalIgnoreCase) &&
                 entry.CommandText.Contains("ContentItemIndex", StringComparison.OrdinalIgnoreCase),
@@ -530,12 +532,13 @@ public static class SqlQueryMonitoringTestCases
     private static Task ExecuteSqlMonitoringScenarioAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
         Browser browser,
-        string requestPath,
+        Func<UITestContext, string> requestPathMethod,
         Predicate<SqlQueryExecutionEntry> executionPredicate,
         string assertionMessage) =>
         executeTestAfterSetupAsync(
             async context =>
             {
+                var requestPath = requestPathMethod(context);
                 await context.GoToRelativeUrlAsync(requestPath);
 
                 await context.AssertSqlQueryMonitoringAsync(summary =>
