@@ -10,8 +10,13 @@ It detects:
 
 ## Quick Start
 
-1. Navigate to a page.
-2. Assert the captured SQL summary.
+1. Enable SQL monitoring collection in test configuration.
+2. Navigate to a page.
+3. Assert the captured SQL summary.
+
+```csharp
+configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
+```
 
 ```csharp
 await context.GoToRelativeUrlAsync("/categories/travel");
@@ -54,6 +59,7 @@ Without middleware, assertions cannot reliably separate SQL activity per request
 
 Defaults:
 
+- `EnableSqlQueryMonitoringCollection`: `false`
 - `RunSqlQueryMonitoringAssertionOnAllPageChanges`: `false`
 - `DuplicateCommandThreshold`: `30`
 - `DuplicateCommandWithParametersThreshold`: `15`
@@ -96,6 +102,7 @@ configuration.SqlQueryMonitoringConfiguration.FollowUpSummaryQuietPeriod = TimeS
 Automatic page-change assertions:
 
 ```csharp
+configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
 ```
 

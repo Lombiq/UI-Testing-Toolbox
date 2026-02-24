@@ -126,6 +126,12 @@ Include it in the test project like this:
 SQL query monitoring helps detect duplicate queries and oversized result sets in a single request. Configure it per
 test using `SqlQueryMonitoringConfiguration`.
 
+Collection is disabled by default. Enable it explicitly before using SQL monitoring assertions:
+
+```csharp
+configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
+```
+
 See the dedicated [SQL query monitoring](SqlQueryMonitoring.md) docs for the full list of options and examples.
 
 ## Multi-process test execution

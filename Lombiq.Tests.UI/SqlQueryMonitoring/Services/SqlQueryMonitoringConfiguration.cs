@@ -32,9 +32,10 @@ public class SqlQueryMonitoringConfiguration
 
     /// <summary>
     /// Gets or sets a value indicating whether SQL query monitoring is enabled in the Orchard Core app for this test
-    /// run. When this is <see langword="false"/>, the app will not register the SQL monitoring services or middleware.
+    /// run. Disabled by default. When this is <see langword="false"/>, the app will not register the SQL monitoring
+    /// services or middleware.
     /// </summary>
-    public bool EnableSqlQueryMonitoringCollection { get; set; } = true;
+    public bool EnableSqlQueryMonitoringCollection { get; set; }
 
     /// <summary>
     /// Gets or sets a predicate that determines whether SQL query monitoring and asserting the results should run for
