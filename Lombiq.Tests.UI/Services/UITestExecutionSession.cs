@@ -874,7 +874,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 (entry.Text.ContainsOrdinalIgnoreCase("ace-builds/src-noconflict/worker-html.js") ||
                     entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.ContainsOrdinalIgnoreCase(smtpContext.WebUIUri.AbsoluteUri) == true));
 
-        _configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedNotFoundResponse("/worker-html.js");
+        _configuration.WithIgnoreExpectedNotFoundResponseFilter("/worker-html.js");
 
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {

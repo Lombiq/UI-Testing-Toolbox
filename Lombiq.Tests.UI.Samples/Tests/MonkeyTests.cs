@@ -74,7 +74,7 @@ public class MonkeyTests : UITestBase
             },
             // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
             // parameters are required.
-            configuration => configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedStatusResponse("/api/graphql", 400));
+            configuration => configuration.WithIgnoreExpectedStatusResponseFilter("/api/graphql", 400));
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>
