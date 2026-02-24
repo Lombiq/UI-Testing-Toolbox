@@ -260,7 +260,11 @@ public static class SqlQueryMonitoringTestCases
                 }
             },
             browser,
-            _ => Task.CompletedTask);
+            configuration =>
+            {
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = false;
+                return Task.CompletedTask;
+            });
 
     public static Task SqlQueryMonitoringShouldSurfaceDuplicateCommandIssuesAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
