@@ -121,10 +121,26 @@ public class OrchardCoreUITestExecutorConfiguration
     public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
-    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// Gets the delegates that select which response data get saved to <see
     /// cref="UITestContext.CumulativeResponseLog"/>.
     /// </summary>
-    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter { get; set; } = IsNonSuccessResponse;
+    public IDictionary<string, Func<ResponseCompletedEventArgs, bool>> ResponseLogFilters { get; } =
+        new Dictionary<string, Func<ResponseCompletedEventArgs, bool>>
+        {
+            [nameof(IsNonSuccessResponse)] = IsNonSuccessResponse,
+        };
+
+    /// <summary>
+    /// Gets or sets the default delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeResponseLog"/>. It's a shortcut to the <see cref="ResponseLogFilters"/> entry
+    /// where the key is <see cref="ResponseLogFilter"/>.
+    /// </summary>
+    [Obsolete($"Use {nameof(ResponseLogFilters)} directly.")]
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter
+    {
+        get => ResponseLogFilters.GetMaybe(nameof(ResponseLogFilter)) ?? (_ => true);
+        set => ResponseLogFilters[nameof(ResponseLogFilter)] = value;
+    }
 
     public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
 

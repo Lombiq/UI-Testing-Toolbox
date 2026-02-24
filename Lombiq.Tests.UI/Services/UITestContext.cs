@@ -356,7 +356,7 @@ public sealed class UITestContext : IAsyncDisposable
             {
                 await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
                 {
-                    if (configuration.ResponseLogFilter(responseCompleted))
+                    if (configuration.ResponseLogFilters.All(filter => filter.Value(responseCompleted)))
                     {
                         context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
                     }
