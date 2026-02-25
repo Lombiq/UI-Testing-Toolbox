@@ -399,7 +399,7 @@ public static class SqlQueryMonitoringTestCases
                 await context.AssertSqlQueryMonitoringForRequestAsync(tenantPath, HttpMethod.Get.Method, summary =>
                 {
                     summary.TenantName.ShouldBe(tenantName);
-                    summary.RequestPath.ShouldStartWith($"/{tenantUrlPrefix}/", Case.Insensitive);
+                    summary.RequestPath.ShouldStartWith($"/{tenantUrlPrefix}/");
                     summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
                     return Task.CompletedTask;
                 });
@@ -454,7 +454,7 @@ public static class SqlQueryMonitoringTestCases
 
                 await AssertInvalidOperationExceptionIsThrownAsync(
                     () => context.AssertSqlQueryMonitoringForRequestAsync(pathWithQuery, HttpMethod.Get.Method),
-                    exception => exception.Message.ShouldContain(pathWithQuery),
+                    exception => exception.Message.ShouldContain(pathWithQuery, customMessage: $"Exception message was: {exception.Message}"),
                     MissingMatchingSummaryFailureMessage);
             },
             browser);
