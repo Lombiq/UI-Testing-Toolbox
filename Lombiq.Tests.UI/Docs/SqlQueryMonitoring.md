@@ -32,8 +32,10 @@ Use these assertion methods based on request flow:
 ## Matching and Isolation
 
 - Summary lookup and fallback are tenant-aware. Assertions only consume summaries that belong to the active tenant.
+- Captured request paths include `PathBase + Path + QueryString`, so tenant URL prefixes are preserved for strict request matching.
 - `AssertSqlQueryMonitoringForRequestAsync()` uses strict request matching: if you specify a query string then the full path+query must match.
 - Follow-up-inclusive assertions merge only summaries that are completed at or after the initial summary. This prevents stale queue items from earlier requests being merged into the current assertion.
+- Store retention removes empty (no-SQL) summaries first when capacity is exceeded, so noisy follow-up requests are less likely to evict actionable SQL summaries.
 
 ## Debugging Failed Checks
 

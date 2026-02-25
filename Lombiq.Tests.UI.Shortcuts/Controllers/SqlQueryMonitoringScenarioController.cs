@@ -48,6 +48,13 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     }
 
     /// <summary>
+    /// Returns a response without executing SQL, used to verify that noisy non-SQL requests do not evict actionable
+    /// SQL summaries from the monitoring store.
+    /// </summary>
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult NoSql() => Ok("No SQL executed.");
+
+    /// <summary>
     /// Executes a raw SQL read query for source coverage tests.
     /// </summary>
     public async Task<IActionResult> RawQuery()

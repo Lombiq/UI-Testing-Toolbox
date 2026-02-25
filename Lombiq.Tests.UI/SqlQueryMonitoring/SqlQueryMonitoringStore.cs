@@ -20,7 +20,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
         lock (_lock)
         {
             _summaries.Enqueue(summary);
-            while (_summaries.Count > MaxEntries) _summaries.Dequeue();
+            TrimToCapacity();
         }
     }
 
@@ -82,6 +82,45 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 
             return summary != null;
         }
+    }
+
+    private void TrimToCapacity()
+    {
+        while (_summaries.Count > MaxEntries)
+        {
+            if (!TryRemoveOldestSummary(candidate => candidate?.Executions.Count == 0))
+            {
+                _summaries.Dequeue();
+            }
+        }
+    }
+
+    private bool TryRemoveOldestSummary(Predicate<SqlQueryMonitoringSummary> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var items = new Queue<SqlQueryMonitoringSummary>(_summaries.Count);
+        var removed = false;
+
+        while (_summaries.Count > 0)
+        {
+            var candidate = _summaries.Dequeue();
+
+            if (!removed && predicate(candidate))
+            {
+                removed = true;
+                continue;
+            }
+
+            items.Enqueue(candidate);
+        }
+
+        while (items.Count > 0)
+        {
+            _summaries.Enqueue(items.Dequeue());
+        }
+
+        return removed;
     }
 
     public void Clear()

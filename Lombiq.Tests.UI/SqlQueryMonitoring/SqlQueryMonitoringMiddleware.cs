@@ -34,7 +34,7 @@ public sealed class SqlQueryMonitoringMiddleware
                 var tenantName = services.GetService<ShellSettings>()?.Name ?? ShellSettings.DefaultShellName;
                 var summary = new SqlQueryMonitoringSummary(
                     tenantName: tenantName,
-                    requestPath: $"{context.Request.Path}{context.Request.QueryString}",
+                    requestPath: $"{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}",
                     requestMethod: context.Request.Method,
                     traceIdentifier: context.TraceIdentifier,
                     completedUtc: DateTimeOffset.UtcNow,

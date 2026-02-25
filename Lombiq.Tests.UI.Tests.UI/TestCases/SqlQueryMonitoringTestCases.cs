@@ -394,17 +394,21 @@ public static class SqlQueryMonitoringTestCases
                     });
 
                 await context.GoToRelativeUrlAsync("/");
+                var tenantPath = context.GetCurrentUri().AbsolutePath;
 
-                await context.AssertSqlQueryMonitoringAsync(summary =>
+                await context.AssertSqlQueryMonitoringForRequestAsync(tenantPath, HttpMethod.Get.Method, summary =>
                 {
+                    summary.TenantName.ShouldBe(tenantName);
+                    summary.RequestPath.ShouldStartWith($"/{tenantUrlPrefix}/", Case.Insensitive);
                     summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
                     return Task.CompletedTask;
                 });
 
                 context.SwitchCurrentTenantToDefault();
                 await context.GoToRelativeUrlAsync("/");
+                var defaultTenantPath = context.GetCurrentUri().AbsolutePath;
 
-                await context.AssertSqlQueryMonitoringAsync(summary =>
+                await context.AssertSqlQueryMonitoringForRequestAsync(defaultTenantPath, HttpMethod.Get.Method, summary =>
                 {
                     summary.TenantName.ShouldBe(ShellSettings.DefaultShellName);
                     summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
@@ -523,6 +527,41 @@ public static class SqlQueryMonitoringTestCases
                 });
             },
             browser);
+
+    public static Task SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                var sqlRequestPath =
+                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery());
+                var noSqlRequestPath =
+                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.NoSql());
+                const int noSqlRequestsToGenerate = 55; // Exceeds SqlQueryMonitoringStore.MaxEntries.
+
+                await context.GoToRelativeUrlAsync(sqlRequestPath);
+
+                for (var requestIndex = 0; requestIndex < noSqlRequestsToGenerate; requestIndex++)
+                {
+                    await context.GoToRelativeUrlAsync(
+                        $"{noSqlRequestPath}?request={requestIndex.ToTechnicalString()}",
+                        onlyIfNotAlreadyThere: false);
+                }
+
+                await context.AssertSqlQueryMonitoringForRequestAsync(
+                    sqlRequestPath,
+                    HttpMethod.Get.Method,
+                    summary =>
+                    {
+                        summary.Executions.ShouldNotBeEmpty(
+                            "SQL request summaries should not be evicted by later requests without SQL execution.");
+                        return Task.CompletedTask;
+                    });
+            },
+            browser,
+            ConfigurationHelper.DisableHtmlValidation);
 
     public static Task LinqToDbSamplesShouldBeCapturedBySqlMonitoringAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
