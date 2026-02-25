@@ -475,7 +475,15 @@ public static class SqlQueryMonitoringTestCases
 
                 await AssertInvalidOperationExceptionIsThrownAsync(
                     () => context.AssertSqlQueryMonitoringForRequestAsync(expectedRequest, HttpMethod.Get.Method),
-                    exception => exception.Message.ShouldContain(expectedRequest),
+                    exception =>
+                    {
+                        exception.Message.ShouldContain(
+                            "No SQL query monitoring summary was captured for",
+                            customMessage: $"Exception message was: {exception.Message}");
+                        exception.Message.ShouldContain(
+                            requestBasePath,
+                            customMessage: $"Exception message was: {exception.Message}");
+                    },
                     MissingMatchingSummaryFailureMessage);
             },
             browser,
