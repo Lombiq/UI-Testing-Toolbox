@@ -124,7 +124,7 @@ public class SqlQueryMonitoringConfiguration
         if (summary == null) throw new InvalidOperationException("SQL query monitoring summary was not available.");
 
         var failures = new List<string>();
-        var executions = summary.Executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
+        var executions = GetFilteredExecutions(summary.Executions);
 
         var hasDuplicateCommandFailures = AddDuplicateCommandFailures(executions, failures);
         var hasDuplicateCommandWithParametersFailures = AddDuplicateCommandWithParametersFailures(executions, failures);
@@ -146,7 +146,7 @@ public class SqlQueryMonitoringConfiguration
     {
         if (testOutputHelper == null || summary == null) return;
 
-        var executions = summary.Executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
+        var executions = GetFilteredExecutions(summary.Executions);
 
         var duplicateCommandGroups = executions
             .GroupBy(entry => entry.NormalizedCommandText)
@@ -174,13 +174,13 @@ public class SqlQueryMonitoringConfiguration
             $"- Executions: {executions.Count.ToTechnicalString()}" + Environment.NewLine +
             $"- Duplicate command groups: {duplicateCommandGroups.Count.ToTechnicalString()} " +
             $"(max group size: {GetMaxOrZero(duplicateCommandGroups).ToTechnicalString()}, " +
-            $"threshold: {DuplicateCommandThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"threshold: {FormatThreshold(DuplicateCommandThreshold)})" + Environment.NewLine +
             $"- Duplicate command+parameters groups: {duplicateCommandWithParametersGroups.Count.ToTechnicalString()} " +
             $"(max group size: {GetMaxOrZero(duplicateCommandWithParametersGroups).ToTechnicalString()}, " +
-            $"threshold: {DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"threshold: {FormatThreshold(DuplicateCommandWithParametersThreshold)})" + Environment.NewLine +
             $"- Result set rows observed: {oversizedRowCounts.Count.ToTechnicalString()} " +
             $"(max rows: {GetMaxOrZero(oversizedRowCounts).ToTechnicalString()}, " +
-            $"threshold: {ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"})" + Environment.NewLine +
+            $"threshold: {FormatThreshold(ResultSetRowCountThreshold)})" + Environment.NewLine +
             "- Triggered failure categories (at current thresholds): " +
             $"{(triggeredFailureCategories.Count == 0 ? "(none)" : string.Join(", ", triggeredFailureCategories))}";
 
@@ -198,6 +198,12 @@ public class SqlQueryMonitoringConfiguration
 
     private static int GetMaxOrZero(List<int> values) =>
         values.Count == 0 ? 0 : values.Max();
+
+    private List<SqlQueryExecutionEntry> GetFilteredExecutions(IReadOnlyList<SqlQueryExecutionEntry> executions) =>
+        executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
+
+    private static string FormatThreshold(int? threshold) =>
+        threshold?.ToTechnicalString() ?? "null";
 
     private bool AddDuplicateCommandFailures(
         List<SqlQueryExecutionEntry> executions,
@@ -323,40 +329,41 @@ public class SqlQueryMonitoringConfiguration
         var categoryGuide = new List<string>();
         var triggeredCategories = new List<string>();
         var configuredThresholds = new List<string>();
-
-        if (hasDuplicateCommandFailures)
+        void AddFailureCategoryDetails(
+            bool shouldAdd,
+            string category,
+            string categoryDescription,
+            string thresholdName,
+            int? thresholdValue)
         {
-            categoryGuide.Add(
-                $"[{DuplicateCommandFailureCategory}] " +
-                "The same database query text was executed more times than the configured threshold allows. " +
-                "This can indicate a SELECT N+1 problem or repeated queries that should be consolidated.");
-            triggeredCategories.Add(DuplicateCommandFailureCategory);
-            configuredThresholds.Add(
-                $"{nameof(DuplicateCommandThreshold)}={DuplicateCommandThreshold?.ToTechnicalString() ?? "null"}");
+            if (!shouldAdd) return;
+
+            categoryGuide.Add($"[{category}] {categoryDescription}");
+            triggeredCategories.Add(category);
+            configuredThresholds.Add($"{thresholdName}={FormatThreshold(thresholdValue)}");
         }
 
-        if (hasDuplicateCommandWithParametersFailures)
-        {
-            categoryGuide.Add(
-                $"[{DuplicateCommandWithParametersFailureCategory}] " +
-                "The same database query (with identical parameters) was executed repeatedly. " +
-                "This can indicate missing caching or repeated queries from multiple call sites.");
-            triggeredCategories.Add(DuplicateCommandWithParametersFailureCategory);
-            configuredThresholds.Add(
-                $"{nameof(DuplicateCommandWithParametersThreshold)}=" +
-                $"{DuplicateCommandWithParametersThreshold?.ToTechnicalString() ?? "null"}");
-        }
-
-        if (hasResultSetFailures)
-        {
-            categoryGuide.Add(
-                $"[{ResultSetRowCountFailureCategory}] " +
-                "Some queries returned more rows than the configured threshold allows. " +
-                "This can indicate missing filtering in SQL and work being done in application code.");
-            triggeredCategories.Add(ResultSetRowCountFailureCategory);
-            configuredThresholds.Add(
-                $"{nameof(ResultSetRowCountThreshold)}={ResultSetRowCountThreshold?.ToTechnicalString() ?? "null"}");
-        }
+        AddFailureCategoryDetails(
+            hasDuplicateCommandFailures,
+            DuplicateCommandFailureCategory,
+            "The same database query text was executed more times than the configured threshold allows. " +
+            "This can indicate a SELECT N+1 problem or repeated queries that should be consolidated.",
+            nameof(DuplicateCommandThreshold),
+            DuplicateCommandThreshold);
+        AddFailureCategoryDetails(
+            hasDuplicateCommandWithParametersFailures,
+            DuplicateCommandWithParametersFailureCategory,
+            "The same database query (with identical parameters) was executed repeatedly. " +
+            "This can indicate missing caching or repeated queries from multiple call sites.",
+            nameof(DuplicateCommandWithParametersThreshold),
+            DuplicateCommandWithParametersThreshold);
+        AddFailureCategoryDetails(
+            hasResultSetFailures,
+            ResultSetRowCountFailureCategory,
+            "Some queries returned more rows than the configured threshold allows. " +
+            "This can indicate missing filtering in SQL and work being done in application code.",
+            nameof(ResultSetRowCountThreshold),
+            ResultSetRowCountThreshold);
 
         return
             header + Environment.NewLine +

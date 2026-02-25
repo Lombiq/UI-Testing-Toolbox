@@ -1,4 +1,6 @@
-﻿namespace Lombiq.Tests.UI.SqlQueryMonitoring;
+using System;
+
+namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
 /// Stores SQL query monitoring summaries for the current tenant scope.
@@ -14,6 +16,14 @@ public interface ISqlQueryMonitoringStore
     /// Removes and returns the most recent summary that contains SQL executions, if any.
     /// </summary>
     bool TryDequeueMostRecentWithExecutions(out SqlQueryMonitoringSummary summary);
+
+    /// <summary>
+    /// Removes and returns the most recent summary matching the provided predicate, if any, while keeping other queued
+    /// summaries.
+    /// </summary>
+    bool TryDequeueMostRecentMatching(
+        Predicate<SqlQueryMonitoringSummary> predicate,
+        out SqlQueryMonitoringSummary summary);
 
     /// <summary>
     /// Clears all stored summaries.

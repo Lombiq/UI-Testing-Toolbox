@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -68,33 +69,17 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
 
     public override void Cancel() => _dbCommand.Cancel();
 
-    public override int ExecuteNonQuery()
-    {
-        var result = _dbCommand.ExecuteNonQuery();
-        RecordExecution(rowCount: null);
-        return result;
-    }
+    public override int ExecuteNonQuery() =>
+        ExecuteAndRecord(_dbCommand.ExecuteNonQuery);
 
-    public override object ExecuteScalar()
-    {
-        var result = _dbCommand.ExecuteScalar();
-        RecordExecution(rowCount: null);
-        return result;
-    }
+    public override object ExecuteScalar() =>
+        ExecuteAndRecord(_dbCommand.ExecuteScalar);
 
-    public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
-    {
-        var result = await _dbCommand.ExecuteNonQueryAsync(cancellationToken);
-        RecordExecution(rowCount: null);
-        return result;
-    }
+    public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
+        ExecuteAndRecordAsync(() => _dbCommand.ExecuteNonQueryAsync(cancellationToken));
 
-    public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
-    {
-        var result = await _dbCommand.ExecuteScalarAsync(cancellationToken);
-        RecordExecution(rowCount: null);
-        return result;
-    }
+    public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
+        ExecuteAndRecordAsync(() => _dbCommand.ExecuteScalarAsync(cancellationToken));
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
@@ -126,5 +111,19 @@ public sealed class SqlQueryMonitoringDbCommand : DbCommand
         if (monitor == null) return;
 
         monitor.RecordExecution(SqlQueryExecutionEntry.FromCommand(_dbCommand, rowCount));
+    }
+
+    private T ExecuteAndRecord<T>(Func<T> execute)
+    {
+        var result = execute();
+        RecordExecution(rowCount: null);
+        return result;
+    }
+
+    private async Task<T> ExecuteAndRecordAsync<T>(Func<Task<T>> executeAsync)
+    {
+        var result = await executeAsync();
+        RecordExecution(rowCount: null);
+        return result;
     }
 }

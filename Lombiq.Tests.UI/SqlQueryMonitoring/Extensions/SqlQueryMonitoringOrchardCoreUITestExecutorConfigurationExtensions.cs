@@ -9,6 +9,8 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 
 public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExtensions
 {
+    private const string AssertionOnPageChangeWasSetUpKey = "SqlQueryMonitoringAssertionOnPageChangeWasSetUp";
+
     /// <summary>
     /// Sets up SQL query monitoring to run every time a page changes (either due to explicit navigation or clicks) and
     /// asserts on the monitoring results.
@@ -21,7 +23,7 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
         this OrchardCoreUITestExecutorConfiguration configuration,
         Func<SqlQueryMonitoringSummary, Task> assertSqlQueryMonitoringSummaryAsync = null)
     {
-        if (!configuration.CustomConfiguration.TryAdd("SqlQueryMonitoringAssertionOnPageChangeWasSetUp", value: true)) return;
+        if (!configuration.CustomConfiguration.TryAdd(AssertionOnPageChangeWasSetUpKey, value: true)) return;
 
         configuration.Events.AfterPageChange += async context =>
         {
@@ -73,12 +75,19 @@ public static class SqlQueryMonitoringOrchardCoreUITestExecutorConfigurationExte
                 .FirstOrDefault(rule => rule.Regex.IsMatch(targetUri.AbsolutePath))
                 .Thresholds ?? defaultThresholds;
 
-            configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = thresholds.DuplicateCommandThreshold;
-            configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold =
-                thresholds.DuplicateCommandWithParametersThreshold;
-            configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = thresholds.ResultSetRowCountThreshold;
+            ApplyThresholds(configuration.SqlQueryMonitoringConfiguration, thresholds);
 
             return Task.CompletedTask;
         };
+    }
+
+    private static void ApplyThresholds(
+        SqlQueryMonitoringConfiguration sqlQueryMonitoringConfiguration,
+        SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds thresholds)
+    {
+        sqlQueryMonitoringConfiguration.DuplicateCommandThreshold = thresholds.DuplicateCommandThreshold;
+        sqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold =
+            thresholds.DuplicateCommandWithParametersThreshold;
+        sqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = thresholds.ResultSetRowCountThreshold;
     }
 }

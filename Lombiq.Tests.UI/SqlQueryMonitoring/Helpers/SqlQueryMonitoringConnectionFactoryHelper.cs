@@ -7,10 +7,10 @@ internal static class SqlQueryMonitoringConnectionFactoryHelper
 {
     public static void EnsureWrapped(IStore store, IHttpContextAccessor httpContextAccessor)
     {
-        if (store?.Configuration?.ConnectionFactory == null) return;
-        if (store.Configuration.ConnectionFactory is SqlQueryMonitoringConnectionFactory) return;
+        var connectionFactory = store?.Configuration?.ConnectionFactory;
+        if (connectionFactory is null or SqlQueryMonitoringConnectionFactory) return;
 
         store.Configuration.ConnectionFactory =
-            new SqlQueryMonitoringConnectionFactory(store.Configuration.ConnectionFactory, httpContextAccessor);
+            new SqlQueryMonitoringConnectionFactory(connectionFactory, httpContextAccessor);
     }
 }

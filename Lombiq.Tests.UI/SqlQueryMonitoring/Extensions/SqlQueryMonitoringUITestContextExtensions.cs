@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,10 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 
 public static class SqlQueryMonitoringUITestContextExtensions
 {
+    private const string NoSqlMonitoringSummaryCapturedMessage =
+        "No SQL query monitoring summary was captured. Ensure the page has finished loading, executes SQL commands, " +
+        "and that SQL query monitoring is enabled.";
+
     /// <summary>
     /// Executes assertions on the SQL query monitoring summary recorded for the most recent request.
     /// </summary>
@@ -34,41 +39,11 @@ public static class SqlQueryMonitoringUITestContextExtensions
         this UITestContext context,
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
     {
-        var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
         var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
         var store = await context.GetSqlQueryMonitoringStoreAsync(context.TenantName)
-            ?? throw new InvalidOperationException(
-                "No SQL query monitoring summary was captured. Ensure the page has finished loading, executes SQL " +
-                "commands, and that SQL query monitoring is enabled.");
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
-        var summaries = new List<SqlQueryMonitoringSummary> { summary };
-        var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
-        var lastSummaryCapturedUtc = DateTime.UtcNow;
-        var shouldContinuePolling = true;
-
-        // After we captured the initial page/request summary, keep polling briefly so client-side follow-up requests
-        // (for example fetch/XHR calls triggered right after navigation) can be included in one combined assertion.
-        while (shouldContinuePolling && DateTime.UtcNow < deadline)
-        {
-            if (TryDequeueMostRecentAvailable(store, out var additionalSummary))
-            {
-                if (additionalSummary?.Executions.Count > 0)
-                {
-                    summaries.Add(additionalSummary);
-                    lastSummaryCapturedUtc = DateTime.UtcNow;
-                }
-
-                continue;
-            }
-
-            shouldContinuePolling =
-                DateTime.UtcNow - lastSummaryCapturedUtc < sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
-
-            if (shouldContinuePolling)
-            {
-                await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
-            }
-        }
+        var summaries = await CollectFollowUpSummariesAsync(context, store, summary);
 
         var summaryToAssert = summaries.Count == 1
             ? summary
@@ -96,11 +71,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
         string requestMethod = null,
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
     {
-        if (string.IsNullOrWhiteSpace(requestPathOrUrl))
-        {
-            throw new ArgumentException("Request path or URL must be provided.", nameof(requestPathOrUrl));
-        }
-
         var (expectedPathAndQuery, expectedPath) = ParseExpectedRequestPath(requestPathOrUrl);
         var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync(
             tenant: context.TenantName,
@@ -134,14 +104,17 @@ public static class SqlQueryMonitoringUITestContextExtensions
     /// <summary>
     /// Returns the SQL query monitoring summary recorded for the most recent request.
     /// </summary>
-    private static Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(this UITestContext context) =>
-        GetLatestSqlQueryMonitoringSummaryAsync(
+    private static Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(this UITestContext context)
+    {
+        var currentUri = context.GetCurrentUri();
+        return GetLatestSqlQueryMonitoringSummaryAsync(
             context,
             tenant: context.TenantName,
-            expectedPathAndQuery: context.GetCurrentUri().PathAndQuery,
-            expectedPath: context.GetCurrentUri().AbsolutePath,
+            expectedPathAndQuery: currentUri.PathAndQuery,
+            expectedPath: currentUri.AbsolutePath,
             requestMethod: null,
             allowMostRelevantFallback: true);
+    }
 
     private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
         this UITestContext context,
@@ -151,11 +124,10 @@ public static class SqlQueryMonitoringUITestContextExtensions
         string requestMethod,
         bool allowMostRelevantFallback)
     {
+        var expectedTenantName = NormalizeTenantName(tenant);
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
         var store = await context.GetSqlQueryMonitoringStoreAsync(tenant)
-            ?? throw new InvalidOperationException(
-                "No SQL query monitoring summary was captured. Ensure the page has finished loading, executes SQL " +
-                "commands, and that SQL query monitoring is enabled.");
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
         // Even for the "main" page request there can be a short race: the assertion may run before the summary is
@@ -164,6 +136,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         {
             if (TryDequeueMostRecentMatchingRequest(
                 store,
+                expectedTenantName,
                 expectedPathAndQuery,
                 expectedPath,
                 requestMethod,
@@ -175,7 +148,8 @@ public static class SqlQueryMonitoringUITestContextExtensions
             await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
         }
 
-        if (allowMostRelevantFallback && TryDequeueMostRelevantFallback(store, out var fallbackSummary))
+        if (allowMostRelevantFallback &&
+            TryDequeueMostRelevantFallback(store, expectedTenantName, out var fallbackSummary))
         {
             return fallbackSummary;
         }
@@ -193,9 +167,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         this UITestContext context,
         string tenant)
     {
-        var store = context.Application.Services.GetService<ISqlQueryMonitoringStore>();
-
-        if (store != null) return store;
+        ISqlQueryMonitoringStore store = null;
 
         await context.Application.UsingScopeAsync(
             serviceProvider =>
@@ -208,45 +180,107 @@ public static class SqlQueryMonitoringUITestContextExtensions
         return store;
     }
 
+    // Collects additional summaries produced shortly after the initial summary (for example by async browser calls).
+    private static async Task<List<SqlQueryMonitoringSummary>> CollectFollowUpSummariesAsync(
+        UITestContext context,
+        ISqlQueryMonitoringStore store,
+        SqlQueryMonitoringSummary initialSummary)
+    {
+        var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
+        var summaries = new List<SqlQueryMonitoringSummary> { initialSummary };
+        var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
+        var lastSummaryCapturedUtc = DateTime.UtcNow;
+        var shouldContinuePolling = true;
+
+        while (shouldContinuePolling && DateTime.UtcNow < deadline)
+        {
+            if (TryDequeueMostRecentFollowUp(
+                store,
+                initialSummary.TenantName,
+                initialSummary.CompletedUtc,
+                out var additionalSummary))
+            {
+                if (additionalSummary?.Executions.Count > 0)
+                {
+                    summaries.Add(additionalSummary);
+                    lastSummaryCapturedUtc = DateTime.UtcNow;
+                }
+
+                continue;
+            }
+
+            shouldContinuePolling = ShouldContinueFollowUpPolling(
+                lastSummaryCapturedUtc,
+                sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod);
+
+            if (shouldContinuePolling)
+            {
+                await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
+            }
+        }
+
+        return summaries;
+    }
+
+    private static bool ShouldContinueFollowUpPolling(
+        DateTime lastSummaryCapturedUtc,
+        TimeSpan followUpSummaryQuietPeriod) =>
+        DateTime.UtcNow - lastSummaryCapturedUtc < followUpSummaryQuietPeriod;
+
+    // Dequeues the newest summary that matches the explicit request selector (tenant + path/query + method).
+    // Used by request-specific assertions where mismatches must not silently pass.
     private static bool TryDequeueMostRecentMatchingRequest(
         ISqlQueryMonitoringStore store,
+        string expectedTenantName,
         string expectedPathAndQuery,
         string expectedPath,
         string expectedMethod,
-        out SqlQueryMonitoringSummary summary)
-    {
-        if (store is not SqlQueryMonitoringStore concreteStore)
-        {
-            summary = null;
-            return false;
-        }
-
-        return concreteStore.TryDequeueMostRecentMatching(
+        out SqlQueryMonitoringSummary summary) =>
+        TryDequeueMostRecentMatching(
+            store,
             candidate =>
+                TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
                 RequestPathMatches(candidate?.RequestPath, expectedPathAndQuery, expectedPath) &&
                 RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
             out summary);
-    }
 
+    // Dequeues a tenant-scoped fallback summary when an exact request match is not required.
+    // Prefers summaries with executions first, then any summary from the same tenant.
     private static bool TryDequeueMostRelevantFallback(
         ISqlQueryMonitoringStore store,
-        out SqlQueryMonitoringSummary summary)
-    {
-        if (store is SqlQueryMonitoringStore concreteStore)
-        {
-            return concreteStore.TryDequeueMostRecentWithExecutions(out summary) ||
-                concreteStore.TryDequeueMostRecent(out summary);
-        }
-
-        return store.TryDequeueMostRecentWithExecutions(out summary);
-    }
-
-    private static bool TryDequeueMostRecentAvailable(
-        ISqlQueryMonitoringStore store,
+        string expectedTenantName,
         out SqlQueryMonitoringSummary summary) =>
-        store is SqlQueryMonitoringStore concreteStore
-            ? concreteStore.TryDequeueMostRecent(out summary)
-            : store.TryDequeueMostRecentWithExecutions(out summary);
+        TryDequeueMostRecentMatching(
+                store,
+                candidate =>
+                    TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
+                    candidate?.Executions.Count > 0,
+                out summary) ||
+            TryDequeueMostRecentMatching(
+                store,
+                candidate => TenantNameMatches(candidate?.TenantName, expectedTenantName),
+                out summary);
+
+    // Dequeues the newest tenant-scoped summary produced at or after the initial matched summary.
+    // Used during follow-up polling to avoid merging stale summaries from earlier requests.
+    private static bool TryDequeueMostRecentFollowUp(
+        ISqlQueryMonitoringStore store,
+        string expectedTenantName,
+        DateTimeOffset minimumCompletedUtc,
+        out SqlQueryMonitoringSummary summary) =>
+        TryDequeueMostRecentMatching(
+            store,
+            candidate =>
+                TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
+                candidate?.CompletedUtc >= minimumCompletedUtc,
+            out summary);
+
+    private static bool TryDequeueMostRecentMatching(
+        ISqlQueryMonitoringStore store,
+        Predicate<SqlQueryMonitoringSummary> predicate,
+        out SqlQueryMonitoringSummary summary) =>
+        (store ?? throw new ArgumentNullException(nameof(store)))
+            .TryDequeueMostRecentMatching(predicate, out summary);
 
     private static bool RequestPathMatches(
         string requestPath,
@@ -288,6 +322,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             .First();
 
         return new SqlQueryMonitoringSummary(
+            tenantName: latestCompletedSummary.TenantName,
             requestPath:
             $"{requestPath} (combined {summaries.Count} request summaries)",
             requestMethod: "MULTI",
@@ -300,12 +335,19 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
     private static (string ExpectedPathAndQuery, string ExpectedPath) ParseExpectedRequestPath(string requestPathOrUrl)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestPathOrUrl);
+
         if (Uri.TryCreate(requestPathOrUrl, UriKind.Absolute, out var absoluteUri))
         {
             return (absoluteUri.PathAndQuery, absoluteUri.AbsolutePath);
         }
 
-        var expectedPathAndQuery = requestPathOrUrl.StartsWith('/') ? requestPathOrUrl : "/" + requestPathOrUrl;
+        var expectedPathAndQuery = requestPathOrUrl;
+        if (!expectedPathAndQuery.StartsWith('/'))
+        {
+            expectedPathAndQuery = "/" + expectedPathAndQuery;
+        }
+
         var queryStringStartIndex = expectedPathAndQuery.IndexOf('?', StringComparison.Ordinal);
         var expectedPath = queryStringStartIndex >= 0
             ? expectedPathAndQuery[..queryStringStartIndex]
@@ -313,4 +355,15 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         return (expectedPathAndQuery, expectedPath);
     }
+
+    private static string NormalizeTenantName(string tenantName) =>
+        string.IsNullOrWhiteSpace(tenantName) || tenantName.StartsWith('!')
+            ? ShellSettings.DefaultShellName
+            : tenantName;
+
+    private static bool TenantNameMatches(string actualTenantName, string expectedTenantName) =>
+        string.Equals(
+            NormalizeTenantName(actualTenantName),
+            NormalizeTenantName(expectedTenantName),
+            StringComparison.OrdinalIgnoreCase);
 }

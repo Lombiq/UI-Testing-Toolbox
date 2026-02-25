@@ -24,17 +24,30 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
         }
     }
 
+    /// <summary>
+    /// Removes and returns the newest stored summary.
+    /// </summary>
     public bool TryDequeueMostRecent(out SqlQueryMonitoringSummary summary) =>
         TryDequeueMostRecentCore(_ => true, out summary);
 
+    /// <summary>
+    /// Removes and returns the newest stored summary that has at least one SQL execution entry.
+    /// </summary>
     public bool TryDequeueMostRecentWithExecutions(out SqlQueryMonitoringSummary summary) =>
         TryDequeueMostRecentCore(candidate => candidate?.Executions.Count != 0, out summary);
 
+    /// <summary>
+    /// Removes and returns the newest stored summary matching the provided predicate.
+    /// </summary>
     public bool TryDequeueMostRecentMatching(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary) =>
         TryDequeueMostRecentCore(predicate, out summary);
 
+    /// <summary>
+    /// Finds the newest matching item, removes only that item from the queue, and preserves all remaining item
+    /// ordering.
+    /// </summary>
     private bool TryDequeueMostRecentCore(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary)

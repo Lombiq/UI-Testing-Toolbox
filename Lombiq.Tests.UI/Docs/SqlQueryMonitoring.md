@@ -26,8 +26,14 @@ await context.AssertSqlQueryMonitoringAsync();
 Use these assertion methods based on request flow:
 
 - `AssertSqlQueryMonitoringAsync()`: Standard single-request page assertion.
-- `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Includes immediate follow-up async requests.
-- `AssertSqlQueryMonitoringForRequestAsync(path, method)`: Match a specific request path/method explicitly.
+- `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Includes immediate follow-up async requests from the same tenant and ignores summaries older than the initial matched request.
+- `AssertSqlQueryMonitoringForRequestAsync(path, method)`: Match a specific request path/method explicitly in the current tenant context.
+
+## Matching and Isolation
+
+- Summary lookup and fallback are tenant-aware. Assertions only consume summaries that belong to the active tenant.
+- `AssertSqlQueryMonitoringForRequestAsync()` uses strict request matching: if you specify a query string then the full path+query must match.
+- Follow-up-inclusive assertions merge only summaries that are completed at or after the initial summary. This prevents stale queue items from earlier requests being merged into the current assertion.
 
 ## Debugging Failed Checks
 

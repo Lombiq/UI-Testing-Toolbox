@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using OrchardCore.Environment.Shell;
 using System;
 using System.Threading.Tasks;
 using YesSql;
@@ -30,7 +31,9 @@ public sealed class SqlQueryMonitoringMiddleware
 
             if (monitoringContext != null && store != null)
             {
+                var tenantName = services.GetService<ShellSettings>()?.Name ?? ShellSettings.DefaultShellName;
                 var summary = new SqlQueryMonitoringSummary(
+                    tenantName: tenantName,
                     requestPath: $"{context.Request.Path}{context.Request.QueryString}",
                     requestMethod: context.Request.Method,
                     traceIdentifier: context.TraceIdentifier,
