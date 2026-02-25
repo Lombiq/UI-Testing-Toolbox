@@ -447,14 +447,26 @@ public static class SqlQueryMonitoringTestCases
             executeTestAfterSetupAsync,
             async context =>
             {
+                var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+                    controller => controller.RawQuery());
+                var pathWithQuery = $"{requestBasePath}?missing=1";
+
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
-                var pathWithQuery =
-                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
-                        controller => controller.RawQuery(), ("missing", "1"));
 
                 await AssertInvalidOperationExceptionIsThrownAsync(
                     () => context.AssertSqlQueryMonitoringForRequestAsync(pathWithQuery, HttpMethod.Get.Method),
-                    exception => exception.Message.ShouldContain(pathWithQuery, customMessage: $"Exception message was: {exception.Message}"),
+                    exception =>
+                    {
+                        exception.Message.ShouldContain(
+                            "No SQL query monitoring summary was captured for",
+                            customMessage: $"Exception message was: {exception.Message}");
+                        exception.Message.ShouldContain(
+                            requestBasePath,
+                            customMessage: $"Exception message was: {exception.Message}");
+                        exception.Message.ShouldContain(
+                            "missing=1",
+                            customMessage: $"Exception message was: {exception.Message}");
+                    },
                     MissingMatchingSummaryFailureMessage);
             },
             browser);
