@@ -64,7 +64,6 @@
             matchPackageNames: [
                 'zaproxy/zap-stable',
             ],
-            // Renovate can't update the digest for some reason (it just fails).
             pinDigests: false,
             prBodyNotes: [
                 'For more details, see the [ZAP release notes](https://www.zaproxy.org/docs/desktop/releases/{{newVersion}}/).',
@@ -82,8 +81,6 @@
                 'chromeConfig\\.Options\\.BrowserVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.chrome-for-testing',
-            // Without support for four-segment version numbers, 'loose' needs to be used. See:
-            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
             versioningTemplate: 'loose',
         },
         {
@@ -96,8 +93,6 @@
                 "\\.setBrowserVersion\\('(?<currentValue>[^']+)'\\)",
             ],
             datasourceTemplate: 'custom.chrome-for-testing',
-            // Without support for four-segment version numbers, 'loose' needs to be used. See:
-            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
             versioningTemplate: 'loose',
         },
         {
@@ -110,8 +105,6 @@
                 'linuxEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.edge-linux',
-            // Without support for four-segment version numbers, 'loose' needs to be used. See:
-            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
             versioningTemplate: 'loose',
         },
         {
@@ -124,8 +117,6 @@
                 'macOsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.edge-macos',
-            // Without support for four-segment version numbers, 'loose' needs to be used. See:
-            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
             versioningTemplate: 'loose',
         },
         {
@@ -138,8 +129,6 @@
                 'windowsEdgeVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
             ],
             datasourceTemplate: 'custom.edge-windows',
-            // Without support for four-segment version numbers, 'loose' needs to be used. See:
-            // https://github.com/renovatebot/renovate/issues/4860 and https://github.com/renovatebot/renovate/issues/28297.
             versioningTemplate: 'loose',
         },
         {
