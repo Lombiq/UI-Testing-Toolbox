@@ -78,7 +78,7 @@
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.1.0" />
-    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.2.70" />
+    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.3.93" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="180.10.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="3.0.0-preview-18924" />
