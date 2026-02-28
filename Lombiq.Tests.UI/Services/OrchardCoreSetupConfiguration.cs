@@ -46,10 +46,10 @@ public class OrchardCoreSetupConfiguration
     public bool FastFailSetup { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether a <see cref="HttpClient"/> should be used to send a custom POST message.
-    /// If the value is  <see langword="false"/>, then Selenium browser automation is used to set the form fields on the
-    /// web browser GUI style. This is generally slower and should be only used to test basic Orchard Core functionality
-    /// or if the setup screen has been customized.
+    /// Gets or sets a value indicating whether an <see cref="HttpClient"/> should be used to send a custom POST
+    /// message. If the value is  <see langword="false"/>, then Selenium browser automation is used to set the form
+    /// fields on the web browser GUI style. This is generally slower and should be only used to test basic Orchard Core
+    /// functionality or if the setup screen has been customized.
     /// </summary>
     public bool SetupWithHttpClient { get; set; } = true;
 
