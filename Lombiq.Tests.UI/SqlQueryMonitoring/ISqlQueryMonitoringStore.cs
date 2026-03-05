@@ -19,9 +19,4 @@ public interface ISqlQueryMonitoringStore
     bool TryDequeueMostRecentMatching(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary);
-
-    /// <summary>
-    /// Clears all stored summaries.
-    /// </summary>
-    void Clear();
 }

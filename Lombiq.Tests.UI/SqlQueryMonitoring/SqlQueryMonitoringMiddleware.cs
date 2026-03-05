@@ -8,14 +8,16 @@ using YesSql;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
+/// <summary>
+/// Captures per-request SQL monitoring summaries and stores them for test assertions.
+/// </summary>
 public sealed class SqlQueryMonitoringMiddleware
 {
     private readonly RequestDelegate _next;
 
     public SqlQueryMonitoringMiddleware(RequestDelegate next) => _next = next;
 
-    public async Task InvokeAsync(
-        HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
         EnsureConnectionFactoryWrapped(context);
 

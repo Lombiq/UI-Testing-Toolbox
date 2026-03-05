@@ -8,6 +8,8 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 /// </summary>
 public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
+    // Keep the queue bounded so noisy request bursts don't grow memory usage without limit.
+    // This is large enough for recent request matching, but small enough to avoid long stale history.
     private const int MaxEntries = 50;
 
     private readonly Queue<SqlQueryMonitoringSummary> _summaries = new();
@@ -109,13 +111,5 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
         }
 
         return removed;
-    }
-
-    public void Clear()
-    {
-        lock (_lock)
-        {
-            _summaries.Clear();
-        }
     }
 }

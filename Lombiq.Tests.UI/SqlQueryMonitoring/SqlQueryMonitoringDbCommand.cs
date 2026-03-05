@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
+/// <summary>
+/// Wraps <see cref="DbCommand"/> so SQL monitoring can record executed SQL and row counts.
+/// </summary>
 public sealed class SqlQueryMonitoringDbCommand : DbCommand
 {
     private readonly DbCommand _dbCommand;

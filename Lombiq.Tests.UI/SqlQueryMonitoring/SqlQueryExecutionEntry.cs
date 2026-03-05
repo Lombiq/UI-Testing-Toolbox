@@ -32,7 +32,9 @@ public sealed partial class SqlQueryExecutionEntry
     public static SqlQueryExecutionEntry FromCommand(DbCommand command, int? rowCount)
     {
         var commandText = NormalizeCommandText(command.CommandText);
+        // Use a stable form for grouping so formatting differences don't hide duplicates.
         var normalized = NormalizeWhitespace(commandText);
+        // Build parameters in a stable order and format for reliable duplicate detection.
         var parameterSignature = BuildParameterSignature(command.Parameters);
         var callStack = CaptureCallStack();
 
@@ -47,6 +49,9 @@ public sealed partial class SqlQueryExecutionEntry
         return trimmed;
     }
 
+    /// <summary>
+    /// E.g. "SELECT  *" and "SELECT *" should count as the same query text.
+    /// </summary>
     private static string NormalizeWhitespace(string text) =>
         WhitespaceRegex().Replace(text ?? string.Empty, " ").Trim();
 
@@ -60,6 +65,8 @@ public sealed partial class SqlQueryExecutionEntry
     {
         if (parameters == null || parameters.Count == 0) return "(no parameters)";
 
+        // Parameter collection order can vary by provider, so sort by name for a stable signature. Use ordinal
+        // ignore-case to avoid culture-sensitive differences.
         var items = parameters
             .Cast<DbParameter>()
             .OrderBy(parameter => parameter.ParameterName, StringComparer.OrdinalIgnoreCase)
@@ -70,10 +77,11 @@ public sealed partial class SqlQueryExecutionEntry
 
     private static string NormalizeParameterValue(object value)
     {
-        if (value == null || value == DBNull.Value) return "NULL";
+        if (value == null) return "NULL";
 
         if (value is byte[] bytes) return $"byte[{bytes.Length}]";
 
+        // Use culture-invariant values so the same value looks the same on every machine.
         if (value is DateTime dateTime) return dateTime.ToString("O", CultureInfo.InvariantCulture);
 
         if (value is DateTimeOffset dateTimeOffset) return dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);

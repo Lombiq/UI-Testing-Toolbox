@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
+/// <summary>
+/// Wraps <see cref="DbDataReader"/> so SQL monitoring can count read rows and report the final row count when the
+/// reader is closed or disposed.
+/// </summary>
 public sealed class SqlQueryMonitoringDbDataReader : DbDataReader, IEnumerable<DbDataRecord>
 {
     private readonly DbDataReader _dbDataReader;

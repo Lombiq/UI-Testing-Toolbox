@@ -119,6 +119,23 @@ public class SqlQueryMonitoringConfiguration
     public SqlQueryMonitoringConfiguration() =>
         AssertSqlQueryMonitoringSummaryAsync = AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync;
 
+    public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
+    {
+        if (patterns == null || patterns.Length == 0) return _ => true;
+
+        var regexes = patterns.Select(pattern =>
+                new Regex(
+                    pattern,
+                    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+                    TimeSpan.FromSeconds(1)))
+            .ToArray();
+
+        return entry => !regexes.Any(regex => regex.IsMatch(entry.CommandText));
+    }
+
+    public static readonly Predicate<UITestContext> EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule =
+        UrlCheckHelper.IsValidatablePage;
+
     private Task AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync(SqlQueryMonitoringSummary summary)
     {
         if (summary == null) throw new InvalidOperationException("SQL query monitoring summary was not available.");
@@ -187,15 +204,6 @@ public class SqlQueryMonitoringConfiguration
         testOutputHelper.WriteLineTimestampedAndDebug(message);
     }
 
-    private static string ShortenCommandText(string commandText)
-    {
-        if (string.IsNullOrWhiteSpace(commandText)) return "(empty command)";
-
-        return commandText.Length <= 300
-            ? commandText
-            : commandText[..300] + "...";
-    }
-
     private static int GetMaxOrZero(List<int> values) =>
         values.Count == 0 ? 0 : values.Max();
 
@@ -225,7 +233,7 @@ public class SqlQueryMonitoringConfiguration
             hasFailures = true;
             failures.Add(
                 $"[{DuplicateCommandFailureCategory}] Command text executed {count} times (threshold: {threshold}): " +
-                $"{ShortenCommandText(group.First().CommandText)}" +
+                $"{group.First().CommandText}" +
                 FormatCallStackDetails(group));
         }
 
@@ -253,7 +261,7 @@ public class SqlQueryMonitoringConfiguration
             hasFailures = true;
             failures.Add($"[{DuplicateCommandWithParametersFailureCategory}] " +
                 $"Command text with same parameters executed {count} times (threshold: {threshold}):" +
-                $" {ShortenCommandText(sample.CommandText)} [{sample.ParameterSignature}]" +
+                $" {sample.CommandText} [{sample.ParameterSignature}]" +
                 FormatCallStackDetails(group));
         }
 
@@ -279,7 +287,7 @@ public class SqlQueryMonitoringConfiguration
             hasFailures = true;
             failures.Add(
                 $"[{ResultSetRowCountFailureCategory}] Command result set had {rowCount} rows (threshold: {threshold}): " +
-                ShortenCommandText(entry.CommandText) +
+                entry.CommandText +
                 FormatCallStackDetails([entry]));
         }
 
@@ -306,7 +314,7 @@ public class SqlQueryMonitoringConfiguration
 
     private static string Indent(string text, string indentationPrefix)
     {
-        var normalized = text.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var normalized = text.ReplaceOrdinalIgnoreCase("\r\n", "\n");
         return string.Join(
             Environment.NewLine,
             normalized
@@ -407,21 +415,4 @@ public class SqlQueryMonitoringConfiguration
 
         return categories;
     }
-
-    public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
-    {
-        if (patterns == null || patterns.Length == 0) return _ => true;
-
-        var regexes = patterns.Select(pattern =>
-            new Regex(
-                pattern,
-                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
-                TimeSpan.FromSeconds(1)))
-            .ToArray();
-
-        return entry => !regexes.Any(regex => regex.IsMatch(entry.CommandText));
-    }
-
-    public static readonly Predicate<UITestContext> EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule =
-        UrlCheckHelper.IsValidatablePage;
 }

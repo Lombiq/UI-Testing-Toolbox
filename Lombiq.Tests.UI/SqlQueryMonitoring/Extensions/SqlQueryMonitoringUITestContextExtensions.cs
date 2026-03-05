@@ -279,8 +279,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         ISqlQueryMonitoringStore store,
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary) =>
-        (store ?? throw new ArgumentNullException(nameof(store)))
-            .TryDequeueMostRecentMatching(predicate, out summary);
+        store.TryDequeueMostRecentMatching(predicate, out summary);
 
     private static bool RequestPathMatches(
         string requestPath,

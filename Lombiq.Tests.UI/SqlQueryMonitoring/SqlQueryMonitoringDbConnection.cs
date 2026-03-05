@@ -6,51 +6,55 @@ using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
+/// <summary>
+/// Wraps <see cref="DbConnection"/> so created commands and transactions are SQL-monitoring-aware.
+/// </summary>
 public sealed class SqlQueryMonitoringDbConnection : DbConnection
 {
+    private readonly DbConnection _innerDbConnection;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
     public SqlQueryMonitoringDbConnection(DbConnection dbConnection, IHttpContextAccessor httpContextAccessor)
     {
-        InnerConnection = dbConnection;
-        HttpContextAccessor = httpContextAccessor;
+        _innerDbConnection = dbConnection;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    internal DbConnection InnerConnection { get; }
-
-    private IHttpContextAccessor HttpContextAccessor { get; }
-
+    // If the connection is already wrapped by SQL monitoring, return the original inner connection.
+    // This prevents double-wrapping and keeps provider operations working with the real connection type.
     internal static DbConnection Unwrap(DbConnection dbConnection) =>
         dbConnection is SqlQueryMonitoringDbConnection monitoringDbConnection
-            ? monitoringDbConnection.InnerConnection
+            ? monitoringDbConnection._innerDbConnection
             : dbConnection;
 
     public override string ConnectionString
     {
-        get => InnerConnection.ConnectionString;
-        set => InnerConnection.ConnectionString = value;
+        get => _innerDbConnection.ConnectionString;
+        set => _innerDbConnection.ConnectionString = value;
     }
 
-    public override string Database => InnerConnection.Database;
-    public override string DataSource => InnerConnection.DataSource;
-    public override string ServerVersion => InnerConnection.ServerVersion;
-    public override ConnectionState State => InnerConnection.State;
+    public override string Database => _innerDbConnection.Database;
+    public override string DataSource => _innerDbConnection.DataSource;
+    public override string ServerVersion => _innerDbConnection.ServerVersion;
+    public override ConnectionState State => _innerDbConnection.State;
 
-    public override void ChangeDatabase(string databaseName) => InnerConnection.ChangeDatabase(databaseName);
+    public override void ChangeDatabase(string databaseName) => _innerDbConnection.ChangeDatabase(databaseName);
 
-    public override void Close() => InnerConnection.Close();
+    public override void Close() => _innerDbConnection.Close();
 
-    public override void Open() => InnerConnection.Open();
+    public override void Open() => _innerDbConnection.Open();
 
-    public override Task OpenAsync(CancellationToken cancellationToken) => InnerConnection.OpenAsync(cancellationToken);
+    public override Task OpenAsync(CancellationToken cancellationToken) => _innerDbConnection.OpenAsync(cancellationToken);
 
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
-        new SqlQueryMonitoringDbTransaction(InnerConnection.BeginTransaction(isolationLevel), this);
+        new SqlQueryMonitoringDbTransaction(_innerDbConnection.BeginTransaction(isolationLevel), this);
 
     protected override DbCommand CreateDbCommand() =>
-        new SqlQueryMonitoringDbCommand(InnerConnection.CreateCommand(), HttpContextAccessor);
+        new SqlQueryMonitoringDbCommand(_innerDbConnection.CreateCommand(), _httpContextAccessor);
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) InnerConnection.Dispose();
+        if (disposing) _innerDbConnection.Dispose();
         base.Dispose(disposing);
     }
 }
