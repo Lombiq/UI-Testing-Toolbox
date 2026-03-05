@@ -37,8 +37,11 @@ public static class OrchardCoreBuilderExtensions
                 .AddSingleton<IModuleStaticFileProvider>(serviceProvider =>
                     new ModuleEmbeddedStaticFileProvider(serviceProvider.GetRequiredService<IApplicationContext>()));
 
+            // SQL query monitoring is off by default.
+            // If it's off, we don't register its wrappers and middleware.
+            // This keeps normal test startup and behavior unchanged.
             var enableSqlQueryMonitoring =
-                configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: true);
+                configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: false);
             if (enableSqlQueryMonitoring)
             {
                 services.AddSingleton<ISqlQueryMonitoringStore, SqlQueryMonitoringStore>();
