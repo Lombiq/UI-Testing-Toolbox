@@ -39,14 +39,7 @@ public static class SqlQueryMonitoringTestCases
                     return Task.CompletedTask;
                 });
             },
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 30;
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 15;
-                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 200;
-                return Task.CompletedTask;
-            });
+            browser);
 
     public static Task SqlQueryMonitoringShouldAllowPerPageThresholdsAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,

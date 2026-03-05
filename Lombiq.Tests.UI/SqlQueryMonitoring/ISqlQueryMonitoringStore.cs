@@ -13,11 +13,6 @@ public interface ISqlQueryMonitoringStore
     void AddSummary(SqlQueryMonitoringSummary summary);
 
     /// <summary>
-    /// Removes and returns the most recent summary that contains SQL executions, if any.
-    /// </summary>
-    bool TryDequeueMostRecentWithExecutions(out SqlQueryMonitoringSummary summary);
-
-    /// <summary>
     /// Removes and returns the most recent summary matching the provided predicate, if any, while keeping other queued
     /// summaries.
     /// </summary>

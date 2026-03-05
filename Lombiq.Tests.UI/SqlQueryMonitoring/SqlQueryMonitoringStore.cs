@@ -25,18 +25,6 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     }
 
     /// <summary>
-    /// Removes and returns the newest stored summary.
-    /// </summary>
-    public bool TryDequeueMostRecent(out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentCore(_ => true, out summary);
-
-    /// <summary>
-    /// Removes and returns the newest stored summary that has at least one SQL execution entry.
-    /// </summary>
-    public bool TryDequeueMostRecentWithExecutions(out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentCore(candidate => candidate?.Executions.Count != 0, out summary);
-
-    /// <summary>
     /// Removes and returns the newest stored summary matching the provided predicate.
     /// </summary>
     public bool TryDequeueMostRecentMatching(
