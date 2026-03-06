@@ -73,7 +73,7 @@
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.379" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.11.1" />
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.11.1" />
-    <PackageReference Include="MailKit" Version="4.15.0" />
+    <PackageReference Include="MailKit" Version="4.15.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
