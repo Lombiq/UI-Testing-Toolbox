@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -64,8 +65,8 @@ public class SqlQueryMonitoringConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This timeout is used by methods in <c>SqlQueryMonitoringUITestContextExtensions</c> to mitigate timing races
-    /// right after navigation or request completion.
+    /// This timeout is used by methods in <see cref="SqlQueryMonitoringUITestContextExtensions"/> to mitigate timing
+    /// races right after navigation or request completion.
     /// </para>
     /// </remarks>
     public TimeSpan SummaryLookupTimeout { get; set; } = TimeSpan.FromSeconds(2);
@@ -123,7 +124,8 @@ public class SqlQueryMonitoringConfiguration
     {
         if (patterns == null || patterns.Length == 0) return _ => true;
 
-        var regexes = patterns.Select(pattern =>
+        var regexes = patterns
+            .Select(pattern =>
                 new Regex(
                     pattern,
                     RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,

@@ -21,9 +21,9 @@ public sealed class SqlQueryMonitoringStartup : StartupBase
     {
         app.UseMiddleware<SqlQueryMonitoringMiddleware>();
 
-        // We wrap here too, not only in middleware.
-        // Middleware runs on requests, but some code may get the connection factory before the first request.
-        // Wrapping here covers those early cases. Middleware still checks again on each request.
+        // We wrap here too, not only in the middleware.
+        // The middleware runs on requests, but some code may get the connection factory before the first request.
+        // Wrapping here covers those early cases. The middleware still checks again on each request.
         var store = serviceProvider.GetService<IStore>();
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         SqlQueryMonitoringConnectionFactoryHelper.EnsureWrapped(store, httpContextAccessor);

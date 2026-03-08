@@ -131,7 +131,8 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
         // Even for the "main" page request there can be a short race: the assertion may run before the summary is
-        // enqueued by middleware. Wait briefly for the expected request summary instead of immediately falling back.
+        // enqueued by the middleware. Wait briefly for the expected request summary instead of immediately falling
+        // back.
         while (DateTime.UtcNow < deadline)
         {
             if (TryDequeueMostRecentMatchingRequest(

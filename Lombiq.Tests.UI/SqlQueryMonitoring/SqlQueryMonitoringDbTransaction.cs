@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
-/// Wraps <see cref="DbTransaction"/> while SQL monitoring wrappers are active.
-/// This lets monitored commands accept wrapped transactions, but still pass the original provider transaction to ADO.NET
-/// when needed via <see cref="Unwrap(DbTransaction)"/>.
+/// Wraps <see cref="DbTransaction"/> while SQL monitoring wrappers are active. This lets monitored commands accept
+/// wrapped transactions, but still pass the original provider transaction to ADO.NET when needed via <see
+/// cref="Unwrap(DbTransaction)"/>.
 /// </summary>
 public sealed class SqlQueryMonitoringDbTransaction : DbTransaction
 {
