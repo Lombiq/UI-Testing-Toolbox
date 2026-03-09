@@ -135,7 +135,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         // back.
         while (DateTime.UtcNow < deadline)
         {
-            if (TryDequeueMostRecentMatchingRequest(
+            if (TryRemoveMostRecentMatchingRequest(
                 store,
                 expectedTenantName,
                 expectedPathAndQuery,
@@ -150,7 +150,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         }
 
         if (allowMostRelevantFallback &&
-            TryDequeueMostRelevantFallback(store, expectedTenantName, out var fallbackSummary))
+            TryRemoveMostRelevantFallback(store, expectedTenantName, out var fallbackSummary))
         {
             return fallbackSummary;
         }
@@ -195,7 +195,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         while (shouldContinuePolling && DateTime.UtcNow < deadline)
         {
-            if (TryDequeueMostRecentFollowUp(
+            if (TryRemoveMostRecentFollowUp(
                 store,
                 initialSummary.TenantName,
                 initialSummary.CompletedUtc,
@@ -228,16 +228,16 @@ public static class SqlQueryMonitoringUITestContextExtensions
         TimeSpan followUpSummaryQuietPeriod) =>
         DateTime.UtcNow - lastSummaryCapturedUtc < followUpSummaryQuietPeriod;
 
-    // Dequeues the newest summary that matches the explicit request selector (tenant + path/query + method).
+    // Removes and returns the newest summary that matches the explicit request selector (tenant + path/query + method).
     // Used by request-specific assertions where mismatches must not silently pass.
-    private static bool TryDequeueMostRecentMatchingRequest(
+    private static bool TryRemoveMostRecentMatchingRequest(
         ISqlQueryMonitoringStore store,
         string expectedTenantName,
         string expectedPathAndQuery,
         string expectedPath,
         string expectedMethod,
         out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentMatching(
+        TryRemoveMostRecentMatching(
             store,
             candidate =>
                 TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
@@ -245,42 +245,42 @@ public static class SqlQueryMonitoringUITestContextExtensions
                 RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
             out summary);
 
-    // Dequeues a tenant-scoped fallback summary when an exact request match is not required.
+    // Removes and returns a tenant-scoped fallback summary when an exact request match is not required.
     // Prefers summaries with executions first, then any summary from the same tenant.
-    private static bool TryDequeueMostRelevantFallback(
+    private static bool TryRemoveMostRelevantFallback(
         ISqlQueryMonitoringStore store,
         string expectedTenantName,
         out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentMatching(
+        TryRemoveMostRecentMatching(
                 store,
                 candidate =>
                     TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
                     candidate?.Executions.Count > 0,
                 out summary) ||
-            TryDequeueMostRecentMatching(
+            TryRemoveMostRecentMatching(
                 store,
                 candidate => TenantNameMatches(candidate?.TenantName, expectedTenantName),
                 out summary);
 
-    // Dequeues the newest tenant-scoped summary produced at or after the initial matched summary.
+    // Removes and returns the newest tenant-scoped summary produced at or after the initial matched summary.
     // Used during follow-up polling to avoid merging stale summaries from earlier requests.
-    private static bool TryDequeueMostRecentFollowUp(
+    private static bool TryRemoveMostRecentFollowUp(
         ISqlQueryMonitoringStore store,
         string expectedTenantName,
         DateTimeOffset minimumCompletedUtc,
         out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentMatching(
+        TryRemoveMostRecentMatching(
             store,
             candidate =>
                 TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
                 candidate?.CompletedUtc >= minimumCompletedUtc,
             out summary);
 
-    private static bool TryDequeueMostRecentMatching(
+    private static bool TryRemoveMostRecentMatching(
         ISqlQueryMonitoringStore store,
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary) =>
-        store.TryDequeueMostRecentMatching(predicate, out summary);
+        store.TryRemoveMostRecentMatching(predicate, out summary);
 
     private static bool RequestPathMatches(
         string requestPath,

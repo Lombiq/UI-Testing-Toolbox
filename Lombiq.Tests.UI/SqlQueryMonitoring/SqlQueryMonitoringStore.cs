@@ -12,7 +12,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     // This is large enough for recent request matching, but small enough to avoid long stale history.
     private const int MaxEntries = 50;
 
-    private readonly Queue<SqlQueryMonitoringSummary> _summaries = new();
+    private readonly List<SqlQueryMonitoringSummary> _summaries = [];
     private readonly object _lock = new();
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
@@ -21,7 +21,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 
         lock (_lock)
         {
-            _summaries.Enqueue(summary);
+            _summaries.Add(summary);
             TrimToCapacity();
         }
     }
@@ -29,16 +29,16 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     /// <summary>
     /// Removes and returns the newest stored summary matching the provided predicate.
     /// </summary>
-    public bool TryDequeueMostRecentMatching(
+    public bool TryRemoveMostRecentMatching(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary) =>
-        TryDequeueMostRecentCore(predicate, out summary);
+        TryRemoveMostRecentCore(predicate, out summary);
 
     /// <summary>
     /// Finds the newest matching item, removes only that item from the queue, and preserves all remaining item
     /// ordering.
     /// </summary>
-    private bool TryDequeueMostRecentCore(
+    private bool TryRemoveMostRecentCore(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary)
     {
@@ -52,8 +52,7 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
                 return false;
             }
 
-            var items = new List<SqlQueryMonitoringSummary>(_summaries);
-            var index = items.FindLastIndex(predicate);
+            var index = _summaries.FindLastIndex(predicate);
 
             if (index < 0)
             {
@@ -61,16 +60,10 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
                 return false;
             }
 
-            summary = items[index];
-            items.RemoveAt(index);
-            _summaries.Clear();
+            summary = _summaries[index];
+            _summaries.RemoveAt(index);
 
-            foreach (var item in items)
-            {
-                _summaries.Enqueue(item);
-            }
-
-            return summary != null;
+            return true;
         }
     }
 
@@ -78,38 +71,16 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     {
         while (_summaries.Count > MaxEntries)
         {
-            if (!TryRemoveOldestSummary(candidate => candidate?.Executions.Count == 0))
-            {
-                _summaries.Dequeue();
-            }
+            if (!TryRemoveOldestEmptySummary()) _summaries.RemoveAt(0);
         }
     }
 
-    private bool TryRemoveOldestSummary(Predicate<SqlQueryMonitoringSummary> predicate)
+    private bool TryRemoveOldestEmptySummary()
     {
-        ArgumentNullException.ThrowIfNull(predicate);
+        var index = _summaries.FindIndex(summary => summary.Executions.Count == 0);
+        if (index < 0) return false;
 
-        var items = new Queue<SqlQueryMonitoringSummary>(_summaries.Count);
-        var removed = false;
-
-        while (_summaries.Count > 0)
-        {
-            var candidate = _summaries.Dequeue();
-
-            if (!removed && predicate(candidate))
-            {
-                removed = true;
-                continue;
-            }
-
-            items.Enqueue(candidate);
-        }
-
-        while (items.Count > 0)
-        {
-            _summaries.Enqueue(items.Dequeue());
-        }
-
-        return removed;
+        _summaries.RemoveAt(index);
+        return true;
     }
 }

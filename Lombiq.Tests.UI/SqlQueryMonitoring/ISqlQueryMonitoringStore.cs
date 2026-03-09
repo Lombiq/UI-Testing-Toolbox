@@ -16,7 +16,7 @@ public interface ISqlQueryMonitoringStore
     /// Removes and returns the most recent summary matching the provided predicate, if any, while keeping other queued
     /// summaries.
     /// </summary>
-    bool TryDequeueMostRecentMatching(
+    bool TryRemoveMostRecentMatching(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary);
 }
