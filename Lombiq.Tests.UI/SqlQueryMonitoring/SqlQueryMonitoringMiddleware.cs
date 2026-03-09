@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Environment.Shell;
+using OrchardCore.Modules;
 using System;
 using System.Threading.Tasks;
 using YesSql;
@@ -30,6 +31,7 @@ public sealed class SqlQueryMonitoringMiddleware
             var services = context.RequestServices;
             var monitoringContext = services.GetService<ISqlQueryMonitoringContext>();
             var store = services.GetService<ISqlQueryMonitoringStore>();
+            var clock = services.GetService<IClock>();
 
             if (monitoringContext != null && store != null)
             {
@@ -39,7 +41,7 @@ public sealed class SqlQueryMonitoringMiddleware
                     requestPath: $"{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}",
                     requestMethod: context.Request.Method,
                     traceIdentifier: context.TraceIdentifier,
-                    completedUtc: DateTimeOffset.UtcNow,
+                    completedUtc: new DateTimeOffset(clock.UtcNow),
                     executions: monitoringContext.Executions);
 
                 store.AddSummary(summary);
