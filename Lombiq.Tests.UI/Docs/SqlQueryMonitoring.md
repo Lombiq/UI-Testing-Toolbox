@@ -88,7 +88,7 @@ Recommended tuning approach:
 3. Lower thresholds gradually until they catch real regressions without frequent false positives.
 4. Use per-page thresholds for known heavy pages instead of globally weakening checks.
 
-Typical override:
+Example override for tresholds:
 
 ```csharp
 configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 20;
@@ -96,7 +96,7 @@ configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThre
 configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 150;
 ```
 
-Timing override:
+Timing overrides:
 
 ```csharp
 configuration.SqlQueryMonitoringConfiguration.SummaryLookupTimeout = TimeSpan.FromSeconds(5);
