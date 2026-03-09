@@ -54,6 +54,7 @@ public static class SqlQueryMonitoringTestCases
             browser,
             configuration =>
             {
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
                 configuration.Events.BeforeNavigation += (_, targetUri) =>
                 {
                     var thresholds = configuration.SqlQueryMonitoringConfiguration;
@@ -91,6 +92,7 @@ public static class SqlQueryMonitoringTestCases
             browser,
             configuration =>
             {
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
                 configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
                     new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
                         DuplicateCommandThreshold: 30,
