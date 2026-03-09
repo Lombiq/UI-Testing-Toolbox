@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.Samples\Lombiq.HelpfulLibraries.Samples.csproj" />
     <ProjectReference Include="..\Lombiq.Tests.UI\Lombiq.Tests.UI.csproj" />
   </ItemGroup>
 

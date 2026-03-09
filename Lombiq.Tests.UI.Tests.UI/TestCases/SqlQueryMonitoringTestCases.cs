@@ -1,4 +1,5 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
+using Lombiq.HelpfulLibraries.Samples.Controllers;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -587,7 +588,7 @@ public static class SqlQueryMonitoringTestCases
             {
                 await context.EnableFeatureDirectlyAsync("Lombiq.HelpfulLibraries.Samples");
 
-                const string requestPath = "/Lombiq.HelpfulLibraries.Samples/LinqToDbSamples/SimpleQuery";
+                var requestPath = context.GetRelativeUrlOfAction<LinqToDbSamplesController>(controller => controller.SimpleQuery());
 
                 await context.GoToRelativeUrlAsync(requestPath);
 
