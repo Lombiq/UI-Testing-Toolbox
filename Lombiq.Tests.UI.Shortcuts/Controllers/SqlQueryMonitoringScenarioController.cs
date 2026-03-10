@@ -55,7 +55,7 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     public IActionResult NoSql() => Ok("No SQL executed.");
 
     /// <summary>
-    /// Executes a raw SQL read query for source coverage tests.
+    /// Executes a raw SQL read query to verify RawQueryAsync is captured by SQL monitoring.
     /// </summary>
     public async Task<IActionResult> RawQuery()
     {
