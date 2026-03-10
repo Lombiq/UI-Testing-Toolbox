@@ -18,6 +18,7 @@ See the complete sample in
 [`test/Lombiq.UITestingToolbox/Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTests.cs`](../../Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTests.cs).
 
 Use these manual assertion methods:
+
 - `AssertSqlQueryMonitoringAsync()`: Standard single-request page assertion.
 - `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Also includes immediate follow-up async requests from the same tenant.
 - `AssertSqlQueryMonitoringForRequestAsync(requestPathOrUrl, requestMethod)`: Asserts a specific request path/query or absolute URL. `requestMethod` is optional.
