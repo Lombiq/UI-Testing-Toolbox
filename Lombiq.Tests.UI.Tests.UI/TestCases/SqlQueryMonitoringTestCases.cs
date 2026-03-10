@@ -564,20 +564,4 @@ public static class SqlQueryMonitoringTestCases
             return Task.CompletedTask;
         });
     }
-
-    private static ExecuteTestAfterSetupAsync CreateInlineExecuteTestAfterSetupAsync(UITestContext context) =>
-        async (testAsync, _, changeConfigurationAsync) =>
-        {
-            if (changeConfigurationAsync != null)
-            {
-                await changeConfigurationAsync(context.Configuration);
-
-                if (context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
-                {
-                    context.Configuration.SetUpSqlQueryMonitoringAssertionOnPageChange();
-                }
-            }
-
-            await testAsync(context);
-        };
 }
