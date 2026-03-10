@@ -44,15 +44,17 @@ public class SqlQueryMonitoringTests : UITestBase
             async context =>
             {
                 // SQL monitoring is already enabled for this test, so even the request that opened the home page has a
-                // captured summary. The simplest assertion always checks the latest request for the current page.
-                await context.AssertSqlQueryMonitoringAsync(summary =>
-                {
-                    summary.RequestMethod.ShouldBe(HttpMethod.Get.Method);
-                    summary.RequestPath.ShouldStartWith("/");
-                    summary.Executions.ShouldNotBeEmpty(
-                        "The home page should execute at least one SQL command when monitoring is enabled.");
-                    return Task.CompletedTask;
-                });
+                // captured summary. The simplest assertion checks the latest request for the current page.
+                await context.AssertSqlQueryMonitoringAsync();
+
+                // If you want to assert against a specific request instead, you can do that too.
+                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+                await context.AssertSqlQueryMonitoringForRequestAsync("/", HttpMethod.Get.Method);
+
+                // If you want to include follow-up requests in the assertion, you can use this one. In this case it
+                // won't find any follow-up requests, but it will still assert against the main page request and its SQL summary.
+                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+                await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
 
                 // The automatic page-change assertion below only runs on /about. This shows that mode without getting
                 // in the way of the later explicit assertions.
