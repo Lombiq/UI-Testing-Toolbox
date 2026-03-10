@@ -170,6 +170,7 @@ public class SqlQueryMonitoringTests : UITestBase
 
                 // This enables automatic page-change assertions, but only on /about. That way the later explicit
                 // assertions can still use their own summaries.
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
                 configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
                     context => context.GetCurrentUri().AbsolutePath.EqualsOrdinalIgnoreCase("/about");
 
