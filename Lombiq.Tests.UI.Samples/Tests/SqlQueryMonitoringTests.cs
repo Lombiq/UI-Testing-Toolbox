@@ -149,7 +149,7 @@ public class SqlQueryMonitoringTests : UITestBase
                         return Task.CompletedTask;
                     });
 
-                // Sometimes you don't care which follow-up request caused the problem, only that the page and its async
+                // Or if you don't care which follow-up request caused the problem, only that the page and its async
                 // requests work together did. The follow-up-inclusive assertion combines those summaries.
                 await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
 
