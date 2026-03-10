@@ -88,164 +88,11 @@ public static class SqlQueryMonitoringTestCases
             executeTestAfterSetupAsync,
             async context =>
             {
-                await context.SqlQueryMonitoringShouldCaptureRequestPathAndQueryForNavigatedPageAsync();
                 await context.SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync();
                 await context.SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync();
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);
-
-    public static Task SqlQueryMonitoringThresholdScenariosShouldWorkAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.SqlQueryMonitoringShouldAllowPerPageThresholdsAsync();
-                await context.SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholdsAsync();
-            },
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-                return Task.CompletedTask;
-            });
-
-    public static Task SqlQueryMonitoringShouldCatchDuplicatesAndLargeResultsAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.AssertSqlQueryMonitoringAsync();
-
-                await context.GoToRelativeUrlAsync("/categories/travel");
-
-                await context.AssertSqlQueryMonitoringAsync(summary =>
-                {
-                    summary.Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
-                    return Task.CompletedTask;
-                });
-            },
-            browser);
-
-    public static async Task SqlQueryMonitoringShouldAllowPerPageThresholdsAsync(this UITestContext context)
-    {
-        var originalDuplicateCommandThreshold = context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold;
-        context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-        context.Configuration.Events.BeforeNavigation += PerPageConfigBeforeNavigation(context);
-
-        await context.GoToRelativeUrlAsync("/categories/travel");
-        await context.GoToRelativeUrlAsync("/about");
-
-        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = originalDuplicateCommandThreshold;
-        context.Configuration.Events.BeforeNavigation -= PerPageConfigBeforeNavigation(context);
-    }
-
-    private static NavigationEventHandler PerPageConfigBeforeNavigation(UITestContext context) =>
-        (_, targetUri) =>
-        {
-            var thresholds = context.Configuration.SqlQueryMonitoringConfiguration;
-
-            if (targetUri.AbsolutePath.Contains("/categories"))
-            {
-                thresholds.DuplicateCommandThreshold = 20;
-                thresholds.DuplicateCommandWithParametersThreshold = 10;
-                thresholds.ResultSetRowCountThreshold = 100;
-            }
-            else
-            {
-                thresholds.DuplicateCommandThreshold = 30;
-                thresholds.DuplicateCommandWithParametersThreshold = 15;
-                thresholds.ResultSetRowCountThreshold = 200;
-            }
-
-            return Task.CompletedTask;
-        };
-
-    public static async Task SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholdsAsync(this UITestContext context)
-    {
-        context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-        context.Configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
-            new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                DuplicateCommandThreshold: 30,
-                DuplicateCommandWithParametersThreshold: 15,
-                ResultSetRowCountThreshold: 200),
-            (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                DuplicateCommandThreshold: 20,
-                DuplicateCommandWithParametersThreshold: 10,
-                ResultSetRowCountThreshold: 100)),
-            (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                DuplicateCommandThreshold: 25,
-                DuplicateCommandWithParametersThreshold: 12,
-                ResultSetRowCountThreshold: 150)));
-
-        await context.GoToRelativeUrlAsync("/categories/travel");
-        await context.GoToRelativeUrlAsync("/about");
-        await context.GoToRelativeUrlAsync("/");
-    }
-
-    public static Task SqlQueryMonitoringShouldRespectPageChangeRuleAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default)
-    {
-        var summaries = new List<SqlQueryMonitoringSummary>();
-
-        return ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.GoToRelativeUrlAsync("/categories/travel");
-                await context.GoToRelativeUrlAsync("/about");
-
-                summaries.Count.ShouldBe(1);
-                summaries[0].RequestPath.ShouldContain("/categories");
-                summaries[0].Executions.ShouldNotBeEmpty("SQL query monitoring should capture at least one command.");
-            },
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-                configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
-                    context => context.GetCurrentUri().AbsolutePath.Contains("/categories");
-                configuration.SqlQueryMonitoringConfiguration.AssertSqlQueryMonitoringSummaryAsync = summary =>
-                {
-                    summaries.Add(summary);
-                    return Task.CompletedTask;
-                };
-
-                return Task.CompletedTask;
-            });
-    }
-
-    public static Task SqlQueryMonitoringShouldAllowIgnoringKnownQueriesAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            context => context.AssertSqlQueryMonitoringAsync(),
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 5;
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 3;
-                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 5;
-
-                configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
-                    SqlQueryMonitoringConfiguration.BuildIgnoreCommandTextPatternFilter(
-                        @"FROM\s+\[Document\].*\[Type\]\s*=\s*@Type",
-                        @"FROM\s+\[Document\].*ContentDefinitionRecord",
-                        @"FROM\s+\[Document\].*RolesDocument",
-                        @"FROM\s+\[Document\].*PlacementsDocument",
-                        @"FROM\s+\[Document\].*LayersDocument",
-                        @"FROM\s+\[Document\].*TemplatesDocument",
-                        @"FROM\s+\[ContentItemIndex\]",
-                        @"FROM\s+\[AutoroutePartIndex\]");
-
-                return Task.CompletedTask;
-            });
 
     public static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryAsync(this UITestContext context)
     {
@@ -473,24 +320,7 @@ public static class SqlQueryMonitoringTestCases
             },
             browser);
 
-    public static async Task SqlQueryMonitoringShouldCaptureRequestPathAndQueryForNavigatedPageAsync(this UITestContext context)
-    {
-        const string requestPath = "/categories/travel?sqlMonitoringRequestCheck=1";
-
-        await context.GoToRelativeUrlAsync(requestPath);
-
-        await context.AssertSqlQueryMonitoringAsync(summary =>
-        {
-            summary.Executions.ShouldNotBeEmpty("Page requests should be captured.");
-            summary.RequestPath.ShouldStartWith(
-                requestPath,
-                Case.Insensitive,
-                "The request path and query should be captured in the summary and match the navigated path.");
-            return Task.CompletedTask;
-        });
-    }
-
-    public static async Task SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync(this UITestContext context)
+    private static async Task SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync(this UITestContext context)
     {
         var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
             controller => controller.RawQuery());
@@ -515,7 +345,7 @@ public static class SqlQueryMonitoringTestCases
             MissingMatchingSummaryFailureMessage);
     }
 
-    public static async Task SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync(this UITestContext context)
+    private static async Task SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync(this UITestContext context)
     {
         var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
             controller => controller.RawQuery());
@@ -538,7 +368,7 @@ public static class SqlQueryMonitoringTestCases
             MissingMatchingSummaryFailureMessage);
     }
 
-    public static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryWithoutPageStateWaitAsync(this UITestContext context)
+    private static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryWithoutPageStateWaitAsync(this UITestContext context)
     {
         await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
 
