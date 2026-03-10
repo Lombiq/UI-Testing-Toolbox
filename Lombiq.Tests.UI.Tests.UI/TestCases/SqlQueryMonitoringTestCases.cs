@@ -23,6 +23,95 @@ public static class SqlQueryMonitoringTestCases
         "The SQL monitoring assertion did not fail as expected. It should have failed due to the absence of a " +
         "matching summary for the specified request path and query.";
 
+    public static Task SqlQueryMonitoringAdditionalQuerySourcesShouldWorkAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                await context.SqlQueryMonitoringShouldCaptureRawQueryAsync();
+                await context.SqlQueryMonitoringShouldCaptureRawExecuteNonQueryAsync();
+                await context.SqlQueryMonitoringShouldCaptureCustomSessionQueryAsync();
+                await context.SqlQueryMonitoringShouldCaptureDirectConnectionQueryAsync();
+            },
+            browser,
+            ConfigurationHelper.DisableHtmlValidation);
+
+    public static Task SqlQueryMonitoringAsyncRequestScenariosShouldWorkAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                await context.SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryAsync();
+
+                await context.GoToHomePageAsync();
+                await context.SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryWithoutPageStateWaitAsync();
+
+                await context.GoToHomePageAsync();
+                await context.SqlQueryMonitoringShouldIgnoreStaleSummariesWhenAggregatingFollowUpRequestsAsync();
+
+                await context.GoToHomePageAsync();
+                await context.SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync();
+
+                await context.GoToHomePageAsync();
+                await context.SqlQueryMonitoringShouldDetectDuplicatesWithoutSpecifyingRequestPathAsync();
+            },
+            browser);
+
+    public static Task SqlQueryMonitoringFailureScenariosShouldWorkAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                await context.SqlQueryMonitoringShouldSurfaceDuplicateCommandIssuesAsync();
+
+                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+                await context.SqlQueryMonitoringShouldSurfaceDuplicateParameterIssuesAsync();
+
+                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+                await context.SqlQueryMonitoringShouldSurfaceOversizedResultSetIssuesAsync();
+
+                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+                await context.SqlQueryMonitoringShouldSurfaceAllIssuesAsync();
+            },
+            browser);
+
+    public static Task SqlQueryMonitoringRequestMatchingScenariosShouldWorkAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                await context.SqlQueryMonitoringShouldCaptureRequestPathAndQueryForNavigatedPageAsync();
+                await context.SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync();
+                await context.SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync();
+            },
+            browser,
+            ConfigurationHelper.DisableHtmlValidation);
+
+    public static Task SqlQueryMonitoringThresholdScenariosShouldWorkAsync(
+        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
+        Browser browser = default) =>
+        ExecuteSqlMonitoringTestAsync(
+            executeTestAfterSetupAsync,
+            async context =>
+            {
+                await context.SqlQueryMonitoringShouldAllowPerPageThresholdsAsync();
+                await context.SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholdsAsync();
+            },
+            browser,
+            configuration =>
+            {
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
+                return Task.CompletedTask;
+            });
+
     public static Task SqlQueryMonitoringShouldCatchDuplicatesAndLargeResultsAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
         Browser browser = default) =>
@@ -42,73 +131,61 @@ public static class SqlQueryMonitoringTestCases
             },
             browser);
 
-    public static Task SqlQueryMonitoringShouldAllowPerPageThresholdsAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.GoToRelativeUrlAsync("/categories/travel");
-                await context.GoToRelativeUrlAsync("/about");
-            },
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-                configuration.Events.BeforeNavigation += (_, targetUri) =>
-                {
-                    var thresholds = configuration.SqlQueryMonitoringConfiguration;
+    public static async Task SqlQueryMonitoringShouldAllowPerPageThresholdsAsync(this UITestContext context)
+    {
+        var originalDuplicateCommandThreshold = context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
+        context.Configuration.Events.BeforeNavigation += PerPageConfigBeforeNavigation(context);
 
-                    if (targetUri.AbsolutePath.Contains("/categories"))
-                    {
-                        thresholds.DuplicateCommandThreshold = 20;
-                        thresholds.DuplicateCommandWithParametersThreshold = 10;
-                        thresholds.ResultSetRowCountThreshold = 100;
-                    }
-                    else
-                    {
-                        thresholds.DuplicateCommandThreshold = 30;
-                        thresholds.DuplicateCommandWithParametersThreshold = 15;
-                        thresholds.ResultSetRowCountThreshold = 200;
-                    }
+        await context.GoToRelativeUrlAsync("/categories/travel");
+        await context.GoToRelativeUrlAsync("/about");
 
-                    return Task.CompletedTask;
-                };
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = originalDuplicateCommandThreshold;
+        context.Configuration.Events.BeforeNavigation -= PerPageConfigBeforeNavigation(context);
+    }
 
-                return Task.CompletedTask;
-            });
+    private static NavigationEventHandler PerPageConfigBeforeNavigation(UITestContext context) =>
+        (_, targetUri) =>
+        {
+            var thresholds = context.Configuration.SqlQueryMonitoringConfiguration;
 
-    public static Task SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholdsAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+            if (targetUri.AbsolutePath.Contains("/categories"))
             {
-                await context.GoToRelativeUrlAsync("/categories/travel");
-                await context.GoToRelativeUrlAsync("/about");
-                await context.GoToRelativeUrlAsync("/");
-            },
-            browser,
-            configuration =>
+                thresholds.DuplicateCommandThreshold = 20;
+                thresholds.DuplicateCommandWithParametersThreshold = 10;
+                thresholds.ResultSetRowCountThreshold = 100;
+            }
+            else
             {
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-                configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
-                    new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 30,
-                        DuplicateCommandWithParametersThreshold: 15,
-                        ResultSetRowCountThreshold: 200),
-                    (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 20,
-                        DuplicateCommandWithParametersThreshold: 10,
-                        ResultSetRowCountThreshold: 100)),
-                    (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 25,
-                        DuplicateCommandWithParametersThreshold: 12,
-                        ResultSetRowCountThreshold: 150)));
-                return Task.CompletedTask;
-            });
+                thresholds.DuplicateCommandThreshold = 30;
+                thresholds.DuplicateCommandWithParametersThreshold = 15;
+                thresholds.ResultSetRowCountThreshold = 200;
+            }
+
+            return Task.CompletedTask;
+        };
+
+    public static async Task SqlQueryMonitoringShouldAllowRegexBasedPerPageThresholdsAsync(this UITestContext context)
+    {
+        context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
+        context.Configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
+            new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+                DuplicateCommandThreshold: 30,
+                DuplicateCommandWithParametersThreshold: 15,
+                ResultSetRowCountThreshold: 200),
+            (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+                DuplicateCommandThreshold: 20,
+                DuplicateCommandWithParametersThreshold: 10,
+                ResultSetRowCountThreshold: 100)),
+            (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(
+                DuplicateCommandThreshold: 25,
+                DuplicateCommandWithParametersThreshold: 12,
+                ResultSetRowCountThreshold: 150)));
+
+        await context.GoToRelativeUrlAsync("/categories/travel");
+        await context.GoToRelativeUrlAsync("/about");
+        await context.GoToRelativeUrlAsync("/");
+    }
 
     public static Task SqlQueryMonitoringShouldRespectPageChangeRuleAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
@@ -170,72 +247,57 @@ public static class SqlQueryMonitoringTestCases
                 return Task.CompletedTask;
             });
 
-    public static Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+    public static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryAsync(this UITestContext context)
+    {
+        var asyncApiPath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
+
+        await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+        var pagePath = context.GetCurrentUri().AbsolutePath;
+
+        context.DoWithRetriesOrFail(() =>
+            string.Equals(context.GetText(By.Id("async-query-status")), "Completed", StringComparison.Ordinal));
+
+        await context.AssertSqlQueryMonitoringForRequestAsync(
+            pagePath,
+            HttpMethod.Get.Method,
+            summary =>
             {
-                var asyncApiPath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
-
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-                var pagePath = context.GetCurrentUri().AbsolutePath;
-
-                context.DoWithRetriesOrFail(() =>
-                    string.Equals(context.GetText(By.Id("async-query-status")), "Completed", StringComparison.Ordinal));
-
-                await context.AssertSqlQueryMonitoringForRequestAsync(
-                    pagePath,
-                    HttpMethod.Get.Method,
-                    summary =>
-                    {
-                        summary.Executions.ShouldNotBeEmpty(
-                            "The initial page request should execute at least one SQL command.");
-                        return Task.CompletedTask;
-                    });
-
-                await context.AssertSqlQueryMonitoringForRequestAsync(
-                    asyncApiPath,
-                    HttpMethod.Get.Method,
-                    summary =>
-                    {
-                        summary.Executions.ShouldNotBeEmpty(
-                            "The async API request should execute at least one SQL command.");
-                        return Task.CompletedTask;
-                    });
-            },
-            browser);
-
-    public static Task SqlQueryMonitoringShouldDetectDuplicatesWithoutSpecifyingRequestPathAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-                var pagePath = context.GetCurrentUri().AbsolutePath;
-
-                await AssertSqlQueryMonitoringAssertionFailsAsync(
-                    () => context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(),
-                    exception =>
-                    {
-                        exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain(pagePath);
-                        exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain("combined");
-                        exception.InnerException.ShouldNotBeNull();
-                        exception.InnerException.Message.ShouldContain(
-                            SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                        exception.InnerException.Message.ShouldContain("Command text executed");
-                        exception.InnerException.Message.ShouldContain("threshold: 2");
-                    });
-            },
-            browser,
-            configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 2;
+                summary.Executions.ShouldNotBeEmpty(
+                    "The initial page request should execute at least one SQL command.");
                 return Task.CompletedTask;
             });
+
+        await context.AssertSqlQueryMonitoringForRequestAsync(
+            asyncApiPath,
+            HttpMethod.Get.Method,
+            summary =>
+            {
+                summary.Executions.ShouldNotBeEmpty(
+                    "The async API request should execute at least one SQL command.");
+                return Task.CompletedTask;
+            });
+    }
+
+    public static async Task SqlQueryMonitoringShouldDetectDuplicatesWithoutSpecifyingRequestPathAsync(this UITestContext context)
+    {
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 2;
+
+        await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+        var pagePath = context.GetCurrentUri().AbsolutePath;
+
+        await AssertSqlQueryMonitoringAssertionFailsAsync(
+            () => context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(),
+            exception =>
+            {
+                exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain(pagePath);
+                exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain("combined");
+                exception.InnerException.ShouldNotBeNull();
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
+                exception.InnerException.Message.ShouldContain("Command text executed");
+                exception.InnerException.Message.ShouldContain("threshold: 2");
+            });
+    }
 
     public static Task SqlQueryMonitoringShouldNotCollectWhenCollectionIsDisabledAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
@@ -262,108 +324,106 @@ public static class SqlQueryMonitoringTestCases
                 return Task.CompletedTask;
             });
 
-    public static Task SqlQueryMonitoringShouldSurfaceDuplicateCommandIssuesAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            context => AssertSqlQueryMonitoringAssertionFailsAsync(
-                () => context.AssertSqlQueryMonitoringAsync(),
-                exception =>
-                {
-                    exception.InnerException.ShouldNotBeNull();
-                    exception.InnerException.Message.ShouldContain(
-                        $"[{SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory}]");
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                    exception.InnerException.Message.ShouldContain("Command text executed");
-                    exception.InnerException.Message.ShouldContain("threshold: 1");
-                }),
-            browser,
-            configuration =>
+    public static async Task SqlQueryMonitoringShouldSurfaceDuplicateCommandIssuesAsync(this UITestContext context)
+    {
+        var originalTreshold = context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 1;
+
+        await AssertSqlQueryMonitoringAssertionFailsAsync(
+            () => context.AssertSqlQueryMonitoringAsync(),
+            exception =>
             {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 1;
-                return Task.CompletedTask;
+                exception.InnerException.ShouldNotBeNull();
+                exception.InnerException.Message.ShouldContain(
+                    $"[{SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory}]");
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
+                exception.InnerException.Message.ShouldContain("Command text executed");
+                exception.InnerException.Message.ShouldContain("threshold: 1");
             });
 
-    public static Task SqlQueryMonitoringShouldSurfaceDuplicateParameterIssuesAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            context => AssertSqlQueryMonitoringAssertionFailsAsync(
-                () => context.AssertSqlQueryMonitoringAsync(),
-                exception =>
-                {
-                    exception.InnerException.ShouldNotBeNull();
-                    exception.InnerException.Message.ShouldContain(
-                        $"[{SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory}]");
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
-                    exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
-                    exception.InnerException.Message.ShouldContain("threshold: 1");
-                }),
-            browser,
-            configuration =>
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = originalTreshold;
+    }
+
+    public static async Task SqlQueryMonitoringShouldSurfaceDuplicateParameterIssuesAsync(this UITestContext context)
+    {
+        var originalThreshold = context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 1;
+
+        await AssertSqlQueryMonitoringAssertionFailsAsync(
+            () => context.AssertSqlQueryMonitoringAsync(),
+            exception =>
             {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 1;
-                return Task.CompletedTask;
+                exception.InnerException.ShouldNotBeNull();
+                exception.InnerException.Message.ShouldContain(
+                    $"[{SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory}]");
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
+                exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
+                exception.InnerException.Message.ShouldContain("threshold: 1");
             });
 
-    public static Task SqlQueryMonitoringShouldSurfaceOversizedResultSetIssuesAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            context => AssertSqlQueryMonitoringAssertionFailsAsync(
-                () => context.AssertSqlQueryMonitoringAsync(),
-                exception =>
-                {
-                    exception.InnerException.ShouldNotBeNull();
-                    exception.InnerException.Message.ShouldContain(
-                        $"[{SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory}]");
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
-                    exception.InnerException.Message.ShouldContain("Command result set had");
-                    exception.InnerException.Message.ShouldContain("threshold: 0");
-                }),
-            browser,
-            configuration =>
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = originalThreshold;
+    }
+
+    public static async Task SqlQueryMonitoringShouldSurfaceOversizedResultSetIssuesAsync(this UITestContext context)
+    {
+        var originalThreshold = context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 0;
+
+        await AssertSqlQueryMonitoringAssertionFailsAsync(
+            () => context.AssertSqlQueryMonitoringAsync(),
+            exception =>
             {
-                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 0;
-                return Task.CompletedTask;
+                exception.InnerException.ShouldNotBeNull();
+                exception.InnerException.Message.ShouldContain(
+                    $"[{SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory}]");
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
+                exception.InnerException.Message.ShouldContain("Command result set had");
+                exception.InnerException.Message.ShouldContain("threshold: 0");
             });
 
-    public static Task SqlQueryMonitoringShouldSurfaceAllIssuesAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            context => AssertSqlQueryMonitoringAssertionFailsAsync(
-                () => context.AssertSqlQueryMonitoringAsync(),
-                exception =>
-                {
-                    exception.InnerException.ShouldNotBeNull();
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
-                    exception.InnerException.Message.ShouldContain(
-                        SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
-                    exception.InnerException.Message.ShouldContain("Command text executed");
-                    exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
-                    exception.InnerException.Message.ShouldContain("Command result set had");
-                    exception.InnerException.Message.ShouldContain("threshold: 1");
-                    exception.InnerException.Message.ShouldContain("threshold: 0");
-                }),
-            browser,
-            configuration =>
+        context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = originalThreshold;
+    }
+
+    private static async Task SqlQueryMonitoringShouldSurfaceAllIssuesAsync(this UITestContext context)
+    {
+        var originalDuplicateCommandThreshold =
+            context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold;
+        var originalDuplicateCommandWithParametersThreshold =
+            context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold;
+        var originalResultSetRowCountThreshold =
+            context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 1;
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 1;
+        context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 0;
+
+        await AssertSqlQueryMonitoringAssertionFailsAsync(
+            () => context.AssertSqlQueryMonitoringAsync(),
+            exception =>
             {
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 1;
-                configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 1;
-                configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 0;
-                return Task.CompletedTask;
+                exception.InnerException.ShouldNotBeNull();
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
+                exception.InnerException.Message.ShouldContain(
+                    SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
+                exception.InnerException.Message.ShouldContain("Command text executed");
+                exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
+                exception.InnerException.Message.ShouldContain("Command result set had");
+                exception.InnerException.Message.ShouldContain("threshold: 1");
+                exception.InnerException.Message.ShouldContain("threshold: 0");
             });
+
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold =
+            originalDuplicateCommandThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold =
+            originalDuplicateCommandWithParametersThreshold;
+        context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold =
+            originalResultSetRowCountThreshold;
+    }
 
     public static Task SqlQueryMonitoringShouldWorkOnAnotherTenantAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
@@ -413,171 +473,133 @@ public static class SqlQueryMonitoringTestCases
             },
             browser);
 
-    public static Task SqlQueryMonitoringShouldCaptureRequestPathAndQueryForNavigatedPageAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+    public static async Task SqlQueryMonitoringShouldCaptureRequestPathAndQueryForNavigatedPageAsync(this UITestContext context)
+    {
+        const string requestPath = "/categories/travel?sqlMonitoringRequestCheck=1";
+
+        await context.GoToRelativeUrlAsync(requestPath);
+
+        await context.AssertSqlQueryMonitoringAsync(summary =>
+        {
+            summary.Executions.ShouldNotBeEmpty("Page requests should be captured.");
+            summary.RequestPath.ShouldStartWith(
+                requestPath,
+                Case.Insensitive,
+                "The request path and query should be captured in the summary and match the navigated path.");
+            return Task.CompletedTask;
+        });
+    }
+
+    public static async Task SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync(this UITestContext context)
+    {
+        var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+            controller => controller.RawQuery());
+        var pathWithQuery = $"{requestBasePath}?missing=1";
+
+        await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
+
+        await AssertInvalidOperationExceptionIsThrownAsync(
+            () => context.AssertSqlQueryMonitoringForRequestAsync(pathWithQuery, HttpMethod.Get.Method),
+            exception =>
             {
-                const string requestPath = "/categories/travel?sqlMonitoringRequestCheck=1";
-
-                await context.GoToRelativeUrlAsync(requestPath);
-
-                await context.AssertSqlQueryMonitoringAsync(summary =>
-                {
-                    summary.Executions.ShouldNotBeEmpty("Page requests should be captured.");
-                    summary.RequestPath.ShouldStartWith(
-                        requestPath,
-                        Case.Insensitive,
-                        "The request path and query should be captured in the summary and match the navigated path.");
-                    return Task.CompletedTask;
-                });
+                exception.Message.ShouldContain(
+                    "No SQL query monitoring summary was captured for",
+                    customMessage: $"Exception message was: {exception.Message}");
+                exception.Message.ShouldContain(
+                    requestBasePath,
+                    customMessage: $"Exception message was: {exception.Message}");
+                exception.Message.ShouldContain(
+                    "missing=1",
+                    customMessage: $"Exception message was: {exception.Message}");
             },
-            browser);
+            MissingMatchingSummaryFailureMessage);
+    }
 
-    public static Task SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+    public static async Task SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync(this UITestContext context)
+    {
+        var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+            controller => controller.RawQuery());
+        var actualRequest = $"{requestBasePath}?request=actual";
+        var expectedRequest = $"{requestBasePath}?request=expected";
+
+        await context.GoToRelativeUrlAsync(actualRequest);
+
+        await AssertInvalidOperationExceptionIsThrownAsync(
+            () => context.AssertSqlQueryMonitoringForRequestAsync(expectedRequest, HttpMethod.Get.Method),
+            exception =>
             {
-                var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
-                    controller => controller.RawQuery());
-                var pathWithQuery = $"{requestBasePath}?missing=1";
-
-                await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
-
-                await AssertInvalidOperationExceptionIsThrownAsync(
-                    () => context.AssertSqlQueryMonitoringForRequestAsync(pathWithQuery, HttpMethod.Get.Method),
-                    exception =>
-                    {
-                        exception.Message.ShouldContain(
-                            "No SQL query monitoring summary was captured for",
-                            customMessage: $"Exception message was: {exception.Message}");
-                        exception.Message.ShouldContain(
-                            requestBasePath,
-                            customMessage: $"Exception message was: {exception.Message}");
-                        exception.Message.ShouldContain(
-                            "missing=1",
-                            customMessage: $"Exception message was: {exception.Message}");
-                    },
-                    MissingMatchingSummaryFailureMessage);
+                exception.Message.ShouldContain(
+                    "No SQL query monitoring summary was captured for",
+                    customMessage: $"Exception message was: {exception.Message}");
+                exception.Message.ShouldContain(
+                    requestBasePath,
+                    customMessage: $"Exception message was: {exception.Message}");
             },
-            browser);
+            MissingMatchingSummaryFailureMessage);
+    }
 
-    public static Task SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+    public static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryWithoutPageStateWaitAsync(this UITestContext context)
+    {
+        await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+
+        await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
+        {
+            summary.Executions.Count.ShouldBeGreaterThanOrEqualTo(
+                2,
+                "The combined assertion should capture both page-load and async-request SQL executions.");
+
+            summary.Executions.Count(entry =>
+                    entry.CommandText.ContainsOrdinalIgnoreCase("ContentItemIndex"))
+                .ShouldBeGreaterThanOrEqualTo(2);
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public static async Task SqlQueryMonitoringShouldIgnoreStaleSummariesWhenAggregatingFollowUpRequestsAsync(this UITestContext context)
+    {
+        await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+        var pagePath = context.GetCurrentUri().AbsolutePath;
+
+        await context.AssertSqlQueryMonitoringForRequestAsync(pagePath, HttpMethod.Get.Method);
+
+        await context.GoToRelativeUrlAsync("/about");
+
+        await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
+        {
+            summary.RequestMethod.ShouldBe(HttpMethod.Get.Method);
+            summary.RequestPath.ShouldContain("/about");
+            return Task.CompletedTask;
+        });
+    }
+
+    public static async Task SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync(this UITestContext context)
+    {
+        var sqlRequestPath =
+            context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery());
+        var noSqlRequestPath =
+            context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.NoSql());
+        const int noSqlRequestsToGenerate = 55; // Exceeds SqlQueryMonitoringStore.MaxEntries.
+
+        await context.GoToRelativeUrlAsync(sqlRequestPath);
+
+        for (var requestIndex = 0; requestIndex < noSqlRequestsToGenerate; requestIndex++)
+        {
+            await context.GoToRelativeUrlAsync(
+                $"{noSqlRequestPath}?request={requestIndex.ToTechnicalString()}",
+                onlyIfNotAlreadyThere: false);
+        }
+
+        await context.AssertSqlQueryMonitoringForRequestAsync(
+            sqlRequestPath,
+            HttpMethod.Get.Method,
+            summary =>
             {
-                var requestBasePath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
-                    controller => controller.RawQuery());
-                var actualRequest = $"{requestBasePath}?request=actual";
-                var expectedRequest = $"{requestBasePath}?request=expected";
-
-                await context.GoToRelativeUrlAsync(actualRequest);
-
-                await AssertInvalidOperationExceptionIsThrownAsync(
-                    () => context.AssertSqlQueryMonitoringForRequestAsync(expectedRequest, HttpMethod.Get.Method),
-                    exception =>
-                    {
-                        exception.Message.ShouldContain(
-                            "No SQL query monitoring summary was captured for",
-                            customMessage: $"Exception message was: {exception.Message}");
-                        exception.Message.ShouldContain(
-                            requestBasePath,
-                            customMessage: $"Exception message was: {exception.Message}");
-                    },
-                    MissingMatchingSummaryFailureMessage);
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
-
-    public static Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryWithoutPageStateWaitAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-
-                await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
-                {
-                    summary.Executions.Count.ShouldBeGreaterThanOrEqualTo(
-                        2,
-                        "The combined assertion should capture both page-load and async-request SQL executions.");
-
-                    summary.Executions.Count(entry =>
-                            entry.CommandText.ContainsOrdinalIgnoreCase("ContentItemIndex"))
-                        .ShouldBeGreaterThanOrEqualTo(2);
-
-                    return Task.CompletedTask;
-                });
-            },
-            browser);
-
-    public static Task SqlQueryMonitoringShouldIgnoreStaleSummariesWhenAggregatingFollowUpRequestsAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-                var pagePath = context.GetCurrentUri().AbsolutePath;
-
-                await context.AssertSqlQueryMonitoringForRequestAsync(pagePath, HttpMethod.Get.Method);
-
-                await context.GoToRelativeUrlAsync("/about");
-
-                await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
-                {
-                    summary.RequestMethod.ShouldBe(HttpMethod.Get.Method);
-                    summary.RequestPath.ShouldContain("/about");
-                    return Task.CompletedTask;
-                });
-            },
-            browser);
-
-    public static Task SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
-            {
-                var sqlRequestPath =
-                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery());
-                var noSqlRequestPath =
-                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.NoSql());
-                const int noSqlRequestsToGenerate = 55; // Exceeds SqlQueryMonitoringStore.MaxEntries.
-
-                await context.GoToRelativeUrlAsync(sqlRequestPath);
-
-                for (var requestIndex = 0; requestIndex < noSqlRequestsToGenerate; requestIndex++)
-                {
-                    await context.GoToRelativeUrlAsync(
-                        $"{noSqlRequestPath}?request={requestIndex.ToTechnicalString()}",
-                        onlyIfNotAlreadyThere: false);
-                }
-
-                await context.AssertSqlQueryMonitoringForRequestAsync(
-                    sqlRequestPath,
-                    HttpMethod.Get.Method,
-                    summary =>
-                    {
-                        summary.Executions.ShouldNotBeEmpty(
-                            "SQL request summaries should not be evicted by later requests without SQL execution.");
-                        return Task.CompletedTask;
-                    });
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+                summary.Executions.ShouldNotBeEmpty(
+                    "SQL request summaries should not be evicted by later requests without SQL execution.");
+                return Task.CompletedTask;
+            });
+    }
 
     public static Task LinqToDbSamplesShouldBeCapturedBySqlMonitoringAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
@@ -609,49 +631,37 @@ public static class SqlQueryMonitoringTestCases
             browser,
             ConfigurationHelper.DisableHtmlValidation);
 
-    public static Task SqlQueryMonitoringShouldCaptureRawQueryAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
+    public static Task SqlQueryMonitoringShouldCaptureRawQueryAsync(this UITestContext context) =>
         ExecuteSqlMonitoringScenarioAsync(
-            executeTestAfterSetupAsync,
-            browser,
-            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery()),
+            context,
+            testContext => testContext.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery()),
             entry =>
                 entry.CommandText.ContainsOrdinalIgnoreCase("SELECT") &&
                 entry.CommandText.ContainsOrdinalIgnoreCase("ContentItemIndex"),
             "The raw SQL query should be captured.");
 
-    public static Task SqlQueryMonitoringShouldCaptureRawExecuteNonQueryAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
+    public static Task SqlQueryMonitoringShouldCaptureRawExecuteNonQueryAsync(this UITestContext context) =>
         ExecuteSqlMonitoringScenarioAsync(
-            executeTestAfterSetupAsync,
-            browser,
-            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+            context,
+            requestPathMethod: testContext => testContext.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
                 controller => controller.RawExecuteNonQuery()),
             entry =>
                 entry.CommandText.ContainsOrdinalIgnoreCase("DELETE") &&
                 entry.CommandText.ContainsOrdinalIgnoreCase("ContentItemIndex"),
             "The raw SQL non-query command should be captured.");
 
-    public static Task SqlQueryMonitoringShouldCaptureCustomSessionQueryAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
+    public static Task SqlQueryMonitoringShouldCaptureCustomSessionQueryAsync(this UITestContext context) =>
         ExecuteSqlMonitoringScenarioAsync(
-            executeTestAfterSetupAsync,
-            browser,
-            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+            context,
+            requestPathMethod: testContext => testContext.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
                 controller => controller.CustomSessionQuery()),
             entry => entry.CommandText.ContainsOrdinalIgnoreCase("ContentItemIndex"),
             "Queries executed through a manually created YesSql session should be captured.");
 
-    public static Task SqlQueryMonitoringShouldCaptureDirectConnectionQueryAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser = default) =>
+    public static Task SqlQueryMonitoringShouldCaptureDirectConnectionQueryAsync(this UITestContext context) =>
         ExecuteSqlMonitoringScenarioAsync(
-            executeTestAfterSetupAsync,
-            browser,
-            requestPathMethod: context => context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
+            context,
+            requestPathMethod: testContext => testContext.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(
                 controller => controller.DirectConnectionQuery()),
             entry =>
                 entry.CommandText.ContainsOrdinalIgnoreCase("SELECT") &&
@@ -704,30 +714,40 @@ public static class SqlQueryMonitoringTestCases
                 }
             });
 
-    private static Task ExecuteSqlMonitoringScenarioAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync,
-        Browser browser,
+    private static async Task ExecuteSqlMonitoringScenarioAsync(
+        UITestContext context,
         Func<UITestContext, string> requestPathMethod,
         Predicate<SqlQueryExecutionEntry> executionPredicate,
-        string assertionMessage) =>
-        ExecuteSqlMonitoringTestAsync(
-            executeTestAfterSetupAsync,
-            async context =>
+        string assertionMessage)
+    {
+        var requestPath = requestPathMethod(context);
+        await context.GoToRelativeUrlAsync(requestPath);
+
+        await context.AssertSqlQueryMonitoringAsync(summary =>
+        {
+            summary.RequestPath.ShouldStartWith(
+                requestPath,
+                Case.Insensitive,
+                "The monitored summary should belong to the navigated page request.");
+
+            summary.Executions.ShouldContain(execution => executionPredicate(execution), assertionMessage);
+            return Task.CompletedTask;
+        });
+    }
+
+    private static ExecuteTestAfterSetupAsync CreateInlineExecuteTestAfterSetupAsync(UITestContext context) =>
+        async (testAsync, _, changeConfigurationAsync) =>
+        {
+            if (changeConfigurationAsync != null)
             {
-                var requestPath = requestPathMethod(context);
-                await context.GoToRelativeUrlAsync(requestPath);
+                await changeConfigurationAsync(context.Configuration);
 
-                await context.AssertSqlQueryMonitoringAsync(summary =>
+                if (context.Configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
                 {
-                    summary.RequestPath.ShouldStartWith(
-                        requestPath,
-                        Case.Insensitive,
-                        "The monitored summary should belong to the navigated page request.");
+                    context.Configuration.SetUpSqlQueryMonitoringAssertionOnPageChange();
+                }
+            }
 
-                    summary.Executions.ShouldContain(execution => executionPredicate(execution), assertionMessage);
-                    return Task.CompletedTask;
-                });
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            await testAsync(context);
+        };
 }
