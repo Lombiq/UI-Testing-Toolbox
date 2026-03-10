@@ -20,20 +20,10 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
     }
 
     /// <summary>
-    /// Removes and returns the newest stored summary matching the provided predicate.
+    /// Finds and returns the newest most recent matching item, removes only that item from the queue, and preserves all
+    /// remaining item ordering.
     /// </summary>
-    public bool TryRemoveMostRecentMatching(
-        Predicate<SqlQueryMonitoringSummary> predicate,
-        out SqlQueryMonitoringSummary summary) =>
-        TryRemoveMostRecentCore(predicate, out summary);
-
-    /// <summary>
-    /// Finds the newest matching item, removes only that item from the queue, and preserves all remaining item
-    /// ordering.
-    /// </summary>
-    private bool TryRemoveMostRecentCore(
-        Predicate<SqlQueryMonitoringSummary> predicate,
-        out SqlQueryMonitoringSummary summary)
+    public bool TryRemoveMostRecentMatching(Predicate<SqlQueryMonitoringSummary> predicate, out SqlQueryMonitoringSummary summary)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
