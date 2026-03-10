@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Environment.Shell;
 using System;
@@ -87,7 +88,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync)
     {
         var configuration = context.Configuration.SqlQueryMonitoringConfiguration;
-        configuration.WriteSqlQueryMonitoringCounters(context.Configuration.TestOutputHelper, summary);
+        SqlQueryMonitoringHelpers.WriteSqlQueryMonitoringCounters(context.Configuration.TestOutputHelper, summary, configuration);
 
         try
         {

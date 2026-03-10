@@ -1,9 +1,10 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
+using Lombiq.Tests.UI.Tests.UI.Controllers;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
@@ -184,7 +185,7 @@ public class SqlQueryMonitoringTests : UITestBase
 
                 // You can filter out known noisy queries too.
                 configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
-                    BuildIgnoreCommandTextPatternFilter(
+                    SqlQueryMonitoringHelpers.BuildIgnoreCommandTextPatternFilter(
                         @"FROM\s+\[Document\].*RolesDocument");
 
                 // This is the more manual way to set page-specific thresholds. It lets you use any logic you want

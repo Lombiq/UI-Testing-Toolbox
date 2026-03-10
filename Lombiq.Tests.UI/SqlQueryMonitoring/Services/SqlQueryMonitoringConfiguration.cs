@@ -1,13 +1,12 @@
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 
@@ -120,30 +119,15 @@ public class SqlQueryMonitoringConfiguration
     public SqlQueryMonitoringConfiguration() =>
         AssertSqlQueryMonitoringSummaryAsync = AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync;
 
-    public static Predicate<SqlQueryExecutionEntry> BuildIgnoreCommandTextPatternFilter(params string[] patterns)
-    {
-        if (patterns == null || patterns.Length == 0) return _ => true;
-
-        var regexes = patterns
-            .Select(pattern =>
-                new Regex(
-                    pattern,
-                    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
-                    TimeSpan.FromSeconds(1)))
-            .ToArray();
-
-        return entry => !regexes.Any(regex => regex.IsMatch(entry.CommandText));
-    }
-
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesSqlQueryMonitoringAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;
 
     private Task AssertSqlQueryMonitoringSummaryAgainstThresholdsAsync(SqlQueryMonitoringSummary summary)
     {
-        if (summary == null) throw new InvalidOperationException("SQL query monitoring summary was not available.");
+        ArgumentNullException.ThrowIfNull(summary);
 
         var failures = new List<string>();
-        var executions = GetFilteredExecutions(summary.Executions);
+        var executions = SqlQueryMonitoringHelpers.GetFilteredExecutions(summary.Executions, this);
 
         var hasDuplicateCommandFailures = AddDuplicateCommandFailures(executions, failures);
         var hasDuplicateCommandWithParametersFailures = AddDuplicateCommandWithParametersFailures(executions, failures);
@@ -161,62 +145,8 @@ public class SqlQueryMonitoringConfiguration
         return Task.CompletedTask;
     }
 
-    public void WriteSqlQueryMonitoringCounters(ITestOutputHelper testOutputHelper, SqlQueryMonitoringSummary summary)
-    {
-        if (testOutputHelper == null || summary == null) return;
-
-        var executions = GetFilteredExecutions(summary.Executions);
-
-        var duplicateCommandGroups = executions
-            .GroupBy(entry => entry.NormalizedCommandText)
-            .Select(group => group.Count())
-            .ToList();
-
-        var duplicateCommandWithParametersGroups = executions
-            .GroupBy(entry => (entry.NormalizedCommandText, entry.ParameterSignature))
-            .Select(group => group.Count())
-            .ToList();
-
-        var oversizedRowCounts = executions
-            .Where(entry => entry.RowCount is > 0)
-            .Select(entry => entry.RowCount.Value)
-            .ToList();
-
-        var triggeredFailureCategories = GetTriggeredFailureCategories(
-            duplicateCommandGroups,
-            duplicateCommandWithParametersGroups,
-            oversizedRowCounts);
-
-        var message =
-            "SQL monitoring counters after page change:" + Environment.NewLine +
-            $"- Request: {summary.RequestMethod} {summary.RequestPath}" + Environment.NewLine +
-            $"- Executions: {executions.Count.ToTechnicalString()}" + Environment.NewLine +
-            $"- Duplicate command groups: {duplicateCommandGroups.Count.ToTechnicalString()} " +
-            $"(max group size: {GetMaxOrZero(duplicateCommandGroups).ToTechnicalString()}, " +
-            $"threshold: {FormatThreshold(DuplicateCommandThreshold)})" + Environment.NewLine +
-            $"- Duplicate command+parameters groups: {duplicateCommandWithParametersGroups.Count.ToTechnicalString()} " +
-            $"(max group size: {GetMaxOrZero(duplicateCommandWithParametersGroups).ToTechnicalString()}, " +
-            $"threshold: {FormatThreshold(DuplicateCommandWithParametersThreshold)})" + Environment.NewLine +
-            $"- Result set rows observed: {oversizedRowCounts.Count.ToTechnicalString()} " +
-            $"(max rows: {GetMaxOrZero(oversizedRowCounts).ToTechnicalString()}, " +
-            $"threshold: {FormatThreshold(ResultSetRowCountThreshold)})" + Environment.NewLine +
-            "- Triggered failure categories (at current thresholds): " +
-            $"{(triggeredFailureCategories.Count == 0 ? "(none)" : string.Join(", ", triggeredFailureCategories))}";
-
-        testOutputHelper.WriteLineTimestampedAndDebug(message);
-    }
-
-    private static int GetMaxOrZero(List<int> values) =>
-        values.Count == 0 ? 0 : values.Max();
-
-    private List<SqlQueryExecutionEntry> GetFilteredExecutions(IReadOnlyList<SqlQueryExecutionEntry> executions) =>
-        executions.Where(entry => ExecutionFilter?.Invoke(entry) != false).ToList();
-
-    private static string FormatThreshold(int? threshold) =>
-        threshold?.ToTechnicalString() ?? "null";
-
     private bool AddDuplicateCommandFailures(
-        List<SqlQueryExecutionEntry> executions,
+        IList<SqlQueryExecutionEntry> executions,
         List<string> failures)
     {
         if (DuplicateCommandThreshold is not { } duplicateThreshold) return false;
@@ -243,7 +173,7 @@ public class SqlQueryMonitoringConfiguration
     }
 
     private bool AddDuplicateCommandWithParametersFailures(
-        List<SqlQueryExecutionEntry> executions,
+        IList<SqlQueryExecutionEntry> executions,
         List<string> failures)
     {
         if (DuplicateCommandWithParametersThreshold is not { } duplicateWithParametersThreshold) return false;
@@ -271,7 +201,7 @@ public class SqlQueryMonitoringConfiguration
     }
 
     private bool AddResultSetFailures(
-        List<SqlQueryExecutionEntry> executions,
+        IList<SqlQueryExecutionEntry> executions,
         List<string> failures)
     {
         if (ResultSetRowCountThreshold is not { } resultSetThreshold) return false;
@@ -350,7 +280,7 @@ public class SqlQueryMonitoringConfiguration
 
             categoryGuide.Add($"[{category}] {categoryDescription}");
             triggeredCategories.Add(category);
-            configuredThresholds.Add($"{thresholdName}={FormatThreshold(thresholdValue)}");
+            configuredThresholds.Add($"{thresholdName}={SqlQueryMonitoringHelpers.FormatThreshold(thresholdValue)}");
         }
 
         AddFailureCategoryDetails(
@@ -388,33 +318,5 @@ public class SqlQueryMonitoringConfiguration
             Environment.NewLine +
             "See the details below:" + Environment.NewLine +
             string.Join(Environment.NewLine, failures);
-    }
-
-    private List<string> GetTriggeredFailureCategories(
-        List<int> duplicateCommandGroups,
-        List<int> duplicateCommandWithParametersGroups,
-        List<int> rowCounts)
-    {
-        var categories = new List<string>();
-
-        if (DuplicateCommandThreshold is { } duplicateCommandThreshold &&
-            duplicateCommandGroups.Any(groupSize => groupSize >= duplicateCommandThreshold))
-        {
-            categories.Add(DuplicateCommandFailureCategory);
-        }
-
-        if (DuplicateCommandWithParametersThreshold is { } duplicateWithParametersThreshold &&
-            duplicateCommandWithParametersGroups.Any(groupSize => groupSize >= duplicateWithParametersThreshold))
-        {
-            categories.Add(DuplicateCommandWithParametersFailureCategory);
-        }
-
-        if (ResultSetRowCountThreshold is { } resultSetThreshold &&
-            rowCounts.Any(rowCount => rowCount > resultSetThreshold))
-        {
-            categories.Add(ResultSetRowCountFailureCategory);
-        }
-
-        return categories;
     }
 }
