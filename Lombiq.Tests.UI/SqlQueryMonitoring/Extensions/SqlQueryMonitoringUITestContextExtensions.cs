@@ -18,7 +18,8 @@ public static class SqlQueryMonitoringUITestContextExtensions
         "and that SQL query monitoring is enabled.";
 
     /// <summary>
-    /// Executes assertions on the SQL query monitoring summary recorded for the most recent request.
+    /// Executes assertions on the SQL query monitoring summary recorded for the current request only.
+    /// Does not wait for follow-up requests and does not combine multiple request summaries.
     /// </summary>
     /// <param name="assertSummaryAsync">
     /// The assertion logic to run on the monitoring summary. If <see langword="null"/> then the assertion supplied in
@@ -28,7 +29,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         this UITestContext context,
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
     {
-        var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
+        var summary = await context.GetCurrentRequestSqlQueryMonitoringSummaryAsync();
         await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
     }
 
@@ -77,8 +78,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             tenant: context.TenantName,
             expectedPathAndQuery,
             expectedPath,
-            requestMethod,
-            allowMostRelevantFallback: false);
+            requestMethod);
         await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
     }
 
@@ -102,6 +102,29 @@ public static class SqlQueryMonitoringUITestContextExtensions
         }
     }
 
+    private static async Task<SqlQueryMonitoringSummary> GetCurrentRequestSqlQueryMonitoringSummaryAsync(this UITestContext context)
+    {
+        var currentUri = context.GetCurrentUri();
+        var expectedTenantName = NormalizeTenantName(context.TenantName);
+        var store = await context.GetSqlQueryMonitoringStoreAsync(context.TenantName)
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
+
+        if (TryRemoveMostRecentMatchingRequest(
+            store,
+            expectedTenantName,
+            currentUri.PathAndQuery,
+            currentUri.AbsolutePath,
+            expectedMethod: null,
+            out var summary))
+        {
+            return summary;
+        }
+
+        throw new InvalidOperationException(
+            $"No SQL query monitoring summary was captured for \"{currentUri.PathAndQuery}\". Ensure the request has " +
+            "finished and that SQL query monitoring is enabled.");
+    }
+
     /// <summary>
     /// Returns the SQL query monitoring summary recorded for the most recent request.
     /// </summary>
@@ -113,8 +136,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             tenant: context.TenantName,
             expectedPathAndQuery: currentUri.PathAndQuery,
             expectedPath: currentUri.AbsolutePath,
-            requestMethod: null,
-            allowMostRelevantFallback: true);
+            requestMethod: null);
     }
 
     private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
@@ -122,8 +144,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         string tenant,
         string expectedPathAndQuery,
         string expectedPath,
-        string requestMethod,
-        bool allowMostRelevantFallback)
+        string requestMethod)
     {
         var expectedTenantName = NormalizeTenantName(tenant);
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
@@ -131,9 +152,9 @@ public static class SqlQueryMonitoringUITestContextExtensions
             ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
-        // Even for the "main" page request there can be a short race: the assertion may run before the summary is
-        // enqueued by the middleware. Wait briefly for the expected request summary instead of immediately falling
-        // back.
+
+        // Even for the main page request there can be a short race: the assertion may run before the summary is
+        // enqueued by the middleware. Wait briefly for the expected request summary.
         while (DateTime.UtcNow < deadline)
         {
             if (TryRemoveMostRecentMatchingRequest(
@@ -148,12 +169,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
             }
 
             await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
-        }
-
-        if (allowMostRelevantFallback &&
-            TryRemoveMostRelevantFallback(store, expectedTenantName, out var fallbackSummary))
-        {
-            return fallbackSummary;
         }
 
         var requestDescription = string.IsNullOrWhiteSpace(requestMethod)
@@ -211,7 +226,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             var delay = remaining < sqlMonitoringConfiguration.SummaryLookupInterval
                 ? remaining
                 : sqlMonitoringConfiguration.SummaryLookupInterval;
-            await Task.Delay(delay, context.Configuration.TestCancellationToken);
+                await Task.Delay(delay, context.Configuration.TestCancellationToken);
 
             remaining = deadline - DateTime.UtcNow;
         }
@@ -235,23 +250,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
                 RequestPathMatches(candidate?.RequestPath, expectedPathAndQuery, expectedPath) &&
                 RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
             out summary);
-
-    // Removes and returns a tenant-scoped fallback summary when an exact request match is not required.
-    // Prefers summaries with executions first, then any summary from the same tenant.
-    private static bool TryRemoveMostRelevantFallback(
-        ISqlQueryMonitoringStore store,
-        string expectedTenantName,
-        out SqlQueryMonitoringSummary summary) =>
-        TryRemoveMostRecentMatching(
-                store,
-                candidate =>
-                    TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
-                    candidate?.Executions.Count > 0,
-                out summary) ||
-            TryRemoveMostRecentMatching(
-                store,
-                candidate => TenantNameMatches(candidate?.TenantName, expectedTenantName),
-                out summary);
 
     // Removes and returns the newest tenant-scoped summary produced at or after the initial matched summary.
     // Used during follow-up polling to avoid merging stale summaries from earlier requests.
