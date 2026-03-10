@@ -12,7 +12,6 @@ using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using OpenQA.Selenium;
 using OrchardCore.Environment.Shell;
 using Shouldly;
-using System.Configuration;
 
 namespace Lombiq.Tests.UI.Tests.UI.TestCases;
 
@@ -515,15 +514,8 @@ public static class SqlQueryMonitoringTestCases
         string failureMessage)
         where TException : Exception
     {
-        try
-        {
-            await assertionAsync();
-            throw new ConfigurationErrorsException(failureMessage);
-        }
-        catch (TException exception)
-        {
-            assertException(exception);
-        }
+        var exception = await Should.ThrowAsync<TException>(assertionAsync, failureMessage);
+        assertException(exception);
     }
 
     private static Task ExecuteSqlMonitoringTestAsync(
