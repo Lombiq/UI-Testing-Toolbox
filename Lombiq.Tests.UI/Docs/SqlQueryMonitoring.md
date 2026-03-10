@@ -1,6 +1,6 @@
 # SQL Query Monitoring
 
-SQL query monitoring captures database activity during Orchard Core requests and lets UI tests enforce performance-oriented expectations.
+SQL query monitoring captures what SQL ran during an Orchard Core request, so your UI tests can check for common performance problems.
 
 It detects:
 
@@ -8,158 +8,48 @@ It detects:
 - Duplicate command text with identical parameters (typical missing-cache signal).
 - Oversized result sets (typical missing SQL filter/paging signal).
 
-## Quick Start
+## Basic Flow
 
-1. Enable SQL monitoring collection in test configuration.
-2. Navigate to a page.
-3. Assert the captured SQL summary.
+1. Enable SQL monitoring collection for the test run.
+2. Navigate to a page or hit an endpoint.
+3. Assert the captured summary manually. Or turn on automatic page-change assertions and let the test fail if a summary exceeds thresholds on any page change.
 
-```csharp
-configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
+See the complete sample in
+[`test/Lombiq.UITestingToolbox/Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTests.cs`](../../Lombiq.Tests.UI.Samples/Tests/SqlQueryMonitoringTests.cs).
 
-await context.GoToRelativeUrlAsync("/categories/travel");
-
-await context.AssertSqlQueryMonitoringAsync();
-```
-
-Use these assertion methods based on request flow:
-
+Use these manual assertion methods:
 - `AssertSqlQueryMonitoringAsync()`: Standard single-request page assertion.
-- `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Includes immediate follow-up async requests from the same tenant.
-- `AssertSqlQueryMonitoringForRequestAsync(path, method)`: Match a specific request path/method explicitly in the current tenant context.
+- `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()`: Also includes immediate follow-up async requests from the same tenant.
+- `AssertSqlQueryMonitoringForRequestAsync(requestPathOrUrl, requestMethod)`: Asserts a specific request path/query or absolute URL. `requestMethod` is optional.
 
-## Matching and Isolation
-
-- Summary lookup and fallback are tenant-aware. Assertions only consume summaries that belong to the active tenant.
-- Captured request paths include `PathBase + Path + QueryString`, so tenant URL prefixes are preserved for strict request matching.
-- `AssertSqlQueryMonitoringForRequestAsync()` uses strict request matching: if you specify a query string then the full path+query must match.
+The default automatic page-change assertions runs the `AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync()` method after every page change, so it includes follow-up async requests too.
 
 ## Debugging Failed Checks
 
-When a check fails:
+When a check fails, first check the failure category:
 
-1. Read the failure category:
-   - `DuplicateCommandText`: `Command text executed ...`
-   - `DuplicateCommandWithParameters`: `Command text with same parameters executed ...`
-   - `ResultSetRowCount`: `Command result set had ...`
-2. Use the included SQL execution call stack(s) to locate the call site.
-3. Review SQL counters emitted in test output:
-   - Executions count
-   - Duplicate command groups
-   - Duplicate command+parameter groups
-   - Largest observed row count
-   - Triggered failure categories (at current thresholds)
-4. Decide whether the issue is a real regression or a threshold/filter tuning need.
+- `DuplicateCommandText`
+- `DuplicateCommandWithParameters`
+- `ResultSetRowCount`
 
-## Why Middleware Is Required
-
-SQL monitoring is request-scoped. Middleware is needed to:
-
-- Ensure SQL monitoring wrappers are active for the current request.
-- Finalize request-level summaries at end of pipeline with: `RequestPath`, `RequestMethod`, `TraceIdentifier`, completion time, and executions.
-
-Without middleware, assertions cannot reliably separate SQL activity per request.
+Then look at the SQL call stacks and the SQL counters in the test output. That usually tells you whether this is a real regression or just something to tune.
 
 ## Configuration
 
 Defaults:
 
-- `EnableSqlQueryMonitoringCollection`: `false`
-- `RunSqlQueryMonitoringAssertionOnAllPageChanges`: `false`
-- `DuplicateCommandThreshold`: `30`
-- `DuplicateCommandWithParametersThreshold`: `15`
-- `ResultSetRowCountThreshold`: `200`
-- `SummaryLookupTimeout`: `00:00:02`
-- `SummaryLookupInterval`: `00:00:00.100`
-- `FollowUpSummaryQuietPeriod`: `00:00:00.300`
-
-How to think about these settings:
-
-- `DuplicateCommandThreshold` is a broad duplicate-query guard. Lower it when you want earlier N+1 detection.
-- `DuplicateCommandWithParametersThreshold` is stricter for exact repeat calls. Lower it when cache-related regressions are important.
-- `ResultSetRowCountThreshold` guards unbounded reads. Lower it on list endpoints that should always be paged/filtered.
-- `SummaryLookupTimeout` and `SummaryLookupInterval` control summary lookup stability right after navigation.
-- `FollowUpSummaryQuietPeriod` controls how long follow-up-inclusive assertions keep waiting for late async requests.
-
-Recommended tuning approach:
-
-1. Start with defaults and run tests on stable pages.
-2. Check emitted counters to understand normal query shape.
-3. Lower thresholds gradually until they catch real regressions without frequent false positives.
-4. Use per-page thresholds for known heavy pages instead of globally weakening checks.
-
-Example override for tresholds:
-
-```csharp
-configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = 20;
-configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = 10;
-configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = 150;
-```
-
-Timing overrides:
-
-```csharp
-configuration.SqlQueryMonitoringConfiguration.SummaryLookupTimeout = TimeSpan.FromSeconds(5);
-configuration.SqlQueryMonitoringConfiguration.SummaryLookupInterval = TimeSpan.FromMilliseconds(200);
-configuration.SqlQueryMonitoringConfiguration.FollowUpSummaryQuietPeriod = TimeSpan.FromMilliseconds(500);
-```
-
-Automatic page-change assertions:
-
-```csharp
-configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
-configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-```
-
-When enabled, page-change hooks use follow-up-inclusive assertions by default.
-
-## Filtering Known Noisy Queries
-
-Use filtering when a query pattern is expected, stable, and not actionable for the test goal. Typical examples are framework warm-up queries or metadata lookups that are known and benign in your environment.
-
-Filtering is applied before thresholds are evaluated. This means filtered executions do not contribute to duplicate or row-count failures.
-
-Good filtering practices:
-
-- Match the narrowest stable command pattern possible.
-- Prefer a short allowlist of known benign patterns over broad wildcard patterns.
-- Revisit filters periodically; stale filters can hide real regressions.
-
-Avoid:
-
-- Filtering broad tables or generic `SELECT` patterns without additional constraints.
-- Using filters to silence unstable tests that should be fixed by better setup or better thresholds.
-
-```csharp
-configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
-    SqlQueryMonitoringConfiguration.BuildIgnoreCommandTextPatternFilter(
-        @"FROM\s+\[Document\].*ContentDefinitionRecord",
-        @"FROM\s+\[Document\].*RolesDocument");
-```
-
-## Per-Page Thresholds
-
-Use per-page thresholds when different routes legitimately have different SQL profiles. This keeps global checks strict while giving targeted flexibility for heavy but valid pages.
-
-How matching works:
-
-- Rules are evaluated against the request path.
-- The first matching regex wins.
-- If no rule matches, default thresholds are used.
-
-Practical guidance:
-
-- Keep defaults relatively strict.
-- Add a specific rule for heavy routes (for example category listing pages).
-- Keep regex patterns explicit and anchored (`^...$` or `^.../`) to avoid accidental matches.
-
-```csharp
-configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
-    new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(30, 15, 200),
-    (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(20, 10, 100)),
-    (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringConfiguration.SqlQueryMonitoringThresholds(25, 12, 150)));
-```
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `EnableSqlQueryMonitoringCollection` | `false` | Turns SQL monitoring on for the app under test. If this is `false`, nothing is collected. |
+| `RunSqlQueryMonitoringAssertionOnAllPageChanges` | `false` | Runs SQL monitoring assertions automatically after every page change. |
+| `DuplicateCommandThreshold` | `30` | Fails if the same SQL command text runs 30 times or more in one request. |
+| `DuplicateCommandWithParametersThreshold` | `15` | Fails if the same SQL command text with the same parameters runs 15 times or more in one request. |
+| `ResultSetRowCountThreshold` | `200` | Fails if a single SQL command returns more than 200 rows. |
+| `SummaryLookupTimeout` | `00:00:02` | How long assertions wait for the expected summary to show up. |
+| `SummaryLookupInterval` | `00:00:00.100` | How often assertions poll while waiting for a summary. |
+| `FollowUpSummaryQuietPeriod` | `00:00:00.300` | How long follow-up assertions keep waiting after the last newly captured summary. |
 
 ## Scenario Catalog
 
-For complete, runnable scenarios, see [SQL query monitoring scenario catalog.](../../../Lombiq.OSOCE.Tests.UI/Tests/SqlMonitoringTests/README.md)
+For complete scenarios, see
+[`test/Lombiq.OSOCE.Tests.UI/Tests/SqlMonitoringTests/Readme.md`](../../../Lombiq.OSOCE.Tests.UI/Tests/SqlMonitoringTests/Readme.md).
