@@ -205,30 +205,42 @@ public static class SqlQueryMonitoringUITestContextExtensions
     {
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
         var summaries = new List<SqlQueryMonitoringSummary> { initialSummary };
-        var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
+        var now = DateTime.UtcNow;
+        var deadline = now + sqlMonitoringConfiguration.SummaryLookupTimeout;
+        var quietDeadline = now + sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
+        var pollingInterval = sqlMonitoringConfiguration.SummaryLookupInterval;
 
-        var remaining = deadline - DateTime.UtcNow;
-
-        while (remaining > TimeSpan.Zero)
+        // Keep polling until the hard timeout is reached or no new follow-up summary arrives before the quiet period
+        // ends.
+        while (now < deadline && now < quietDeadline)
         {
-            while (TryRemoveMostRecentFollowUp(
-                       store,
-                       initialSummary.TenantName,
-                       initialSummary.CompletedUtc,
-                       out var additionalSummary))
+            var capturedFollowUpSummary = false;
+
+            // Drain all follow-up summaries that are already available before waiting again.
+            while (TryRemoveMostRecentFollowUp(store, initialSummary.TenantName, initialSummary.CompletedUtc, out var additionalSummary))
             {
                 if (additionalSummary?.Executions.Count > 0)
                 {
                     summaries.Add(additionalSummary);
+                    capturedFollowUpSummary = true;
                 }
             }
 
-            var delay = remaining < sqlMonitoringConfiguration.SummaryLookupInterval
-                ? remaining
-                : sqlMonitoringConfiguration.SummaryLookupInterval;
-                await Task.Delay(delay, context.Configuration.TestCancellationToken);
+            if (capturedFollowUpSummary)
+            {
+                quietDeadline = DateTime.UtcNow + sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
+            }
 
-            remaining = deadline - DateTime.UtcNow;
+            var stopAt = deadline < quietDeadline ? deadline : quietDeadline;
+            var remainingUntilStop = stopAt - DateTime.UtcNow;
+            var delay = remainingUntilStop < pollingInterval ? remainingUntilStop : pollingInterval;
+
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, context.Configuration.TestCancellationToken);
+            }
+
+            now = DateTime.UtcNow;
         }
 
         return summaries;
