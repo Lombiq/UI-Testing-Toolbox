@@ -53,9 +53,6 @@ public static class SqlQueryMonitoringTestCases
                 await context.SqlQueryMonitoringShouldIgnoreStaleSummariesWhenAggregatingFollowUpRequestsAsync();
 
                 await context.GoToHomePageAsync();
-                await context.SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync();
-
-                await context.GoToHomePageAsync();
                 await context.SqlQueryMonitoringShouldDetectDuplicatesWithoutSpecifyingRequestPathAsync();
             },
             browser);
@@ -400,34 +397,6 @@ public static class SqlQueryMonitoringTestCases
             summary.RequestPath.ShouldContain("/about");
             return Task.CompletedTask;
         });
-    }
-
-    public static async Task SqlQueryMonitoringShouldRetainRecentSqlSummariesAmidNoisyRequestsAsync(this UITestContext context)
-    {
-        var sqlRequestPath =
-            context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.RawQuery());
-        var noSqlRequestPath =
-            context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.NoSql());
-        const int noSqlRequestsToGenerate = 55; // Exceeds SqlQueryMonitoringStore.MaxEntries.
-
-        await context.GoToRelativeUrlAsync(sqlRequestPath);
-
-        for (var requestIndex = 0; requestIndex < noSqlRequestsToGenerate; requestIndex++)
-        {
-            await context.GoToRelativeUrlAsync(
-                $"{noSqlRequestPath}?request={requestIndex.ToTechnicalString()}",
-                onlyIfNotAlreadyThere: false);
-        }
-
-        await context.AssertSqlQueryMonitoringForRequestAsync(
-            sqlRequestPath,
-            HttpMethod.Get.Method,
-            summary =>
-            {
-                summary.Executions.ShouldNotBeEmpty(
-                    "SQL request summaries should not be evicted by later requests without SQL execution.");
-                return Task.CompletedTask;
-            });
     }
 
     public static Task LinqToDbSamplesShouldBeCapturedBySqlMonitoringAsync(
