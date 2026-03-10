@@ -1,29 +1,22 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
 /// <summary>
-/// A thread-safe, bounded store of recent SQL query monitoring summaries.
+/// A thread-safe store of recent SQL query monitoring summaries.
 /// </summary>
 public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
-    // Keep the queue bounded so noisy request bursts don't grow memory usage without limit.
-    // This is large enough for recent request matching, but small enough to avoid long stale history.
-    private const int MaxEntries = 50;
-
-    private readonly List<SqlQueryMonitoringSummary> _summaries = [];
     private readonly object _lock = new();
+    private ConcurrentQueue<SqlQueryMonitoringSummary> _summaries = [];
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
     {
         if (summary == null) return;
 
-        lock (_lock)
-        {
-            _summaries.Add(summary);
-            TrimToCapacity();
-        }
+        _summaries.Enqueue(summary);
     }
 
     /// <summary>
@@ -46,13 +39,15 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 
         lock (_lock)
         {
-            if (_summaries.Count == 0)
+            var items = _summaries.ToList();
+
+            if (items.Count == 0)
             {
                 summary = null;
                 return false;
             }
 
-            var index = _summaries.FindLastIndex(predicate);
+            var index = items.FindLastIndex(predicate);
 
             if (index < 0)
             {
@@ -60,27 +55,10 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
                 return false;
             }
 
-            summary = _summaries[index];
-            _summaries.RemoveAt(index);
-
+            summary = items[index];
+            items.RemoveAt(index);
+            _summaries = new ConcurrentQueue<SqlQueryMonitoringSummary>(items);
             return true;
         }
-    }
-
-    private void TrimToCapacity()
-    {
-        while (_summaries.Count > MaxEntries)
-        {
-            if (!TryRemoveOldestEmptySummary()) _summaries.RemoveAt(0);
-        }
-    }
-
-    private bool TryRemoveOldestEmptySummary()
-    {
-        var index = _summaries.FindIndex(summary => summary.Executions.Count == 0);
-        if (index < 0) return false;
-
-        _summaries.RemoveAt(index);
-        return true;
     }
 }
