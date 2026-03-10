@@ -191,43 +191,33 @@ public static class SqlQueryMonitoringUITestContextExtensions
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
         var summaries = new List<SqlQueryMonitoringSummary> { initialSummary };
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
-        var lastSummaryCapturedUtc = DateTime.UtcNow;
-        var shouldContinuePolling = true;
 
-        while (shouldContinuePolling && DateTime.UtcNow < deadline)
+        var remaining = deadline - DateTime.UtcNow;
+
+        while (remaining > TimeSpan.Zero)
         {
-            if (TryRemoveMostRecentFollowUp(
-                store,
-                initialSummary.TenantName,
-                initialSummary.CompletedUtc,
-                out var additionalSummary))
+            while (TryRemoveMostRecentFollowUp(
+                       store,
+                       initialSummary.TenantName,
+                       initialSummary.CompletedUtc,
+                       out var additionalSummary))
             {
                 if (additionalSummary?.Executions.Count > 0)
                 {
                     summaries.Add(additionalSummary);
-                    lastSummaryCapturedUtc = DateTime.UtcNow;
                 }
-
-                continue;
             }
 
-            shouldContinuePolling = ShouldContinueFollowUpPolling(
-                lastSummaryCapturedUtc,
-                sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod);
+            var delay = remaining < sqlMonitoringConfiguration.SummaryLookupInterval
+                ? remaining
+                : sqlMonitoringConfiguration.SummaryLookupInterval;
+            await Task.Delay(delay, context.Configuration.TestCancellationToken);
 
-            if (shouldContinuePolling)
-            {
-                await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
-            }
+            remaining = deadline - DateTime.UtcNow;
         }
 
         return summaries;
     }
-
-    private static bool ShouldContinueFollowUpPolling(
-        DateTime lastSummaryCapturedUtc,
-        TimeSpan followUpSummaryQuietPeriod) =>
-        DateTime.UtcNow - lastSummaryCapturedUtc < followUpSummaryQuietPeriod;
 
     // Removes and returns the newest summary that matches the explicit request selector (tenant + path/query + method).
     // Used by request-specific assertions where mismatches must not silently pass.
