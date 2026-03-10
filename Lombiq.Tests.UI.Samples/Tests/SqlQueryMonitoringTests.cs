@@ -52,7 +52,8 @@ public class SqlQueryMonitoringTests : UITestBase
                 await context.AssertSqlQueryMonitoringForRequestAsync("/", HttpMethod.Get.Method);
 
                 // If you want to include follow-up requests in the assertion, you can use this one. In this case it
-                // won't find any follow-up requests, but it will still assert against the main page request and its SQL summary.
+                // won't find any follow-up requests, but it will still assert against the main page request and its SQL
+                // summary.
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
 
