@@ -331,7 +331,12 @@ public static class SqlQueryMonitoringUITestContextExtensions
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(requestPathOrUrl);
 
-        if (Uri.TryCreate(requestPathOrUrl, UriKind.Absolute, out var absoluteUri))
+        // On Linux, a request path like "/foo?x=1" can be treated as an absolute file URI path. Only accept real
+        // HTTP(S) URLs here, otherwise keep handling the input as a request path + query string.
+        if (Uri.TryCreate(requestPathOrUrl, UriKind.Absolute, out var absoluteUri) &&
+            absoluteUri is { IsFile: false } &&
+            (absoluteUri.Scheme.EqualsOrdinalIgnoreCase("http") ||
+                absoluteUri.Scheme.EqualsOrdinalIgnoreCase("https")))
         {
             return (absoluteUri.PathAndQuery, absoluteUri.AbsolutePath);
         }
