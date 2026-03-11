@@ -135,21 +135,6 @@ jobs:
         evidence: ''
         evidenceRegex: false
         methods: []
-      # MIME-sniffing is not a concern for robots.txt file. Regardless, this may be removed if
-      # https://github.com/OrchardCMS/OrchardCore/issues/18934 is addressed.
-      - ruleId: 10021
-        ruleName: X-Content-Type-Options Header Missing (10021)
-        context: ''
-        newRisk: False Positive
-        parameter: ''
-        parameterRegex: false
-        url: .*/robots.txt
-        urlRegex: true
-        attack: ''
-        attackRegex: false
-        evidence: ''
-        evidenceRegex: false
-        methods: []
     parameters:
       deleteGlobalAlerts: false
     name: alertFilter
