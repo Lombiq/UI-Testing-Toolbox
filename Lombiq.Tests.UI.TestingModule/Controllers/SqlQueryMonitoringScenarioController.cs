@@ -53,7 +53,7 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     public async Task<IActionResult> RawQuery()
     {
         var contentItemCount = await _session.RawQueryAsync<int>(
-            $"SELECT COUNT(*) FROM {GetContentItemIndexTableName(_store.Configuration.TablePrefix)}");
+            $"SELECT COUNT(*) FROM {nameof(ContentItemIndex)}");
         return Ok(contentItemCount);
     }
 
