@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OrchardCore.Environment.Shell.Descriptor.Models;
 using OrchardCore.Modules;
 using System.Linq;
 
@@ -48,6 +49,7 @@ public static class OrchardCoreBuilderExtensions
                 services.AddSingleton<ISqlQueryMonitoringStore, SqlQueryMonitoringStore>();
                 services.AddScoped<ISqlQueryMonitoringContext, SqlQueryMonitoringContext>();
                 services.AddSingleton<IStartup, SqlQueryMonitoringStartup>();
+                services.AddTransient(_ => new ShellFeature("Lombiq.Tests.UI.TestingModule", alwaysEnabled: true));
             }
         });
 
