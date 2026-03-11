@@ -9,8 +9,8 @@ using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using static Lombiq.Tests.UI.SqlQueryMonitoring.Services.SqlQueryMonitoringConfiguration;
@@ -62,7 +62,11 @@ public class SqlQueryMonitoringTests : UITestBase
                 // in the way of the later explicit assertions.
                 await context.GoToRelativeUrlAsync("/about");
 
-                automaticallyAssertedSummaries.Count.ShouldBe(1, "Asserted summaries: " + JsonSerializer.Serialize(automaticallyAssertedSummaries));
+                // We don't know if the GoToRelativeUrlAsync had to retry the navigation while still triggering the page
+                // load on the server side, so we might have more than one summary for the page changes. But only the
+                // ones for /about should be there.
+                automaticallyAssertedSummaries.Count(summary => !summary.RequestPath.Contains("/about"))
+                    .ShouldBe(0, "Only the page changes that match the configured rule should be in the summaries");
                 automaticallyAssertedSummaries[0].RequestMethod.ShouldBe(HttpMethod.Get.Method);
                 automaticallyAssertedSummaries[0].RequestPath.ShouldContain("/about");
                 automaticallyAssertedSummaries[0].Executions.ShouldNotBeEmpty(
