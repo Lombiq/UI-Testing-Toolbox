@@ -169,7 +169,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         throw new InvalidOperationException(
             $"No SQL query monitoring summary was captured for \"{requestDescription}\". Ensure the request has " +
-            $"finished and that SQL query monitoring is enabled. Summaries: {JsonSerializer.Serialize(store.ReadonlySummaries())}");
+            "finished and that SQL query monitoring is enabled.");
     }
 
     private static async Task<ISqlQueryMonitoringStore> GetSqlQueryMonitoringStoreAsync(
