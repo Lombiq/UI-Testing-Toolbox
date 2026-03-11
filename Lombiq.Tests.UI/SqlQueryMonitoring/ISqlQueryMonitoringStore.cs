@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
@@ -7,6 +8,11 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 /// </summary>
 public interface ISqlQueryMonitoringStore
 {
+    /// <summary>
+    /// Get readonly summaries.
+    /// </summary>
+    IReadOnlyList<SqlQueryMonitoringSummary> ReadonlySummaries();
+
     /// <summary>
     /// Adds a completed monitoring summary to the store.
     /// </summary>

@@ -6,6 +6,7 @@ using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
@@ -114,7 +115,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         throw new InvalidOperationException(
             $"No SQL query monitoring summary was captured for \"{currentUri.PathAndQuery}\". Ensure the request has " +
-            "finished and that SQL query monitoring is enabled.");
+            $"finished and that SQL query monitoring is enabled. Summaries: {JsonSerializer.Serialize(store.ReadonlySummaries())}");
     }
 
     /// <summary>

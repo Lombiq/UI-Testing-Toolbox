@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
@@ -11,6 +12,8 @@ public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
     private readonly object _lock = new();
     private ConcurrentQueue<SqlQueryMonitoringSummary> _summaries = [];
+
+    public IReadOnlyList<SqlQueryMonitoringSummary> ReadonlySummaries() => [.. _summaries];
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
     {
