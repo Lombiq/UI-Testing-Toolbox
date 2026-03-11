@@ -12,8 +12,8 @@ public class SqlQueryMonitoringAssertionException : Exception, IAssertionExcepti
     public SqlQueryMonitoringAssertionException(
         SqlQueryMonitoringSummary summary,
         SqlQueryMonitoringConfiguration configuration,
-        Exception innerException)
-        : base(innerException?.Message, innerException)
+        string message)
+        : base(message)
     {
         SqlQueryMonitoringSummary = summary;
         SqlQueryMonitoringConfiguration = configuration;

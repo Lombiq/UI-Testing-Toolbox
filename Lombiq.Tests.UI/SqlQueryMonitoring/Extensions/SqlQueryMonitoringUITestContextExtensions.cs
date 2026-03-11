@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Environment.Shell;
@@ -82,7 +81,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
     }
 
-    private static async Task AssertSqlQueryMonitoringSummaryAsync(
+    private static Task AssertSqlQueryMonitoringSummaryAsync(
         UITestContext context,
         SqlQueryMonitoringSummary summary,
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync)
@@ -90,16 +89,9 @@ public static class SqlQueryMonitoringUITestContextExtensions
         var configuration = context.Configuration.SqlQueryMonitoringConfiguration;
         SqlQueryMonitoringHelpers.WriteSqlQueryMonitoringCounters(context.Configuration.TestOutputHelper, summary, configuration);
 
-        try
-        {
-            var assertTask = (assertSummaryAsync ?? configuration.AssertSqlQueryMonitoringSummaryAsync)?
-                .Invoke(summary);
-            await (assertTask ?? Task.CompletedTask);
-        }
-        catch (Exception exception)
-        {
-            throw new SqlQueryMonitoringAssertionException(summary, configuration, exception);
-        }
+        var assertTask = (assertSummaryAsync ?? configuration.AssertSqlQueryMonitoringSummaryAsync)?
+            .Invoke(summary);
+        return assertTask ?? Task.CompletedTask;
     }
 
     private static async Task<SqlQueryMonitoringSummary> GetCurrentRequestSqlQueryMonitoringSummaryAsync(this UITestContext context)

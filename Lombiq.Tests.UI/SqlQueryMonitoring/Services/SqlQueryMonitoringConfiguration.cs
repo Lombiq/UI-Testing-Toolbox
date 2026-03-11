@@ -1,8 +1,9 @@
+#nullable enable
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +141,10 @@ public class SqlQueryMonitoringConfiguration
             hasDuplicateCommandWithParametersFailures,
             hasResultSetFailures);
 
-        failures.ShouldBeEmpty(failureMessage);
+        if (failureMessage?.Length > 0)
+        {
+            throw new SqlQueryMonitoringAssertionException(summary, this, failureMessage);
+        }
 
         return Task.CompletedTask;
     }
@@ -254,7 +258,7 @@ public class SqlQueryMonitoringConfiguration
                 .Select(line => indentationPrefix + line));
     }
 
-    private string BuildFailureMessage(
+    private string? BuildFailureMessage(
         SqlQueryMonitoringSummary summary,
         List<string> failures,
         bool hasDuplicateCommandFailures,

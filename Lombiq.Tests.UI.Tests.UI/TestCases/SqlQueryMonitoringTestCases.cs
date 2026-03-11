@@ -135,11 +135,11 @@ public static class SqlQueryMonitoringTestCases
             {
                 exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain(pagePath);
                 exception.SqlQueryMonitoringSummary.RequestPath.ShouldContain("combined");
-                exception.InnerException.ShouldNotBeNull();
-                exception.InnerException.Message.ShouldContain(
+                exception.ShouldNotBeNull();
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                exception.InnerException.Message.ShouldContain("Command text executed");
-                exception.InnerException.Message.ShouldContain("threshold: 2");
+                exception.Message.ShouldContain("Command text executed");
+                exception.Message.ShouldContain("threshold: 2");
             });
     }
 
@@ -177,13 +177,13 @@ public static class SqlQueryMonitoringTestCases
             () => context.AssertSqlQueryMonitoringAsync(),
             exception =>
             {
-                exception.InnerException.ShouldNotBeNull();
-                exception.InnerException.Message.ShouldContain(
+                exception.ShouldNotBeNull();
+                exception.Message.ShouldContain(
                     $"[{SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory}]");
-                exception.InnerException.Message.ShouldContain(
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                exception.InnerException.Message.ShouldContain("Command text executed");
-                exception.InnerException.Message.ShouldContain("threshold: 1");
+                exception.Message.ShouldContain("Command text executed");
+                exception.Message.ShouldContain("threshold: 1");
             });
 
         context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold = originalTreshold;
@@ -198,13 +198,13 @@ public static class SqlQueryMonitoringTestCases
             () => context.AssertSqlQueryMonitoringAsync(),
             exception =>
             {
-                exception.InnerException.ShouldNotBeNull();
-                exception.InnerException.Message.ShouldContain(
+                exception.ShouldNotBeNull();
+                exception.Message.ShouldContain(
                     $"[{SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory}]");
-                exception.InnerException.Message.ShouldContain(
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
-                exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
-                exception.InnerException.Message.ShouldContain("threshold: 1");
+                exception.Message.ShouldContain("Command text with same parameters executed");
+                exception.Message.ShouldContain("threshold: 1");
             });
 
         context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersThreshold = originalThreshold;
@@ -219,13 +219,13 @@ public static class SqlQueryMonitoringTestCases
             () => context.AssertSqlQueryMonitoringAsync(),
             exception =>
             {
-                exception.InnerException.ShouldNotBeNull();
-                exception.InnerException.Message.ShouldContain(
+                exception.ShouldNotBeNull();
+                exception.Message.ShouldContain(
                     $"[{SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory}]");
-                exception.InnerException.Message.ShouldContain(
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
-                exception.InnerException.Message.ShouldContain("Command result set had");
-                exception.InnerException.Message.ShouldContain("threshold: 0");
+                exception.Message.ShouldContain("Command result set had");
+                exception.Message.ShouldContain("threshold: 0");
             });
 
         context.Configuration.SqlQueryMonitoringConfiguration.ResultSetRowCountThreshold = originalThreshold;
@@ -247,18 +247,18 @@ public static class SqlQueryMonitoringTestCases
             () => context.AssertSqlQueryMonitoringAsync(),
             exception =>
             {
-                exception.InnerException.ShouldNotBeNull();
-                exception.InnerException.Message.ShouldContain(
+                exception.ShouldNotBeNull();
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.DuplicateCommandFailureCategory);
-                exception.InnerException.Message.ShouldContain(
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.DuplicateCommandWithParametersFailureCategory);
-                exception.InnerException.Message.ShouldContain(
+                exception.Message.ShouldContain(
                     SqlQueryMonitoringConfiguration.ResultSetRowCountFailureCategory);
-                exception.InnerException.Message.ShouldContain("Command text executed");
-                exception.InnerException.Message.ShouldContain("Command text with same parameters executed");
-                exception.InnerException.Message.ShouldContain("Command result set had");
-                exception.InnerException.Message.ShouldContain("threshold: 1");
-                exception.InnerException.Message.ShouldContain("threshold: 0");
+                exception.Message.ShouldContain("Command text executed");
+                exception.Message.ShouldContain("Command text with same parameters executed");
+                exception.Message.ShouldContain("Command result set had");
+                exception.Message.ShouldContain("threshold: 1");
+                exception.Message.ShouldContain("threshold: 0");
             });
 
         context.Configuration.SqlQueryMonitoringConfiguration.DuplicateCommandThreshold =
