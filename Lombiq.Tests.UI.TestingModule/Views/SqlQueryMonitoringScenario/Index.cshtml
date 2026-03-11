@@ -1,5 +1,5 @@
-@using Lombiq.Tests.UI.Shortcuts
-@using OrchardCore
+@using Lombiq.Tests.UI.TestingModule.Controllers
+@using OrchardCore.Mvc.Core.Utilities
 @model int
 
 <h1>SQL Query Monitoring Scenario</h1>
@@ -14,7 +14,7 @@
     const endpointUrl = "@Url.Action(
         nameof(SqlQueryMonitoringScenarioController.AsyncQuery),
         typeof(SqlQueryMonitoringScenarioController).ControllerName(),
-        new { area = ShortcutsFeatureIds.Area })";
+        new { area = "Lombiq.Tests.UI.TestingModule" })";
 
     fetch(endpointUrl)
         .then(response => response.ok ? response.text() : Promise.reject())

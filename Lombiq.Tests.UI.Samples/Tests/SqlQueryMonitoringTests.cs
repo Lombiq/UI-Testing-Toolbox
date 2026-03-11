@@ -1,10 +1,10 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
+using Lombiq.Tests.UI.TestingModule.Controllers;
 using OpenQA.Selenium;
 using Shouldly;
 using System;

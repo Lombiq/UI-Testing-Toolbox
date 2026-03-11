@@ -6,7 +6,7 @@ using OrchardCore.Data;
 using System.Threading.Tasks;
 using YesSql;
 
-namespace Lombiq.Tests.UI.Shortcuts.Controllers;
+namespace Lombiq.Tests.UI.TestingModule.Controllers;
 
 /// <summary>
 /// Test-only endpoints used by SQL monitoring UI tests to exercise different query execution paths.

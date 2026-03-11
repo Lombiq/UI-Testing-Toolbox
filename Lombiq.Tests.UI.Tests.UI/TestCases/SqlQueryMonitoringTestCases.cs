@@ -4,11 +4,11 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
-using Lombiq.Tests.UI.Shortcuts.Controllers;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Exceptions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
+using Lombiq.Tests.UI.TestingModule.Controllers;
 using OpenQA.Selenium;
 using OrchardCore.Environment.Shell;
 using Shouldly;
@@ -95,6 +95,7 @@ public static class SqlQueryMonitoringTestCases
         var asyncApiPath = context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
 
         await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+
         var pagePath = context.GetCurrentUri().AbsolutePath;
 
         context.DoWithRetriesOrFail(() =>
