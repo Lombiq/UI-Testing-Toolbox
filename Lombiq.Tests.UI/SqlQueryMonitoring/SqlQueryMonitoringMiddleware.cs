@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Environment.Shell;
 using OrchardCore.Modules;
-using System;
 using System.Threading.Tasks;
 using YesSql;
 
@@ -41,7 +40,7 @@ public sealed class SqlQueryMonitoringMiddleware
                     requestPath: $"{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}",
                     requestMethod: context.Request.Method,
                     traceIdentifier: context.TraceIdentifier,
-                    completedUtc: new DateTimeOffset(clock.UtcNow),
+                    completedUtc: clock.UtcNow,
                     executions: monitoringContext.Executions);
 
                 store.AddSummary(summary);
