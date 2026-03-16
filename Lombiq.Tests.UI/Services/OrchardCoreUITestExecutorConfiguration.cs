@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using Shouldly;
@@ -160,6 +161,8 @@ public class OrchardCoreUITestExecutorConfiguration
     public AccessibilityCheckingConfiguration AccessibilityCheckingConfiguration { get; set; } = new();
 
     public HtmlValidationConfiguration HtmlValidationConfiguration { get; set; } = new();
+
+    public SqlQueryMonitoringConfiguration SqlQueryMonitoringConfiguration { get; set; } = new();
 
     public SecurityScanningConfiguration SecurityScanningConfiguration { get; set; } = new();
 
