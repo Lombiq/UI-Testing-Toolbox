@@ -21,7 +21,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // - Enabling SQL monitoring for the app under test.
 // - Asserting against the latest monitored request.
 // - Asserting against a specific request path (including the query string).
-// - Combining the page request with follow-up async requests into one assertion.
+// - Combining the page request with follow-up async requests (like the ones an SPA makes) into one assertion.
 // - Running SQL monitoring automatically on selected page changes.
 // - Customizing thresholds per page, first with a BeforeNavigation handler, then with URL-pattern rules.
 // - Filtering out known noisy SQL commands that you explicitly don't care about.
@@ -101,7 +101,6 @@ public class SqlQueryMonitoringTests : UITestBase
             },
             changeConfiguration: configuration =>
             {
-                // SQL monitoring is off by default, so you need to turn it on for the test.
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
                 // This enables automatic page-change assertions, but only on /about. That way the later explicit
@@ -125,8 +124,9 @@ public class SqlQueryMonitoringTests : UITestBase
                     SqlQueryMonitoringHelpers.BuildIgnoreCommandTextPatternFilter(
                         @"FROM\s+\[Document\].*RolesDocument");
 
-                // This is the more manual way to set page-specific thresholds. It lets you use any logic you want
-                // based on the target URI. You could also change these thresholds just once, for all pages.
+                // This is the more manual way to set page-specific thresholds. It lets you use any logic you want based
+                // on the target URI. You could also change these thresholds just once, for all pages, without using
+                // BeforeNavigation.
                 configuration.Events.BeforeNavigation += (_, targetUri) =>
                 {
                     var thresholds = configuration.SqlQueryMonitoringConfiguration;
@@ -165,7 +165,6 @@ public class SqlQueryMonitoringTests : UITestBase
             },
             changeConfiguration: configuration =>
             {
-                // SQL monitoring is off by default, so you need to turn it on for the test.
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
                 // If your threshold rules are only based on the URL, then the regex helper is a bit more compact for
@@ -227,7 +226,7 @@ public class SqlQueryMonitoringTests : UITestBase
                     });
 
                 // Or if you don't care which follow-up request caused the problem, only that the page and its async
-                // requests work together did. The follow-up-inclusive assertion combines those summaries.
+                // requests together did, then the follow-up-inclusive assertion combines those summaries.
                 await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
 
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
@@ -240,9 +239,7 @@ public class SqlQueryMonitoringTests : UITestBase
                     return Task.CompletedTask;
                 });
             },
-            configuration =>
-                // SQL monitoring is off by default, so you need to turn it on for the test.
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
+            configuration => configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 }
 
 // END OF TRAINING SECTION: SQL query monitoring tests.
