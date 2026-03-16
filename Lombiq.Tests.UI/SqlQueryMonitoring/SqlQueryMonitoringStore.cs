@@ -10,7 +10,7 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 /// </summary>
 public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
-    private ConcurrentBag<SqlQueryMonitoringSummary> _summaries = [];
+    private readonly ConcurrentBag<SqlQueryMonitoringSummary> _summaries = [];
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
     {
