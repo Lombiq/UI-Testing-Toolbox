@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
 using Microsoft.Extensions.DependencyInjection;
-using OrchardCore.Environment.Shell;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +40,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
     {
         var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
-        var store = await context.GetSqlQueryMonitoringStoreAsync(context.TenantName)
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
             ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
         var summaries = await CollectFollowUpSummariesAsync(context, store, summary);
@@ -74,7 +73,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
     {
         var (expectedPathAndQuery, expectedPath) = ParseExpectedRequestPath(requestPathOrUrl);
         var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync(
-            tenant: context.TenantName,
             expectedPathAndQuery,
             expectedPath,
             requestMethod);
@@ -97,13 +95,11 @@ public static class SqlQueryMonitoringUITestContextExtensions
     private static async Task<SqlQueryMonitoringSummary> GetCurrentRequestSqlQueryMonitoringSummaryAsync(this UITestContext context)
     {
         var currentUri = context.GetCurrentUri();
-        var expectedTenantName = NormalizeTenantName(context.TenantName);
-        var store = await context.GetSqlQueryMonitoringStoreAsync(context.TenantName)
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
             ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
         if (TryRemoveMostRecentMatchingRequest(
             store,
-            expectedTenantName,
             currentUri.PathAndQuery,
             currentUri.AbsolutePath,
             expectedMethod: null,
@@ -125,7 +121,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
         var currentUri = context.GetCurrentUri();
         return GetLatestSqlQueryMonitoringSummaryAsync(
             context,
-            tenant: context.TenantName,
             expectedPathAndQuery: currentUri.PathAndQuery,
             expectedPath: currentUri.AbsolutePath,
             requestMethod: null);
@@ -133,14 +128,12 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
     private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
         this UITestContext context,
-        string tenant,
         string expectedPathAndQuery,
         string expectedPath,
         string requestMethod)
     {
-        var expectedTenantName = NormalizeTenantName(tenant);
         var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
-        var store = await context.GetSqlQueryMonitoringStoreAsync(tenant)
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
             ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
         var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
@@ -151,7 +144,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
         {
             if (TryRemoveMostRecentMatchingRequest(
                 store,
-                expectedTenantName,
                 expectedPathAndQuery,
                 expectedPath,
                 requestMethod,
@@ -173,8 +165,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
     }
 
     private static async Task<ISqlQueryMonitoringStore> GetSqlQueryMonitoringStoreAsync(
-        this UITestContext context,
-        string tenant)
+        this UITestContext context)
     {
         ISqlQueryMonitoringStore store = null;
 
@@ -184,7 +175,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
                 store = serviceProvider.GetService<ISqlQueryMonitoringStore>();
                 return Task.CompletedTask;
             },
-            tenant);
+            context.TenantName);
 
         return store;
     }
@@ -209,7 +200,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             var capturedFollowUpSummary = false;
 
             // Drain all follow-up summaries that are already available before waiting again.
-            while (TryRemoveMostRecentFollowUp(store, initialSummary.TenantName, initialSummary.CompletedUtc, out var additionalSummary))
+            while (TryRemoveMostRecentFollowUp(store, initialSummary.CompletedUtc, out var additionalSummary))
             {
                 if (additionalSummary?.Executions.Count > 0)
                 {
@@ -238,11 +229,10 @@ public static class SqlQueryMonitoringUITestContextExtensions
         return summaries;
     }
 
-    // Removes and returns the newest summary that matches the explicit request selector (tenant + path/query + method).
+    // Removes and returns the newest summary that matches the explicit request selector (path/query + method).
     // Used by request-specific assertions where mismatches must not silently pass.
     private static bool TryRemoveMostRecentMatchingRequest(
         ISqlQueryMonitoringStore store,
-        string expectedTenantName,
         string expectedPathAndQuery,
         string expectedPath,
         string expectedMethod,
@@ -250,7 +240,6 @@ public static class SqlQueryMonitoringUITestContextExtensions
         TryRemoveMostRecentMatching(
             store,
             candidate =>
-                TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
                 RequestPathMatches(candidate?.RequestPath, expectedPathAndQuery, expectedPath) &&
                 RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
             out summary);
@@ -259,13 +248,11 @@ public static class SqlQueryMonitoringUITestContextExtensions
     // Used during follow-up polling to avoid merging stale summaries from earlier requests.
     private static bool TryRemoveMostRecentFollowUp(
         ISqlQueryMonitoringStore store,
-        string expectedTenantName,
         DateTimeOffset minimumCompletedUtc,
         out SqlQueryMonitoringSummary summary) =>
         TryRemoveMostRecentMatching(
             store,
             candidate =>
-                TenantNameMatches(candidate?.TenantName, expectedTenantName) &&
                 candidate?.CompletedUtc >= minimumCompletedUtc,
             out summary);
 
@@ -353,15 +340,4 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         return (expectedPathAndQuery, expectedPath);
     }
-
-    private static string NormalizeTenantName(string tenantName) =>
-        string.IsNullOrWhiteSpace(tenantName) || tenantName.StartsWith('!')
-            ? ShellSettings.DefaultShellName
-            : tenantName;
-
-    private static bool TenantNameMatches(string actualTenantName, string expectedTenantName) =>
-        string.Equals(
-            NormalizeTenantName(actualTenantName),
-            NormalizeTenantName(expectedTenantName),
-            StringComparison.OrdinalIgnoreCase);
 }
