@@ -1,7 +1,6 @@
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OrchardCore.Environment.Shell.Descriptor.Models;
 using OrchardCore.Modules;
 using System.Linq;
 
