@@ -286,7 +286,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
             ? requestPath[..queryStringStartIndex]
             : requestPath;
 
-        return string.Equals(requestPathWithoutQuery, expectedPath, StringComparison.OrdinalIgnoreCase);
+        return requestPathWithoutQuery.EqualsOrdinalIgnoreCase(expectedPath);
     }
 
     private static bool RequestMethodMatches(string requestMethod, string expectedMethod) =>
