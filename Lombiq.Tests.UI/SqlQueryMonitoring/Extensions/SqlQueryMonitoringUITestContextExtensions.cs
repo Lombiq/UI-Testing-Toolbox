@@ -248,7 +248,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
     // Used during follow-up polling to avoid merging stale summaries from earlier requests.
     private static bool TryRemoveMostRecentFollowUp(
         ISqlQueryMonitoringStore store,
-        DateTimeOffset minimumCompletedUtc,
+        DateTime minimumCompletedUtc,
         out SqlQueryMonitoringSummary summary) =>
         TryRemoveMostRecentMatching(
             store,

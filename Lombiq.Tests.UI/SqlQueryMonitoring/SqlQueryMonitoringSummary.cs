@@ -31,7 +31,7 @@ public sealed class SqlQueryMonitoringSummary
     /// <summary>
     /// Gets when summary capture finished.
     /// </summary>
-    public DateTimeOffset CompletedUtc { get; }
+    public DateTime CompletedUtc { get; }
 
     /// <summary>
     /// Gets the SQL execution entries captured for the request.
@@ -46,7 +46,7 @@ public sealed class SqlQueryMonitoringSummary
         string requestPath,
         string requestMethod,
         string traceIdentifier,
-        DateTimeOffset completedUtc,
+        DateTime completedUtc,
         IReadOnlyList<SqlQueryExecutionEntry> executions)
     {
         TenantName = tenantName;
