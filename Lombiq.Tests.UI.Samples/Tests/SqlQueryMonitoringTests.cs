@@ -34,14 +34,8 @@ public class SqlQueryMonitoringTests : UITestBase
     }
 
     [Fact]
-    public Task SqlQueryMonitoringShouldWork()
-    {
-        // This list is only here to show that automatic page-change assertions can be used together with explicit
-        // assertions in one test.
-        var automaticallyAssertedSummaries = new List<SqlQueryMonitoringSummary>();
-        NavigationEventHandler perPageThresholdsBeforeNavigation = null;
-
-        return ExecuteTestAfterSetupAsync(
+    public Task SqlQueryMonitoringExplicitAssertions() =>
+        ExecuteTestAfterSetupAsync(
             async context =>
             {
                 // SQL monitoring is already enabled for this test, so even the request that opened the home page has a
@@ -57,7 +51,21 @@ public class SqlQueryMonitoringTests : UITestBase
                 // summary.
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
+            },
+            changeConfiguration: configuration =>
+                // SQL monitoring is off by default, so you need to turn it on for the test.
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 
+    [Fact]
+    public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithFilter()
+    {
+        // This list is only here to show that automatic page-change assertions can be used together with explicit
+        // assertions in one test.
+        var automaticallyAssertedSummaries = new List<SqlQueryMonitoringSummary>();
+
+        return ExecuteTestAfterSetupAsync(
+            async context =>
+            {
                 // The automatic page-change assertion below only runs on /about. This shows that mode without getting
                 // in the way of the later explicit assertions.
                 await context.GoToRelativeUrlAsync("/about");
@@ -91,15 +99,80 @@ public class SqlQueryMonitoringTests : UITestBase
                             "The request-specific assertion should locate the SQL summary for this exact request.");
                         return Task.CompletedTask;
                     });
+            },
+            changeConfiguration: configuration =>
+            {
+                // SQL monitoring is off by default, so you need to turn it on for the test.
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
-                // We only wanted to show the event-based threshold approach once. Remove it so the next part can show
-                // the regex helper separately.
-                context.Configuration.Events.BeforeNavigation -= perPageThresholdsBeforeNavigation;
+                // This enables automatic page-change assertions, but only on /about. That way the later explicit
+                // assertions can still use their own summaries.
+                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
+                configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
+                    context => context.GetCurrentUri().AbsolutePath.EqualsOrdinalIgnoreCase("/about");
+
+                // If you want to observe or custom-assert some pages automatically, you can wire the page-change
+                // assertion up like this.
+                configuration.SetUpSqlQueryMonitoringAssertionOnPageChange(summary =>
+                {
+                    automaticallyAssertedSummaries.Add(summary);
+                    summary.Executions.ShouldNotBeEmpty(
+                        "Automatically asserted summaries should also expose the monitored SQL executions.");
+                    return Task.CompletedTask;
+                });
+
+                // You can filter out known noisy queries too.
+                configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
+                    SqlQueryMonitoringHelpers.BuildIgnoreCommandTextPatternFilter(
+                        @"FROM\s+\[Document\].*RolesDocument");
+
+                // This is the more manual way to set page-specific thresholds. It lets you use any logic you want
+                // based on the target URI.
+                configuration.Events.BeforeNavigation += (_, targetUri) =>
+                {
+                    var thresholds = configuration.SqlQueryMonitoringConfiguration;
+
+                    if (targetUri.AbsolutePath.ContainsOrdinalIgnoreCase("/categories"))
+                    {
+                        thresholds.DuplicateCommandThreshold = 20;
+                        thresholds.DuplicateCommandWithParametersThreshold = 10;
+                        thresholds.ResultSetRowCountThreshold = 100;
+                    }
+                    else
+                    {
+                        thresholds.DuplicateCommandThreshold = 30;
+                        thresholds.DuplicateCommandWithParametersThreshold = 15;
+                        thresholds.ResultSetRowCountThreshold = 200;
+                    }
+
+                    return Task.CompletedTask;
+                };
+            });
+    }
+
+    [Fact]
+    public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithRegexThresholdSettings() =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
+                await context.GoToRelativeUrlAsync("/categories/travel");
+                await context.AssertSqlQueryMonitoringAsync(summary =>
+                {
+                    summary.RequestPath.ShouldContain("/categories/travel");
+                    summary.Executions.ShouldNotBeEmpty(
+                        "The current-page assertion still works after changing thresholds with the regex helper.");
+                    return Task.CompletedTask;
+                });
+            },
+            changeConfiguration: configuration =>
+            {
+                // SQL monitoring is off by default, so you need to turn it on for the test.
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
                 // If your threshold rules are only based on the URL, then the regex helper is a bit more compact for
                 // multiple URL patterns. The default threshold can also be set with it, so the not matched URLs will
                 // use that.
-                context.Configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
+                configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
                     new SqlQueryMonitoringThresholds(
                         DuplicateCommandThreshold: 30,
                         DuplicateCommandWithParametersThreshold: 15,
@@ -112,16 +185,13 @@ public class SqlQueryMonitoringTests : UITestBase
                         DuplicateCommandThreshold: 25,
                         DuplicateCommandWithParametersThreshold: 12,
                         ResultSetRowCountThreshold: 150)));
+            });
 
-                await context.GoToRelativeUrlAsync("/categories/travel");
-                await context.AssertSqlQueryMonitoringAsync(summary =>
-                {
-                    summary.RequestPath.ShouldContain("/categories/travel");
-                    summary.Executions.ShouldNotBeEmpty(
-                        "The current-page assertion still works after changing thresholds with the regex helper.");
-                    return Task.CompletedTask;
-                });
-
+    [Fact]
+    public Task SqlQueryMonitoringPageLoadFollowingAsyncRequests() =>
+        ExecuteTestAfterSetupAsync(
+            async context =>
+            {
                 // This scenario page starts an async request after the initial page load. The async request has its own
                 // SQL summary, but it can be asserted together with the page request too.
                 var asyncApiPath =
@@ -172,54 +242,6 @@ public class SqlQueryMonitoringTests : UITestBase
                 });
             },
             configuration =>
-            {
                 // SQL monitoring is off by default, so you need to turn it on for the test.
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
-
-                // This enables automatic page-change assertions, but only on /about. That way the later explicit
-                // assertions can still use their own summaries.
-                configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
-                configuration.SqlQueryMonitoringConfiguration.SqlQueryMonitoringAndAssertionOnPageChangeRule =
-                    context => context.GetCurrentUri().AbsolutePath.EqualsOrdinalIgnoreCase("/about");
-
-                // If you want to observe or custom-assert some pages automatically, you can wire the page-change
-                // assertion up like this.
-                configuration.SetUpSqlQueryMonitoringAssertionOnPageChange(summary =>
-                {
-                    automaticallyAssertedSummaries.Add(summary);
-                    summary.Executions.ShouldNotBeEmpty(
-                        "Automatically asserted summaries should also expose the monitored SQL executions.");
-                    return Task.CompletedTask;
-                });
-
-                // You can filter out known noisy queries too.
-                configuration.SqlQueryMonitoringConfiguration.ExecutionFilter =
-                    SqlQueryMonitoringHelpers.BuildIgnoreCommandTextPatternFilter(
-                        @"FROM\s+\[Document\].*RolesDocument");
-
-                // This is the more manual way to set page-specific thresholds. It lets you use any logic you want
-                // based on the target URI. We'll remove it later so the sample can also show the regex helper.
-                perPageThresholdsBeforeNavigation = (_, targetUri) =>
-                {
-                    var thresholds = configuration.SqlQueryMonitoringConfiguration;
-
-                    if (targetUri.AbsolutePath.ContainsOrdinalIgnoreCase("/categories"))
-                    {
-                        thresholds.DuplicateCommandThreshold = 20;
-                        thresholds.DuplicateCommandWithParametersThreshold = 10;
-                        thresholds.ResultSetRowCountThreshold = 100;
-                    }
-                    else
-                    {
-                        thresholds.DuplicateCommandThreshold = 30;
-                        thresholds.DuplicateCommandWithParametersThreshold = 15;
-                        thresholds.ResultSetRowCountThreshold = 200;
-                    }
-
-                    return Task.CompletedTask;
-                };
-
-                configuration.Events.BeforeNavigation += perPageThresholdsBeforeNavigation;
-            });
-    }
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 }
