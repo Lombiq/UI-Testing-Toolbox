@@ -1,7 +1,7 @@
 using OrchardCore.Modules.Manifest;
 
 [assembly: Module(
-    Name =  "Lombiq UI Testing Toolbox - Testing Module",
+    Name = "Lombiq UI Testing Toolbox - Testing Module",
     Author = "Lombiq Technologies",
     Website = "https://github.com/Lombiq/UI-Testing-Toolbox",
     Version = "0.0.1"
