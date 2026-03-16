@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 
@@ -13,10 +14,16 @@ public interface ISqlQueryMonitoringStore
     void AddSummary(SqlQueryMonitoringSummary summary);
 
     /// <summary>
-    /// Removes and returns the most recent summary matching the provided predicate, if any, while keeping other queued
-    /// summaries.
+    /// Finds and returns the newest most recent matching item.
     /// </summary>
-    bool TryRemoveMostRecentMatching(
+    bool TryGetMostRecentMatching(
         Predicate<SqlQueryMonitoringSummary> predicate,
         out SqlQueryMonitoringSummary summary);
+
+    /// <summary>
+    /// Returns all summaries matching the provided predicate, if any, while keeping all summaries in the store.
+    /// </summary>
+    bool TryGetMostRecentMatches(
+        Predicate<SqlQueryMonitoringSummary> predicate,
+        out IList<SqlQueryMonitoringSummary> summary);
 }

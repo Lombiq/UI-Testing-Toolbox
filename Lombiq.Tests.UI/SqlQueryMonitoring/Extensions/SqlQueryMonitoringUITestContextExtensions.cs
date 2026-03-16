@@ -98,7 +98,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         var store = await context.GetSqlQueryMonitoringStoreAsync()
             ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
 
-        if (TryRemoveMostRecentMatchingRequest(
+        if (TryGetMostRecentMatchingRequest(
             store,
             currentUri.PathAndQuery,
             currentUri.AbsolutePath,
@@ -142,7 +142,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
         // enqueued by the middleware. Wait briefly for the expected request summary.
         while (DateTime.UtcNow < deadline)
         {
-            if (TryRemoveMostRecentMatchingRequest(
+            if (TryGetMostRecentMatchingRequest(
                 store,
                 expectedPathAndQuery,
                 expectedPath,
@@ -195,18 +195,15 @@ public static class SqlQueryMonitoringUITestContextExtensions
 
         // Keep polling until the hard timeout is reached or no new follow-up summary arrives before the quiet period
         // ends.
-        while (now < deadline && now < quietDeadline)
+        while (now < deadline && now < quietDeadline && TryGetMostRecentFollowUps(store, initialSummary.CompletedUtc, out var additionalSummaries))
         {
             var capturedFollowUpSummary = false;
 
-            // Drain all follow-up summaries that are already available before waiting again.
-            while (TryRemoveMostRecentFollowUp(store, initialSummary.CompletedUtc, out var additionalSummary))
+            var summariesWithExecutions = additionalSummaries?.Where(summary => summary.Executions.Count > 0).ToList();
+
+            if (summariesWithExecutions != null && summariesWithExecutions.Count != 0)
             {
-                if (additionalSummary?.Executions.Count > 0)
-                {
-                    summaries.Add(additionalSummary);
-                    capturedFollowUpSummary = true;
-                }
+                capturedFollowUpSummary = AddSummaries(summariesWithExecutions, summaries);
             }
 
             if (capturedFollowUpSummary)
@@ -229,38 +226,45 @@ public static class SqlQueryMonitoringUITestContextExtensions
         return summaries;
     }
 
-    // Removes and returns the newest summary that matches the explicit request selector (path/query + method).
-    // Used by request-specific assertions where mismatches must not silently pass.
-    private static bool TryRemoveMostRecentMatchingRequest(
+    private static bool AddSummaries(IList<SqlQueryMonitoringSummary> additionalSummaries, List<SqlQueryMonitoringSummary> summaries)
+    {
+        var capturedFollowUpSummary = false;
+
+        foreach (var additionalSummary in additionalSummaries)
+        {
+            if (summaries.Contains(additionalSummary)) continue;
+
+            summaries.Add(additionalSummary);
+            capturedFollowUpSummary = true;
+        }
+
+        return capturedFollowUpSummary;
+    }
+
+    // Returns the newest summary that matches the explicit request selector (path/query + method). Used by
+    // request-specific assertions where mismatches must not silently pass.
+    private static bool TryGetMostRecentMatchingRequest(
         ISqlQueryMonitoringStore store,
         string expectedPathAndQuery,
         string expectedPath,
         string expectedMethod,
         out SqlQueryMonitoringSummary summary) =>
-        TryRemoveMostRecentMatching(
-            store,
+        store.TryGetMostRecentMatching(
             candidate =>
                 RequestPathMatches(candidate?.RequestPath, expectedPathAndQuery, expectedPath) &&
                 RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
             out summary);
 
-    // Removes and returns the newest tenant-scoped summary produced at or after the initial matched summary.
-    // Used during follow-up polling to avoid merging stale summaries from earlier requests.
-    private static bool TryRemoveMostRecentFollowUp(
+    // Returns the newest tenant-scoped summary produced at or after the initial matched summary.Used during follow-up
+    // polling to avoid merging stale summaries from earlier requests.
+    private static bool TryGetMostRecentFollowUps(
         ISqlQueryMonitoringStore store,
         DateTime minimumCompletedUtc,
-        out SqlQueryMonitoringSummary summary) =>
-        TryRemoveMostRecentMatching(
-            store,
+        out IList<SqlQueryMonitoringSummary> summary) =>
+        store.TryGetMostRecentMatches(
             candidate =>
                 candidate?.CompletedUtc >= minimumCompletedUtc,
             out summary);
-
-    private static bool TryRemoveMostRecentMatching(
-        ISqlQueryMonitoringStore store,
-        Predicate<SqlQueryMonitoringSummary> predicate,
-        out SqlQueryMonitoringSummary summary) =>
-        store.TryRemoveMostRecentMatching(predicate, out summary);
 
     private static bool RequestPathMatches(
         string requestPath,

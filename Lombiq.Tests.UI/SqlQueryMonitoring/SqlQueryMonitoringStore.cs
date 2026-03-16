@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.SqlQueryMonitoring;
@@ -9,46 +10,30 @@ namespace Lombiq.Tests.UI.SqlQueryMonitoring;
 /// </summary>
 public sealed class SqlQueryMonitoringStore : ISqlQueryMonitoringStore
 {
-    private readonly object _lock = new();
-    private ConcurrentQueue<SqlQueryMonitoringSummary> _summaries = [];
+    private ConcurrentBag<SqlQueryMonitoringSummary> _summaries = [];
 
     public void AddSummary(SqlQueryMonitoringSummary summary)
     {
         if (summary == null) return;
 
-        _summaries.Enqueue(summary);
+        _summaries.Add(summary);
     }
 
-    /// <summary>
-    /// Finds and returns the newest most recent matching item, removes only that item from the queue, and preserves all
-    /// remaining item ordering.
-    /// </summary>
-    public bool TryRemoveMostRecentMatching(Predicate<SqlQueryMonitoringSummary> predicate, out SqlQueryMonitoringSummary summary)
+    public bool TryGetMostRecentMatching(Predicate<SqlQueryMonitoringSummary> predicate, out SqlQueryMonitoringSummary summary)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        lock (_lock)
-        {
-            var items = _summaries.ToList();
+        summary = _summaries.Where(summary => predicate(summary)).OrderByDescending(summary => summary.CompletedUtc).FirstOrDefault();
 
-            if (items.Count == 0)
-            {
-                summary = null;
-                return false;
-            }
+        return summary != null;
+    }
 
-            var index = items.FindLastIndex(predicate);
+    public bool TryGetMostRecentMatches(Predicate<SqlQueryMonitoringSummary> predicate, out IList<SqlQueryMonitoringSummary> summary)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
 
-            if (index < 0)
-            {
-                summary = null;
-                return false;
-            }
+        summary = [.. _summaries.Where(summary => predicate(summary)).OrderByDescending(summary => summary.CompletedUtc)];
 
-            summary = items[index];
-            items.RemoveAt(index);
-            _summaries = new ConcurrentQueue<SqlQueryMonitoringSummary>(items);
-            return true;
-        }
+        return summary != null;
     }
 }
