@@ -245,3 +245,5 @@ public class SqlQueryMonitoringTests : UITestBase
                 // SQL monitoring is off by default, so you need to turn it on for the test.
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 }
+
+// END OF TRAINING SECTION: SQL query monitoring tests.
