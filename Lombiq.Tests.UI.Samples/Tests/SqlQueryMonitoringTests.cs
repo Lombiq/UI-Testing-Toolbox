@@ -1,6 +1,5 @@
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
@@ -127,7 +126,7 @@ public class SqlQueryMonitoringTests : UITestBase
                         @"FROM\s+\[Document\].*RolesDocument");
 
                 // This is the more manual way to set page-specific thresholds. It lets you use any logic you want
-                // based on the target URI.
+                // based on the target URI. You could also change these thresholds just once, for all pages.
                 configuration.Events.BeforeNavigation += (_, targetUri) =>
                 {
                     var thresholds = configuration.SqlQueryMonitoringConfiguration;
