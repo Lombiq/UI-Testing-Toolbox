@@ -26,6 +26,9 @@ public static class OrchardCoreBuilderExtensions
     {
         if (!configuration.IsUITesting()) return builder;
 
+        var enableSqlQueryMonitoring =
+            configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: false);
+
         builder.ConfigureServices(services =>
         {
             // This allows running the app in the Development environment while UI testing. Otherwise
@@ -42,16 +45,15 @@ public static class OrchardCoreBuilderExtensions
             // SQL query monitoring is off by default.
             // If it's off, we don't register its wrappers and middleware.
             // This keeps normal test startup and behavior unchanged.
-            var enableSqlQueryMonitoring =
-                configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: false);
             if (enableSqlQueryMonitoring)
             {
                 services.AddSingleton<ISqlQueryMonitoringStore, SqlQueryMonitoringStore>();
                 services.AddScoped<ISqlQueryMonitoringContext, SqlQueryMonitoringContext>();
                 services.AddSingleton<IStartup, SqlQueryMonitoringStartup>();
-                services.AddTransient(_ => new ShellFeature("Lombiq.Tests.UI.TestingModule", alwaysEnabled: true));
             }
         });
+
+        if (enableSqlQueryMonitoring) builder.AddTenantFeatures("Lombiq.Tests.UI.TestingModule");
 
         if (enableShortcutsDuringUITesting) builder.AddTenantFeatures("Lombiq.Tests.UI.Shortcuts");
 
