@@ -11,5 +11,5 @@ using OrchardCore.Modules.Manifest;
     Id = "Lombiq.Tests.UI.TestingModule",
     Name = "Lombiq UI Testing Toolbox - Testing Module",
     Category = "Development",
-    Description = "Contains features that are useful for testing the Testing module itself."
+    Description = "Contains features that are useful for testing the UI Testing Toolbox itself."
 )]
