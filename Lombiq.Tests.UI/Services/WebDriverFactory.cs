@@ -205,7 +205,9 @@ public static class WebDriverFactory
         options.AddUserProfilePreference("profile.password_manager_enabled", "false");
         options.AddUserProfilePreference("reduce-security-for-testing", "null");
         options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
+        options.AddUserProfilePreference("profile.reduce-security-for-testing", "true");
         options.AddArgument("suppress-message-center-popups");
+        options.AddArgument("disable-features=PasswordLeakDetection");
 
         // Disables the default browser check, which is useless during UI tests.
         options.AddArgument("no-default-browser-check");
