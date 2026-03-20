@@ -48,7 +48,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IReadOnlyList<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
     /// <summary>
@@ -66,7 +66,7 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
         e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
 
-    public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
+    public static readonly Action<IReadOnlyList<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
     private CancellationToken _testCancellationToken;
@@ -122,7 +122,7 @@ public class OrchardCoreUITestExecutorConfiguration
         set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
     }
 
-    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IReadOnlyList<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
     /// Gets the delegates that select which response data get saved to <see
@@ -147,7 +147,7 @@ public class OrchardCoreUITestExecutorConfiguration
         set => ResponseLogFilters[nameof(ResponseLogFilter)] = value;
     }
 
-    public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
+    public Action<IReadOnlyList<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
 
     public ITestOutputHelper TestOutputHelper { get; set; }
 
