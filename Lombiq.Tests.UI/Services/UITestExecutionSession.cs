@@ -8,6 +8,7 @@ using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
 using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;
@@ -698,9 +699,10 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         Task UITestingBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
-            _configuration.OrchardCoreConfiguration.BeforeAppStart -= UITestingBeforeAppStartHandlerAsync;
-
             arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddWithValue(
+                "Lombiq_Tests_UI:EnableSqlQueryMonitoring",
+                value: _configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
@@ -718,7 +720,23 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var appBaseUri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
+        SetUpPageChangeAssertions();
 
+        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
+
+        return await UITestContext.CreateAsync(
+            contextId,
+            _testManifest,
+            _configuration,
+            _applicationInstance,
+            atataScope,
+            testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
+            new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
+            _zapManager);
+    }
+
+    private void SetUpPageChangeAssertions()
+    {
         if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
         {
             _configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
@@ -727,6 +745,12 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges)
         {
             _configuration.SetUpHtmlValidationAssertionOnPageChange();
+        }
+
+        if (_configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection &&
+            _configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges)
+        {
+            _configuration.SetUpSqlQueryMonitoringAssertionOnPageChange();
         }
 
         if (_configuration.RunAssertLogsOnAllPageChanges &&
@@ -750,18 +774,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 return Task.CompletedTask;
             };
         }
-
-        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
-
-        return await UITestContext.CreateAsync(
-            contextId,
-            _testManifest,
-            _configuration,
-            _applicationInstance,
-            atataScope,
-            testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
-            new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
-            _zapManager);
     }
 
     private string GetSetupHashCode() =>

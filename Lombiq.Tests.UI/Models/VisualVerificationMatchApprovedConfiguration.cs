@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Attributes;
 using System;
-using System.Collections.Generic;
 
 namespace Lombiq.Tests.UI.Models;
 

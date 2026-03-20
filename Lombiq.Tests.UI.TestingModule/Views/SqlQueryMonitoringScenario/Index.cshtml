@@ -1,0 +1,29 @@
+@using Lombiq.Tests.UI.TestingModule.Controllers
+@using OrchardCore.Mvc.Core.Utilities
+@model int
+
+<h1>SQL Query Monitoring Scenario</h1>
+<p id="initial-query-result">Initial query result: @Model</p>
+<p id="async-query-status">Pending</p>
+<p id="async-query-result"></p>
+
+<script at="Foot">
+(() => {
+    const statusElement = document.getElementById("async-query-status");
+    const resultElement = document.getElementById("async-query-result");
+    const endpointUrl = "@Url.Action(
+        nameof(SqlQueryMonitoringScenarioController.AsyncQuery),
+        typeof(SqlQueryMonitoringScenarioController).ControllerName(),
+        new { area = "Lombiq.Tests.UI.TestingModule" })";
+
+    fetch(endpointUrl)
+        .then(response => response.ok ? response.text() : Promise.reject())
+        .then(result => {
+            statusElement.textContent = "Completed";
+            resultElement.textContent = result;
+        })
+        .catch(() => {
+            statusElement.textContent = "Failed";
+        });
+})();
+</script>

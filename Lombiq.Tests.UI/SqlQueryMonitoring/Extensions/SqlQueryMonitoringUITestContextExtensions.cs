@@ -1,0 +1,347 @@
+using Lombiq.Tests.UI.Extensions;
+using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.SqlQueryMonitoring.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Lombiq.Tests.UI.SqlQueryMonitoring.Extensions;
+
+public static class SqlQueryMonitoringUITestContextExtensions
+{
+    private const string NoSqlMonitoringSummaryCapturedMessage =
+        "No SQL query monitoring summary was captured. Ensure the page has finished loading, executes SQL commands, " +
+        "and that SQL query monitoring is enabled.";
+
+    /// <summary>
+    /// Executes assertions on the SQL query monitoring summary recorded for the current request only.
+    /// Does not wait for follow-up requests and does not combine multiple request summaries.
+    /// </summary>
+    /// <param name="assertSummaryAsync">
+    /// The assertion logic to run on the monitoring summary. If <see langword="null"/> then the assertion supplied in
+    /// the context will be used.
+    /// </param>
+    public static async Task AssertSqlQueryMonitoringAsync(
+        this UITestContext context,
+        Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
+    {
+        var summary = await context.GetCurrentRequestSqlQueryMonitoringSummaryAsync();
+        await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
+    }
+
+    /// <summary>
+    /// Executes assertions on SQL monitoring while also waiting briefly for follow-up requests (for example, async
+    /// browser-triggered API calls) to finish and be captured.
+    /// </summary>
+    public static async Task AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(
+        this UITestContext context,
+        Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
+    {
+        var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync();
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
+
+        var summaries = await CollectFollowUpSummariesAsync(context, store, summary);
+
+        var summaryToAssert = summaries.Count == 1
+            ? summary
+            : CreateCombinedSummary(context.GetCurrentUri().PathAndQuery, summaries);
+
+        await AssertSqlQueryMonitoringSummaryAsync(context, summaryToAssert, assertSummaryAsync);
+    }
+
+    /// <summary>
+    /// Executes assertions on the SQL query monitoring summary recorded for a specific request path.
+    /// </summary>
+    /// <param name="requestPathOrUrl">
+    /// The request path/query (for example, <c>/api/items?page=1</c>) or an absolute URL.
+    /// </param>
+    /// <param name="requestMethod">
+    /// Optional HTTP method filter (for example, <c>GET</c>).
+    /// </param>
+    /// <param name="assertSummaryAsync">
+    /// The assertion logic to run on the monitoring summary. If <see langword="null"/> then the assertion supplied in
+    /// the context will be used.
+    /// </param>
+    public static async Task AssertSqlQueryMonitoringForRequestAsync(
+        this UITestContext context,
+        string requestPathOrUrl,
+        string requestMethod = null,
+        Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync = null)
+    {
+        var (expectedPathAndQuery, expectedPath) = ParseExpectedRequestPath(requestPathOrUrl);
+        var summary = await context.GetLatestSqlQueryMonitoringSummaryAsync(
+            expectedPathAndQuery,
+            expectedPath,
+            requestMethod);
+        await AssertSqlQueryMonitoringSummaryAsync(context, summary, assertSummaryAsync);
+    }
+
+    private static Task AssertSqlQueryMonitoringSummaryAsync(
+        UITestContext context,
+        SqlQueryMonitoringSummary summary,
+        Func<SqlQueryMonitoringSummary, Task> assertSummaryAsync)
+    {
+        var configuration = context.Configuration.SqlQueryMonitoringConfiguration;
+        SqlQueryMonitoringHelpers.WriteSqlQueryMonitoringCounters(context.Configuration.TestOutputHelper, summary, configuration);
+
+        var assertTask = (assertSummaryAsync ?? configuration.AssertSqlQueryMonitoringSummaryAsync)?
+            .Invoke(summary);
+        return assertTask ?? Task.CompletedTask;
+    }
+
+    private static async Task<SqlQueryMonitoringSummary> GetCurrentRequestSqlQueryMonitoringSummaryAsync(this UITestContext context)
+    {
+        var currentUri = context.GetCurrentUri();
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
+
+        if (TryGetMostRecentMatchingRequest(
+            store,
+            currentUri.PathAndQuery,
+            currentUri.AbsolutePath,
+            expectedMethod: null,
+            out var summary))
+        {
+            return summary;
+        }
+
+        throw new InvalidOperationException(
+            $"No SQL query monitoring summary was captured for \"{currentUri.PathAndQuery}\". Ensure the request has " +
+            "finished and that SQL query monitoring is enabled.");
+    }
+
+    /// <summary>
+    /// Returns the SQL query monitoring summary recorded for the most recent request.
+    /// </summary>
+    private static Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(this UITestContext context)
+    {
+        var currentUri = context.GetCurrentUri();
+        return GetLatestSqlQueryMonitoringSummaryAsync(
+            context,
+            expectedPathAndQuery: currentUri.PathAndQuery,
+            expectedPath: currentUri.AbsolutePath,
+            requestMethod: null);
+    }
+
+    private static async Task<SqlQueryMonitoringSummary> GetLatestSqlQueryMonitoringSummaryAsync(
+        this UITestContext context,
+        string expectedPathAndQuery,
+        string expectedPath,
+        string requestMethod)
+    {
+        var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
+        var store = await context.GetSqlQueryMonitoringStoreAsync()
+            ?? throw new InvalidOperationException(NoSqlMonitoringSummaryCapturedMessage);
+
+        var deadline = DateTime.UtcNow + sqlMonitoringConfiguration.SummaryLookupTimeout;
+
+        // Even for the main page request there can be a short race: the assertion may run before the summary is
+        // enqueued by the middleware. Wait briefly for the expected request summary.
+        while (DateTime.UtcNow < deadline)
+        {
+            if (TryGetMostRecentMatchingRequest(
+                store,
+                expectedPathAndQuery,
+                expectedPath,
+                requestMethod,
+                out var summary))
+            {
+                return summary;
+            }
+
+            await Task.Delay(sqlMonitoringConfiguration.SummaryLookupInterval, context.Configuration.TestCancellationToken);
+        }
+
+        var requestDescription = string.IsNullOrWhiteSpace(requestMethod)
+            ? expectedPathAndQuery
+            : $"{requestMethod} {expectedPathAndQuery}";
+
+        throw new InvalidOperationException(
+            $"No SQL query monitoring summary was captured for \"{requestDescription}\". Ensure the request has " +
+            "finished and that SQL query monitoring is enabled.");
+    }
+
+    private static async Task<ISqlQueryMonitoringStore> GetSqlQueryMonitoringStoreAsync(
+        this UITestContext context)
+    {
+        ISqlQueryMonitoringStore store = null;
+
+        await context.Application.UsingScopeAsync(
+            serviceProvider =>
+            {
+                store = serviceProvider.GetService<ISqlQueryMonitoringStore>();
+                return Task.CompletedTask;
+            },
+            context.TenantName);
+
+        return store;
+    }
+
+    // Collects additional summaries produced shortly after the initial summary (for example by async browser calls).
+    private static async Task<List<SqlQueryMonitoringSummary>> CollectFollowUpSummariesAsync(
+        UITestContext context,
+        ISqlQueryMonitoringStore store,
+        SqlQueryMonitoringSummary initialSummary)
+    {
+        var sqlMonitoringConfiguration = context.Configuration.SqlQueryMonitoringConfiguration;
+        var summaries = new List<SqlQueryMonitoringSummary> { initialSummary };
+        var now = DateTime.UtcNow;
+        var deadline = now + sqlMonitoringConfiguration.SummaryLookupTimeout;
+        var quietDeadline = now + sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
+        var pollingInterval = sqlMonitoringConfiguration.SummaryLookupInterval;
+
+        // Keep polling until the hard timeout is reached or no new follow-up summary arrives before the quiet period
+        // ends.
+        while (now < deadline && now < quietDeadline && TryGetMostRecentFollowUps(store, initialSummary.CompletedUtc, out var additionalSummaries))
+        {
+            var capturedFollowUpSummary = false;
+
+            var summariesWithExecutions = additionalSummaries?.Where(summary => summary.Executions.Count > 0).ToList();
+
+            if (summariesWithExecutions != null && summariesWithExecutions.Count != 0)
+            {
+                capturedFollowUpSummary = AddSummaries(summariesWithExecutions, summaries);
+            }
+
+            if (capturedFollowUpSummary)
+            {
+                quietDeadline = DateTime.UtcNow + sqlMonitoringConfiguration.FollowUpSummaryQuietPeriod;
+            }
+
+            var stopAt = deadline < quietDeadline ? deadline : quietDeadline;
+            var remainingUntilStop = stopAt - DateTime.UtcNow;
+            var delay = remainingUntilStop < pollingInterval ? remainingUntilStop : pollingInterval;
+
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, context.Configuration.TestCancellationToken);
+            }
+
+            now = DateTime.UtcNow;
+        }
+
+        return summaries;
+    }
+
+    private static bool AddSummaries(IList<SqlQueryMonitoringSummary> additionalSummaries, List<SqlQueryMonitoringSummary> summaries)
+    {
+        var capturedFollowUpSummary = false;
+
+        foreach (var additionalSummary in additionalSummaries)
+        {
+            if (summaries.Contains(additionalSummary)) continue;
+
+            summaries.Add(additionalSummary);
+            capturedFollowUpSummary = true;
+        }
+
+        return capturedFollowUpSummary;
+    }
+
+    // Returns the newest summary that matches the explicit request selector (path/query + method). Used by
+    // request-specific assertions where mismatches must not silently pass.
+    private static bool TryGetMostRecentMatchingRequest(
+        ISqlQueryMonitoringStore store,
+        string expectedPathAndQuery,
+        string expectedPath,
+        string expectedMethod,
+        out SqlQueryMonitoringSummary summary) =>
+        store.TryGetMostRecentMatching(
+            candidate =>
+                RequestPathMatches(candidate?.RequestPath, expectedPathAndQuery, expectedPath) &&
+                RequestMethodMatches(candidate?.RequestMethod, expectedMethod),
+            out summary);
+
+    // Returns the newest tenant-scoped summary produced at or after the initial matched summary.Used during follow-up
+    // polling to avoid merging stale summaries from earlier requests.
+    private static bool TryGetMostRecentFollowUps(
+        ISqlQueryMonitoringStore store,
+        DateTime minimumCompletedUtc,
+        out IList<SqlQueryMonitoringSummary> summary) =>
+        store.TryGetMostRecentMatches(
+            candidate =>
+                candidate?.CompletedUtc >= minimumCompletedUtc,
+            out summary);
+
+    private static bool RequestPathMatches(
+        string requestPath,
+        string expectedPathAndQuery,
+        string expectedPath)
+    {
+        if (string.IsNullOrWhiteSpace(requestPath)) return false;
+
+        if (string.Equals(requestPath, expectedPathAndQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // If the caller specified a query string, this must be an exact path+query match to avoid selecting an
+        // unrelated request with the same path but different query parameters.
+        if (expectedPathAndQuery.Contains('?', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var queryStringStartIndex = requestPath.IndexOf('?', StringComparison.Ordinal);
+        var requestPathWithoutQuery = queryStringStartIndex >= 0
+            ? requestPath[..queryStringStartIndex]
+            : requestPath;
+
+        return requestPathWithoutQuery.EqualsOrdinalIgnoreCase(expectedPath);
+    }
+
+    private static bool RequestMethodMatches(string requestMethod, string expectedMethod) =>
+        string.IsNullOrWhiteSpace(expectedMethod) ||
+        string.Equals(requestMethod, expectedMethod, StringComparison.OrdinalIgnoreCase);
+
+    private static SqlQueryMonitoringSummary CreateCombinedSummary(
+        string requestPath,
+        List<SqlQueryMonitoringSummary> summaries)
+    {
+        var latestCompletedSummary = summaries
+            .OrderByDescending(summary => summary.CompletedUtc)
+            .First();
+
+        return new SqlQueryMonitoringSummary(
+            tenantName: latestCompletedSummary.TenantName,
+            requestPath:
+            $"{requestPath} (combined {summaries.Count} request summaries)",
+            requestMethod: "MULTI",
+            traceIdentifier: latestCompletedSummary.TraceIdentifier,
+            completedUtc: latestCompletedSummary.CompletedUtc,
+            executions: summaries
+                .SelectMany(summary => summary.Executions)
+                .ToList());
+    }
+
+    private static (string ExpectedPathAndQuery, string ExpectedPath) ParseExpectedRequestPath(string requestPathOrUrl)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestPathOrUrl);
+
+        // On Linux, a request path like "/foo?x=1" can be treated as an absolute file URI path. Only accept real
+        // HTTP(S) URLs here, otherwise keep handling the input as a request path + query string.
+        if (Uri.TryCreate(requestPathOrUrl, UriKind.Absolute, out var absoluteUri) &&
+            absoluteUri is { IsFile: false } &&
+            (absoluteUri.Scheme.EqualsOrdinalIgnoreCase("http") ||
+                absoluteUri.Scheme.EqualsOrdinalIgnoreCase("https")))
+        {
+            return (absoluteUri.PathAndQuery, absoluteUri.AbsolutePath);
+        }
+
+        var expectedPathAndQuery = requestPathOrUrl;
+        if (!expectedPathAndQuery.StartsWith('/'))
+        {
+            expectedPathAndQuery = "/" + expectedPathAndQuery;
+        }
+
+        var queryStringStartIndex = expectedPathAndQuery.IndexOf('?', StringComparison.Ordinal);
+        var expectedPath = queryStringStartIndex >= 0
+            ? expectedPathAndQuery[..queryStringStartIndex]
+            : expectedPathAndQuery;
+
+        return (expectedPathAndQuery, expectedPath);
+    }
+}
