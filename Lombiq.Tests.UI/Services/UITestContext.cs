@@ -324,6 +324,7 @@ public sealed class UITestContext : IAsyncDisposable
         ZapManager zapManager)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
+        var token = configuration.TestCancellationToken;
         var context = new UITestContext(
             id,
             testManifest,
@@ -338,29 +339,33 @@ public sealed class UITestContext : IAsyncDisposable
 
         if (context.IsBrowserConfigured)
         {
-            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync(cancellationToken: token);
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await context._biDirectionalDriver.Log.OnEntryAddedAsync(entry =>
-            {
-                if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+            await context._biDirectionalDriver.Log.OnEntryAddedAsync(
+                entry =>
                 {
-                    context._cumulativeBrowserLog.Enqueue(entry);
-                }
-            });
+                    if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+                    {
+                        context._cumulativeBrowserLog.Enqueue(entry);
+                    }
+                },
+                cancellationToken: token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
-                {
-                    if (configuration.ResponseLogFilters.All(filter => filter.Value(responseCompleted)))
+                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(
+                    responseCompleted =>
                     {
-                        context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-                    }
-                });
+                        if (configuration.ResponseLogFilters.All(filter => filter.Value(responseCompleted)))
+                        {
+                            context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                        }
+                    },
+                    cancellationToken: token);
             }
         }
 

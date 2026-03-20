@@ -51,11 +51,14 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
+    /// <summary>
+    /// The default browser log filter. Ignores logs below <see cref="Level.Warn"/> and "HTML Imports is deprecated"
+    /// messages. The latter is because HTML imports are somehow used by Selenium or something but this deprecation
+    /// notice is always there for every page.
+    /// </summary>
     public static readonly Func<LogEntry, bool> IsNonSuccessBrowserLogEntry =
         entry =>
             entry.Level >= Level.Warn &&
-            // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
-            // every page.
             !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated");
 
     // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a

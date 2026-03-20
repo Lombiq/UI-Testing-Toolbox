@@ -169,7 +169,7 @@ public static class SqlQueryMonitoringUITestContextExtensions
     {
         ISqlQueryMonitoringStore store = null;
 
-        await context.Application.UsingScopeAsync(
+        await context.Application.UsingScopeServiceProviderAsync(
             serviceProvider =>
             {
                 store = serviceProvider.GetService<ISqlQueryMonitoringStore>();
