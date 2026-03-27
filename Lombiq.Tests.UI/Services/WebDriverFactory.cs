@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "146.0.7680.72";
+            chromeConfig.Options.BrowserVersion = "147.0.7727.24";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -68,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "145.0.3800.97";
+                var linuxEdgeVersion = "146.0.3856.84";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "145.0.3800.97";
+                var windowsEdgeVersion = "146.0.3856.84";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "145.0.3800.97";
+                var macOsEdgeVersion = "146.0.3856.84";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -118,7 +118,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "148.0";
+            firefoxOptions.BrowserVersion = "149.0";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
@@ -205,7 +205,9 @@ public static class WebDriverFactory
         options.AddUserProfilePreference("profile.password_manager_enabled", "false");
         options.AddUserProfilePreference("reduce-security-for-testing", "null");
         options.AddUserProfilePreference("profile.password_manager_leak_detection", "false");
+        options.AddUserProfilePreference("profile.reduce-security-for-testing", "true");
         options.AddArgument("suppress-message-center-popups");
+        options.AddArgument("disable-features=PasswordLeakDetection");
 
         // Disables the default browser check, which is useless during UI tests.
         options.AddArgument("no-default-browser-check");

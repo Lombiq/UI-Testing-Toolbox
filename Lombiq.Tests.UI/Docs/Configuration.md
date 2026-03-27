@@ -121,6 +121,19 @@ Include it in the test project like this:
   </ItemGroup>
  ```
 
+### SQL query monitoring configuration
+
+SQL query monitoring helps detect duplicate queries and oversized result sets in a single request. Configure it per
+test using `SqlQueryMonitoringConfiguration`.
+
+Collection is disabled by default. Enable it explicitly before using SQL monitoring assertions:
+
+```csharp
+configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
+```
+
+See the dedicated [SQL query monitoring](SqlQueryMonitoring.md) docs for the full list of options and examples.
+
 ## Multi-process test execution
 
 UI tests are executed in parallel by default for the given test execution process (see the [xUnit documentation](https://xunit.net/docs/running-tests-in-parallel.html)). However, if you'd like multiple processes to execute tests like when multiple build agents run tests for separate branches on the same build machine then you'll need to tell each process which build agent they are on. This is so clashes on e.g. network port numbers can be prevented.
