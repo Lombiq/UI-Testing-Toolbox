@@ -562,7 +562,6 @@ public static class NavigationUITestContextExtensions
             await context.ClickAndFillInWithRetriesAsync(By.Id("Options_SearchText"), itemName);
         }
 
-
         // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
         // have to use JS to click on it.
         context.ExecuteScript("document.getElementById('submitFilter').click();");
