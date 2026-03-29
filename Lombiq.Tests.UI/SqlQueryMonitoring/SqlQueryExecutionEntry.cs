@@ -53,7 +53,7 @@ public sealed partial class SqlQueryExecutionEntry
     /// E.g. "SELECT  *" and "SELECT *" should count as the same query text.
     /// </summary>
     private static string NormalizeWhitespace(string text) =>
-        WhitespaceRegex().Replace(text ?? string.Empty, " ").Trim();
+        WhitespaceRegex.Replace(text ?? string.Empty, " ").Trim();
 
     private static string CaptureCallStack()
     {
@@ -95,5 +95,5 @@ public sealed partial class SqlQueryExecutionEntry
     }
 
     [GeneratedRegex(@"\s+", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
-    private static partial Regex WhitespaceRegex();
+    private static partial Regex WhitespaceRegex { get; }
 }
