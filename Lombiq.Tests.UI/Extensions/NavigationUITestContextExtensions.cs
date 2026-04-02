@@ -338,7 +338,8 @@ public static class NavigationUITestContextExtensions
             nameof(WaitForPageLoad),
             context.Driver.Url,
             () => new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
-                driver => driver.ExecuteScript("return document.readyState").Equals("complete")));
+                driver => driver.ExecuteScript("return document.readyState").Equals("complete"),
+                context.Configuration.TestCancellationToken));
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
