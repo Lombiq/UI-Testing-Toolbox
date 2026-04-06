@@ -824,7 +824,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken))!;
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken));
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
                 await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString(), _configuration.TestCancellationToken);
             }
