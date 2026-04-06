@@ -468,12 +468,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
-            var accessibilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
+            var accessibilityReportPath = Path.Combine(debugInformationPath, AccessibilityCheckingConstants.AccessibilityReportFileName);
             _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
             if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessibilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(
+                    _testManifest, AccessibilityCheckingConstants.AccessibilityReportFileNameWithoutExtension, accessibilityReportPath);
             }
         }
 
