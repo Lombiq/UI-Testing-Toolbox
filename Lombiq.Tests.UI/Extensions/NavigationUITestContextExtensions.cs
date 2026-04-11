@@ -285,7 +285,7 @@ public static class NavigationUITestContextExtensions
             using (response)
             {
                 await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-                var document = await new HtmlParser().ParseDocumentAsync(stream);
+                var document = await new HtmlParser().ParseDocumentAsync(stream, TestContext.Current.CancellationToken);
                 return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
             }
         }
