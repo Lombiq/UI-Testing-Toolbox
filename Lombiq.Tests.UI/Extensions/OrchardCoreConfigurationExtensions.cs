@@ -1,5 +1,5 @@
 using Lombiq.Tests.UI.Services;
-using OrchardCore.Search.Elasticsearch.Core.Recipes;
+using OrchardCore.Elasticsearch.Core.Recipes;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
