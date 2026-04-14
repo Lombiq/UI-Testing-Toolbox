@@ -331,7 +331,7 @@ public static class NavigationUITestContextExtensions
 
         (responseSetupScript == null).ShouldBe(shouldBeSuccess);
 
-        context.Driver.Url = uri.AbsoluteUri;
+        await context.GoToAbsoluteUrlAsync(uri, onlyIfNotAlreadyThere: false);
         return uri;
     }
 
