@@ -626,7 +626,14 @@ public static class NavigationUITestContextExtensions
     /// that's why it's not called "contentItem".</param>
     public static async Task FilterOnAdminAsync(this UITestContext context, string itemName)
     {
-        await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
+        if (context.Exists(By.Id("Options_Search").Safely()))
+        {
+            await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
+        }
+        else if (context.Exists(By.Id("Options_SearchText")))
+        {
+            await context.ClickAndFillInWithRetriesAsync(By.Id("Options_SearchText"), itemName);
+        }
 
         // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
         // have to use JS to click on it.

@@ -67,12 +67,30 @@ public class AccessibilityCheckingConfiguration
     /// </summary>
     public Action<AccessibilityCheckingResult> AssertAxeResult { get; set; } = AssertAxeResultIsEmpty;
 
-    // Returns AxeBuilder so it can be chained.
+    /// <summary>
+    /// Configures the given <see cref="AxeBuilder"/> to check for WCAG 2.1 AA compliance. Use the newer
+    /// <see cref="ConfigureWcag22aa"/> instead if you want to check for WCAG 2.2 AA compliance, which includes all the
+    /// WCAG 2.1 AA rules as well.
+    /// </summary>
     public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag21aa = axeBuilder =>
         axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa");
 
+    /// <summary>
+    /// Configures the given <see cref="AxeBuilder"/> to check for WCAG 2.2 AA compliance, which includes all the WCAG
+    /// 2.1 AA rules as well. This is a good default to use, as it checks for the latest WCAG version's AA compliance.
+    /// Consider going one step further and use <see cref="ConfigureWcag22aaWithBestPractices"/> to also include
+    /// industry accepted best practices that improve the user experience.
+    /// </summary>
     public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag22aa = axeBuilder =>
         axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa");
+
+    /// <summary>
+    /// Configures the given <see cref="AxeBuilder"/> to check for WCAG 2.2 AA compliance, as well as axe Best Practices
+    /// Rules. This is a good default to use, as it checks for the latest WCAG version's AA compliance and also includes
+    /// industry accepted best practices that improve the user experience.
+    /// </summary>
+    public static readonly Func<AxeBuilder, AxeBuilder> ConfigureWcag22aaWithBestPractices = axeBuilder =>
+        axeBuilder.WithTags("wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa", "best-practice");
 
     public static readonly Action<AccessibilityCheckingResult> AssertAxeResultIsEmpty = axeResult =>
     {
