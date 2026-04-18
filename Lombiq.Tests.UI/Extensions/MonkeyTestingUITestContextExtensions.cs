@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using Lombiq.Tests.UI.Services;
+using OpenQA.Selenium.BiDi.Log;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -107,6 +108,9 @@ public static class MonkeyTestingUITestContextExtensions
         string signInDirectlyWithUserName = DefaultUser.UserName,
         string startingRelativeUrl = "/")
     {
+        context.Configuration.BrowserLogFilters["Exclude Gremlin info logs"] = entry =>
+            !(entry.Level == Level.Info && entry.Text?.Contains("gremlin") == true);
+
         await TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(
             context,
             options,
