@@ -55,8 +55,6 @@ to customize the name of the dump item.";
         double pixelErrorPercentageThreshold = 0,
         Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
     {
-        context.HideScrollbar();
-
         var exceptions = new List<Exception>();
         foreach (var size in sizes)
         {
@@ -342,7 +340,10 @@ to customize the name of the dump item.";
         By elementSelector,
         Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
+    {
+        context.ScrollTo(elementSelector);
+        context.HideScrollbar();
         context.AssertVisualVerificationApproved(
             elementSelector is null ? null : context.Get(elementSelector),
             comparator,
@@ -359,6 +360,8 @@ to customize the name of the dump item.";
                     .JoinNotNullOrEmpty("-")
                 );
             });
+        context.RestoreHiddenScrollbar();
+    }
 
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
