@@ -529,6 +529,32 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickWithScriptAsync(context);
 
     /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static async Task ClickThroughAdminMenuAsync(this UITestContext context, params By[] selectors)
+    {
+        for (var i = 0; i < selectors.Length - 1; i++)
+        {
+            await context.ClickReliablyOnAsync(selectors[i]);
+
+            // Ensure that the next selector exists. If not, try to click on the menu again, in case it was stuck open
+            // in the first place. If it's still not found, NotFoundException will be thrown now for clearer debugging.
+            if (!context.Exists(selectors[i + 1].Safely()))
+            {
+                await context.ClickReliablyOnAsync(selectors[i]);
+                context.Exists(selectors[i + 1]);
+            }
+
+            // The menus have animations, which interfere with the click being recognized. Waiting a fraction of a
+            // second is the only reliable way to ensure the next step is clickable.
+            await Task.Delay(TimeSpan.FromMicroseconds(200), context.Configuration.TestCancellationToken);
+        }
+
+        // The last item is clicked separately, because we don't do look-ahead checks here.
+        await context.ClickReliablyOnAsync(selectors[^1]);
+    }
+
+    /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
     /// </summary>
     public static void AcceptAlert(this UITestContext context)
