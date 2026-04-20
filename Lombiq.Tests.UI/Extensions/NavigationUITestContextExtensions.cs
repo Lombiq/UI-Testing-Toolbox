@@ -537,7 +537,7 @@ public static class NavigationUITestContextExtensions
 
         for (var i = 0; i < selectors.Length - 1; i++)
         {
-            // Only click on this menu item if the next item is not visible because this menu is already open. 
+            // Only click on this menu item if the next item is not visible because this menu is already open.
             if (context.Exists(selectors[i + 1].Safely().Within(menuAnimationTime))) continue;
 
             // The menus have animations, which interfere with the click being recognized.
