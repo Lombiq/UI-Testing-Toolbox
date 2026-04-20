@@ -543,7 +543,10 @@ public static class NavigationUITestContextExtensions
 
             // The menus have animations, which interfere with the click being recognized.
             await context.ClickReliablyOnAsync(selectors[i]);
-            context.Exists(selectors[i + 1].Within(menuAnimationTime));
+
+            // It's necessary to wait if a click occurred at this level, because the animation interactions unreliable.
+            await Task.Delay(menuAnimationTime, context.Configuration.TestCancellationToken);
+            context.Exists(selectors[i + 1]);
         }
 
         // The last item is clicked separately, because we don't do look-ahead checks here.
