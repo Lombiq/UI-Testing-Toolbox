@@ -400,6 +400,8 @@ to customize the name of the dump item.";
                 .FirstOrDefault();
         }
 
+        testFrame ??= context.TestManifest?.StackFrame;
+
         if (testFrame == null)
         {
             throw new VisualVerificationCallerMethodNotFoundException();
