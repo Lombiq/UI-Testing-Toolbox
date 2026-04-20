@@ -533,21 +533,16 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     public static async Task ClickThroughAdminMenuAsync(this UITestContext context, params By[] selectors)
     {
+        var menuAnimationTime = TimeSpan.FromSeconds(1);
+
         for (var i = 0; i < selectors.Length - 1; i++)
         {
+            // Only click on this menu item if the next item is not visible because this menu is already open. 
+            if (context.Exists(selectors[i + 1].Safely().Within(menuAnimationTime))) continue;
+
+            // The menus have animations, which interfere with the click being recognized.
             await context.ClickReliablyOnAsync(selectors[i]);
-
-            // Ensure that the next selector exists. If not, try to click on the menu again, in case it was stuck open
-            // in the first place. If it's still not found, NotFoundException will be thrown now for clearer debugging.
-            if (!context.Exists(selectors[i + 1].Safely()))
-            {
-                await context.ClickReliablyOnAsync(selectors[i]);
-                context.Exists(selectors[i + 1]);
-            }
-
-            // The menus have animations, which interfere with the click being recognized. Waiting a fraction of a
-            // second is the only reliable way to ensure the next step is clickable.
-            await Task.Delay(TimeSpan.FromMicroseconds(200), context.Configuration.TestCancellationToken);
+            context.Exists(selectors[i + 1].Within(menuAnimationTime));
         }
 
         // The last item is clicked separately, because we don't do look-ahead checks here.
