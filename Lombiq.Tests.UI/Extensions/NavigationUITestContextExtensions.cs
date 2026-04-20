@@ -13,6 +13,7 @@ using OrchardCore.Environment.Shell;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -548,6 +549,12 @@ public static class NavigationUITestContextExtensions
         // The last item is clicked separately, because we don't do look-ahead checks here.
         await context.ClickReliablyOnAsync(selectors[^1]);
     }
+
+    /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static Task ClickThroughAdminMenuAsync(this UITestContext context, params string[] ids) =>
+        context.ClickThroughAdminMenuAsync(ids.Select(By.Id).ToArray());
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
