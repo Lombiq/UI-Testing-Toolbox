@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
+    <None Include="..\Readme.md" Link="Readme.md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
   </ItemGroup>
 
@@ -35,10 +40,6 @@
 
   <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
     <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.6.1-alpha.7.osoe-925" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="wwwroot\css\general.css" />
   </ItemGroup>
 
 </Project>
