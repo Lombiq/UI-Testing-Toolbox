@@ -544,8 +544,6 @@ public static class NavigationUITestContextExtensions
             // The menus have animations, which interfere with the click being recognized.
             await context.ClickReliablyOnAsync(selectors[i]);
 
-            // It's necessary to wait if a click occurred at this level, because the animation interactions unreliable.
-            await Task.Delay(menuAnimationTime, context.Configuration.TestCancellationToken);
             context.Exists(selectors[i + 1]);
         }
 
