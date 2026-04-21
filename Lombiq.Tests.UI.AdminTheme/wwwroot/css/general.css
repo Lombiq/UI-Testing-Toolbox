@@ -1,0 +1,5 @@
+/* Forcefully remove all CSS animations from the page. This greatly improves screenshot and menu navigation reliability
+   without compromising the test's authenticity. */
+* {
+    transition: none !important; /* stylelint-disable-line declaration-no-important */
+}
