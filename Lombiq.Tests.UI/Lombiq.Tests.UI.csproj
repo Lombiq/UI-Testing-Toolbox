@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
     <!-- With these the driver exe files will be copied to all projects referencing this project. Otherwise all child
     projects would need to add the packages too. -->
     <PublishChromeDriver>true</PublishChromeDriver>
@@ -12,55 +10,26 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.Base.Sdk/Sdk/Import.props" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.props" Sdk="Lombiq.MSBuild.Base.Sdk" Version="1.0.1-alpha.8.osoe-1208" />
+
   <PropertyGroup>
     <Title>Lombiq UI Testing Toolbox for Orchard Core</Title>
-    <Authors>Lombiq Technologies</Authors>
-    <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
-    <Description>Lombiq UI Testing Toolbox for Orchard Core: Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here. See the project website for detailed documentation.</Description>
+    <CopyrightYear>2020</CopyrightYear>
+    <DescriptionBody>Web UI testing toolbox mostly for Orchard Core applications. Everything you need to do UI testing with Selenium for an Orchard app is here.</DescriptionBody>
     <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation;ZAP;Zed Attack Proxy;Security;Scanning;OWASP</PackageTags>
-    <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox</PackageProjectUrl>
-    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\Readme.md" Link="Readme.md" />
-    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
-    <None Update="ui-testing-toolkit.mjs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include=".config\dotnet-tools.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="SampleUploadFiles\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="default.htmlvalidate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlanFragments\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="SecurityScanning\AutomationFrameworkPlans\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="PermitNoTitleIframes.htmlvalidate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
+    <None Update="ui-testing-toolkit.mjs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include=".config\dotnet-tools.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="SampleUploadFiles\*.*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="default.htmlvalidate.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="SecurityScanning\AutomationFrameworkPlanFragments\*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="SecurityScanning\AutomationFrameworkPlans\*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="PermitNoTitleIframes.htmlvalidate.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -146,4 +115,6 @@
     <None Remove="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml" />
   </ItemGroup>
 
+  <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.Base.Sdk/Sdk/Import.targets" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.Base.Sdk" Version="1.0.1-alpha.7.osoe-1208" />
 </Project>
