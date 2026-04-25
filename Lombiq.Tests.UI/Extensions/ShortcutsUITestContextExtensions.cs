@@ -297,6 +297,26 @@ public static class ShortcutsUITestContextExtensions
             activateShell);
 
     /// <summary>
+    /// Enables the theme with the given <paramref name="themeId"/> directly.
+    /// </summary>
+    public static async Task EnableThemeDirectlyAsync(
+        this UITestContext context,
+        string themeId,
+        bool isAdmin = false,
+        string tenant = null,
+        bool activateShell = true)
+    {
+        await context.EnableFeatureDirectlyAsync(themeId, tenant, activateShell);
+        await UsingScopeAsync(
+            context,
+            serviceProvider => isAdmin
+                ? serviceProvider.GetRequiredService<IAdminThemeService>().SetAdminThemeAsync(themeId)
+                : serviceProvider.GetRequiredService<ISiteThemeService>().SetSiteThemeAsync(themeId),
+            tenant,
+            activateShell);
+    }
+
+    /// <summary>
     /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
     /// operations indeed worked. This can be used to test if anything breaks when a feature is enabled or disabled.
     /// </summary>

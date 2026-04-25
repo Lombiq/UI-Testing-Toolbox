@@ -466,12 +466,13 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (ex is AccessibilityAssertionException accessibilityAssertionException
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
-            var accessibilityReportPath = Path.Combine(debugInformationPath, "AccessibilityReport.html");
+            var accessibilityReportPath = Path.Combine(debugInformationPath, AccessibilityCheckingConstants.AccessibilityReportFileName);
             _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
             if (_configuration.ReportTeamCityMetadata)
             {
-                TeamCityMetadataReporter.ReportArtifactLink(_testManifest, "AccessibilityReport", accessibilityReportPath);
+                TeamCityMetadataReporter.ReportArtifactLink(
+                    _testManifest, AccessibilityCheckingConstants.AccessibilityReportFileNameWithoutExtension, accessibilityReportPath);
             }
         }
 
@@ -820,7 +821,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken))!;
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken));
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
                 await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString(), _configuration.TestCancellationToken);
             }

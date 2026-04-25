@@ -20,7 +20,7 @@
       "name": "feature",
       "disable": [],
       "enable": [
-        "OrchardCore.Search.Elasticsearch",
+        "OrchardCore.Elasticsearch",
         "OrchardCore.Search"
       ]
     },

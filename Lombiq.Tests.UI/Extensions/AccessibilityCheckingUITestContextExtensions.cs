@@ -1,5 +1,6 @@
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Selenium;
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -57,13 +58,11 @@ public static class AccessibilityCheckingUITestContextExtensions
             var reportDirectoryPath = DirectoryHelper.CreateEnumeratedDirectory(
                 context.GetTempSubDirectoryPath("AxeHtmlReport"));
 
-            var reportPath = Path.Combine(
-                    reportDirectoryPath,
-                    context.TestManifest.Name.MakeFileSystemFriendly() + ".html");
+            var reportPath = Path.Combine(reportDirectoryPath, AccessibilityCheckingConstants.AccessibilityReportFileName);
 
             context.Driver.CreateAxeHtmlReport(axeResult, reportPath);
 
-            context.AppendTestDump(reportPath);
+            context.AppendTestDumpKeepingDuplicates(reportPath);
         }
     }
 

@@ -94,7 +94,7 @@ public static class AccessibilityCheckingOrchardCoreUITestExecutorConfigurationE
         selectors.ShouldNotBeEmpty();
         configuration.WithAxeViolationsFilters(
             $"{nameof(WithAxeColorContrastViolationsFilters)}: \"{string.Join("\", \"", selectors)}\"",
-            item => !(item.Id is "color-contrast" && item.Nodes.TrueForAll(node =>
-                selectors.Exists(selector => node.Target.Selector.Contains(selector)))));
+            item => !(string.Equals(item.Id, "color-contrast", StringComparison.Ordinal) &&
+                item.Nodes.TrueForAll(node => selectors.Exists(selector => node.Target.Selector.Contains(selector)))));
     }
 }

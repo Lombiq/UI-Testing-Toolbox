@@ -13,6 +13,7 @@ using OrchardCore.Environment.Shell;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -285,7 +286,7 @@ public static class NavigationUITestContextExtensions
             using (response)
             {
                 await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-                var document = await new HtmlParser().ParseDocumentAsync(stream);
+                var document = await new HtmlParser().ParseDocumentAsync(stream, TestContext.Current.CancellationToken);
                 return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
             }
         }
@@ -329,9 +330,9 @@ public static class NavigationUITestContextExtensions
             await client.PostAsync(uri, formContent, cancellationToken),
             "script[src*='OrchardCore.Setup']");
 
-        (responseSetupScript == null).ShouldBe(shouldBeSuccess);
+        (responseSetupScript == null).ShouldBe(shouldBeSuccess, shouldBeSuccess ? "Setup did not succeed." : "Setup succeeded when it shouldn't.");
 
-        context.Driver.Url = uri.AbsoluteUri;
+        await context.GoToAbsoluteUrlAsync(uri, onlyIfNotAlreadyThere: false);
         return uri;
     }
 
@@ -410,7 +411,8 @@ public static class NavigationUITestContextExtensions
             nameof(WaitForPageLoad),
             context.Driver.Url,
             () => new WebDriverWait(context.Driver, TimeSpan.FromSeconds(10)).Until(
-                driver => driver.ExecuteScript("return document.readyState").Equals("complete")));
+                driver => driver.ExecuteScript("return document.readyState").Equals("complete"),
+                context.Configuration.TestCancellationToken));
 
     public static Task SetTaxonomyFieldByIndexAsync(this UITestContext context, string taxonomyId, int index)
     {
@@ -528,6 +530,34 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickWithScriptAsync(context);
 
     /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static async Task ClickThroughAdminMenuAsync(this UITestContext context, params By[] selectors)
+    {
+        var menuAnimationTime = TimeSpan.FromSeconds(1);
+
+        for (var i = 0; i < selectors.Length - 1; i++)
+        {
+            // Only click on this menu item if the next item is not visible because this menu is already open.
+            if (context.Exists(selectors[i + 1].Safely().Within(menuAnimationTime))) continue;
+
+            // The menus have animations, which interfere with the click being recognized.
+            await context.ClickReliablyOnAsync(selectors[i]);
+
+            context.Exists(selectors[i + 1]);
+        }
+
+        // The last item is clicked separately, because we don't do look-ahead checks here.
+        await context.ClickReliablyOnAsync(selectors[^1]);
+    }
+
+    /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static Task ClickThroughAdminMenuAsync(this UITestContext context, params string[] ids) =>
+        context.ClickThroughAdminMenuAsync(ids.Select(By.Id).ToArray());
+
+    /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.
     /// </summary>
     public static void AcceptAlert(this UITestContext context)
@@ -625,7 +655,14 @@ public static class NavigationUITestContextExtensions
     /// that's why it's not called "contentItem".</param>
     public static async Task FilterOnAdminAsync(this UITestContext context, string itemName)
     {
-        await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
+        if (context.Exists(By.Id("Options_Search").Safely()))
+        {
+            await context.ClickAndFillInWithRetriesAsync(By.Id("Options_Search"), itemName);
+        }
+        else if (context.Exists(By.Id("Options_SearchText")))
+        {
+            await context.ClickAndFillInWithRetriesAsync(By.Id("Options_SearchText"), itemName);
+        }
 
         // Normally we would trigger filtering by pressing the "Enter" key. The filter submit button is hidden, so we
         // have to use JS to click on it.
