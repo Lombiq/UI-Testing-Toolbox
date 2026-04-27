@@ -700,6 +700,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         Task UITestingBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
+            arguments.AddWithValue("OrchardCore:OrchardCore_YesSql:EnableThreadSafetyChecks", value: true);
             arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
             arguments.AddWithValue(
                 "Lombiq_Tests_UI:EnableSqlQueryMonitoring",
