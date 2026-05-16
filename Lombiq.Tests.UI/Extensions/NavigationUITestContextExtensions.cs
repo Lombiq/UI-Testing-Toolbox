@@ -617,6 +617,25 @@ public static class NavigationUITestContextExtensions
             });
 
     /// <summary>
+    /// Navigates back to the previous page or URL in the browser's history.
+    /// </summary>
+    public static Task BackAsync(this UITestContext context) =>
+        context.ExecuteLoggedAsync(
+            nameof(BackAsync),
+            async () =>
+            {
+                var absoluteUri = context.GetCurrentUri();
+
+                await context.Configuration.Events.BeforeNavigation
+                    .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
+
+                await context.Scope.Driver.Navigate().BackAsync();
+
+                await context.Configuration.Events.AfterNavigation
+                    .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
+            });
+
+    /// <summary>
     /// Checks whether the current page is the Orchard setup page.
     /// </summary>
     public static bool IsSetupPage(this UITestContext context) =>
