@@ -103,9 +103,7 @@ public static class MediaOperationsTestingUITestContextExtensions
 
                 context.Missing(By.XPath($"//span[text()=' {imageName} ' and @class='break-word']"));
 
-                var deleteFolderButton =
-                    context.Get(By.CssSelector("#folder-tree  li.selected  div.btn-group.folder-actions .svg-inline--fa.fa-trash"));
-                await deleteFolderButton.ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(By.CssSelector("#folder-tree  .folder-actions .fa-trash"));
 
                 await context.ClickModalOkAsync();
                 context.WaitForPageLoad();
