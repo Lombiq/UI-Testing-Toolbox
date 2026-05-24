@@ -1,4 +1,5 @@
 using OrchardCore.Modules.Manifest;
+using OrchardCore.Users;
 using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
 
 [assembly: Module(
@@ -19,7 +20,7 @@ using static Lombiq.Tests.UI.Shortcuts.ShortcutsFeatureIds;
         "OrchardCore.ContentTypes",
         "OrchardCore.DisplayManagement",
         "OrchardCore.Roles",
-        "OrchardCore.Users",
+        UserConstants.Features.Users,
     ]
 )]
 
