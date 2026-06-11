@@ -68,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "148.0.3967.96";
+                var linuxEdgeVersion = "149.0.4022.62";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "148.0.3967.96";
+                var windowsEdgeVersion = "149.0.4022.62";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "148.0.3967.96";
+                var macOsEdgeVersion = "149.0.4022.62";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
