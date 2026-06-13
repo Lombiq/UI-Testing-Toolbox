@@ -88,6 +88,9 @@ public static class EmailUITestContextExtensions
         string body,
         bool submit = true)
     {
+        await context.SwitchToInteractiveAsync();
+        context.Missing(By.XPath("//div[contains(@class, 'alert') and contains(., 'No email providers are currently enabled.')]"));
+
         await context.FillInWithRetriesAsync(By.Id("To"), to);
         await context.FillInWithRetriesAsync(By.Id("Subject"), subject);
         await context.FillInWithRetriesAsync(By.Id("Body"), body);

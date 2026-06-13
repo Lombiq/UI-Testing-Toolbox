@@ -701,14 +701,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Task UITestingBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             arguments.AddWithValue("OrchardCore:OrchardCore_YesSql:EnableThreadSafetyChecks", value: true);
-            arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddWithValue(ConfigurationKeys.IsUITesting, value: true);
             arguments.AddWithValue(
-                "Lombiq_Tests_UI:EnableSqlQueryMonitoring",
+                ConfigurationKeys.EnableSqlQueryMonitoring,
                 value: _configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
-                arguments.AddWithValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
+                arguments.AddWithValue(ConfigurationKeys.InjectApplicationInfo, value: true);
             }
 
             return Task.CompletedTask;
@@ -859,7 +859,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     "OrchardCore:OrchardCore_Media_Azure:ContainerName",
                     value: _configuration.AzureBlobStorageConfiguration.ContainerName)
                 .AddWithValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
-                .AddWithValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
+                .AddWithValue(ConfigurationKeys.UseAzureBlobStorage, value: true);
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
@@ -894,8 +894,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
             arguments
-                .AddWithValue("Lombiq_Tests_UI:EnableSmtpFeature", value: true)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:EnableSmtp", value: true)
+                .AddWithValue(ConfigurationKeys.EnableSmtpFeature, value: true)
+                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:IsEnabled", value: true)
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
                 .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)

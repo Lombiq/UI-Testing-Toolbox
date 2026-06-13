@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Globalization;
@@ -87,5 +88,5 @@ public static class TestConfigurationManager
             .Build();
     }
 
-    private static string GetPrefixedKey(string key) => "Lombiq_Tests_UI:" + key;
+    private static string GetPrefixedKey(string key) => $"{ConfigurationKeys.BaseKey}:{key}";
 }
