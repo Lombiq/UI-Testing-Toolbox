@@ -51,10 +51,10 @@
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.3.93" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="OrchardCore.ContentFields" Version="3.0.0-preview-19023" />
-    <PackageReference Include="OrchardCore.Logging.NLog" Version="3.0.0-preview-19023" />
-    <PackageReference Include="OrchardCore.Recipes.Core" Version="3.0.0-preview-19023" />
-    <PackageReference Include="OrchardCore.Workflows" Version="3.0.0-preview-19023" />
+    <PackageReference Include="OrchardCore.ContentFields" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Logging.NLog" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Recipes.Core" Version="$(OrchardCoreVersion)" />
+    <PackageReference Include="OrchardCore.Workflows" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="Sarif.Sdk" Version="4.6.5" />
     <!-- Referencing a newer version than what Atata uses, but not the latest version. See the comments in
     renovate.json5 for details. -->
