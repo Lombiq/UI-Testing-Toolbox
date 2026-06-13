@@ -13,6 +13,7 @@ using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Internal.Logging;
+using OrchardCore.Email;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -893,13 +894,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
+
+            const string smtpArgumentPrefix = "OrchardCore:OrchardCore_Email_Smtp:";
             arguments
                 .AddWithValue(ConfigurationKeys.EnableSmtpFeature, value: true)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:IsEnabled", value: true)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:DefaultSender", value: "sender@example.com");
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.IsEnabled), value: true)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.Host), value: "localhost")
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.RequireCredentials), value: false)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.Port), value: smtpContext.Port)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DefaultSender), value: "sender@example.com");
+
             return Task.CompletedTask;
         }
 
