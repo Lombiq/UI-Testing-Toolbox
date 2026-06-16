@@ -903,8 +903,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.RequireCredentials), value: false)
                 .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.Port), value: smtpContext.Port)
                 .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DefaultSender), value: "sender@example.com")
-                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DeliveryMethod), value: nameof(SmtpDeliveryMethod.Network))
-                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.PickupDirectoryLocation), value: "workaround-for-issue-19385");
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DeliveryMethod), value: nameof(SmtpDeliveryMethod.Network));
 
             return Task.CompletedTask;
         }
