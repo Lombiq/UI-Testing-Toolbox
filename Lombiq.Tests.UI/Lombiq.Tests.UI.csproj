@@ -64,10 +64,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="3.7.0" />
-    <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="3.4.0" />
-    <PackageReference Include="Atata.WebDriverExtras" Version="3.3.0" />
+    <PackageReference Include="Atata" Version="3.11.0" />
+    <PackageReference Include="Atata.Bootstrap" Version="3.1.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="3.5.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="3.7.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.28.0" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.390" />
@@ -86,9 +86,6 @@
     <PackageReference Include="OrchardCore.Abstractions" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.1.0" />
     <PackageReference Include="Sarif.Sdk" Version="5.0.2" />
-    <!-- Referencing a newer version than what Atata uses, but not the latest version. See the comments in
-    renovate.json5 for details. -->
-    <PackageReference Include="Selenium.WebDriver" Version="4.38.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="7.0.1" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
