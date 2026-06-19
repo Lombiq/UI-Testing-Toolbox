@@ -73,19 +73,19 @@
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.390" />
     <PackageReference Include="Deque.AxeCore.Commons" Version="4.11.3" />
     <PackageReference Include="Deque.AxeCore.Selenium" Version="4.11.3" />
-    <PackageReference Include="MailKit" Version="4.16.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="8.10.0" />
-    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.3.93" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
+    <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.4.83" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.25.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="OrchardCore.ContentFields" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Logging.NLog" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Abstractions" Version="2.1.0" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="2.1.0" />
-    <PackageReference Include="Sarif.Sdk" Version="4.6.5" />
+    <PackageReference Include="Sarif.Sdk" Version="5.0.2" />
     <!-- Referencing a newer version than what Atata uses, but not the latest version. See the comments in
     renovate.json5 for details. -->
     <PackageReference Include="Selenium.WebDriver" Version="4.38.0" />
@@ -93,7 +93,7 @@
     <PackageReference Include="System.Linq.Async" Version="7.0.1" />
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
-    <PackageReference Include="YamlDotNet" Version="17.1.0" />
+    <PackageReference Include="YamlDotNet" Version="18.0.0" />
   </ItemGroup>
 
   <ItemGroup>
