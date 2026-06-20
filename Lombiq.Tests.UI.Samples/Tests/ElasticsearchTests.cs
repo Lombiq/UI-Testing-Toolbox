@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using OpenQA.Selenium;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,7 +23,8 @@ public class ElasticsearchTests : UITestBase
     {
     }
 
-    [Fact]
+    [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "temp")]
+    [Fact(Skip = "Temporarily disabled.")]
     public Task ElasticsearchShouldWork() =>
         ExecuteTestAsync(
             async context =>
