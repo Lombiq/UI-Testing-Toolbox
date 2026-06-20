@@ -37,10 +37,10 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<LogEntry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IEnumerable<EntryAddedEventArgs>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<LogEntry, bool> IsNonSuccessBrowserLogEntry =
+    public static readonly Func<EntryAddedEventArgs, bool> IsNonSuccessBrowserLogEntry =
         entry =>
             entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
@@ -93,7 +93,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cref="UITestContext.CumulativeBrowserLog"/>. If there are more than one, all of them must return <see
     /// langword="true"/>.
     /// </summary>
-    public IDictionary<string, Func<LogEntry, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<LogEntry, bool>>
+    public IDictionary<string, Func<EntryAddedEventArgs, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<EntryAddedEventArgs, bool>>
     {
         [nameof(BrowserLogFilter)] = IsNonSuccessBrowserLogEntry,
     };
@@ -102,13 +102,13 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets the primary delegate that selects which response data get saved to <see
     /// cref="UITestContext.CumulativeBrowserLog"/>.
     /// </summary>
-    public Func<LogEntry, bool> BrowserLogFilter
+    public Func<EntryAddedEventArgs, bool> BrowserLogFilter
     {
         get => BrowserLogFilters[nameof(BrowserLogFilter)];
         set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
     }
 
-    public Action<IEnumerable<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IEnumerable<EntryAddedEventArgs>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
     /// Gets or sets a delegate that selects which response data get saved to <see

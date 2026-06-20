@@ -6,6 +6,7 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
+using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using OrchardCore.Environment.Shell;
 using System;
@@ -22,10 +23,10 @@ public sealed class UITestContext : IAsyncDisposable
 {
     // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
     // preserve the insertion order.
-    private readonly ConcurrentQueue<OpenQA.Selenium.BiDi.Log.LogEntry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<EntryAddedEventArgs> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
-    private BiDi _biDirectionalDriver;
+    private IBiDi _biDirectionalDriver;
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -122,7 +123,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
     /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<OpenQA.Selenium.BiDi.Log.LogEntry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+    public IReadOnlyList<EntryAddedEventArgs> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
 
     /// <summary>
     /// Gets a cumulative log of browser HTTP responses filtered by <see
@@ -326,29 +327,33 @@ public sealed class UITestContext : IAsyncDisposable
 
         if (context.IsBrowserConfigured)
         {
-            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync(cancellationToken: configuration.TestCancellationToken);
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await context._biDirectionalDriver.Log.OnEntryAddedAsync(entry =>
-            {
-                if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+            await context._biDirectionalDriver.Log.EntryAdded.SubscribeAsync(
+                entry =>
                 {
-                    context._cumulativeBrowserLog.Enqueue(entry);
-                }
-            });
+                    if (configuration.BrowserLogFilters.Values.All(filter => filter(entry)))
+                    {
+                        context._cumulativeBrowserLog.Enqueue(entry);
+                    }
+                },
+                configuration.TestCancellationToken);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
-                {
-                    if (configuration.ResponseLogFilter(responseCompleted))
+                await context._biDirectionalDriver.Network.ResponseCompleted.SubscribeAsync(
+                    responseCompleted =>
                     {
-                        context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-                    }
-                });
+                        if (configuration.ResponseLogFilter(responseCompleted))
+                        {
+                            context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
+                        }
+                    },
+                    configuration.TestCancellationToken);
             }
         }
 

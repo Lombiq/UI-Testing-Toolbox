@@ -8,15 +8,15 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions;
 
-public static class SeleniumEntryExtensions
+public static class SeleniumEntryAddedEventArgsExtensions
 {
-    public static string ToFormattedString(this IEnumerable<LogEntry> logEntries) =>
+    public static string ToFormattedString(this IEnumerable<EntryAddedEventArgs> logEntries) =>
         string.Join(Environment.NewLine, logEntries.Select(ToFormattedString));
 
-    public static string ToFormattedString(this LogEntry entry) =>
+    public static string ToFormattedString(this EntryAddedEventArgs entry) =>
         StringHelper.CreateInvariant($"{entry.Timestamp:yyyy-MM-dd HH:mm:ss} {entry.Level} {entry.Text}{FormatStackTrace(entry.StackTrace)}");
 
-    public static bool IsNonSuccessBrowserLogEntry(this LogEntry entry) =>
+    public static bool IsNonSuccessBrowserLogEntry(this EntryAddedEventArgs entry) =>
         OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(entry);
 
     private static string FormatStackTrace(StackTrace stackTrace)
