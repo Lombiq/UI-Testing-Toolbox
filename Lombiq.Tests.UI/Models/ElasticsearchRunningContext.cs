@@ -5,7 +5,6 @@ using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Elasticsearch.Core.Deployment;
 using OrchardCore.Elasticsearch.Core.Models;
-using OrchardCore.Elasticsearch.Core.Recipes;
 using OrchardCore.Elasticsearch.Core.Services;
 using OrchardCore.Indexing;
 using OrchardCore.Indexing.Core;
@@ -112,7 +111,7 @@ public record ElasticsearchRunningContext(string Prefix)
         IIndexProfileManager indexProfileManager,
         IServiceProvider serviceProvider)
     {
-        var step = new ElasticsearchIndexRebuildStep(indexProfileManager, serviceProvider);
+        var step = new NonResetElasticsearchIndexRebuildStep(indexProfileManager, serviceProvider);
         var model = new ElasticsearchIndexRebuildDeploymentStep { IncludeAll = true };
         var context = new RecipeExecutionContext
         {

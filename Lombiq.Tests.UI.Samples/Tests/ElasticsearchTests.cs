@@ -22,9 +22,7 @@ public class ElasticsearchTests : UITestBase
     {
     }
 
-#pragma warning disable xUnit1004
-    [Fact(Skip = "Temp.")]
-#pragma warning restore xUnit1004
+    [Fact]
     public Task ElasticsearchShouldWork() =>
         ExecuteTestAsync(
             async context =>
