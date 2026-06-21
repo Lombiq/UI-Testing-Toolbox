@@ -98,9 +98,14 @@ public static class EmailUITestContextExtensions
         {
             // Without the navigation state check, operations immediately after this can access stale elements.
             var navigationState = context.AsPageNavigationState();
-            await context.ClickReliablyOnSubmitAsync();
+
+            // Using JavaScript for improved reliability.
+            context.ExecuteScript("document.querySelector('.ta-content form .btn-primary').click();");
+
             // Sending the e-mail can take more than usual operations.
-            navigationState.Wait(TimeSpan.FromSeconds(20));
+            await context.DoWithRetriesOrFailAsync(
+                () => Task.FromResult(navigationState.CheckIfNavigationHasOccurred()),
+                timeout: TimeSpan.FromSeconds(20));
         }
     }
 
