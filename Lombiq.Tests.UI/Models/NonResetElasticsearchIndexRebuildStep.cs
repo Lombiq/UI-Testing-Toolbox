@@ -7,6 +7,7 @@ using OrchardCore.Recipes.Models;
 using OrchardCore.Recipes.Services;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -38,6 +39,10 @@ public sealed class NonResetElasticsearchIndexRebuildStep : NamedRecipeStepHandl
         _serviceProvider = serviceProvider;
     }
 
+    [SuppressMessage(
+        "Critical Code Smell",
+        "S3776:Cognitive Complexity of methods should not be too high",
+        Justification = "This is a minimally altered version of a stock recipe step, so no major refactoring should be applied.")]
     protected override async Task HandleAsync(RecipeExecutionContext context)
     {
         var model = context.Step.ToObject<ElasticsearchIndexRebuildDeploymentStep>();
