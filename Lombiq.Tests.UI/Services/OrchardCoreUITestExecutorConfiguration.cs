@@ -1,5 +1,6 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
@@ -37,10 +38,10 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<EntryAddedEventArgs>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IEnumerable<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
-    public static readonly Func<EntryAddedEventArgs, bool> IsNonSuccessBrowserLogEntry =
+    public static readonly Func<BrowserLogEntry, bool> IsNonSuccessBrowserLogEntry =
         entry =>
             entry.Level >= Level.Warn &&
             // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
@@ -93,7 +94,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cref="UITestContext.CumulativeBrowserLog"/>. If there are more than one, all of them must return <see
     /// langword="true"/>.
     /// </summary>
-    public IDictionary<string, Func<EntryAddedEventArgs, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<EntryAddedEventArgs, bool>>
+    public IDictionary<string, Func<BrowserLogEntry, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<BrowserLogEntry, bool>>
     {
         [nameof(BrowserLogFilter)] = IsNonSuccessBrowserLogEntry,
     };
@@ -102,13 +103,13 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets the primary delegate that selects which response data get saved to <see
     /// cref="UITestContext.CumulativeBrowserLog"/>.
     /// </summary>
-    public Func<EntryAddedEventArgs, bool> BrowserLogFilter
+    public Func<BrowserLogEntry, bool> BrowserLogFilter
     {
         get => BrowserLogFilters[nameof(BrowserLogFilter)];
         set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
     }
 
-    public Action<IEnumerable<EntryAddedEventArgs>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IEnumerable<BrowserLogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
     /// Gets or sets a delegate that selects which response data get saved to <see
