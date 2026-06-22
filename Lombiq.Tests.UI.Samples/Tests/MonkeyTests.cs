@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.MonkeyTesting;
 using Lombiq.Tests.UI.MonkeyTesting.UrlFilters;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -74,7 +75,7 @@ public class MonkeyTests : UITestBase
             },
             // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
             // parameters are required.
-            configuration => configuration.WithIgnoreExpectedStatusResponseFilter("/api/graphql", 400));
+            configuration => configuration.WithIgnoreExpectedStatusResponseFilter("/api/graphql", HttpStatusCode.BadRequest));
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>

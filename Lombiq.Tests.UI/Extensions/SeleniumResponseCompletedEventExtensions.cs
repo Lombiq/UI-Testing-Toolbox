@@ -4,6 +4,7 @@ using OpenQA.Selenium.BiDi.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -26,7 +27,13 @@ public static class SeleniumResponseCompletedEventExtensions
     public static void WithIgnoreExpectedNotFoundResponseFilter(
         this OrchardCoreUITestExecutorConfiguration configuration,
         string urlContains) =>
-        configuration.WithIgnoreExpectedStatusResponseFilter(urlContains, 404);
+        configuration.WithIgnoreExpectedStatusResponseFilter(urlContains, HttpStatusCode.NotFound);
+
+    public static void WithIgnoreExpectedStatusResponseFilter(
+        this OrchardCoreUITestExecutorConfiguration configuration,
+        string urlContains,
+        HttpStatusCode status) =>
+        configuration.WithIgnoreExpectedStatusResponseFilter(urlContains, (int)status);
 
     public static void WithIgnoreExpectedStatusResponseFilter(
         this OrchardCoreUITestExecutorConfiguration configuration,
