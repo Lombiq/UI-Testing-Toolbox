@@ -1,6 +1,10 @@
+using Lombiq.HelpfulLibraries.OrchardCore.ResourceManagement;
 using Lombiq.Tests.UI.AdminTheme.Constants;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
+using System;
 
 namespace Lombiq.Tests.UI.AdminTheme;
 
@@ -13,6 +17,9 @@ public class Startup : StartupBase
             builder => builder
                 .Always()
                 .RegisterStylesheet(ResourceNames.General),
-            FeatureIds.Area);
+            FeatureIds.AdminTheme);
     }
+
+    public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider) =>
+        app.UseResourceFilters();
 }
