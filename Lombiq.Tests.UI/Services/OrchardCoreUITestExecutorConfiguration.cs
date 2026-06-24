@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
@@ -48,13 +49,13 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IReadOnlyList<LogEntry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
     /// <summary>
     /// The default browser log filter. Ignores logs below <see cref="Level.Warn"/>.
     /// </summary>
-    public static readonly Func<LogEntry, bool> IsNonSuccessBrowserLogEntry =
+    public static readonly Func<BrowserLogEntry, bool> IsNonSuccessBrowserLogEntry =
         entry => entry.Level >= Level.Warn;
 
     // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
@@ -103,7 +104,7 @@ public class OrchardCoreUITestExecutorConfiguration
     /// cref="UITestContext.CumulativeBrowserLog"/>. If there are more than one, all of them must return <see
     /// langword="true"/>.
     /// </summary>
-    public IDictionary<string, Func<LogEntry, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<LogEntry, bool>>
+    public IDictionary<string, Func<BrowserLogEntry, bool>> BrowserLogFilters { get; } = new Dictionary<string, Func<BrowserLogEntry, bool>>
     {
         [nameof(BrowserLogFilter)] = IsNonSuccessBrowserLogEntry,
     };
@@ -112,13 +113,13 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets the primary delegate that selects which response data get saved to <see
     /// cref="UITestContext.CumulativeBrowserLog"/>.
     /// </summary>
-    public Func<LogEntry, bool> BrowserLogFilter
+    public Func<BrowserLogEntry, bool> BrowserLogFilter
     {
         get => BrowserLogFilters[nameof(BrowserLogFilter)];
         set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
     }
 
-    public Action<IReadOnlyList<LogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
     /// Gets the delegates that select which response data get saved to <see
