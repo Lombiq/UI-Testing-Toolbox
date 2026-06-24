@@ -345,33 +345,37 @@ public sealed class UITestContext : IAsyncDisposable
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
+            var browserLogHandler = CreateLoggingHandler(configuration.BrowserLogFilters, context._cumulativeBrowserLog);
             await context._biDirectionalDriver.Log.OnEntryAddedAsync(
-                entry =>
-                {
-                var browserLogEntry = new Models.BrowserLogEntry(entry);
-                if (configuration.BrowserLogFilters.Values.All(filter => filter(browserLogEntry)))
-                    {
-                    context._cumulativeBrowserLog.Enqueue(browserLogEntry);
-                    }
-                },
+                entry => browserLogHandler(new Models.BrowserLogEntry(entry)),
                 cancellationToken: token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(
-                    responseCompleted =>
-                    {
-                        if (configuration.ResponseLogFilters.All(filter => filter.Value(responseCompleted)))
-                        {
-                            context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-                        }
-                    },
-                    cancellationToken: token);
+                var responseLogHandler = CreateLoggingHandler(
+                    configuration.ResponseLogFilters,
+                    context._cumulativeResponseLog,
+                    entry => entry.Response);
+                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseLogHandler, cancellationToken: token);
             }
         }
 
         return context;
     }
+
+    private static Action<TEntry> CreateLoggingHandler<TEntry, TLog>(
+        IDictionary<string, Func<TEntry, bool>> filters,
+        ConcurrentQueue<TLog> logs,
+        Func<TEntry, TLog> select = null)
+        where TLog : class =>
+        entry =>
+        {
+            if (filters.Values.All(filter => filter(entry)) &&
+                (select == null ? entry as TLog : select(entry)) is { } value)
+            {
+                logs.Enqueue(value);
+            }
+        };
 
     /// <summary>
     /// Returns the subdirectory described by the <paramref name="subDirectoryNames"/> sub-path inside the <see
