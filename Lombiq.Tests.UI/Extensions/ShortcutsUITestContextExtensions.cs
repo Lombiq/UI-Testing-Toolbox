@@ -364,9 +364,7 @@ public static class ShortcutsUITestContextExtensions
     public static Task<ApplicationInfo> GetApplicationInfoAsync(this UITestContext context) =>
         context.GetApi().GetApplicationInfoFromApiAsync();
 
-    private sealed class ExecuteRecipeShortcut;
-
-    /// <summary>
+    private sealed class ExecuteRecipeShortcut;   /// <summary>
     /// Executes a recipe identified by its name directly.
     /// </summary>
     /// <exception cref="RecipeNotFoundException">
