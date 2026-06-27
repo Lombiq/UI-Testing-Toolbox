@@ -7,6 +7,4 @@ namespace Lombiq.Tests.UI.Attributes;
 /// method.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public sealed class VisualVerificationApprovedMethodAttribute : Attribute
-{
-}
+public sealed class VisualVerificationApprovedMethodAttribute : Attribute;

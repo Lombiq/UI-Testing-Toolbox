@@ -8,6 +8,4 @@ namespace Lombiq.Tests.UI.Exceptions;
 /// the xUnit docs</see>.
 /// </summary>
 [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "See above.")]
-public interface IAssertionException
-{
-}
+public interface IAssertionException;
