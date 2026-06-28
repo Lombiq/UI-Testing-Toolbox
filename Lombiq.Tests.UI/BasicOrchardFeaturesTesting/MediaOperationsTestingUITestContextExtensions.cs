@@ -103,7 +103,7 @@ public static class MediaOperationsTestingUITestContextExtensions
 
                 context.Missing(By.XPath($"//span[text()=' {imageName} ' and @class='break-word']"));
 
-                await context.ClickReliablyOnAsync(By.CssSelector("#folder-tree  .folder-actions .fa-trash"));
+                await context.ClickReliablyOnAsync(By.CssSelector("#folder-tree .folder-actions .fa-trash"));
 
                 await context.ClickModalOkAsync();
                 context.WaitForPageLoad();
