@@ -3,16 +3,12 @@ using Elastic.Clients.Elasticsearch.Core;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
-using OrchardCore.Elasticsearch.Core.Deployment;
 using OrchardCore.Elasticsearch.Core.Models;
 using OrchardCore.Elasticsearch.Core.Services;
 using OrchardCore.Indexing;
 using OrchardCore.Indexing.Core;
-using OrchardCore.Recipes.Models;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
