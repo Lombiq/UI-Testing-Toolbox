@@ -34,7 +34,7 @@ public record ElasticsearchRunningContext(string Prefix)
         {
             if (provider.GetService<IIndexProfileManager>() is { } indexProfileManager)
             {
-                await RebuildAllIndexesAsync(indexProfileManager, provider);
+                await indexProfileManager.RebuildElasticsearchIndexesAsync(provider);
             }
 
             if (provider.GetService<ContentIndexingService>() is { } indexingService)
@@ -105,21 +105,5 @@ public record ElasticsearchRunningContext(string Prefix)
 
         throw new InvalidOperationException(
             $"Couldn't resolve {nameof(ElasticsearchClient)}.");
-    }
-
-    private static Task RebuildAllIndexesAsync(
-        IIndexProfileManager indexProfileManager,
-        IServiceProvider serviceProvider)
-    {
-        var step = new NonResetElasticsearchIndexRebuildStep(indexProfileManager, serviceProvider);
-        var model = new ElasticsearchIndexRebuildDeploymentStep { IncludeAll = true };
-        var context = new RecipeExecutionContext
-        {
-            ExecutionId = Guid.NewGuid().ToString(),
-            Name = "elastic-index-rebuild",
-            Step = (JsonObject)JsonSerializer.SerializeToNode(model),
-        };
-
-        return step.ExecuteAsync(context);
     }
 }
