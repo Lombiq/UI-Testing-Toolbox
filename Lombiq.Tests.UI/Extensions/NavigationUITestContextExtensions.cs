@@ -330,7 +330,21 @@ public static class NavigationUITestContextExtensions
             await client.PostAsync(uri, formContent, cancellationToken),
             "script[src*='OrchardCore.Setup']");
 
-        (responseSetupScript == null).ShouldBe(shouldBeSuccess, shouldBeSuccess ? "Setup did not succeed." : "Setup succeeded when it shouldn't.");
+        if (shouldBeSuccess)
+        {
+            if (responseSetupScript != null)
+            {
+                // If setup failed, first try to assert logs so we can return more meaningful errors than just the plain
+                // fact that the setup did not succeed.
+                await context.AssertLogsAsync();
+
+                responseSetupScript.ShouldBeNull("Setup did not succeed.");
+            }
+        }
+        else
+        {
+            responseSetupScript.ShouldNotBeNull("Setup succeeded when it shouldn't.");
+        }
 
         await context.GoToAbsoluteUrlAsync(uri, onlyIfNotAlreadyThere: false);
         return uri;
