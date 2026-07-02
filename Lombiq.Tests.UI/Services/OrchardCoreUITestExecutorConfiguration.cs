@@ -73,6 +73,12 @@ public class OrchardCoreUITestExecutorConfiguration
     ///         </description>
     ///     </item>
     ///     <item>
+    ///     <item>
+    ///         <description>
+    ///             HTTP response status 404 when the URL ends with /favicon.ico: Browsers preemptively send this
+    ///             request, even if a favicon is declared to be under a different URL inside the page's HTML code.
+    ///         </description>
+    ///     </item>
     ///         <description>
     ///             HTTP response status 422: The <see cref="HttpStatusCode.UnprocessableContent"/> indicates a request
     ///             that is "well-formed but was unable to be followed due to semantic errors" (source: MDN). Orchard
@@ -83,7 +89,8 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </list>
     /// </para></remarks>
     public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
-        e.Response.Status is (< 200 or >= 400) and not 422 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+        e.Response.Status is (< 200 or >= 400) and not 422 &&
+        !(e.Response.Status == 404 && e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico"));
 
     public static readonly Action<IReadOnlyList<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
