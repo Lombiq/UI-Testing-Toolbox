@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -58,10 +59,31 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<BrowserLogEntry, bool> IsNonSuccessBrowserLogEntry =
         entry => entry.Level >= Level.Warn;
 
-    // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
-    // different URL.
+    /// <summary>
+    /// This filter only keeps unexpected non-success HTTP responses. See below for the list of what it excludes.
+    /// </summary>
+    /// <remarks><para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>HTTP response status 2XX: Successful responses.</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             HTTP response status 3XX: Redirection messages, which the client automatically follows up.
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             HTTP response status 422: The <see cref="HttpStatusCode.UnprocessableContent"/> indicates a request
+    ///             that is "well-formed but was unable to be followed due to semantic errors" (source: MDN). Orchard
+    ///             Core uses it to indicate an XHR request with unfinished data, such as by
+    ///             "~/OrchardCore.ContentPreview/Preview/Draft" so this code is not a reliable indicator of failure.
+    ///         </description>
+    ///     </item>
+    /// </list>
+    /// </para></remarks>
     public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
-        e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+        e.Response.Status is (< 200 or >= 400) and not 422 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
 
     public static readonly Action<IReadOnlyList<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
