@@ -87,7 +87,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
-        GitHubAnnotationWriter.Annotate(
+        new GitHubAnnotationWriter(_testOutputHelper).Annotate(
             LogLevel.Warning,
             "UI test may be flaky",
             $"The {_testManifest.Name} test failed X time(s) and will be retried. This may indicate it being flaky.");
@@ -518,7 +518,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.GitHubActionsOutputConfiguration.EnableTestRetryWarningAnnotations &&
             GitHubHelper.IsGitHubEnvironment)
         {
-            GitHubAnnotationWriter.Annotate(
+            new GitHubAnnotationWriter(_testOutputHelper).Annotate(
                 LogLevel.Warning,
                 "UI test may be flaky",
                 $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +

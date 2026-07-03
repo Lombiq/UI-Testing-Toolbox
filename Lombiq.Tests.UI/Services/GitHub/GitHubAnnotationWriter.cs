@@ -5,13 +5,19 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Xunit;
 using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
-public static class GitHubAnnotationWriter
+public class GitHubAnnotationWriter
 {
-    public static void Annotate(LogLevel severity, string? title, string message, string? file = null, int line = 1)
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) =>
+        _testOutputHelper = testOutputHelper;
+
+    public void Annotate(LogLevel severity, string? title, string message, string? file = null, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
 
@@ -43,12 +49,10 @@ public static class GitHubAnnotationWriter
             message = StringHelper.CreateInvariant($"(file={file},line={line}) {message}");
         }
 
-        // Intentionally using Console instead of ITestOutputHelper, because the GitHub annotations must appear
-        // unaltered on the runner's console. So there aren't any benefits, only caveats, of using an output helper.
-        Console.WriteLine($"::{command} title={title}::{message}");
+        _testOutputHelper.WriteLine($"::{command} title={title}::{message}");
     }
 
-    public static void ErrorInTest(Exception exception, ITestCase testCase)
+    public void ErrorInTest(Exception exception, ITestCase testCase)
     {
         var className = testCase.TestMethod!.TestClass.TestClassName.Split('.')[^1];
         var testName = testCase.TestMethod.MethodName;

@@ -77,7 +77,7 @@ public static class UITestExecutor
                     GitHubHelper.IsGitHubEnvironment &&
                     testManifest.XunitTest?.TestCase is { } testCase)
                 {
-                    GitHubAnnotationWriter.ErrorInTest(ex, testCase);
+                    new GitHubAnnotationWriter(configuration.TestOutputHelper).ErrorInTest(ex, testCase);
                 }
 
                 throw;
