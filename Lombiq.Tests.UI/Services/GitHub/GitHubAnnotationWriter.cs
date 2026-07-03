@@ -64,7 +64,7 @@ public static class GitHubAnnotationWriter
                 method.DeclaringType?.Name == className) ??
             stackFrames.Find(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
             stackFrames.FirstOrDefault();
-        var file = stackFrame?.GetFileName() ?? "NoFile";
+        var file = stackFrame?.GetFileName();
         var line = stackFrame?.GetFileLineNumber() ?? 1;
 
         Annotate(
