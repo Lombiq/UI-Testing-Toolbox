@@ -4,6 +4,7 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Xunit.Sdk;
 
@@ -14,12 +15,6 @@ public static class GitHubAnnotationWriter
     public static void Annotate(LogLevel severity, string? title, string message, string? file = null, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
-
-        // The workflow command uses commas to separate the arguments (see last line of this method) so if the file name
-        // contained a comma, the part after the comma would be chopped off.
-        if (file?.Contains(',') == true) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
-
-        title ??= severity.ToString();
 
         var command = severity switch
         {
@@ -37,17 +32,21 @@ public static class GitHubAnnotationWriter
         // conflicts with the command parser. These are reasonably similar to carry the meaning, yet distinct enough to
         // avoid misleading the reader. (For example if we replaced colons with "Armenian full stop" that looks
         // identical, the user would have no idea why copying the output to a search yields no results when it should.)
-        title = title.Replace(',', '⹁').Replace("::", "⸬");
+        title = title == null ? severity.ToString() : title.Replace(',', '⹁').Replace("::", "⸬");
 
         // Sanitize message:
         message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
+        // We don't use the annotation "file" and "line" parameters, because if the file is not in the repo (e.g. it's
+        // in a submodule) then the annotation will not display at all.
+        if (!string.IsNullOrWhiteSpace(file))
+        {
+            message = StringHelper.CreateInvariant($"(file={file},line={line}) {message}");
+        }
+
         // Intentionally using Console instead of ITestOutputHelper, because the GitHub annotations must appear
         // unaltered on the runner's console. So there aren't any benefits, only caveats, of using an output helper.
-        Console.WriteLine(
-            string.IsNullOrWhiteSpace(file)
-                ? StringHelper.CreateInvariant($"::{command}::{message}")
-                : StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
+        Console.WriteLine($"::{command} title={title}::{message}");
     }
 
     public static void ErrorInTest(Exception exception, ITestCase testCase)
