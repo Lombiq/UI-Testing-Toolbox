@@ -1,27 +1,23 @@
+#nullable enable
+
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Xunit;
 using Xunit.Sdk;
 
 namespace Lombiq.Tests.UI.Services.GitHub;
 
-public class GitHubAnnotationWriter
+public static class GitHubAnnotationWriter
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
-
-    public void Annotate(LogLevel severity, string title, string message, string file, int line = 1)
+    public static void Annotate(LogLevel severity, string? title, string message, string? file = null, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(file);
 
         // The workflow command uses commas to separate the arguments (see last line of this method) so if the file name
         // contained a comma, the part after the comma would be chopped off.
-        if (file.Contains(',')) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
+        if (file?.Contains(',') == true) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
 
         title ??= severity.ToString();
 
@@ -46,13 +42,17 @@ public class GitHubAnnotationWriter
         // Sanitize message:
         message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
-        _testOutputHelper.WriteLine(
-            StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
+        // Intentionally using Console instead of ITestOutputHelper, because the GitHub annotations must appear
+        // unaltered on the runner's console. So there aren't any benefits, only caveats, of using an output helper.
+        Console.WriteLine(
+            string.IsNullOrWhiteSpace(file)
+                ? StringHelper.CreateInvariant($"::{command}::{message}")
+                : StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
     }
 
-    public void ErrorInTest(Exception exception, ITestCase testCase)
+    public static void ErrorInTest(Exception exception, ITestCase testCase)
     {
-        var className = testCase.TestMethod.TestClass.TestClassName.Split('.')[^1];
+        var className = testCase.TestMethod!.TestClass.TestClassName.Split('.')[^1];
         var testName = testCase.TestMethod.MethodName;
 
         var stackFrames = new StackTrace(exception, fNeedFileInfo: true)

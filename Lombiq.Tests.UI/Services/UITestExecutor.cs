@@ -74,10 +74,10 @@ public static class UITestExecutor
 
                 if (configuration.ExtendGitHubActionsOutput &&
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations &&
-                    GitHubHelper.IsGitHubEnvironment)
+                    GitHubHelper.IsGitHubEnvironment &&
+                    testManifest.XunitTest?.TestCase is { } testCase)
                 {
-                    new GitHubAnnotationWriter(configuration.TestOutputHelper)
-                        .ErrorInTest(ex, testManifest.XunitTest.TestCase);
+                    GitHubAnnotationWriter.ErrorInTest(ex, testCase);
                 }
 
                 throw;
