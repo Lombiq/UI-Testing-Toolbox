@@ -4,7 +4,6 @@ using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Xunit.Sdk;
 
