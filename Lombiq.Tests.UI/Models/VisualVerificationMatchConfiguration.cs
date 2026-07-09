@@ -46,4 +46,4 @@ public class VisualVerificationMatchConfiguration<TSelf>
         }.JoinNotNullOrEmpty("-");
 }
 
-public class VisualMatchConfiguration : VisualVerificationMatchConfiguration<VisualMatchConfiguration> { }
+public class VisualMatchConfiguration : VisualVerificationMatchConfiguration<VisualMatchConfiguration>;

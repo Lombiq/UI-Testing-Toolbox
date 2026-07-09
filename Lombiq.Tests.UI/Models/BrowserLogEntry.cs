@@ -8,21 +8,16 @@ using System.Linq;
 
 namespace Lombiq.Tests.UI.Models;
 
-public class BrowserLogEntry
+public record BrowserLogEntry(
+    Level Level,
+    Source Source,
+    string Text,
+    DateTimeOffset Timestamp,
+    StackTrace StackTrace)
 {
-    public Level Level { get; init; }
-    public Source Source { get; init; }
-    public string Text { get; init; }
-    public DateTimeOffset Timestamp { get; init; }
-    public StackTrace StackTrace { get; set; }
-
     internal BrowserLogEntry(LogEntry entry)
+        : this(entry.Level, entry.Source, entry.Text, entry.Timestamp, entry.StackTrace)
     {
-        Level = entry.Level;
-        Source = entry.Source;
-        Text = entry.Text;
-        Timestamp = entry.Timestamp;
-        StackTrace = entry.StackTrace;
     }
 
     public string ToFormattedString() =>
@@ -37,13 +32,13 @@ public class BrowserLogEntry
 
         return
             Environment.NewLine +
-            "Stack trace: " +
+            "Stack trace:" +
             Environment.NewLine +
             string.Join(
                 Environment.NewLine,
                 stackTrace.CallFrames.Select(frame =>
                     "- " +
-                    (string.IsNullOrEmpty(frame.FunctionName) ? string.Empty : frame.FunctionName + " at ") +
+                    (string.IsNullOrEmpty(frame.FunctionName) ? string.Empty : $"{frame.FunctionName} at ") +
                     StringHelper.CreateInvariant($"{frame.Url}:{frame.LineNumber}:{frame.ColumnNumber}")));
     }
 }
