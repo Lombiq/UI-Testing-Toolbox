@@ -22,7 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="ui-testing-toolkit.mjs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include=".config\dotnet-tools.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="SampleUploadFiles\*.*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="default.htmlvalidate.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
