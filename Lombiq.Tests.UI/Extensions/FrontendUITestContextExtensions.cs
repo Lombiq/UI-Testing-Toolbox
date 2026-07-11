@@ -1,5 +1,3 @@
-using CliWrap;
-using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -8,9 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
