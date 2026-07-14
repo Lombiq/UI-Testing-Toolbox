@@ -87,11 +87,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
-        new GitHubAnnotationWriter(_testOutputHelper).Annotate(
-            LogLevel.Warning,
-            "UI test may be flaky",
-            $"The {_testManifest.Name} test failed X time(s) and will be retried. This may indicate it being flaky.");
-
         using var cancellationTokenRegistration = _configuration.TestCancellationToken.Register(() =>
         {
             _testOutputHelper.WriteLine("Test execution was canceled. Shutting down the test execution session.");
