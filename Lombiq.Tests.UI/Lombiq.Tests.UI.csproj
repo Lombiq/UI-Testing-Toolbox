@@ -72,9 +72,9 @@
     <When Condition="'$(NuGetBuild)' == 'true'">
       <ItemGroup>
         <PackageReference Include="Lombiq.Tests" Version="5.0.1-alpha.3.osoe-925" />
-        <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.6.1-alpha.10.osoe-925" />
-        <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.6.1-alpha.10.osoe-925" />
-        <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.6.1-alpha.10.osoe-925" />
+        <PackageReference Include="Lombiq.HelpfulLibraries.Cli" Version="12.6.1-alpha.11.osoe-925" />
+        <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.6.1-alpha.11.osoe-925" />
+        <PackageReference Include="Lombiq.HelpfulLibraries.Refit" Version="12.6.1-alpha.11.osoe-925" />
       </ItemGroup>
     </When>
     <Otherwise>
