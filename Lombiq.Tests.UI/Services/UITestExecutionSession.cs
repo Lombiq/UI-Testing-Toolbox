@@ -180,9 +180,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
+                    "The test was attempted {0} and won't be retried anymore. You can see more details " +
                         "on why it's failing in the test dump folder: {1}",
-                    retryCount + 1,
+                    StringHelper.PluralizeInvariant("once", "{0} times", retryCount + 1),
                     dumpFolderAbsolutePath);
 
                 throw;
@@ -503,10 +503,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private Task LogRetryAsync(int retryCount)
     {
+        var retryTimes = StringHelper.PluralizeInvariant("once", "{0} times", retryCount + 1);
+        var retryAttempts = StringHelper.PluralizeInvariant(
+            "1 more attempt",
+            "{0} more attempts",
+            _configuration.MaxRetryCount - retryCount);
+
         _testOutputHelper.WriteLineTimestampedAndDebug(
-            "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
-            retryCount + 1,
-            _configuration.MaxRetryCount - retryCount,
+            "The test was attempted {0}. {1} will be made after waiting {2}.",
+            retryTimes,
+            retryAttempts,
             _configuration.RetryInterval);
 
         if (_configuration.ExtendGitHubActionsOutput &&
@@ -516,8 +522,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
                 LogLevel.Warning,
                 "UI test may be flaky",
-                $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
-                    "retried. This may indicate it being flaky.");
+                $"The {_testManifest.Name} test failed {retryTimes} and will be retried {retryAttempts}. This may indicate it being flaky.");
         }
 
         if (_configuration.RetryInterval > TimeSpan.Zero)
