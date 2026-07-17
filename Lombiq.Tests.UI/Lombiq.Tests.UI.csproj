@@ -48,11 +48,11 @@
     <PackageReference Include="OrchardCore.Logging.NLog" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="OrchardCore.Recipes.Core" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="OrchardCore.Workflows" Version="$(OrchardCoreVersion)" />
-    <PackageReference Include="Sarif.Sdk" Version="5.4.0" />
+    <PackageReference Include="Sarif.Sdk" Version="5.4.3" />
     <!-- Referencing a newer version than what Atata uses, but not the latest version. See the comments in
     renovate.json5 for details. -->
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
-    <PackageReference Include="YamlDotNet" Version="18.0.0" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
   <ItemGroup>
