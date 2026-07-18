@@ -1,8 +1,12 @@
 using Atata.Cli;
 using Atata.HtmlValidation;
 using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
+using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -23,16 +27,36 @@ public static class HtmlValidationUITestContextExtensions
     public static async Task AssertHtmlValidityAsync(
         this UITestContext context,
         Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-        Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
+        Func<IList<HtmlValidationError>, Task> assertHtmlValidationResultAsync = null)
     {
-        var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
         var validationConfiguration = context.Configuration.HtmlValidationConfiguration;
+        var validationResult = await context.ValidateHtmlAsync(htmlValidationOptionsAdjuster);
+        if (validationResult?.GetParsedErrors()?.AsList() is not { Count: > 0 } errors) return;
+
+        var filters = validationConfiguration.HtmlValidationFilters;
+        assertHtmlValidationResultAsync ??= validationConfiguration.AssertHtmlValidationResultAsync;
+        assertHtmlValidationResultAsync ??= errors =>
+        {
+            var humanReadableErrors = HtmlValidationResultExtensions.GetParsedErrorMessageString(errors);
+            var filtersUsedMessage = $"The following {nameof(HtmlValidationConfiguration.HtmlValidationFilters)} were " +
+                $"used: {string.Join(", ", filters.Keys)}";
+
+            errors.ShouldBeEmpty(filters.Count > 0 ? $"{humanReadableErrors}\n\n{filtersUsedMessage}" : humanReadableErrors);
+            return Task.CompletedTask;
+        };
 
         try
         {
-            var assertTask = (assertHtmlValidationResultAsync ?? validationConfiguration.AssertHtmlValidationResultAsync)?
-                .Invoke(validationResult);
-            await (assertTask ?? Task.CompletedTask);
+            foreach (var filter in filters.Values.Where(filter => filter != null))
+            {
+                errors.RemoveAll(error => !filter(error));
+                if (errors.Count == 0) return;
+            }
+
+            if (assertHtmlValidationResultAsync(errors) is { } assertTask)
+            {
+                await assertTask;
+            }
         }
         catch (Exception exception)
         {

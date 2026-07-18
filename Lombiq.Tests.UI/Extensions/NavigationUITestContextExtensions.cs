@@ -1,3 +1,5 @@
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Atata;
 using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
@@ -7,9 +9,14 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using OrchardCore.Environment.Shell;
+using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
-
+using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
 using OrchardCoreContentItemsPage = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
 using OrchardCoreDashboardPage = Lombiq.Tests.UI.Pages.OrchardCoreDashboardPage;
@@ -250,6 +257,12 @@ public static class NavigationUITestContextExtensions
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)
     {
+        if (context.Configuration.SetupConfiguration.SetupWithHttpClient &&
+            context.TenantName == ShellSettings.DefaultShellName)
+        {
+            return await context.SetupOrchardCoreWithHttpClientAsync(parameters, shouldBeSuccess);
+        }
+
         parameters ??= new(context);
 
         if (!parameters.RunSetupOnCurrentPage)
@@ -261,6 +274,80 @@ public static class NavigationUITestContextExtensions
         context.CheckExistence(OrchardCoreSetupParameters.FinishSetupSelector, !shouldBeSuccess);
 
         return new(context.Driver.Url);
+    }
+
+    public static async Task<Uri> SetupOrchardCoreWithHttpClientAsync(
+        this UITestContext context,
+        OrchardCoreSetupParameters parameters = null,
+        bool shouldBeSuccess = true)
+    {
+        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query)
+        {
+            using (response)
+            {
+                await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+                var document = await new HtmlParser().ParseDocumentAsync(stream, TestContext.Current.CancellationToken);
+                return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
+            }
+        }
+
+        parameters ??= new(context);
+
+        var cancellationToken = context.Configuration.TestCancellationToken;
+
+        var uri = parameters.RunSetupOnCurrentPage
+            ? context.GetCurrentUri()
+            : parameters.SetupUri ?? context.TestStartUri;
+
+        using var client = context.Configuration.BrowserConfiguration.Browser == Browser.None
+            ? context.CreateHttpClient()
+            : context.CreateHttpClientWithBrowserContext();
+
+        var verificationToken = (await GetElementAsync(
+                await client.GetAsync(uri, cancellationToken),
+                "input[name=__RequestVerificationToken]"))?
+            .GetAttribute("value");
+
+        var formData = new Dictionary<string, string>
+        {
+            ["SiteName"] = parameters.SiteName,
+            ["RecipeName"] = parameters.RecipeId,
+            ["SiteTimeZone"] = parameters.SiteTimeZoneValue,
+            ["DatabaseProvider"] = parameters.DatabaseProvider.ToString(),
+            ["TablePrefix"] = parameters.TablePrefix,
+            ["ConnectionString"] = parameters.ConnectionString,
+            ["Schema"] = string.Empty,
+            ["UserName"] = parameters.UserName,
+            ["Email"] = parameters.Email,
+            ["Password"] = parameters.Password,
+            ["PasswordConfirmation"] = parameters.Password,
+            ["Secret"] = string.Empty,
+            ["__RequestVerificationToken"] = verificationToken,
+        };
+
+        using var formContent = new FormUrlEncodedContent(formData);
+        var responseSetupScript = await GetElementAsync(
+            await client.PostAsync(uri, formContent, cancellationToken),
+            "script[src*='OrchardCore.Setup']");
+
+        if (shouldBeSuccess)
+        {
+            if (responseSetupScript != null)
+            {
+                // If setup failed, first try to assert logs so we can return more meaningful errors than just the plain
+                // fact that the setup did not succeed.
+                await context.AssertLogsAsync();
+
+                responseSetupScript.ShouldBeNull("Setup did not succeed.");
+            }
+        }
+        else
+        {
+            responseSetupScript.ShouldNotBeNull("Setup succeeded when it shouldn't.");
+        }
+
+        await context.GoToAbsoluteUrlAsync(uri, onlyIfNotAlreadyThere: false);
+        return uri;
     }
 
     [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRegistrationAsync)} instead.")]
@@ -455,6 +542,34 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     public static Task ClickOnWithScriptAsync(this UITestContext context, By by) =>
         context.Get(by).ClickWithScriptAsync(context);
+
+    /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static async Task ClickThroughAdminMenuAsync(this UITestContext context, params By[] selectors)
+    {
+        var menuAnimationTime = TimeSpan.FromSeconds(1);
+
+        for (var i = 0; i < selectors.Length - 1; i++)
+        {
+            // Only click on this menu item if the next item is not visible because this menu is already open.
+            if (context.Exists(selectors[i + 1].Safely().Within(menuAnimationTime))) continue;
+
+            // The menus have animations, which interfere with the click being recognized.
+            await context.ClickReliablyOnAsync(selectors[i]);
+
+            context.Exists(selectors[i + 1]);
+        }
+
+        // The last item is clicked separately, because we don't do look-ahead checks here.
+        await context.ClickReliablyOnAsync(selectors[^1]);
+    }
+
+    /// <summary>
+    /// Clicks through a path of admin menu items, ensuring that the next steps is visible before trying to click.
+    /// </summary>
+    public static Task ClickThroughAdminMenuAsync(this UITestContext context, params string[] ids) =>
+        context.ClickThroughAdminMenuAsync(ids.Select(By.Id).ToArray());
 
     /// <summary>
     /// Switches control to JS alert box, accepts it, and switches control back to main document or first frame.

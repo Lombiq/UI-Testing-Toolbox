@@ -9,6 +9,7 @@ public static class AppLogAssertionHelper
     /// <summary>
     /// An <see cref="Expression"/> wrapping <see cref="NotMediaCacheEntries(IApplicationLogEntry)"/>.
     /// </summary>
+    [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
     public static readonly Expression<Func<IApplicationLogEntry, bool>> NotMediaCacheEntriesPredicate =
         logEntry => NotMediaCacheEntries(logEntry);
 
@@ -17,6 +18,7 @@ public static class AppLogAssertionHelper
     /// <c>DefaultMediaFileStoreCacheFileProvider</c>. These errors frequently happen during UI testing when using Azure
     /// Blob Storage for media storage. They're harmless, though.
     /// </summary>
+    [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
     public static bool NotMediaCacheEntries(IApplicationLogEntry logEntry) =>
         logEntry.Category != "OrchardCore.Media.Core.DefaultMediaFileStoreCacheFileProvider" ||
         !logEntry.Message.StartsWithOrdinalIgnoreCase("Error deleting cache folder");

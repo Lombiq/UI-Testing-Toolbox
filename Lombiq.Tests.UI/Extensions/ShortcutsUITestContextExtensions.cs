@@ -269,6 +269,12 @@ public static class ShortcutsUITestContextExtensions
             activateShell);
 
     /// <summary>
+    /// Enables the Tenants feature for the default tenant.
+    /// </summary>
+    public static Task EnableTenantsFeatureDirectlyAsync(this UITestContext context) =>
+        context.EnableFeatureDirectlyAsync("OrchardCore.Tenants", ShellSettings.DefaultShellName);
+
+    /// <summary>
     /// Disables the feature with the given <paramref name="featureId"/> directly.
     /// </summary>
     public static Task DisableFeatureDirectlyAsync(
@@ -289,6 +295,26 @@ public static class ShortcutsUITestContextExtensions
             },
             tenant,
             activateShell);
+
+    /// <summary>
+    /// Enables the theme with the given <paramref name="themeId"/> directly.
+    /// </summary>
+    public static async Task EnableThemeDirectlyAsync(
+        this UITestContext context,
+        string themeId,
+        bool isAdmin = false,
+        string tenant = null,
+        bool activateShell = true)
+    {
+        await context.EnableFeatureDirectlyAsync(themeId, tenant, activateShell);
+        await UsingScopeAsync(
+            context,
+            serviceProvider => isAdmin
+                ? serviceProvider.GetRequiredService<IAdminThemeService>().SetAdminThemeAsync(themeId)
+                : serviceProvider.GetRequiredService<ISiteThemeService>().SetSiteThemeAsync(themeId),
+            tenant,
+            activateShell);
+    }
 
     /// <summary>
     /// Turns the <c>Lombiq.Tests.UI.Shortcuts.FeatureToggleTestBench</c> feature on, then off, and checks if the
@@ -493,14 +519,20 @@ public static class ShortcutsUITestContextExtensions
         string name,
         string urlPrefix,
         OrchardCoreSetupParameters setupParameters,
-        string featureProfile = null)
+        string featureProfile = null,
+        bool enableTenantsFeature = true)
     {
+        if (enableTenantsFeature)
+        {
+            await context.EnableTenantsFeatureDirectlyAsync();
+        }
+
         setupParameters ??= new OrchardCoreSetupParameters(context);
         var databaseProvider = setupParameters.DatabaseProvider == OrchardCoreSetupParameters.DatabaseType.SqlConnection
             ? DatabaseProviderValue.SqlConnection
             : setupParameters.DatabaseProvider.ToString();
 
-        await context.Application.UsingScopeAsync(
+        await context.Application.UsingScopeServiceProviderAsync(
             async serviceProvider =>
             {
                 var shellHost = serviceProvider.GetRequiredService<IShellHost>();
@@ -523,7 +555,7 @@ public static class ShortcutsUITestContextExtensions
                 await shellHost.UpdateShellSettingsAsync(shellSettings);
             });
 
-        await context.Application.UsingScopeAsync(
+        await context.Application.UsingScopeServiceProviderAsync(
             async serviceProvider =>
             {
                 var setupService = serviceProvider.GetRequiredService<ISetupService>();
@@ -702,7 +734,7 @@ public static class ShortcutsUITestContextExtensions
         tenant ??= context.TenantName;
         if (tenant.StartsWith('!')) tenant = ShellSettings.DefaultShellName;
 
-        return context.Application.UsingScopeAsync(execute, tenant, activateShell);
+        return context.Application.UsingScopeServiceProviderAsync(execute, tenant, activateShell);
     }
 
     /// <summary>

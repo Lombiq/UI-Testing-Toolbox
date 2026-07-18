@@ -1,6 +1,7 @@
 using Lombiq.Tests.UI.Constants;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -43,6 +44,14 @@ public class OrchardCoreSetupConfiguration
     /// operation) altogether. Defaults to <see langword="true"/>.
     /// </summary>
     public bool FastFailSetup { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether an <see cref="HttpClient"/> should be used to send a custom POST
+    /// message. If the value is  <see langword="false"/>, then Selenium browser automation is used to set the form
+    /// fields on the web browser GUI style. This is generally slower and should be only used to test basic Orchard Core
+    /// functionality or if the setup screen has been customized.
+    /// </summary>
+    public bool SetupWithHttpClient { get; set; } = true;
 
     public string SetupSnapshotDirectoryPath { get; set; } =
         Path.Combine(DirectoryPaths.Temp, DirectoryPaths.SetupSnapshot);

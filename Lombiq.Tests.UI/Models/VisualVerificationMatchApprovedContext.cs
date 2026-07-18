@@ -55,7 +55,7 @@ public partial class VisualVerificationMatchApprovedContext
         }
         while (currentMethod is not null);
 
-        var depthMark = DepthMark();
+        var depthMark = DepthMark;
         if (depthMark.IsMatch(moduleName))
         {
             moduleName = depthMark.Match(moduleName).Groups["module"].Value;
@@ -69,7 +69,7 @@ public partial class VisualVerificationMatchApprovedContext
     private static string GetMethodName(EnhancedStackFrame frame)
     {
         var methodName = frame.MethodInfo.Name!;
-        var inheritedMethod = InheritedMethod();
+        var inheritedMethod = InheritedMethod;
         if (inheritedMethod.IsMatch(methodName))
         {
             methodName = inheritedMethod.Match(methodName).Groups["method"].Value;
@@ -79,8 +79,8 @@ public partial class VisualVerificationMatchApprovedContext
     }
 
     [GeneratedRegex("^(?<module>.*)`[0-9]+$", RegexOptions.ExplicitCapture)]
-    private static partial Regex DepthMark();
+    private static partial Regex DepthMark { get; }
 
     [GeneratedRegex("^<(?<method>.*)>.*$", RegexOptions.ExplicitCapture)]
-    private static partial Regex InheritedMethod();
+    private static partial Regex InheritedMethod { get; }
 }

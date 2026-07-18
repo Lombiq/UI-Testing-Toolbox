@@ -58,10 +58,6 @@
             prBodyNotes: [
                 'For details about the `rnwood.smtp4dev` release, see [its release notes](https://github.com/rnwood/smtp4dev/releases/tag/{{newVersion}}).',
             ],
-            // smtp4dev 3.15.0 switched from net8.0 to net10.0, breaking dotnet tool restore on .NET 8 SDK (CI uses
-            // 8.0.x). The DotnetToolSettings.xml is only under tools/net10.0/any/ so the .NET 8 SDK can't find it.
-            // Re-enable once the project and CI migrate to .NET 10.
-            enabled: false,
         },
         {
             groupName: 'ZAP',

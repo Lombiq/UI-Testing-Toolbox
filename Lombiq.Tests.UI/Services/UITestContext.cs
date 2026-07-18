@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -152,7 +154,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// Gets the current tenant name. When testing sites with multi-tenancy use
     /// <see cref="SwitchCurrentTenant(string, string)"/>.
     /// </summary>
-    public string TenantName { get; private set; } = "Default";
+    public string TenantName { get; private set; } = ShellSettings.DefaultShellName;
 
     /// <summary>
     /// Gets or sets the prefix used for all relative URLs. It should neither start nor end with a slash.
@@ -165,6 +167,12 @@ public sealed class UITestContext : IAsyncDisposable
     /// prefix.
     /// </summary>
     public string AdminUrlPrefix { get; set; } = "/Admin";
+
+    /// <summary>
+    /// Gets the path of the <see cref="DirectoryPaths.Temp"/> directory where running instances are stored. If
+    /// the internal value is set to <see langword="null"/> (which is the default), then <c>./Temp/</c> is used.
+    /// </summary>
+    public string TempDirectoryPath { get; }
 
     /// <summary>
     /// Gets the absolute path of the <see cref="DirectoryPaths.Screenshots"/> subdirectory inside the current test
@@ -206,6 +214,8 @@ public sealed class UITestContext : IAsyncDisposable
             AzureBlobStorageRunningContext,
             ElasticsearchRunningContext
         ) = runningContextContainer;
+
+        TempDirectoryPath = configuration.GetTempDirectoryPathWithFallback();
     }
 
     /// <summary>
@@ -314,6 +324,7 @@ public sealed class UITestContext : IAsyncDisposable
         ZapManager zapManager)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
+        var token = configuration.TestCancellationToken;
         var context = new UITestContext(
             id,
             testManifest,
@@ -324,51 +335,61 @@ public sealed class UITestContext : IAsyncDisposable
             runningContextContainer,
             zapManager);
 
+        FileSystemHelper.EnsureDirectoryExists(context.TempDirectoryPath);
+
         if (context.IsBrowserConfigured)
         {
-            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync();
+            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync(cancellationToken: token);
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
-            await context._biDirectionalDriver.Log.OnEntryAddedAsync(entry =>
-            {
-                var browserLogEntry = new Models.BrowserLogEntry(entry);
-                if (configuration.BrowserLogFilters.Values.All(filter => filter(browserLogEntry)))
-                {
-                    context._cumulativeBrowserLog.Enqueue(browserLogEntry);
-                }
-            });
+            var browserLogHandler = CreateLoggingHandler(configuration.BrowserLogFilters, context._cumulativeBrowserLog);
+            await context._biDirectionalDriver.Log.OnEntryAddedAsync(
+                entry => browserLogHandler(new Models.BrowserLogEntry(entry)),
+                cancellationToken: token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
-                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseCompleted =>
-                {
-                    if (configuration.ResponseLogFilter(responseCompleted))
-                    {
-                        context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-                    }
-                });
+                var responseLogHandler = CreateLoggingHandler(
+                    configuration.ResponseLogFilters,
+                    context._cumulativeResponseLog,
+                    entry => entry.Response);
+                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseLogHandler, cancellationToken: token);
             }
         }
 
         return context;
     }
 
+    private static Action<TEntry> CreateLoggingHandler<TEntry, TLog>(
+        IDictionary<string, Func<TEntry, bool>> filters,
+        ConcurrentQueue<TLog> logs,
+        Func<TEntry, TLog> select = null)
+        where TLog : class =>
+        entry =>
+        {
+            if (filters.Values.All(filter => filter(entry)) &&
+                (select == null ? entry as TLog : select(entry)) is { } value)
+            {
+                logs.Enqueue(value);
+            }
+        };
+
     /// <summary>
-    /// Returns the subdirectory described by <paramref name="subDirectoryNames"/> inside the current test instance's
-    /// <see cref="DirectoryPaths.Temp"/> directory.
+    /// Returns the subdirectory described by the <paramref name="subDirectoryNames"/> sub-path inside the <see
+    /// cref="TempDirectoryPath"/>/<see cref="Id"/> directory.
     /// </summary>
     public string GetTempSubDirectoryPath(params string[] subDirectoryNames) =>
-        DirectoryPaths.GetTempDirectoryPath([Id, .. subDirectoryNames]);
+        Path.Combine([TempDirectoryPath, Id, .. subDirectoryNames]);
 
     /// <summary>
     /// Returns a path in the <see cref="DirectoryPaths.Downloads"/> subdirectory inside the current test instance's
     /// <see cref="DirectoryPaths.Temp"/> directory.
     /// </summary>
     public string GetDownloadFilePath(params string[] subDirectoryNames) =>
-        DirectoryPaths.GetTempDirectoryPath([Id, DirectoryPaths.Downloads, .. subDirectoryNames]);
+        Path.Combine([TempDirectoryPath, Id, DirectoryPaths.Downloads, .. subDirectoryNames]);
 
     private bool IsAlert()
     {

@@ -15,7 +15,7 @@ public static class UsingScopeWebApplicationInstanceExtensions
     /// Executes a delegate using the shell scope given by <paramref name="tenant"/> in an isolated async flow, while
     /// managing the shell state and invoking tenant events.
     /// </summary>
-    public static Task UsingScopeAsync(
+    public static Task UsingScopeServiceProviderAsync(
         this IWebApplicationInstance instance,
         Func<IServiceProvider, Task> execute,
         string tenant = "Default",

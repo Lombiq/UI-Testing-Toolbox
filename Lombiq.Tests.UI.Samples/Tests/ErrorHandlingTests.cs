@@ -122,6 +122,7 @@ public class ErrorHandlingTests : UITestBase
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
 
                     // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
+                    configuration.SetupConfiguration.SetupWithHttpClient = false;
                     configuration.SetupConfiguration.SetupOperation = async context =>
                     {
                         await context.GoToSetupAndSetupOrchardCoreAsync(

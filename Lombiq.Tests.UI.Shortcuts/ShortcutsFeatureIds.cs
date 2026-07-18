@@ -10,6 +10,6 @@ public static class ShortcutsFeatureIds
     public const string FeatureToggleTestBench = $"{Default}.{nameof(FeatureToggleTestBench)}";
     public const string MediaCachePurge = $"{Default}.{nameof(MediaCachePurge)}";
     public const string ShiftTime = $"{Default}.{nameof(ShiftTime)}";
-    public const string Swagger = $"{Default}.{nameof(Swagger)}";
+    public const string OpenApi = $"{Default}.{nameof(OpenApi)}";
     public const string Workflows = $"{Default}.{nameof(Workflows)}";
 }

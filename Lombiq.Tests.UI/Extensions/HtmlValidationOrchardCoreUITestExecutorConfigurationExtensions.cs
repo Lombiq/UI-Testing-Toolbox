@@ -1,6 +1,8 @@
 using Atata.HtmlValidation;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -21,7 +23,7 @@ public static class HtmlValidationOrchardCoreUITestExecutorConfigurationExtensio
     public static void SetUpHtmlValidationAssertionOnPageChange(
         this OrchardCoreUITestExecutorConfiguration configuration,
         Action<HtmlValidationOptions> htmlValidationOptionsAdjuster = null,
-        Func<HtmlValidationResult, Task> assertHtmlValidationResultAsync = null)
+        Func<IList<HtmlValidationError>, Task> assertHtmlValidationResultAsync = null)
     {
         if (!configuration.CustomConfiguration.TryAdd("HtmlValidationAssertionOnPageChangeWasSetUp", value: true)) return;
 

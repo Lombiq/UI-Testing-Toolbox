@@ -13,6 +13,7 @@ using Microsoft.VisualBasic.FileIO;
 using Mono.Unix;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Internal.Logging;
+using OrchardCore.Email;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -179,9 +180,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 var dumpFolderAbsolutePath = Path.Combine(AppContext.BaseDirectory, dumpRootPath);
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
-                    "The test was attempted {0} time(s) and won't be retried anymore. You can see more details " +
+                    "The test was attempted {0} and won't be retried anymore. You can see more details " +
                         "on why it's failing in the test dump folder: {1}",
-                    retryCount + 1,
+                    StringHelper.PluralizeInvariant("once", "{0} times", retryCount + 1),
                     dumpFolderAbsolutePath);
 
                 throw;
@@ -202,6 +203,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async ValueTask ShutdownAsync()
     {
+        var tempSubDirectoryPath = _context?.GetTempSubDirectoryPath();
+
         _testOutputHelper.WriteLineTimestampedAndDebug("Shutting down the test execution session.");
 
         if (_configuration.RunAssertLogsOnAllPageChanges)
@@ -218,15 +221,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.Events.AfterClick -= TakeScreenshotIfEnabledAsync;
         }
 
+        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
+        {
+            await elasticsearchRunningContext.AfterTestAsync(_context);
+        }
+
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
 
-        string contextId = null;
-
-        if (_context != null)
-        {
-            contextId = _context.Id;
-            await _context.DisposeAsync();
-        }
+        if (_context != null) await _context.DisposeAsync();
 
         if (_sqlServerManager is not null)
         {
@@ -241,12 +243,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         // handles to the temp folder, that can be cleaned up too. No need to do it on ephemeral GitHub runners, though,
         // also because the ZAP report's folder (like "2025-01-22-ZAP-Report-localhost") will remain unwritable (see the
         // comment in ZapManager).
-        if (!string.IsNullOrEmpty(contextId) && !GitHubHelper.IsGitHubEnvironment)
+        if (!string.IsNullOrEmpty(tempSubDirectoryPath) &&
+            Directory.Exists(tempSubDirectoryPath) &&
+            !GitHubHelper.IsGitHubEnvironment)
         {
             try
             {
                 // This is a clean-up method, no need to forward a CancellationToken.
-                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(DirectoryPaths.GetTempDirectoryPath(contextId), CancellationToken.None);
+                await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(tempSubDirectoryPath, CancellationToken.None);
             }
             catch (Exception ex) when (GitHubHelper.IsGitHubEnvironment)
             {
@@ -256,11 +260,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         "GitHub Actions runners, this is not a fatal error. Exception details: {0}",
                     ex);
             }
-        }
-
-        if (_context?.ElasticsearchRunningContext is { } elasticsearchRunningContext)
-        {
-            await elasticsearchRunningContext.AfterTestAsync(_context);
         }
 
         _screenshotCount = 0;
@@ -504,10 +503,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private Task LogRetryAsync(int retryCount)
     {
+        var retryTimes = StringHelper.PluralizeInvariant("once", "{0} times", retryCount + 1);
+        var retryAttempts = StringHelper.PluralizeInvariant(
+            "1 more attempt",
+            "{0} more attempts",
+            _configuration.MaxRetryCount - retryCount);
+
         _testOutputHelper.WriteLineTimestampedAndDebug(
-            "The test was attempted {0} time(s). {1} more attempt(s) will be made after waiting {2}.",
-            retryCount + 1,
-            _configuration.MaxRetryCount - retryCount,
+            "The test was attempted {0}. {1} will be made after waiting {2}.",
+            retryTimes,
+            retryAttempts,
             _configuration.RetryInterval);
 
         if (_configuration.ExtendGitHubActionsOutput &&
@@ -517,9 +522,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             new GitHubAnnotationWriter(_testOutputHelper).Annotate(
                 LogLevel.Warning,
                 "UI test may be flaky",
-                $"The {_testManifest.Name} test failed {(retryCount + 1).ToTechnicalString()} time(s) and will be " +
-                    "retried. This may indicate it being flaky.",
-                string.Empty);
+                $"The {_testManifest.Name} test failed {retryTimes} and will be retried {retryAttempts}. This may indicate it being flaky.");
         }
 
         if (_configuration.RetryInterval > TimeSpan.Zero)
@@ -691,8 +694,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         var contextId = Guid.NewGuid().ToString();
         _configuration.BrowserConfiguration.UITestContextId = contextId;
-
-        FileSystemHelper.EnsureDirectoryExists(DirectoryPaths.GetTempDirectoryPath(contextId));
+        _configuration.BrowserConfiguration.TempDirectoryPath = _configuration.TempDirectoryPath;
 
         var sqlServerContext = _configuration.UseSqlServer ? await SetUpSqlServerAsync() : null;
         var azureBlobStorageContext = _configuration.UseAzureBlobStorage ? await SetUpAzureBlobStorageAsync() : null;
@@ -703,14 +705,15 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
         Task UITestingBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
-            arguments.AddWithValue("Lombiq_Tests_UI:IsUITesting", value: true);
+            arguments.AddWithValue("OrchardCore:OrchardCore_YesSql:EnableThreadSafetyChecks", value: true);
+            arguments.AddWithValue(ConfigurationKeys.IsUITesting, value: true);
             arguments.AddWithValue(
-                "Lombiq_Tests_UI:EnableSqlQueryMonitoring",
+                ConfigurationKeys.EnableSqlQueryMonitoring,
                 value: _configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection);
 
             if (_configuration.ShortcutsConfiguration.InjectApplicationInfo)
             {
-                arguments.AddWithValue("Lombiq_Tests_UI:InjectApplicationInfo", value: true);
+                arguments.AddWithValue(ConfigurationKeys.InjectApplicationInfo, value: true);
             }
 
             return Task.CompletedTask;
@@ -861,7 +864,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     "OrchardCore:OrchardCore_Media_Azure:ContainerName",
                     value: _configuration.AzureBlobStorageConfiguration.ContainerName)
                 .AddWithValue("OrchardCore:OrchardCore_Media_Azure:CreateContainer", value: true)
-                .AddWithValue("Lombiq_Tests_UI:UseAzureBlobStorage", value: true);
+                .AddWithValue(ConfigurationKeys.UseAzureBlobStorage, value: true);
 
             if (!_hasSetupOperation || !Directory.Exists(_snapshotDirectoryPath)) return;
 
@@ -890,18 +893,22 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 (entry.Text.ContainsOrdinalIgnoreCase("ace-builds/src-noconflict/worker-html.js") ||
                     entry.StackTrace?.CallFrames.FirstOrDefault()?.Url.ContainsOrdinalIgnoreCase(smtpContext.WebUIUri.AbsoluteUri) == true));
 
-        _configuration.ResponseLogFilter = e => e.IsNonSuccessResponseAndNotExpectedNotFoundResponse("/worker-html.js");
+        _configuration.WithIgnoreExpectedNotFoundResponseFilter("/worker-html.js");
 
         Task SmtpServiceBeforeAppStartHandlerAsync(OrchardCoreAppStartContext context, InstanceCommandLineArgumentsBuilder arguments)
         {
             _configuration.OrchardCoreConfiguration.BeforeAppStart -= SmtpServiceBeforeAppStartHandlerAsync;
+
+            const string smtpArgumentPrefix = "OrchardCore:OrchardCore_Email_Smtp:";
             arguments
-                .AddWithValue("Lombiq_Tests_UI:EnableSmtpFeature", value: true)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:EnableSmtp", value: true)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Host", value: "localhost")
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:RequireCredentials", value: false)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:Port", value: smtpContext.Port)
-                .AddWithValue("OrchardCore:OrchardCore_Email_Smtp:DefaultSender", value: "sender@example.com");
+                .AddWithValue(ConfigurationKeys.EnableSmtpFeature, value: true)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.IsEnabled), value: true)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.Host), value: "localhost")
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.RequireCredentials), value: false)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.Port), value: smtpContext.Port)
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DefaultSender), value: "sender@example.com")
+                .AddWithValue(smtpArgumentPrefix + nameof(SmtpOptions.DeliveryMethod), value: nameof(SmtpDeliveryMethod.Network));
+
             return Task.CompletedTask;
         }
 
@@ -914,12 +921,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private ElasticsearchRunningContext SetUpElasticsearch()
     {
-        var id = Guid.NewGuid();
-        var prefix = TestContext.Current.GetElasticsearchSafeIndexName(id);
+        var prefix = TestContext.Current.GetElasticsearchSafeIndexName();
 
         _configuration.OrchardCoreConfiguration.ConfigureElasticsearchPrefix(prefix);
 
-        return new(id, prefix);
+        return new(prefix);
     }
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)

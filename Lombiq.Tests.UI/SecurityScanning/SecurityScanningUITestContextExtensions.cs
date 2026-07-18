@@ -123,7 +123,7 @@ public static class SecurityScanningUITestContextExtensions
     /// </summary>
     /// <param name="apiDefinitionUri">
     /// The <see cref="Uri"/> of the JSON OpenAPI definition for the API to scan. If <see langword="null"/> then the API
-    /// of the app will automatically be discovered with Swagger.
+    /// of the app will automatically be discovered with OpenAPI.
     /// </param>
     /// <param name="configure">A delegate to configure the security scan in detail.</param>
     /// <param name="assertSecurityScanResult">
@@ -137,7 +137,7 @@ public static class SecurityScanningUITestContextExtensions
     {
         if (apiDefinitionUri == null)
         {
-            await context.EnableFeatureDirectlyAsync(Shortcuts.ShortcutsFeatureIds.Swagger);
+            await context.EnableFeatureDirectlyAsync(Shortcuts.ShortcutsFeatureIds.OpenApi);
         }
 
         await context.RunAndAssertSecurityScanAsync(
@@ -152,7 +152,7 @@ public static class SecurityScanningUITestContextExtensions
                             "No job named \"openapi\" found in the Automation Framework Plan. We can only run the " +
                             "OpenAPI scan if the job exists.");
 
-                    apiDefinitionUri ??= context.GetAbsoluteUri("/swagger/v1/swagger.json");
+                    apiDefinitionUri ??= context.GetAbsoluteUri("/openapi/v1.json");
 
                     openApiJob.GetOrCreateParameters().SetMappingChild("apiUrl", apiDefinitionUri.ToString());
                 });

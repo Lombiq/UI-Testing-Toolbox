@@ -55,4 +55,10 @@ public class BrowserConfiguration
     /// exist yet.
     /// </summary>
     internal string UITestContextId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="OrchardCoreUITestExecutorConfiguration.TempDirectoryPath"/>, to be used during
+    /// driver creation when the <see cref="UITestContext"/> does not exist yet.
+    /// </summary>
+    internal string TempDirectoryPath { get; set; }
 }

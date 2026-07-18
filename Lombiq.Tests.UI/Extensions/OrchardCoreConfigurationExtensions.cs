@@ -1,5 +1,5 @@
 using Lombiq.Tests.UI.Services;
-using OrchardCore.Search.Elasticsearch.Core.Recipes;
+using OrchardCore.Elasticsearch.Core.Recipes;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ public static class OrchardCoreConfigurationExtensions
 
     /// <summary>
     /// Configure the app settings to use the provided <paramref name="prefix"/> in the Elasticsearch indexes created by
-    /// the <see cref="ElasticIndexStep"/>.
+    /// the <see cref="ElasticsearchIndexStep"/>.
     /// </summary>
     public static void ConfigureElasticsearchPrefix(this OrchardCoreConfiguration configuration, string prefix) =>
         configuration.BeforeAppStart += (_, arguments) =>

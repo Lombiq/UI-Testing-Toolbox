@@ -31,9 +31,9 @@ public static class HtmlValidationResultExtensions
     /// Gets the parsed errors from the HTML validation result.
     /// Can only be used if the output formatter is set to JSON.
     /// </summary>
-    public static IEnumerable<JsonHtmlValidationError> GetParsedErrors(this HtmlValidationResult result) => ParseOutput(result.Output);
+    public static IEnumerable<HtmlValidationError> GetParsedErrors(this HtmlValidationResult result) => ParseOutput(result.Output);
 
-    public static string GetParsedErrorMessageString(IEnumerable<JsonHtmlValidationError> errors) =>
+    public static string GetParsedErrorMessageString(IEnumerable<HtmlValidationError> errors) =>
         string.Join(
             '\n',
             errors.Select(error =>
@@ -41,7 +41,7 @@ public static class HtmlValidationResultExtensions
                 $"{error.Message} - " +
                 $"{error.RuleId}"));
 
-    private static IEnumerable<JsonHtmlValidationError> ParseOutput(string output)
+    private static IEnumerable<HtmlValidationError> ParseOutput(string output)
     {
         try
         {
@@ -60,7 +60,7 @@ public static class HtmlValidationResultExtensions
                 .Select(message =>
                 {
                     var rawMessageText = message.GetRawText();
-                    return JsonSerializer.Deserialize<JsonHtmlValidationError>(rawMessageText);
+                    return JsonSerializer.Deserialize<HtmlValidationError>(rawMessageText);
                 });
         }
         catch (JsonException exception)
