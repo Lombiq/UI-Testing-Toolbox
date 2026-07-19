@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Theme.Sdk/Sdk/Import.props" />
-  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.props" Sdk="Lombiq.MSBuild.OrchardCore.Theme.Sdk" Version="2.0.0" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.props" Sdk="Lombiq.MSBuild.OrchardCore.Theme.Sdk" Version="2.0.1" />
 
   <PropertyGroup>
     <Title>Lombiq UI Testing Toolbox - Admin Theme</Title>
@@ -17,5 +17,5 @@
   </PropertyGroup>
 
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Theme.Sdk/Sdk/Import.targets" />
-  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.OrchardCore.Theme.Sdk" Version="2.0.0" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.OrchardCore.Theme.Sdk" Version="2.0.1" />
 </Project>
