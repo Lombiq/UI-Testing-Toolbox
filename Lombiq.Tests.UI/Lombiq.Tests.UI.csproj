@@ -53,7 +53,12 @@
     renovate.json5 for details. -->
     <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
+    <!-- Microsoft.AspNetCore.DataProtection transitively pulls in System.Security.Cryptography.Xml 10.0.8, which has
+         a known high severity vulnerability (CVE-2026-47304); pin to the patched version. This can be removed once
+         Microsoft.AspNetCore.DataProtection is updated. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.10" />
   </ItemGroup>
+  
 
   <ItemGroup>
     <ProjectReference Include="..\Lombiq.Tests.UI.AppExtensions\Lombiq.Tests.UI.AppExtensions.csproj" />
