@@ -18,8 +18,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
-    <!-- Microsoft.OpenApi is required by Microsoft.AspNetCore.OpenApi, but its default version has a security vulnerability. -->
-    <PackageReference Include="Microsoft.OpenApi" Version="3.8.0" />
+    <!-- Microsoft.OpenApi is required by Microsoft.AspNetCore.OpenApi, but its default version has a security vulnerability.
+         Note: Staying on the 2.x line intentionally (upgraded to the latest patched 2.x release). Microsoft.OpenApi 3.x is
+         only supported starting with Microsoft.AspNetCore.OpenApi 11.x (ASP.NET Core 11, still in preview); using it here
+         breaks the Microsoft.AspNetCore.OpenApi.SourceGenerators-generated code (CS0200 on IOpenApiMediaType.Example,
+         which became read-only in 3.x). See https://learn.microsoft.com/aspnet/core/breaking-changes/11/microsoft-openapi-3x
+         and https://github.com/dotnet/aspnetcore/issues/67930. Once Microsoft.AspNetCore.OpenApi is upgraded to depend on
+         Microsoft.OpenApi >=3.0.0 (i.e., once it targets ASP.NET Core 11+ as stable), this direct PackageReference can be
+         removed and the transitive version will be safe by default. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
     <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
   </ItemGroup>
 
