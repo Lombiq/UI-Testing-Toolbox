@@ -34,8 +34,7 @@ public class SqlServerTests : UITestBase
             {
                 configuration.UseSqlServer = true;
 
-                configuration.ResponseLogFilter = e =>
-                    e.IsNonSuccessResponseAndNotExpectedNotFoundResponse(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
+                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
             });
 }
 

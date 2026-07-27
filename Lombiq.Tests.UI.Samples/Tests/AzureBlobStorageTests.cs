@@ -35,8 +35,7 @@ public class AzureBlobStorageTests : UITestBase
             {
                 configuration.UseAzureBlobStorage = true;
 
-                configuration.ResponseLogFilter = e =>
-                    e.IsNonSuccessResponseAndNotExpectedNotFoundResponse(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
+                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
             });
 }
 

@@ -1,3 +1,5 @@
+#nullable enable
+
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,18 +14,12 @@ public class GitHubAnnotationWriter
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+    public GitHubAnnotationWriter(ITestOutputHelper testOutputHelper) =>
+        _testOutputHelper = testOutputHelper;
 
-    public void Annotate(LogLevel severity, string title, string message, string file, int line = 1)
+    public void Annotate(LogLevel severity, string? title, string message, string? file = null, int line = 1)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(file);
-
-        // The workflow command uses commas to separate the arguments (see last line of this method) so if the file name
-        // contained a comma, the part after the comma would be chopped off.
-        if (file.Contains(',')) throw new ArgumentException("File name mustn't contain commas.", nameof(file));
-
-        title ??= severity.ToString();
 
         var command = severity switch
         {
@@ -41,18 +37,24 @@ public class GitHubAnnotationWriter
         // conflicts with the command parser. These are reasonably similar to carry the meaning, yet distinct enough to
         // avoid misleading the reader. (For example if we replaced colons with "Armenian full stop" that looks
         // identical, the user would have no idea why copying the output to a search yields no results when it should.)
-        title = title.Replace(',', '⹁').Replace("::", "⸬");
+        title = title == null ? severity.ToString() : title.Replace(',', '⹁').Replace("::", "⸬");
 
         // Sanitize message:
         message = message.Replace("\r", string.Empty).Replace('\n', ' ');
 
-        _testOutputHelper.WriteLine(
-            StringHelper.CreateInvariant($"::{command} file={file},line={line},title={title}::{message}"));
+        // We don't use the annotation "file" and "line" parameters, because if the file is not in the repo (e.g. it's
+        // in a submodule) then the annotation will not display at all.
+        if (!string.IsNullOrWhiteSpace(file))
+        {
+            message = StringHelper.CreateInvariant($"(file={file},line={line}) {message}");
+        }
+
+        _testOutputHelper.WriteLine($"::{command} title={title}::{message}");
     }
 
     public void ErrorInTest(Exception exception, ITestCase testCase)
     {
-        var className = testCase.TestMethod.TestClass.TestClassName.Split('.')[^1];
+        var className = testCase.TestMethod!.TestClass.TestClassName.Split('.')[^1];
         var testName = testCase.TestMethod.MethodName;
 
         var stackFrames = new StackTrace(exception, fNeedFileInfo: true)
@@ -66,7 +68,7 @@ public class GitHubAnnotationWriter
                 method.DeclaringType?.Name == className) ??
             stackFrames.Find(frame => frame.GetMethod()?.DeclaringType?.FullName?.Contains(className) == true) ??
             stackFrames.FirstOrDefault();
-        var file = stackFrame?.GetFileName() ?? "NoFile";
+        var file = stackFrame?.GetFileName();
         var line = stackFrame?.GetFileLineNumber() ?? 1;
 
         Annotate(

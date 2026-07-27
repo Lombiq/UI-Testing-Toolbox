@@ -21,7 +21,7 @@ public class InteractiveModeTests : UITestBase
 
     // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
     [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]
-    [Fact(Skip = "Use this to test to try out the interactive mode. This is not a real test you can run in CI.")]
+    [Fact(Skip = "Use this to try out the interactive mode. This is not a real test you can run in CI.")]
     public Task SampleTest() =>
         ExecuteTestAfterSetupAsync(
             async context =>

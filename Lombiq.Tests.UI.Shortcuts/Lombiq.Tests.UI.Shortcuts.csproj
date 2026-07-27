@@ -1,52 +1,35 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-
+<Project>
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <DefaultItemExcludes>$(DefaultItemExcludes);.git*</DefaultItemExcludes>
   </PropertyGroup>
+
+  <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Module.Sdk/Sdk/Import.props" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.props" Sdk="Lombiq.MSBuild.OrchardCore.Module.Sdk" Version="2.0.1" />
 
   <PropertyGroup>
     <Title>Lombiq UI Testing Toolbox - Shortcuts</Title>
-    <Authors>Lombiq Technologies</Authors>
-    <Copyright>Copyright © 2020, Lombiq Technologies Ltd.</Copyright>
-    <Description>Lombiq UI Testing Toolbox - Shortcuts: Provides some useful shortcuts for common operations that UI tests might want to do or check, e.g. turning features on or off, or logging in users. See the project website for detailed documentation.</Description>
+    <CopyrightYear>2020</CopyrightYear>
+    <DescriptionBody>Provides some useful shortcuts for common operations that UI tests might want to do or check, e.g. turning features on or off, or logging in users.</DescriptionBody>
     <PackageTags>OrchardCore;Lombiq;AspNetCore;Selenium;Atata;Shouldly;xUnit;Axe;AccessibilityTesting;UITesting;Testing;Automation</PackageTags>
-    <PackageIcon>NuGetIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Lombiq/UI-Testing-Toolbox</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox/tree/dev/Lombiq.Tests.UI.Shortcuts</PackageProjectUrl>
-    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Readme.md" />
-    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <!-- Microsoft.OpenApi is required by Microsoft.AspNetCore.OpenApi, but its default version has a security vulnerability.
+         Note: Staying on the 2.x line intentionally (upgraded to the latest patched 2.x release). Microsoft.OpenApi 3.x is
+         only supported starting with Microsoft.AspNetCore.OpenApi 11.x (ASP.NET Core 11, still in preview); using it here
+         breaks the Microsoft.AspNetCore.OpenApi.SourceGenerators-generated code (CS0200 on IOpenApiMediaType.Example,
+         which became read-only in 3.x). See https://learn.microsoft.com/aspnet/core/breaking-changes/11/microsoft-openapi-3x
+         and https://github.com/dotnet/aspnetcore/issues/67930. Once Microsoft.AspNetCore.OpenApi is upgraded to depend on
+         Microsoft.OpenApi >=3.0.0 (i.e., once it targets ASP.NET Core 11+ as stable), this direct PackageReference can be
+         removed and the transitive version will be safe by default. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
+    <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="OrchardCore.Module.Targets" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Themes" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Users" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Media.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Recipes.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Workflows" Version="2.1.0" />
-    <PackageReference Include="OrchardCore.Search.Elasticsearch.Core" Version="2.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(NuGetBuild)' != 'true'">
-    <ProjectReference Include="..\..\..\src\Libraries\Lombiq.HelpfulLibraries\Lombiq.HelpfulLibraries.OrchardCore\Lombiq.HelpfulLibraries.OrchardCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(NuGetBuild)' == 'true'">
-    <PackageReference Include="Lombiq.HelpfulLibraries.OrchardCore" Version="12.5.0" />
-  </ItemGroup>
-
+  <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Module.Sdk/Sdk/Import.targets" />
+  <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.OrchardCore.Module.Sdk" Version="2.0.1" />
 </Project>

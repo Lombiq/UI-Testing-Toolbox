@@ -77,8 +77,7 @@ public class BasicTests : UITestBase
                 // Note that similarly, you can filter out log entries from the browser log with BrowserLogFilter. You
                 // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
                 // filter out entries in the first place.
-                configuration.ResponseLogFilter = e =>
-                    e.IsNonSuccessResponseAndNotExpectedNotFoundResponse(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]

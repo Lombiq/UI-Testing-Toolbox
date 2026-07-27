@@ -1,15 +1,19 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -32,28 +36,63 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync = app =>
-        app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
+        app => app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
 
+    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
+        app => app.LogsShouldNotContainAsync(
+            entry =>
+                entry.Level >= LogLevel.Warning &&
+                entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+            TestContext.Current.CancellationToken);
+
+    [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
         app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
-    public static readonly Action<IEnumerable<BrowserLogEntry>> AssertBrowserLogIsEmpty =
+    public static readonly Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
 
+    /// <summary>
+    /// The default browser log filter. Ignores logs below <see cref="Level.Warn"/>.
+    /// </summary>
     public static readonly Func<BrowserLogEntry, bool> IsNonSuccessBrowserLogEntry =
-        entry =>
-            entry.Level >= Level.Warn &&
-            // HTML imports are somehow used by Selenium or something but this deprecation notice is always there for
-            // every page.
-            !entry.Text.ContainsOrdinalIgnoreCase("HTML Imports is deprecated");
+        entry => entry.Level >= Level.Warn;
 
-    // The 404 is because of how browsers automatically request /favicon.ico even if a favicon is declared to be under a
-    // different URL.
+    /// <summary>
+    /// This filter only keeps unexpected non-success HTTP responses. See below for the list of what it excludes.
+    /// </summary>
+    /// <remarks><para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>HTTP response status 2XX: Successful responses.</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             HTTP response status 3XX: Redirection messages, which the client automatically follows up.
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///     <item>
+    ///         <description>
+    ///             HTTP response status 404 when the URL ends with /favicon.ico: Browsers preemptively send this
+    ///             request, even if a favicon is declared to be under a different URL inside the page's HTML code.
+    ///         </description>
+    ///     </item>
+    ///         <description>
+    ///             HTTP response status 422: The <see cref="HttpStatusCode.UnprocessableContent"/> indicates a request
+    ///             that is "well-formed but was unable to be followed due to semantic errors" (source: MDN). Orchard
+    ///             Core uses it to indicate an XHR request with unfinished data, such as by
+    ///             "~/OrchardCore.ContentPreview/Preview/Draft" so this code is not a reliable indicator of failure.
+    ///         </description>
+    ///     </item>
+    /// </list>
+    /// </para></remarks>
     public static readonly Func<ResponseCompletedEventArgs, bool> IsNonSuccessResponse = e =>
-        e.Response.Status is < 200 or >= 400 && !e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico");
+        e.Response.Status is (< 200 or >= 400) and not 422 &&
+        !(e.Response.Status == 404 && e.Response.Url.EndsWithOrdinalIgnoreCase("/favicon.ico"));
 
-    public static readonly Action<IEnumerable<ResponseData>> AssertResponseLogIsEmpty =
+    public static readonly Action<IReadOnlyList<ResponseData>> AssertResponseLogIsEmpty =
         responses => responses.ShouldBeEmpty(responses.ToFormattedString());
 
     private CancellationToken _testCancellationToken;
@@ -87,7 +126,7 @@ public class OrchardCoreUITestExecutorConfiguration
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
 
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainCacheFolderErrorsAsync;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainFeatureSkipAsync;
 
     /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
@@ -109,15 +148,32 @@ public class OrchardCoreUITestExecutorConfiguration
         set => BrowserLogFilters[nameof(BrowserLogFilter)] = value;
     }
 
-    public Action<IEnumerable<BrowserLogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
+    public Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLog { get; set; } = AssertBrowserLogIsEmpty;
 
     /// <summary>
-    /// Gets or sets a delegate that selects which response data get saved to <see
+    /// Gets the delegates that select which response data get saved to <see
     /// cref="UITestContext.CumulativeResponseLog"/>.
     /// </summary>
-    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter { get; set; } = IsNonSuccessResponse;
+    public IDictionary<string, Func<ResponseCompletedEventArgs, bool>> ResponseLogFilters { get; } =
+        new Dictionary<string, Func<ResponseCompletedEventArgs, bool>>
+        {
+            [nameof(IsNonSuccessResponse)] = IsNonSuccessResponse,
+            ["Ignore missing favicon."] = eventArgs => !eventArgs.Response.Url.ContainsOrdinalIgnoreCase("favicon.ico"),
+        };
 
-    public Action<IEnumerable<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
+    /// <summary>
+    /// Gets or sets the default delegate that selects which response data get saved to <see
+    /// cref="UITestContext.CumulativeResponseLog"/>. It's a shortcut to the <see cref="ResponseLogFilters"/> entry
+    /// where the key is <see cref="ResponseLogFilter"/>.
+    /// </summary>
+    [Obsolete($"Use {nameof(ResponseLogFilters)} directly.")]
+    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter
+    {
+        get => ResponseLogFilters.GetMaybe(nameof(ResponseLogFilter)) ?? (_ => true);
+        set => ResponseLogFilters[nameof(ResponseLogFilter)] = value;
+    }
+
+    public Action<IReadOnlyList<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
 
     public ITestOutputHelper TestOutputHelper { get; set; }
 
@@ -214,5 +270,32 @@ public class OrchardCoreUITestExecutorConfiguration
     {
         get => _testCancellationToken == default ? TestContext.Current.CancellationToken : _testCancellationToken;
         set => _testCancellationToken = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the value which will be copied into <see cref="UITestContext.TempDirectoryPath"/> upon creation.
+    /// </summary>
+    public string TempDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Gets <see cref="TempDirectoryPath"/> if it's not <see langword="null"/>, otherwise gets the path of the <see
+    /// cref="DirectoryPaths.Temp"/> in the current directory.
+    /// </summary>
+    public string GetTempDirectoryPathWithFallback(params string[] subDirectories) =>
+        GetTempDirectoryPathWithFallback(TempDirectoryPath, subDirectories);
+
+    /// <summary>
+    /// Gets <paramref name="tempDirectoryPath"/> if it's not <see langword="null"/>, otherwise gets the path of the
+    /// <see cref="DirectoryPaths.Temp"/> in the current directory.
+    /// </summary>
+    public static string GetTempDirectoryPathWithFallback(string tempDirectoryPath, params string[] subDirectories)
+    {
+        var path = string.IsNullOrEmpty(tempDirectoryPath)
+            ? Path.Combine(Environment.CurrentDirectory, DirectoryPaths.Temp)
+            : tempDirectoryPath;
+
+        if (subDirectories.Length > 0) path = Path.Combine([path, .. subDirectories]);
+
+        return path;
     }
 }

@@ -7,16 +7,12 @@ public static class TestContextExtensions
 {
     [Obsolete("Use GetElasticsearchSafeIndexName instead. This method will be removed in a future version.")]
     public static string GetElasticserachSafeIndexName(this ITestContext context, Guid id) =>
-        context.GetElasticsearchSafeIndexName(id);
+        context.GetElasticsearchSafeIndexName();
 
     /// <summary>
-    /// Gets a <see langword="string"/> which is safe to use as an Elasticsearch index.
+    /// Generates a safe Elasticsearch index name from the test identifiers in <paramref name="context"/>.
     /// </summary>
-    /// <param name="id">
-    /// A unique identifier that stays the same between setup and test. This ensures that leftover data in the test
-    /// won't be confused with previous runs.
-    /// </param>
-    public static string GetElasticsearchSafeIndexName(this ITestContext context, Guid id)
+    public static string GetElasticsearchSafeIndexName(this ITestContext context)
     {
         // Elasticsearch indexes are lowercase only.
 #pragma warning disable CA1308 // Normalize strings to uppercase
@@ -28,12 +24,14 @@ public static class TestContextExtensions
             .Trim('-');
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
-        if (string.IsNullOrWhiteSpace(name)) return id.ToString("N");
+        var id = context?.Test?.UniqueID?.NullIfWhiteSpace() ?? Guid.NewGuid().ToString("N");
+
+        if (string.IsNullOrWhiteSpace(name)) return id;
 
         // An Elasticsearch index can't be longer than 255 character, but that includes the test name, tenant name, GUID
         // and relative index name. So altogether 100 characters is a reasonable limit for the test name prefix.
         if (name.Length > 100) name = name[..100];
 
-        return $"{name}-{id:N}";
+        return $"{name}-{id}";
     }
 }

@@ -404,8 +404,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         await changeConfigurationAsync.InvokeFuncAsync(configuration);
 
         await ExecuteOrchardCoreTestAsync(
-            (configuration, contextId) =>
-                new OrchardCoreInstance<TEntryPoint>(configuration.OrchardCoreConfiguration, contextId, configuration.TestOutputHelper),
+            (configuration, contextId) => new OrchardCoreInstance<TEntryPoint>(configuration, contextId),
             testManifest,
             configuration);
     }

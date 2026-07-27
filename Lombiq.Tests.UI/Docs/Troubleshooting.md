@@ -2,7 +2,7 @@
 
 ## General tips
 
-- When a test fails it'll create a dump in the test execution's folder (usually something like _bin/Debug/net8.0_ under your test project), in a new _TestDumps_ folder. (Though succeeding tests may also provide some output files there.) This should help you pinpoint where the issue is even if the test was run in a CI environment, and you can't reproduce it locally. The dump contains the following:
+- When a test fails it'll create a dump in the test execution's folder (usually something like _bin/Debug/net10.0_ under your test project), in a new _TestDumps_ folder. (Though succeeding tests may also provide some output files there.) This should help you pinpoint where the issue is even if the test was run in a CI environment, and you can't reproduce it locally. The dump contains the following:
   - The Orchard application's folder, including settings files, the SQLite or SQL Server DB, logs, etc. that you can utilize to see log entries and to run the app from that state.
   - Browser logs, i.e. the developer console output.
   - Screenshots of each page in order the test visited them, as well as when the test failed (Windows Photo Viewer won't be able to open it though, use something else like the Windows 10 Photos app).

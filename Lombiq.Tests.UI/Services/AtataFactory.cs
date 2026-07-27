@@ -113,7 +113,7 @@ public static class AtataFactory
                 // Not using parameters because the exception can throw off the string format.
                 testOutputHelper.WriteLineTimestampedAndDebug(
                     "While creating the web driver failed with the following exception, it'll be retried " +
-                    StringHelper.CreateInvariant($"{retryCount} more time(s). Exception: {ex}"));
+                    StringHelper.PluralizeInvariant("once more", "{0} more times", retryCount) + $". Exception: {ex}");
             }
         }
     }

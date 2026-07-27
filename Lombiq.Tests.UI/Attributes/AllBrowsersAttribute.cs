@@ -14,7 +14,7 @@ public sealed class AllBrowsersAttribute : DataAttribute
 {
     public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
     {
-        var browsers = (IEnumerable<Browser>)Enum.GetValues(typeof(Browser));
+        var browsers = Enum.GetValues<Browser>();
         var dataRows = new List<ITheoryDataRow>();
 
         foreach (var browser in browsers)

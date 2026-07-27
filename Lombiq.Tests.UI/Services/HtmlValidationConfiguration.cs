@@ -1,9 +1,9 @@
 using Atata.Cli.HtmlValidate;
 using Atata.HtmlValidation;
-using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Shouldly;
+using Lombiq.Tests.UI.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -53,10 +53,18 @@ public class HtmlValidationConfiguration
     public Action<HtmlValidationOptions> HtmlValidationOptionsAdjuster { get; set; }
 
     /// <summary>
-    /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
-    /// happens. Defaults to <see cref="AssertHtmlValidationOutputIsEmptyAsync"/>.
+    /// Gets a dictionary of filters. The errors from the <see cref="HtmlValidationResult"/> are filtered by
+    /// each entry and only those are kept that pass each filter entry.
     /// </summary>
-    public Func<HtmlValidationResult, Task> AssertHtmlValidationResultAsync { get; set; } = AssertHtmlValidationOutputIsEmptyAsync;
+    public IDictionary<string, Func<HtmlValidationError, bool>> HtmlValidationFilters { get; } =
+        new Dictionary<string, Func<HtmlValidationError, bool>>();
+
+    /// <summary>
+    /// Gets or sets a delegate to run assertions on the <see cref="HtmlValidationResult"/> when HTML validation
+    /// happens. If you only want to filter the validation errors, use <see cref="HtmlValidationFilters"/> or <see
+    /// cref="WithFilters"/>.
+    /// </summary>
+    public Func<IList<HtmlValidationError>, Task> AssertHtmlValidationResultAsync { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically run HTML validation every time a page changes (either
@@ -88,23 +96,36 @@ public class HtmlValidationConfiguration
         return this;
     }
 
-    public static readonly Func<HtmlValidationResult, Task> AssertHtmlValidationOutputIsEmptyAsync =
-        validationResult =>
-        {
-            // Keep supporting cases where output format is not set to JSON.
-            if (validationResult.Output.Trim().StartsWith('[') ||
-                validationResult.Output.Trim().StartsWith('{'))
-            {
-                var errors = validationResult.GetParsedErrors();
-                errors.ShouldBeEmpty(HtmlValidationResultExtensions.GetParsedErrorMessageString(errors));
-            }
-            else
-            {
-                validationResult.Output.ShouldBeEmpty();
-            }
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/>.
+    /// </summary>
+    public HtmlValidationConfiguration WithFilters(string name, Func<HtmlValidationError, bool> filter)
+    {
+        HtmlValidationFilters[name] = filter;
 
-            return Task.CompletedTask;
-        };
+        return this;
+    }
+
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/> with the <c>OC-15222</c> key to handle a specific bug.
+    /// </summary>
+    /// <remarks><para>
+    /// Rule exclusions due to https://github.com/OrchardCMS/OrchardCore/issues/15222, usages can be removed once it is
+    /// resolved.
+    /// </para></remarks>
+    public HtmlValidationConfiguration WithOC15222Filter() =>
+        WithFilters("OC-15222", error =>
+            error.RuleId is not ("prefer-native-element" or "text-content" or "no-redundant-role"));
+
+    /// <summary>
+    /// Updates the <see cref="HtmlValidationFilters"/> with the <c>OC-17907</c> key to handle a specific bug.
+    /// </summary>
+    /// <remarks><para>
+    /// Rule exclusions due to https://github.com/OrchardCMS/OrchardCore/issues/17907, usages can be removed once it is
+    /// resolved.
+    /// </para></remarks>
+    public HtmlValidationConfiguration WithOC17907Filter() =>
+        WithFilters("OC-17907", error => error.RuleId is not "attribute-misuse");
 
     public static readonly Predicate<UITestContext> EnableOnValidatablePagesHtmlValidationAndAssertionOnPageChangeRule =
         UrlCheckHelper.IsValidatablePage;

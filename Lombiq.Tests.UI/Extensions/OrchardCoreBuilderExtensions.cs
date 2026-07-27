@@ -1,3 +1,4 @@
+using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.SqlQueryMonitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -26,7 +27,7 @@ public static class OrchardCoreBuilderExtensions
         if (!configuration.IsUITesting()) return builder;
 
         var enableSqlQueryMonitoring =
-            configuration.GetValue("Lombiq_Tests_UI:EnableSqlQueryMonitoring", defaultValue: false);
+            configuration.GetValue(ConfigurationKeys.EnableSqlQueryMonitoring, defaultValue: false);
 
         builder.ConfigureServices(services =>
         {
@@ -56,10 +57,10 @@ public static class OrchardCoreBuilderExtensions
 
         if (enableShortcutsDuringUITesting) builder.AddTenantFeatures("Lombiq.Tests.UI.Shortcuts");
 
-        var enableSmtp = configuration.GetValue<bool>("Lombiq_Tests_UI:EnableSmtpFeature");
+        var enableSmtp = configuration.GetValue<bool>(ConfigurationKeys.EnableSmtpFeature);
         if (enableSmtp) builder.AddTenantFeatures("OrchardCore.Email.Smtp");
 
-        if (configuration.GetValue<bool>("Lombiq_Tests_UI:UseAzureBlobStorage"))
+        if (configuration.GetValue<bool>(ConfigurationKeys.UseAzureBlobStorage))
         {
             builder.AddTenantFeatures("OrchardCore.Media.Azure.Storage");
         }

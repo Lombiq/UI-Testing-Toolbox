@@ -34,7 +34,7 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// </summary>
     public async Task<IActionResult> Index()
     {
-        var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync();
+        var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync(HttpContext.RequestAborted);
         return View(model: contentItemCount);
     }
 
@@ -43,7 +43,7 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     /// </summary>
     public async Task<IActionResult> AsyncQuery()
     {
-        var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync();
+        var contentItemCount = await _session.QueryIndex<ContentItemIndex>().CountAsync(HttpContext.RequestAborted);
         return Ok(contentItemCount);
     }
 
@@ -74,7 +74,7 @@ public sealed class SqlQueryMonitoringScenarioController : Controller
     public async Task<IActionResult> CustomSessionQuery()
     {
         await using var session = _store.CreateSession();
-        var contentItemCount = await session.QueryIndex<ContentItemIndex>().CountAsync();
+        var contentItemCount = await session.QueryIndex<ContentItemIndex>().CountAsync(HttpContext.RequestAborted);
         return Ok(contentItemCount);
     }
 

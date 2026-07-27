@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Lombiq.Tests.UI.AdminTheme/Lombiq.Tests.UI.AdminTheme.csproj" />
+  <Project Path="Lombiq.Tests.UI.AppExtensions/Lombiq.Tests.UI.AppExtensions.csproj" />
+  <Project Path="Lombiq.Tests.UI.Shortcuts/Lombiq.Tests.UI.Shortcuts.csproj" />
+  <Project Path="Lombiq.Tests.UI/Lombiq.Tests.UI.csproj" />
+</Solution>

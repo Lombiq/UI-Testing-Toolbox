@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -93,7 +94,7 @@ public static class TeamsHelper
         using var client = new HttpClient();
 
         var adaptiveCardJson = JsonSerializer.Serialize(adaptiveCardContent);
-        using var data = new StringContent(adaptiveCardJson, Encoding.UTF8, "application/json");
+        using var data = new StringContent(adaptiveCardJson, Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var response = await client.PostAsync(webhookUrl, data, TestContext.Current.CancellationToken);
 

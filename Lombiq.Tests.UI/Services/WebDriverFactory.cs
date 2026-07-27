@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "150.0.7871.115";
+            chromeConfig.Options.BrowserVersion = "151.0.7922.47";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
@@ -68,17 +68,17 @@ public static class WebDriverFactory
             // root too.
             if (OperatingSystem.IsLinux())
             {
-                var linuxEdgeVersion = "150.0.4078.48";
+                var linuxEdgeVersion = "150.0.4078.99";
                 options.BrowserVersion = linuxEdgeVersion;
             }
             else if (OperatingSystem.IsWindows())
             {
-                var windowsEdgeVersion = "150.0.4078.48";
+                var windowsEdgeVersion = "150.0.4078.99";
                 options.BrowserVersion = windowsEdgeVersion;
             }
             else if (!OperatingSystem.IsMacOS())
             {
-                var macOsEdgeVersion = "150.0.4078.50";
+                var macOsEdgeVersion = "150.0.4078.99";
                 options.BrowserVersion = macOsEdgeVersion;
             }
 
@@ -118,7 +118,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "152.0.5";
+            firefoxOptions.BrowserVersion = "153.0";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
@@ -331,7 +331,7 @@ public static class WebDriverFactory
 
         if (configuration.FakeVideoSource is not null)
         {
-            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder();
+            var fakeCameraSourceFilePath = configuration.FakeVideoSource.SaveVideoToTempFolder(configuration.TempDirectoryPath);
 
             // In some cases the video would not start automatically. To avoid this scenario we are adding the
             // "disable-gesture-requirement-for-media-playback" flag.
@@ -391,7 +391,10 @@ public static class WebDriverFactory
 
     private static string PrepareDownloadDirectory(BrowserConfiguration configuration)
     {
-        var downloadPath = DirectoryPaths.GetTempDirectoryPath(configuration.UITestContextId, DirectoryPaths.Downloads);
+        var downloadPath = OrchardCoreUITestExecutorConfiguration.GetTempDirectoryPathWithFallback(
+            configuration.TempDirectoryPath,
+            configuration.UITestContextId,
+            DirectoryPaths.Downloads);
         FileSystemHelper.EnsureDirectoryExists(downloadPath);
         return downloadPath;
     }

@@ -122,5 +122,5 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
 
 internal static class OrchardApplicationFactoryCounter
 {
-    public static object CreateHostLock { get; } = new();
+    public static Lock CreateHostLock { get; } = new();
 }

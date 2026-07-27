@@ -28,8 +28,15 @@ public static class TenantsUITestContextExtensions
         string urlPrefix = "",
         string urlHost = "",
         string featureProfile = "",
-        bool navigate = true)
+        bool navigate = true,
+        bool enableTenantsFeature = true)
     {
+        if (enableTenantsFeature)
+        {
+            await context.EnableTenantsFeatureDirectlyAsync();
+            await context.EnableFeatureDirectlyAsync("OrchardCore.Tenants.FeatureProfiles");
+        }
+
         if (navigate)
         {
             await context.GoToAdminRelativeUrlAsync("/Tenants");

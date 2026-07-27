@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -48,19 +49,23 @@ to customize the name of the dump item.";
     /// </para>
     /// </remarks>
     [VisualVerificationApprovedMethod]
-    public static void AssertVisualVerificationOnAllResolutions(
+    public static async Task AssertVisualVerificationOnAllResolutionsAsync(
         this UITestContext context,
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null,
+        TimeSpan? resolutionChangeDelay = null)
     {
-        context.HideScrollbar();
-
         var exceptions = new List<Exception>();
         foreach (var size in sizes)
         {
+            // Waiting after viewport size change ensures that any animation (such as sticky mobile menu) has time to
+            // transition to its final state.
             context.SetViewportSize(size);
+            await Task.Delay(
+                resolutionChangeDelay ?? TimeSpan.FromSeconds(1),
+                context.Configuration.TestCancellationToken);
 
             try
             {
@@ -115,17 +120,19 @@ to customize the name of the dump item.";
     /// </para>
     /// </remarks>
     [VisualVerificationApprovedMethod]
-    public static void AssertVisualVerificationApprovedOnAllResolutionsWithPlatformSuffix(
+    public static Task AssertVisualVerificationApprovedOnAllResolutionsWithPlatformSuffixAsync(
         this UITestContext context,
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-        context.AssertVisualVerificationOnAllResolutions(
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null,
+        TimeSpan? resolutionChangeDelay = null) =>
+        context.AssertVisualVerificationOnAllResolutionsAsync(
             sizes,
             getSelector,
             pixelErrorPercentageThreshold,
-            configuration => configuration.WithUsePlatformAsSuffix());
+            configuration => configuration.WithUsePlatformAsSuffix(),
+            resolutionChangeDelay);
 
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
@@ -342,7 +349,10 @@ to customize the name of the dump item.";
         By elementSelector,
         Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
+    {
+        context.ScrollTo(elementSelector);
+        context.HideScrollbar();
         context.AssertVisualVerificationApproved(
             elementSelector is null ? null : context.Get(elementSelector),
             comparator,
@@ -359,6 +369,8 @@ to customize the name of the dump item.";
                     .JoinNotNullOrEmpty("-")
                 );
             });
+        context.RestoreHiddenScrollbar();
+    }
 
     [VisualVerificationApprovedMethod]
     private static void AssertVisualVerificationApproved(
@@ -387,6 +399,8 @@ to customize the name of the dump item.";
                 .TakeLast(configuration.StackOffset)
                 .FirstOrDefault();
         }
+
+        testFrame ??= context.TestManifest?.StackFrame;
 
         if (testFrame == null)
         {
