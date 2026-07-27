@@ -7,7 +7,6 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi;
-using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using OrchardCore.Environment.Shell;
 using System;
@@ -346,28 +345,20 @@ public sealed class UITestContext : IAsyncDisposable
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
+            var browserLogHandler = CreateLoggingHandler(configuration.BrowserLogFilters, context._cumulativeBrowserLog);
             await context._biDirectionalDriver.Log.EntryAdded.SubscribeAsync(
-                entry =>
-                {
-                    var browserLogEntry = new Models.BrowserLogEntry(entry);
-                    if (configuration.BrowserLogFilters.Values.All(filter => filter(browserLogEntry)))
-                    {
-                        context._cumulativeBrowserLog.Enqueue(browserLogEntry);
-                    }
-                },
-                token);
+                entry => browserLogHandler(new Models.BrowserLogEntry(entry)),
+                cancellationToken: token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
+                var responseLogHandler = CreateLoggingHandler(
+                    configuration.ResponseLogFilters,
+                    context._cumulativeResponseLog,
+                    entry => entry.Response);
                 await context._biDirectionalDriver.Network.ResponseCompleted.SubscribeAsync(
-                    responseCompleted =>
-                    {
-                        if (configuration.ResponseLogFilter(responseCompleted))
-                        {
-                            context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
-                        }
-                    },
-                    token);
+                    responseLogHandler,
+                    cancellationToken: token);
             }
         }
 
