@@ -355,7 +355,7 @@ public sealed class UITestContext : IAsyncDisposable
                         context._cumulativeBrowserLog.Enqueue(browserLogEntry);
                     }
                 },
-                configuration.TestCancellationToken);
+                token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)
             {
@@ -367,7 +367,7 @@ public sealed class UITestContext : IAsyncDisposable
                             context._cumulativeResponseLog.Enqueue(responseCompleted.Response);
                         }
                     },
-                    configuration.TestCancellationToken);
+                    token);
             }
         }
 
