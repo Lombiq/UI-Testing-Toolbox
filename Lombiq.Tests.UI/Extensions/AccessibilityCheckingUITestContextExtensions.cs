@@ -8,7 +8,6 @@ using Lombiq.Tests.UI.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using TWP.Selenium.Axe.Html;
 
 namespace Lombiq.Tests.UI.Extensions;
 

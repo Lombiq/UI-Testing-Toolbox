@@ -49,7 +49,6 @@
     <PackageReference Include="OrchardCore.Recipes.Core" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="OrchardCore.Workflows" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="Sarif.Sdk" Version="5.5.0" />
-    <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
     <!-- Microsoft.AspNetCore.DataProtection transitively pulls in System.Security.Cryptography.Xml 10.0.8, which has
          a known high severity vulnerability (CVE-2026-47304); pin to the patched version. This can be removed once

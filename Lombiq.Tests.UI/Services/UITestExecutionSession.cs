@@ -23,7 +23,6 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using TWP.Selenium.Axe.Html;
 using Xunit;
 using Xunit.v3;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
