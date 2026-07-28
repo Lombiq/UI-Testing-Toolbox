@@ -36,16 +36,6 @@
             ],
         },
         {
-            matchPackageNames: [
-                'Selenium.WebDriver',
-            ],
-            // Selenium.WebDriver 4.39.0 causes JSON parsing issues (with 4.38.0 being safe), see:
-            // https://github.com/SeleniumHQ/selenium/issues/16801. Until this is resolved, it can't be updated.
-            // When this is fixed, remove both this section and the direct Selenium.WebDriver reference in
-            // Lombiq.Tests.UI.
-            enabled: false,
-        },
-        {
             // No groupName, because we don't want these updates to be in their own groups, just want to add the note.
             // Otherwise, the release is not linked for this package.
             matchPackageNames: [
