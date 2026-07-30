@@ -50,6 +50,14 @@
             enabled: false,
         },
         {
+            matchPackageNames: [
+                'Microsoft.OpenApi',
+            ],
+            // Keep Microsoft.OpenApi on version 2.x. See the corresponding comment in Lombiq.Tests.UI.Shortcuts.csproj
+            // for details.
+            allowedVersions: '< 3.0.0',
+        },
+        {
             // No groupName, because we don't want these updates to be in their own groups, just want to add the note.
             // Otherwise, the release is not linked for this package.
             matchPackageNames: [
