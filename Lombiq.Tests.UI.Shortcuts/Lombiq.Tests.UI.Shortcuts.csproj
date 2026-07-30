@@ -26,7 +26,7 @@
          and https://github.com/dotnet/aspnetcore/issues/67930. Once Microsoft.AspNetCore.OpenApi is upgraded to depend on
          Microsoft.OpenApi >=3.0.0 (i.e., once it targets ASP.NET Core 11+ as stable), this direct PackageReference can be
          removed and the transitive version will be safe by default. -->
-    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="3.9.0" />
     <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
   </ItemGroup>
 
