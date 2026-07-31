@@ -25,7 +25,8 @@
          which became read-only in 3.x). See https://learn.microsoft.com/aspnet/core/breaking-changes/11/microsoft-openapi-3x
          and https://github.com/dotnet/aspnetcore/issues/67930. Once Microsoft.AspNetCore.OpenApi is upgraded to depend on
          Microsoft.OpenApi >=3.0.0 (i.e., once it targets ASP.NET Core 11+ as stable), this direct PackageReference can be
-         removed and the transitive version will be safe by default. -->
+         removed and the transitive version will be safe by default.
+         Once this reference is removed, also remove the corresponding config from renovate.json5. -->
     <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
     <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
   </ItemGroup>
