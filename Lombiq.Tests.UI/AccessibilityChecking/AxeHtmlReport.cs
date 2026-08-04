@@ -10,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 
 namespace Lombiq.Tests.UI.AccessibilityChecking;
@@ -28,6 +27,8 @@ public enum AxeReportTypes
     All = Violations | Incomplete | Inapplicable | Passes,
 }
 
+// After upgrading from .NET 10, and thus releasing a breaking version, move all accessibility-related code to this
+// namespace.
 /// <summary>
 /// Generates standalone HTML reports from Axe results.
 /// </summary>
