@@ -1,7 +1,7 @@
 const buttons = document.getElementsByClassName('sectionbutton');
 
 for (let i = 0; i < buttons.length; i++) {
-    buttons[i].addEventListener('click', function () {
+    buttons[i].addEventListener('click', function onSectionButtonClick() {
         const expandoText = this.getElementsByClassName('buttonExpandoText')[0];
         this.classList.toggle('active');
 
@@ -22,13 +22,13 @@ const modal = document.getElementById('modal');
 const modalImage = document.getElementById('modalimage');
 
 if (thumbnail && modal && modalImage) {
-    thumbnail.addEventListener('click', function () {
+    thumbnail.addEventListener('click', () => {
         modal.style.display = 'flex';
         modalImage.src = thumbnail.currentSrc || thumbnail.src;
         modalImage.alt = thumbnail.alt;
     });
 
-    modal.addEventListener('click', function () {
+    modal.addEventListener('click', () => {
         modal.style.display = 'none';
         modalImage.src = '';
         modalImage.alt = '';
