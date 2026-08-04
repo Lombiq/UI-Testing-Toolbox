@@ -27,7 +27,7 @@ public sealed class UITestContext : IAsyncDisposable
     private readonly ConcurrentQueue<Models.BrowserLogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
-    private BiDi _biDirectionalDriver;
+    private IBiDi _biDirectionalDriver;
 
     /// <summary>
     /// Gets the globally unique ID of this context. You can use this ID to refer to the current text execution in
@@ -346,7 +346,7 @@ public sealed class UITestContext : IAsyncDisposable
             // and the callback is called. Thus, BrowserLogFilter could e.g. ignore log entries for a URL that actually
             // originated from a different URL and shouldn't be ignored.
             var browserLogHandler = CreateLoggingHandler(configuration.BrowserLogFilters, context._cumulativeBrowserLog);
-            await context._biDirectionalDriver.Log.OnEntryAddedAsync(
+            await context._biDirectionalDriver.Log.EntryAdded.SubscribeAsync(
                 entry => browserLogHandler(new Models.BrowserLogEntry(entry)),
                 cancellationToken: token);
 
@@ -356,7 +356,9 @@ public sealed class UITestContext : IAsyncDisposable
                     configuration.ResponseLogFilters,
                     context._cumulativeResponseLog,
                     entry => entry.Response);
-                await context._biDirectionalDriver.Network.OnResponseCompletedAsync(responseLogHandler, cancellationToken: token);
+                await context._biDirectionalDriver.Network.ResponseCompleted.SubscribeAsync(
+                    responseLogHandler,
+                    cancellationToken: token);
             }
         }
 

@@ -1,5 +1,6 @@
 using Atata.HtmlValidation;
 using Cysharp.Text;
+using Lombiq.Tests.UI.AccessibilityChecking;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -23,7 +24,6 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using TWP.Selenium.Axe.Html;
 using Xunit;
 using Xunit.v3;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;

@@ -22,6 +22,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AccessibilityChecking\AxeHtmlReport.css" />
+    <EmbeddedResource Include="AccessibilityChecking\AxeHtmlReport.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include=".config\dotnet-tools.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="SampleUploadFiles\*.*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="default.htmlvalidate.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
@@ -32,10 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="3.9.0" />
-    <PackageReference Include="Atata.Bootstrap" Version="3.0.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="3.4.0" />
-    <PackageReference Include="Atata.WebDriverExtras" Version="3.6.0" />
+    <PackageReference Include="Atata" Version="3.11.0" />
+    <PackageReference Include="Atata.Bootstrap" Version="3.1.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="3.5.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="3.7.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.29.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.390" />
@@ -49,9 +54,6 @@
     <PackageReference Include="OrchardCore.Recipes.Core" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="OrchardCore.Workflows" Version="$(OrchardCoreVersion)" />
     <PackageReference Include="Sarif.Sdk" Version="5.5.0" />
-    <!-- Referencing a newer version than what Atata uses, but not the latest version. See the comments in
-    renovate.json5 for details. -->
-    <PackageReference Include="TWP.Selenium.Axe.Html" Version="1.0.0" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
     <!-- Microsoft.AspNetCore.DataProtection transitively pulls in System.Security.Cryptography.Xml 10.0.8, which has
          a known high severity vulnerability (CVE-2026-47304); pin to the patched version. This can be removed once

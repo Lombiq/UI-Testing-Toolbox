@@ -1,4 +1,4 @@
-using Deque.AxeCore.Commons;
+﻿using Deque.AxeCore.Commons;
 using Lombiq.Tests.UI.Models;
 using System;
 

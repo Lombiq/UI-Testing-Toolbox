@@ -15,7 +15,7 @@ public record BrowserLogEntry(
     DateTimeOffset Timestamp,
     StackTrace StackTrace)
 {
-    internal BrowserLogEntry(LogEntry entry)
+    internal BrowserLogEntry(EntryAddedEventArgs entry)
         : this(entry.Level, entry.Source, entry.Text, entry.Timestamp, entry.StackTrace)
     {
     }
