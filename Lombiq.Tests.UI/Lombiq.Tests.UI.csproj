@@ -22,6 +22,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AccessibilityChecking\AxeHtmlReport.css" />
+    <EmbeddedResource Include="AccessibilityChecking\AxeHtmlReport.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include=".config\dotnet-tools.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="SampleUploadFiles\*.*" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />
     <Content Include="default.htmlvalidate.json" CopyToOutputDirectory="PreserveNewest" PackageCopyToOutput="true" />

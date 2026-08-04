@@ -1,5 +1,6 @@
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Selenium;
+using Lombiq.Tests.UI.AccessibilityChecking;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Helpers;

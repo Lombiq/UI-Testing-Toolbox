@@ -3,7 +3,7 @@
 using Deque.AxeCore.Commons;
 using OpenQA.Selenium;
 using System;
-using ServicesReportTypes = Lombiq.Tests.UI.Services.AxeReportTypes;
+using ServicesReportTypes = Lombiq.Tests.UI.AccessibilityChecking.AxeReportTypes;
 
 namespace TWP.Selenium.Axe.Html;
 
@@ -12,10 +12,10 @@ namespace TWP.Selenium.Axe.Html;
 /// </summary>
 /// <remarks>
 /// <para>
-/// New code should use Lombiq.Tests.UI.Services.AxeHtmlReport directly.
+/// New code should use Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport directly.
 /// </para>
 /// </remarks>
-[Obsolete("Use Lombiq.Tests.UI.Services.AxeReportTypes instead.")]
+[Obsolete("Use Lombiq.Tests.UI.AccessibilityChecking.AxeReportTypes instead.")]
 [Flags]
 public enum ReportTypes
 {
@@ -29,41 +29,41 @@ public enum ReportTypes
 /// <summary>
 /// Backward-compatibility shim for the original HtmlReport extension class.
 /// </summary>
-[Obsolete("Use Lombiq.Tests.UI.Services.AxeHtmlReport instead.")]
+[Obsolete("Use Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport instead.")]
 public static class HtmlReport
 {
     public static void CreateAxeHtmlReport(this IWebDriver webDriver, string destination) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(webDriver, destination);
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(webDriver, destination);
 
     public static void CreateAxeHtmlReport(this IWebDriver webDriver, string destination, ReportTypes requestedResults) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(
             webDriver,
             destination,
             ToServicesReportTypes(requestedResults));
 
     public static void CreateAxeHtmlReport(this IWebDriver webDriver, IWebElement context, string destination) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(webDriver, context, destination);
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(webDriver, context, destination);
 
     public static void CreateAxeHtmlReport(
         this IWebDriver webDriver,
         IWebElement context,
         string destination,
         ReportTypes requestedResults) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(
             webDriver,
             context,
             destination,
             ToServicesReportTypes(requestedResults));
 
     public static void CreateAxeHtmlReport(this ISearchContext context, AxeResult results, string destination) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(context, results, destination);
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(context, results, destination);
 
     public static void CreateAxeHtmlReport(
         this ISearchContext context,
         AxeResult results,
         string destination,
         ReportTypes requestedResults) =>
-        Lombiq.Tests.UI.Services.AxeHtmlReport.CreateAxeHtmlReport(
+        Lombiq.Tests.UI.AccessibilityChecking.AxeHtmlReport.CreateAxeHtmlReport(
             context,
             results,
             destination,
