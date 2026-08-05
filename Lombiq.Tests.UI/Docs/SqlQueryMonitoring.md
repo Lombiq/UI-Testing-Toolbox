@@ -1,6 +1,6 @@
 # SQL Query Monitoring
 
-SQL query monitoring captures what SQL ran during an Orchard Core request, so your UI tests can check for common performance problems.
+SQL query monitoring captures what SQL ran during an Orchard Core request, so your UI tests can check for common performance problems. See a demo video of this feature [here](https://www.youtube.com/watch?v=YBdzXsREkxI).
 
 It detects:
 
