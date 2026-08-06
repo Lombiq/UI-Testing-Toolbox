@@ -29,6 +29,7 @@ public enum AxeReportTypes
 
 // After upgrading from .NET 10, and thus releasing a breaking version, move all accessibility-related code to this
 // namespace.
+
 /// <summary>
 /// Generates standalone HTML reports from Axe results.
 /// </summary>
@@ -432,12 +433,11 @@ public static class AxeHtmlReport
     private static string LoadEmbeddedResource(string name)
     {
         using var stream = typeof(AxeHtmlReport).Assembly
-            .GetManifestResourceStream($"Lombiq.Tests.UI.AccessibilityChecking.{name}");
-        if (stream is null) throw new InvalidOperationException($"Embedded resource '{name}' not found.");
+                .GetManifestResourceStream($"Lombiq.Tests.UI.AccessibilityChecking.{name}") ??
+            throw new InvalidOperationException($"Embedded resource '{name}' not found.");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
 
     private static readonly string Js = LoadEmbeddedResource("AxeHtmlReport.js");
 }
-
