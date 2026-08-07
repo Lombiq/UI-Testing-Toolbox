@@ -155,7 +155,7 @@ public sealed class SmtpService : IAsyncDisposable
                 $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{line}"));
         });
 
-        // Fire-and-forget: smtp4dev runs until the CancellationToken is cancelled in DisposeAsync. Not awaiting keeps
+        // Fire-and-forget: smtp4dev runs until the CancellationToken is canceled in DisposeAsync. Not awaiting keeps
         // the stdout pipe alive so smtp4dev's SMTP/IMAP listeners can start after the HTTP host signals readiness.
         _ = CliProgram.DotNet
             .GetCommand(
