@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -161,6 +162,12 @@ public sealed class SmtpService : IAsyncDisposable
                 },
                 token);
 
+        // smtp4dev's HTTP host signals readiness with "Now listening on:", but its SMTP and IMAP listeners may bind
+        // their ports asynchronously afterwards. We must verify these ports are actually accepting TCP connections
+        // before returning, to avoid "Connection refused" errors in tests.
+        await WaitForTcpPortAsync(_smtpPort, token);
+        await WaitForTcpPortAsync(_imapPort, token);
+
         return new SmtpServiceRunningContext(_smtpPort, _imapPort, webUIUri);
     }
 
@@ -176,5 +183,31 @@ public sealed class SmtpService : IAsyncDisposable
 
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
+    }
+
+    private static async Task WaitForTcpPortAsync(int port, CancellationToken cancellationToken)
+    {
+        const int maxAttempts = 40;
+        const int delayMilliseconds = 250;
+
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                using var tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync("localhost", port, cancellationToken);
+                return;
+            }
+            catch (SocketException)
+            {
+                if (attempt == maxAttempts - 1)
+                {
+                    throw new TimeoutException(
+                        $"The smtp4dev TCP port {port.ToTechnicalString()} did not become available within the expected time.");
+                }
+
+                await Task.Delay(delayMilliseconds, cancellationToken);
+            }
+        }
     }
 }
