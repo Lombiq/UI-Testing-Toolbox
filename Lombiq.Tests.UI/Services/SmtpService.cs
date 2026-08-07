@@ -1,5 +1,7 @@
 using CliWrap;
 using Lombiq.HelpfulLibraries.Cli;
+using MailKit.Net.Imap;
+using MailKit.Net.Smtp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -163,10 +165,10 @@ public sealed class SmtpService : IAsyncDisposable
                 token);
 
         // smtp4dev's HTTP host signals readiness with "Now listening on:", but its SMTP and IMAP listeners may bind
-        // their ports asynchronously afterwards. We must verify these ports are actually accepting TCP connections
-        // before returning, to avoid "Connection refused" errors in tests.
-        await WaitForTcpPortAsync(_smtpPort, token);
-        await WaitForTcpPortAsync(_imapPort, token);
+        // their ports asynchronously afterwards. We use MailKit clients to probe these ports so that the probe itself
+        // performs a proper protocol handshake (not just a bare TCP connect) and doesn't leave smtp4dev in a bad state.
+        await WaitForSmtpPortAsync(_smtpPort, token);
+        await WaitForImapPortAsync(_imapPort, token);
 
         return new SmtpServiceRunningContext(_smtpPort, _imapPort, webUIUri);
     }
@@ -177,15 +179,19 @@ public sealed class SmtpService : IAsyncDisposable
 
         _isDisposed = true;
 
+        // Cancel the token first to signal smtp4dev to exit, then wait briefly to ensure the process has released
+        // its ports before we mark them as available for the next test's smtp4dev instance.
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
+
+        await Task.Delay(500, CancellationToken.None);
+
         // This is a clean-up method, no need to forward a CancellationToken.
         await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort, CancellationToken.None);
         await _webUIPortLeaseManager.StopLeaseAsync(_webUIPort, CancellationToken.None);
-
-        await _cancellationTokenSource.CancelAsync();
-        _cancellationTokenSource.Dispose();
     }
 
-    private static async Task WaitForTcpPortAsync(int port, CancellationToken cancellationToken)
+    private static async Task WaitForSmtpPortAsync(int port, CancellationToken cancellationToken)
     {
         const int maxAttempts = 40;
         const int delayMilliseconds = 250;
@@ -194,16 +200,44 @@ public sealed class SmtpService : IAsyncDisposable
         {
             try
             {
-                using var tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync("localhost", port, cancellationToken);
+                using var client = new SmtpClient();
+                await client.ConnectAsync("localhost", port, useSsl: false, cancellationToken);
+                await client.DisconnectAsync(quit: true, cancellationToken);
                 return;
             }
-            catch (SocketException)
+            catch (Exception ex) when (ex is SocketException or SmtpCommandException or SmtpProtocolException or IOException)
             {
                 if (attempt == maxAttempts - 1)
                 {
                     throw new TimeoutException(
-                        $"The smtp4dev TCP port {port.ToTechnicalString()} did not become available within the expected time.");
+                        $"The smtp4dev SMTP port {port.ToTechnicalString()} did not become available within the expected time.");
+                }
+
+                await Task.Delay(delayMilliseconds, cancellationToken);
+            }
+        }
+    }
+
+    private static async Task WaitForImapPortAsync(int port, CancellationToken cancellationToken)
+    {
+        const int maxAttempts = 40;
+        const int delayMilliseconds = 250;
+
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                using var client = new ImapClient();
+                await client.ConnectAsync("localhost", port, useSsl: false, cancellationToken);
+                await client.DisconnectAsync(quit: true, cancellationToken);
+                return;
+            }
+            catch (Exception ex) when (ex is SocketException or ImapCommandException or ImapProtocolException or IOException)
+            {
+                if (attempt == maxAttempts - 1)
+                {
+                    throw new TimeoutException(
+                        $"The smtp4dev IMAP port {port.ToTechnicalString()} did not become available within the expected time.");
                 }
 
                 await Task.Delay(delayMilliseconds, cancellationToken);
