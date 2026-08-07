@@ -127,7 +127,37 @@ public sealed class SmtpService : IAsyncDisposable
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
         // https://github.com/rnwood/smtp4dev/blob/master/Rnwood.Smtp4dev/CommandLineParser.cs.
-        await CliProgram.DotNet
+        //
+        // We use PipeTarget.ToDelegate + a TaskCompletionSource instead of ExecuteUntilOutputAsync because returning
+        // early from ExecuteUntilOutputAsync's await foreach disposes CliWrap's stdout pipe, breaking smtp4dev's
+        // stdout and causing the process to crash or hang before its SMTP/IMAP listeners ever start.
+        var startedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var stdOutPipe = PipeTarget.ToDelegate((string line) =>
+        {
+            if (line.Contains("Now listening on:", StringComparison.OrdinalIgnoreCase))
+            {
+                startedTcs.TrySetResult(true);
+            }
+        });
+
+        var stdErrPipe = PipeTarget.ToDelegate((string line) =>
+        {
+            if (splashScreenStdErrLineStarts.Any(stdErrLineStart => line.StartsWithOrdinal(stdErrLineStart)) ||
+                string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            startedTcs.TrySetException(new IOException(
+                $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()}, " +
+                $"web UI port {webUIPortString}, IMAP port {_imapPort.ToTechnicalString()}, and POP3 port " +
+                $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{line}"));
+        });
+
+        // Fire-and-forget: smtp4dev runs until the CancellationToken is cancelled in DisposeAsync. Not awaiting keeps
+        // the stdout pipe alive so smtp4dev's SMTP/IMAP listeners can start after the HTTP host signals readiness.
+        _ = CliProgram.DotNet
             .GetCommand(
                 "tool",
                 "run",
@@ -147,22 +177,12 @@ public sealed class SmtpService : IAsyncDisposable
             {
                 ["ServerOptions__DisableMessageSanitisation"] = "true",
             })
-            .ExecuteUntilOutputAsync(
-                "Now listening on:",
-                stdErr =>
-                {
-                    if (splashScreenStdErrLineStarts.Any(stdErrLineStart => stdErr.Text.StartsWithOrdinal(stdErrLineStart)) ||
-                        string.IsNullOrWhiteSpace(stdErr.Text))
-                    {
-                        return;
-                    }
+            .WithStandardOutputPipe(stdOutPipe)
+            .WithStandardErrorPipe(stdErrPipe)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteAsync(token);
 
-                    throw new IOException(
-                        $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()}, " +
-                        $"web UI port {webUIPortString}, IMAP port {_imapPort.ToTechnicalString()}, and POP3 port " +
-                        $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{stdErr.Text}");
-                },
-                token);
+        await startedTcs.Task.WaitAsync(TimeSpan.FromSeconds(30), token);
 
         // smtp4dev's HTTP host signals readiness with "Now listening on:", but its SMTP and IMAP listeners may bind
         // their ports asynchronously afterwards. We use MailKit clients to probe these ports so that the probe itself
