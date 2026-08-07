@@ -39,9 +39,8 @@ public class PortLeaseManager
 
         try
         {
-            // Filter out ports already leased by this process AND ports already in use by the OS (e.g., from other
-            // processes on the runner). This prevents smtp4dev and similar services from failing to bind because
-            // another process has already claimed the port.
+            // Filter out ports already leased by this process AND ports already in use by the OS. This prevents
+            // smtp4dev and similar services from failing to bind because another process has already claimed the port.
             var availablePorts = _availablePortsRange
                 .Except(_usedPorts)
                 .Where(IsPortFreeOnOs)
