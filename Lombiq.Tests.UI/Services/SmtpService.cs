@@ -193,7 +193,7 @@ public sealed class SmtpService : IAsyncDisposable
 
     private static async Task WaitForSmtpPortAsync(int port, CancellationToken cancellationToken)
     {
-        const int maxAttempts = 40;
+        const int maxAttempts = 120;
         const int delayMilliseconds = 250;
 
         for (var attempt = 0; attempt < maxAttempts; attempt++)
@@ -220,7 +220,7 @@ public sealed class SmtpService : IAsyncDisposable
 
     private static async Task WaitForImapPortAsync(int port, CancellationToken cancellationToken)
     {
-        const int maxAttempts = 40;
+        const int maxAttempts = 120;
         const int delayMilliseconds = 250;
 
         for (var attempt = 0; attempt < maxAttempts; attempt++)

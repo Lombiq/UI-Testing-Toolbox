@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,7 +39,13 @@ public class PortLeaseManager
 
         try
         {
-            var availablePorts = _availablePortsRange.Except(_usedPorts).ToList();
+            // Filter out ports already leased by this process AND ports already in use by the OS (e.g., from other
+            // processes on the runner). This prevents smtp4dev and similar services from failing to bind because
+            // another process has already claimed the port.
+            var availablePorts = _availablePortsRange
+                .Except(_usedPorts)
+                .Where(IsPortFreeOnOs)
+                .ToList();
 
             if (availablePorts.Count == 0)
             {
@@ -62,5 +70,20 @@ public class PortLeaseManager
         _usedPorts.Remove(port);
 
         _portAcquisitionLock.Release();
+    }
+
+    private static bool IsPortFreeOnOs(int port)
+    {
+        try
+        {
+            using var listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+            listener.Stop();
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
     }
 }
