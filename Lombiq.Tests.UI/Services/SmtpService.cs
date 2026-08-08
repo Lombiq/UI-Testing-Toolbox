@@ -5,7 +5,6 @@ using MailKit.Net.Smtp;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -111,18 +110,6 @@ public sealed class SmtpService : IAsyncDisposable
             _restoreSemaphore.Release();
         }
 
-        // The "splash screen" lines smtp4dev outputs to stderr on startup:
-        // https://github.com/rnwood/smtp4dev/issues/1996.
-        string[] splashScreenStdErrLineStarts = [
-            "┌────────────.",
-            "|\\          / \\",
-            "| \\        /   \\",
-            "|  smtp4dev    /",
-            "|             /",
-            "└────────────'",
-            " > For help use argument --help"
-            ];
-
         // Starting smtp4dev with a command similar to this (with more parameters, see below):
         // dotnet tool run smtp4dev --db "" --smtpport 11308 --urls http://localhost:12360/
         // An empty db parameter means an in-memory DB. For all possible command line arguments see:
@@ -142,18 +129,10 @@ public sealed class SmtpService : IAsyncDisposable
         });
 
         var stdErrPipe = PipeTarget.ToDelegate(line =>
-        {
-            if (splashScreenStdErrLineStarts.Any(stdErrLineStart => line.StartsWithOrdinal(stdErrLineStart)) ||
-                string.IsNullOrWhiteSpace(line))
-            {
-                return;
-            }
-
             startedTcs.TrySetException(new IOException(
                 $"The smtp4dev service didn't start properly on SMTP port {_smtpPort.ToTechnicalString()}, " +
                 $"web UI port {webUIPortString}, IMAP port {_imapPort.ToTechnicalString()}, and POP3 port " +
-                $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{line}"));
-        });
+                $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{line}")));
 
         // Fire-and-forget: smtp4dev runs until the CancellationToken is canceled in DisposeAsync. Not awaiting keeps
         // the stdout pipe alive so smtp4dev's SMTP/IMAP listeners can start after the HTTP host signals readiness.
