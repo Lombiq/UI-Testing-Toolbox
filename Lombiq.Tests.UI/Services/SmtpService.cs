@@ -42,6 +42,7 @@ public sealed class SmtpService : IAsyncDisposable
 
     private readonly SmtpServiceConfiguration _configuration;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly SemaphoreSlim _smtpExited = new(0, 1);
 
     private static bool _wasRestored;
 
@@ -134,8 +135,8 @@ public sealed class SmtpService : IAsyncDisposable
                 $"web UI port {webUIPortString}, IMAP port {_imapPort.ToTechnicalString()}, and POP3 port " +
                 $"{_pop3Port.ToTechnicalString()} due to the following error:{Environment.NewLine}{line}")));
 
-        // Fire-and-forget: smtp4dev runs until the CancellationToken is canceled in DisposeAsync. Not awaiting keeps
-        // the stdout pipe alive so smtp4dev's SMTP/IMAP listeners can start after the HTTP host signals readiness.
+        // Not awaiting keeps the stdout pipe alive so smtp4dev's SMTP/IMAP listeners can start after the HTTP host
+        // signals readiness. The continuation releases _smtpExited so DisposeAsync knows the ports have been freed.
         _ = CliProgram.DotNet
             .GetCommand(
                 "tool",
@@ -159,7 +160,8 @@ public sealed class SmtpService : IAsyncDisposable
             .WithStandardOutputPipe(stdOutPipe)
             .WithStandardErrorPipe(stdErrPipe)
             .WithValidation(CommandResultValidation.None)
-            .ExecuteAsync(token);
+            .ExecuteAsync(token)
+            .Task.ContinueWith(_ => _smtpExited.Release(), TaskScheduler.Default);
 
         await startedTcs.Task.WaitAsync(TimeSpan.FromSeconds(30), token);
 
@@ -178,12 +180,11 @@ public sealed class SmtpService : IAsyncDisposable
 
         _isDisposed = true;
 
-        // Cancel the token first to signal smtp4dev to exit, then wait briefly to ensure the process has released
-        // its ports before we mark them as available for the next test's smtp4dev instance.
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
-
-        await Task.Delay(500, CancellationToken.None);
+        // Wait until the process exits so ports are guaranteed to be released before we return them to the lease pool.
+        await _smtpExited.WaitAsync(TimeSpan.FromSeconds(15), CancellationToken.None);
+        _smtpExited.Dispose();
 
         // This is a clean-up method, no need to forward a CancellationToken.
         await _smtpPortLeaseManager.StopLeaseAsync(_smtpPort, CancellationToken.None);
