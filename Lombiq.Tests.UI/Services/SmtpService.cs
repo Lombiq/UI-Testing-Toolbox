@@ -133,7 +133,7 @@ public sealed class SmtpService : IAsyncDisposable
         // stdout and causing the process to crash or hang before its SMTP/IMAP listeners ever start.
         var startedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var stdOutPipe = PipeTarget.ToDelegate((string line) =>
+        var stdOutPipe = PipeTarget.ToDelegate(line =>
         {
             if (line.Contains("Now listening on:", StringComparison.OrdinalIgnoreCase))
             {
@@ -141,7 +141,7 @@ public sealed class SmtpService : IAsyncDisposable
             }
         });
 
-        var stdErrPipe = PipeTarget.ToDelegate((string line) =>
+        var stdErrPipe = PipeTarget.ToDelegate(line =>
         {
             if (splashScreenStdErrLineStarts.Any(stdErrLineStart => line.StartsWithOrdinal(stdErrLineStart)) ||
                 string.IsNullOrWhiteSpace(line))
