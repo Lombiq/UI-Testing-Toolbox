@@ -69,7 +69,7 @@ internal static class CloudflareHelper
         {
             _cloudflareApi ??= RestService.For<ICloudflareApi>("https://api.cloudflare.com/client/v4", new RefitSettings
             {
-                AuthorizationHeaderValueGetter = async (_, _) => cloudflareApiToken,
+                AuthorizationHeaderValueGetter = (_, _) => ValueTask.FromResult(cloudflareApiToken),
             });
 
             if (!_ipAccessRuleIds.ContainsKey(currentIpRange))
