@@ -118,7 +118,7 @@ public static class WebDriverFactory
             // automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            firefoxOptions.BrowserVersion = "153.0";
+            firefoxOptions.BrowserVersion = "154.0";
 
             if (configuration.Headless) firefoxOptions.AddArgument("--headless");
 
