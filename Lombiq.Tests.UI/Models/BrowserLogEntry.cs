@@ -39,7 +39,11 @@ public record BrowserLogEntry(
                 stackTrace.CallFrames.Select(frame =>
                     "- " +
                     (string.IsNullOrEmpty(frame.FunctionName) ? string.Empty : $"{frame.FunctionName} at ") +
+                    // False positive, see https://github.com/meziantou/Meziantou.Analyzer/issues/1316. Remove once
+                    // fixed.
+#pragma warning disable MA0075
                     StringHelper.CreateInvariant($"{frame.Url}:{frame.LineNumber}:{frame.ColumnNumber}")));
+#pragma warning restore MA0075
     }
 }
 

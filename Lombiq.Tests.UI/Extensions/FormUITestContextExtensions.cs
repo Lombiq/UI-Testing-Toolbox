@@ -322,7 +322,10 @@ public static class FormUITestContextExtensions
     /// </summary>
     public static void SetDatePicker(this UITestContext context, string id, DateTime value) =>
         context.ExecuteScript(
+            // False positive, see https://github.com/meziantou/Meziantou.Analyzer/issues/1316. Remove once fixed.
+#pragma warning disable MA0075
             StringHelper.CreateInvariant($"document.getElementById('{id}').value = '{value:yyyy-MM-dd}';") +
+#pragma warning restore MA0075
             $"document.getElementById('{id}').dispatchEvent(new Event('change'));");
 
     public static DateTime GetDatePicker(this UITestContext context, string id) =>

@@ -14,6 +14,8 @@ public static class SeleniumResponseCompletedEventExtensions
         string.Join(Environment.NewLine, responses.Select(ToFormattedString));
 
     public static string ToFormattedString(this ResponseData response) =>
+         // False positive, see https://github.com/meziantou/Meziantou.Analyzer/issues/1316. Remove once fixed.
+#pragma warning disable MA0075, MA0076
          StringHelper.CreateInvariant(
              $"URL: {response.Url}{Environment.NewLine}" +
              $"Status: {response.Status}{Environment.NewLine}" +
@@ -23,6 +25,7 @@ public static class SeleniumResponseCompletedEventExtensions
              $"Headers size: {response.HeadersSize}{Environment.NewLine}" +
              $"Body size: {response.BodySize}{Environment.NewLine}" +
              $"Response content: {response.Content} {Environment.NewLine}");
+#pragma warning restore MA0075, MA0076
 
     public static void WithIgnoreExpectedNotFoundResponseFilter(
         this OrchardCoreUITestExecutorConfiguration configuration,

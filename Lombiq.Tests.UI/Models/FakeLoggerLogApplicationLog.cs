@@ -41,6 +41,9 @@ public record FakeLoggerApplicationLogEntry(FakeLogRecord LogRecord) : IApplicat
     public override string ToString() => FormatLogRecord(LogRecord);
 
     public static string FormatLogRecord(FakeLogRecord record) =>
+        // False positive, see https://github.com/meziantou/Meziantou.Analyzer/issues/1316. Remove once fixed.
+#pragma warning disable MA0075
         StringHelper.CreateInvariant($"{record.Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{record.Level}] {record.Category}: {record.Message}") +
+#pragma warning restore MA0075
         (record.Exception != null ? record.Exception.ToString() : string.Empty);
 }
