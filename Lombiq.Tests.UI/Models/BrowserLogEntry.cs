@@ -1,9 +1,9 @@
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Script;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Models;
@@ -21,7 +21,7 @@ public record BrowserLogEntry(
     }
 
     public string ToFormattedString() =>
-        StringHelper.CreateInvariant($"{Timestamp:yyyy-MM-dd HH:mm:ss} {Level} {Text}{FormatStackTrace(StackTrace)}");
+        string.Create(CultureInfo.InvariantCulture, $"{Timestamp:yyyy-MM-dd HH:mm:ss} {Level} {Text}{FormatStackTrace(StackTrace)}");
 
     public bool IsNonSuccessBrowserLogEntry() =>
         OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(this);
@@ -39,7 +39,7 @@ public record BrowserLogEntry(
                 stackTrace.CallFrames.Select(frame =>
                     "- " +
                     (string.IsNullOrEmpty(frame.FunctionName) ? string.Empty : $"{frame.FunctionName} at ") +
-                    StringHelper.CreateInvariant($"{frame.Url}:{frame.LineNumber}:{frame.ColumnNumber}")));
+                    string.Create(CultureInfo.InvariantCulture, $"{frame.Url}:{frame.LineNumber}:{frame.ColumnNumber}")));
     }
 }
 

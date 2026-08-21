@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
     <!-- Microsoft.OpenApi is required by Microsoft.AspNetCore.OpenApi, but its default version has a security vulnerability.
          Note: Staying on the 2.x line intentionally (upgraded to the latest patched 2.x release). Microsoft.OpenApi 3.x is
          only supported starting with Microsoft.AspNetCore.OpenApi 11.x (ASP.NET Core 11, still in preview); using it here

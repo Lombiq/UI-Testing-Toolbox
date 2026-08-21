@@ -1,11 +1,11 @@
 using Atata;
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 
 namespace Lombiq.Tests.UI.Extensions;
@@ -148,7 +148,10 @@ public static class ElementRetrievalUITestContextExtensions
             .Where(index => index >= 0)
             .ToList();
         var target = toMatch
-            .Select(item => item == null ? null : StringHelper.CreateInvariant($"{item}"))
+            // MA0185 doesn't apply: item is an arbitrary object that can hold culture-sensitive data at runtime.
+#pragma warning disable MA0185
+            .Select(item => item == null ? null : string.Create(CultureInfo.InvariantCulture, $"{item}"))
+#pragma warning restore MA0185
             .Select(item => item?.Trim())
             .ToArray();
 

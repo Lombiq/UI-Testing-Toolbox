@@ -1,9 +1,9 @@
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,6 +41,8 @@ public record FakeLoggerApplicationLogEntry(FakeLogRecord LogRecord) : IApplicat
     public override string ToString() => FormatLogRecord(LogRecord);
 
     public static string FormatLogRecord(FakeLogRecord record) =>
-        StringHelper.CreateInvariant($"{record.Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{record.Level}] {record.Category}: {record.Message}") +
+        string.Create(
+            CultureInfo.InvariantCulture,
+            $"{record.Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{record.Level}] {record.Category}: {record.Message}") +
         (record.Exception != null ? record.Exception.ToString() : string.Empty);
 }
