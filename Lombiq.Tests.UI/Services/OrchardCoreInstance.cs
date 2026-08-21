@@ -1,4 +1,3 @@
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.Integration.Services;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -45,7 +45,7 @@ internal static class OrchardCoreInstanceCounter
         PortLeases = new(9000 + agentIndexTimesHundred, 9099 + agentIndexTimesHundred);
     }
 
-    public static Uri GetUri(int port) => new(StringHelper.CreateInvariant($"https://localhost:{port}"));
+    public static Uri GetUri(int port) => new(string.Create(CultureInfo.InvariantCulture, $"https://localhost:{port}"));
     public static async Task<Uri> GetNewUriAsync() => GetUri(await PortLeases.LeaseAvailableRandomPortAsync(CancellationToken.None));
 }
 

@@ -1,8 +1,8 @@
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium.BiDi.Network;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 
@@ -14,18 +14,16 @@ public static class SeleniumResponseCompletedEventExtensions
         string.Join(Environment.NewLine, responses.Select(ToFormattedString));
 
     public static string ToFormattedString(this ResponseData response) =>
-         // False positive, see https://github.com/meziantou/Meziantou.Analyzer/issues/1316. Remove once fixed.
-#pragma warning disable MA0075, MA0076
-         StringHelper.CreateInvariant(
-             $"URL: {response.Url}{Environment.NewLine}" +
-             $"Status: {response.Status}{Environment.NewLine}" +
-             $"Headers: {string.Join(", ", response.Headers.Select(header => $"{header.Name}: {header.Value}"))}{Environment.NewLine}" +
-             $"Mime type: {response.MimeType}{Environment.NewLine}" +
-             $"Bytes received: {response.BytesReceived}{Environment.NewLine}" +
-             $"Headers size: {response.HeadersSize}{Environment.NewLine}" +
-             $"Body size: {response.BodySize}{Environment.NewLine}" +
-             $"Response content: {response.Content} {Environment.NewLine}");
-#pragma warning restore MA0075, MA0076
+        string.Create(
+            CultureInfo.InvariantCulture,
+            $"URL: {response.Url}{Environment.NewLine}" +
+            $"Status: {response.Status}{Environment.NewLine}" +
+            $"Headers: {string.Join(", ", response.Headers.Select(header => $"{header.Name}: {header.Value}"))}{Environment.NewLine}" +
+            $"Mime type: {response.MimeType}{Environment.NewLine}" +
+            $"Bytes received: {response.BytesReceived}{Environment.NewLine}" +
+            $"Headers size: {response.HeadersSize}{Environment.NewLine}" +
+            $"Body size: {response.BodySize}{Environment.NewLine}" +
+            $"Response content: {response.Content} {Environment.NewLine}");
 
     public static void WithIgnoreExpectedNotFoundResponseFilter(
         this OrchardCoreUITestExecutorConfiguration configuration,

@@ -1,11 +1,11 @@
 #nullable enable
 
 using CliWrap;
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -166,7 +166,7 @@ public class FrontendServer
         _configuration.CustomConfiguration.GetMaybe(GetKey(orchardPort)) as FrontendServerContext;
 
     private string GetKey(int orchardPort) =>
-        StringHelper.CreateInvariant($"{nameof(FrontendServer)}:{Name}:{orchardPort}");
+        string.Create(CultureInfo.InvariantCulture, $"{nameof(FrontendServer)}:{Name}:{orchardPort}");
 
     private static async Task WaitForStartupAsync(Task mainTask, Task waitTask, TimeSpan? timeout)
     {
@@ -184,7 +184,8 @@ public class FrontendServer
 
         if (timeoutTask?.IsCompleted == true)
         {
-            throw new TimeoutException(StringHelper.CreateInvariant(
+            throw new TimeoutException(string.Create(
+                CultureInfo.InvariantCulture,
                 $"The timeout of {nameof(FrontendServer)} ({timeout}) is exceeded."));
         }
     }
