@@ -16,6 +16,11 @@
     <PackageProjectUrl>https://github.com/Lombiq/UI-Testing-Toolbox/tree/dev/Lombiq.Tests.UI.AdminTheme</PackageProjectUrl>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="Views\Message.cshtml" />
+    <Content Include="Views\_ViewImports.cshtml" />
+  </ItemGroup>
+
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Theme.Sdk/Sdk/Import.targets" />
   <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.OrchardCore.Theme.Sdk" Version="2.0.1" />
 </Project>

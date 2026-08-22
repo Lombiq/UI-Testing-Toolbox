@@ -1,0 +1,32 @@
+@using OrchardCore.DisplayManagement.Notify
+@{
+    var type = Model.Type as NotifyType? ?? NotifyType.Error; 
+    var typeName = type.ToString().ToLowerInvariant();
+    var bsClassName = type switch
+    {
+        NotifyType.Information => "info",
+        NotifyType.Error => "danger",
+        _ => typeName,
+    };
+
+    var closeButtonClass = type is NotifyType.Error or NotifyType.Success ? "btn-close-white" : string.Empty;
+}
+
+@* This is based on the Message shape from TheAdmin theme, but delay is intentionally ignored, to fix reliability issues
+   during UI testing. *@
+<div class="toast border-0 shadow message-@typeName text-bg-@bsClassName"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true"
+     data-bs-autohide="false"
+     data-bs-delay="0">
+    <div class="d-flex">
+        <div class="toast-body">
+            @Model.Message
+        </div>
+        <button type="button"
+                class="@closeButtonClass btn-close me-2 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="@T["Close"]"></button>
+    </div>
+</div>
