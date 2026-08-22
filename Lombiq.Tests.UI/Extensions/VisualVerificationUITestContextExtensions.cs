@@ -1,5 +1,4 @@
 using Codeuctivity.ImageSharpCompare;
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Attributes;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -74,7 +73,7 @@ to customize the name of the dump item.";
                     pixelErrorPercentageThreshold: pixelErrorPercentageThreshold,
                     configurator: configuration =>
                     {
-                        configuration.WithFileNameSuffix(StringHelper.CreateInvariant($"{size.Width}x{size.Height}"));
+                        configuration.WithFileNameSuffix(string.Create(CultureInfo.InvariantCulture, $"{size.Width}x{size.Height}"));
                         configurator?.Invoke(configuration);
                     });
             }

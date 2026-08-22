@@ -25,6 +25,9 @@ public class AccessibilityTest : UITestBase
             configuration =>
             {
                 // We adjust the configuration just for this test but you could do the same globally in UITestBase.
+                // That's what we actually recommend: instead of treating accessibility checking as a separate test
+                // case, make your whole app accessible by default. Then, accessibility failures are like any other test
+                // failures.
 
                 // With this config, accessibility rules will be checked for each page automatically.
                 configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;

@@ -1,9 +1,9 @@
 #nullable enable
 
-using Lombiq.HelpfulLibraries.Common.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Xunit;
 using Xunit.Sdk;
@@ -46,7 +46,7 @@ public class GitHubAnnotationWriter
         // in a submodule) then the annotation will not display at all.
         if (!string.IsNullOrWhiteSpace(file))
         {
-            message = StringHelper.CreateInvariant($"(file={file},line={line}) {message}");
+            message = string.Create(CultureInfo.InvariantCulture, $"(file={file},line={line}) {message}");
         }
 
         _testOutputHelper.WriteLine($"::{command} title={title}::{message}");
