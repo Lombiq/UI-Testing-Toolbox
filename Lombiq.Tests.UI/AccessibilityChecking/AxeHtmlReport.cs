@@ -433,8 +433,8 @@ public static class AxeHtmlReport
     private static string LoadEmbeddedResource(string name)
     {
         using var stream = typeof(AxeHtmlReport).Assembly
-            .GetManifestResourceStream($"Lombiq.Tests.UI.AccessibilityChecking.{name}")
-            ?? throw new InvalidOperationException($"Embedded resource '{name}' not found.");
+                .GetManifestResourceStream($"Lombiq.Tests.UI.AccessibilityChecking.{name}") ??
+            throw new InvalidOperationException($"Embedded resource '{name}' not found.");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
