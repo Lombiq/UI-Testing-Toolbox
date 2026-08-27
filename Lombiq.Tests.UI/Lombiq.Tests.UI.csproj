@@ -44,7 +44,7 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.29.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.390" />
-    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.12.0" />
+    <PackageReference Include="Deque.AxeCore.Selenium" Version="4.13.0" />
     <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.8.0" />
     <PackageReference Include="Microsoft.SqlServer.DACFx" Version="170.4.83" />
