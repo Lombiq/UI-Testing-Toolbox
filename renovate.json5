@@ -158,6 +158,18 @@
             ],
             datasourceTemplate: 'docker',
         },
+        {
+          // The "html-validate" NPM package via Atata.HtmlValidation.
+          depNameTemplate: 'html-validate',
+          customType: 'regex',
+          managerFilePatterns: [
+            '/HtmlValidationConfiguration\\.cs$/',
+          ],
+          matchStrings: [
+            '\\s*HtmlValidatePackageVersion\\s*=\\s*"(?<currentValue>[^"]+)"',
+          ],
+          datasourceTemplate: 'npm',
+        },
     ],
     customDatasources: {
         'chrome-for-testing': {
