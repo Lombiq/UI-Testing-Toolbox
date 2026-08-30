@@ -29,7 +29,13 @@ public static class OrchardCoreDashboardUITestContextExtensions
     /// <summary>
     /// Clicks on the "Ok" button on the Bootstrap modal window.
     /// </summary>
-    public static Task ClickModalOkAsync(this UITestContext context) => context.ClickReliablyOnAsync(By.Id("modalOkButton"));
+    /// <remarks><para>
+    /// We use <see cref="NavigationUITestContextExtensions.ClickOnWithScriptAsync"/> because clicking on modals can be
+    /// flaky. This can be worked around by using the <c>Lombiq.Tests.UI.AdminTheme</c> admin theme that disables
+    /// animations, but we can't expect that it's always used.
+    /// </para></remarks>
+    public static Task ClickModalOkAsync(this UITestContext context) =>
+        context.ClickOnWithScriptAsync(By.Id("modalOkButton"));
 
     /// <inheritdoc cref="ClickPublishUntilNavigationHasOccurredAsync(UITestContext, bool, TimeSpan?, TimeSpan?)"/>/>
     [Obsolete("Use ClickPublishUntilNavigationHasOccurredAsync instead.")]
