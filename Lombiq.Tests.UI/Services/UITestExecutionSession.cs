@@ -32,11 +32,6 @@ namespace Lombiq.Tests.UI.Services;
 
 internal sealed class UITestExecutionSession : IAsyncDisposable
 {
-    private const string CloudflareErrorPageDetectionCss =
-        "#cf-error-details .code-label, #cf-browser-status, #cf-cloudflare-status, #cf-host-status";
-    private const string CloudflareErrorPageDetectionJavaScript =
-        $"""return document.querySelectorAll("{CloudflareErrorPageDetectionCss}").length == 4""";
-
     private readonly WebApplicationInstanceFactory _webApplicationInstanceFactory;
     private readonly UITestManifest _testManifest;
     private readonly OrchardCoreUITestExecutorConfiguration _configuration;
@@ -749,11 +744,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private void SetUpPageChangeAssertions(IWebApplicationInstance applicationInstance)
     {
-        if (applicationInstance is RemoteInstance)
-        {
-            _configuration.Events.AfterPageChange += OnAssertCloudflareErrorPageAsync;
-        }
-
         if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
         {
             _configuration.SetUpAccessibilityCheckingAssertionOnPageChange();
@@ -798,20 +788,6 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _configuration.SetupConfiguration.CalculateSetupOperationIdentifier(),
             _configuration.UseSqlServer,
             _configuration.UseAzureBlobStorage);
-
-    private Task OnAssertCloudflareErrorPageAsync(UITestContext context)
-    {
-        // Using JavaScript is much faster
-        var isCloudflareErrorPage = context.ExecuteScript(CloudflareErrorPageDetectionJavaScript);
-        if (isCloudflareErrorPage is true)
-        {
-            throw new PageChangeAssertionException(
-                $"Cloudflare error page \"{context.Driver.Title}\" encountered. Check the \"PageSource.mhtml\" file " +
-                "in the test dump for more details.");
-        }
-
-        return Task.CompletedTask;
-    }
 
     private Task OnAssertLogsAsync(UITestContext context) => context.AssertLogsAsync();
 

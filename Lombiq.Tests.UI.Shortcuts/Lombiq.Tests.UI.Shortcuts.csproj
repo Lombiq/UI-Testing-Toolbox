@@ -31,12 +31,6 @@
     <PackageReference Include="OrchardCore.Users" Version="$(OrchardCoreVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Recipes\Lombiq.Tenants.Core.Features.recipe.json">
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.OrchardCore.Module.Sdk/Sdk/Import.targets" />
   <Import Condition="'$(NuGetBuild)' == 'true'" Project="Sdk.targets" Sdk="Lombiq.MSBuild.OrchardCore.Module.Sdk" Version="2.0.1" />
 </Project>
