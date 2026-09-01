@@ -727,7 +727,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         var appBaseUri = await _applicationInstance.StartUpAsync();
 
         _configuration.SetUpEvents();
-        SetUpPageChangeAssertions(_applicationInstance);
+        SetUpPageChangeAssertions();
 
         var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
 
@@ -742,7 +742,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             _zapManager);
     }
 
-    private void SetUpPageChangeAssertions(IWebApplicationInstance applicationInstance)
+    private void SetUpPageChangeAssertions()
     {
         if (_configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges)
         {
