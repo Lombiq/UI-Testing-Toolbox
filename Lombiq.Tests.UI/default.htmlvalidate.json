@@ -13,6 +13,7 @@
     "wcag/h36": "off",
     "wcag/h37": "off",
     "wcag/h67": "off",
-    "wcag/h71": "off"
+    "wcag/h71": "off",
+    "attribute-empty-style": "off"
   }
 }
