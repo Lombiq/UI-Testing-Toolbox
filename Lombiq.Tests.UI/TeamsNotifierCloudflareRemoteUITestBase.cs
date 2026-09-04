@@ -1,3 +1,6 @@
+#nullable enable
+
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System;
@@ -26,7 +29,7 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
         Uri baseUri,
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
+        Func<OrchardCoreUITestExecutorConfiguration, Task>? changeConfigurationAsync)
     {
         try
         {
@@ -55,4 +58,22 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
             throw;
         }
     }
+
+    /// <summary>
+    /// Execute synchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
+    /// </summary>
+    protected Task ExecuteTestAsync(
+        Action<UITestContext> test,
+        Browser browser = default,
+        Action<OrchardCoreUITestExecutorConfiguration>? changeConfiguration = null) =>
+        ExecuteTestAsync(BaseUri, test.AsCompletedTask(), browser, changeConfiguration.AsCompletedTask());
+
+    /// <summary>
+    /// Execute asynchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
+    /// </summary>
+    protected Task ExecuteTestAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser = default,
+        Func<OrchardCoreUITestExecutorConfiguration, Task>? changeConfigurationAsync = null) =>
+        ExecuteTestAsync(BaseUri, testAsync, browser, changeConfigurationAsync ?? (_ => Task.CompletedTask));
 }
