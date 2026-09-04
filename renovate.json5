@@ -181,13 +181,13 @@
         'edge-linux': {
             defaultRegistryUrlTemplate: 'https://edgeupdates.microsoft.com/api/products',
             transformTemplates: [
-                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="Linux"].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
+                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="Linux"][0].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
             ],
         },
         'edge-macos': {
             defaultRegistryUrlTemplate: 'https://edgeupdates.microsoft.com/api/products',
             transformTemplates: [
-                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="MacOS"].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
+                '{ "releases": [ { "version": $[Product="Stable"].Releases[Platform="MacOS"][0].ProductVersion } ], "homepage": "https://www.microsoft.com/en-us/edge/download" }',
             ],
         },
         'edge-windows': {
