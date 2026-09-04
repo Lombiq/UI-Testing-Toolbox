@@ -60,15 +60,6 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
     }
 
     /// <summary>
-    /// Execute synchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
-    /// </summary>
-    protected Task ExecuteTestAsync(
-        Action<UITestContext> test,
-        Browser browser = default,
-        Action<OrchardCoreUITestExecutorConfiguration>? changeConfiguration = null) =>
-        ExecuteTestAsync(BaseUri, test.AsCompletedTask(), browser, changeConfiguration.AsCompletedTask());
-
-    /// <summary>
     /// Execute asynchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
     /// </summary>
     protected Task ExecuteTestAsync(
@@ -76,4 +67,13 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
         Browser browser = default,
         Func<OrchardCoreUITestExecutorConfiguration, Task>? changeConfigurationAsync = null) =>
         ExecuteTestAsync(BaseUri, testAsync, browser, changeConfigurationAsync ?? (_ => Task.CompletedTask));
+
+    /// <summary>
+    /// Execute synchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
+    /// </summary>
+    protected Task ExecuteSyncTestAsync(
+        Action<UITestContext> test,
+        Browser browser = default,
+        Action<OrchardCoreUITestExecutorConfiguration>? changeConfiguration = null) =>
+        ExecuteTestAsync(BaseUri, test.AsCompletedTask(), browser, changeConfiguration.AsCompletedTask());
 }
