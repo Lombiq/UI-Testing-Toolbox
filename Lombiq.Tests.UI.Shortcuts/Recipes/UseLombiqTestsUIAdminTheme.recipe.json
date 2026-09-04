@@ -1,0 +1,25 @@
+{
+  "name": "UseLombiqTestsUIAdminTheme",
+  "displayName": "Use UI Testing Admin Theme",
+  "description": "Use the \"Lombiq UI Testing Toolbox - Admin Theme\" admin theme.",
+  "author": "Lombiq Technologies",
+  "website": "https://lombiq.com/",
+  "version": "1.0",
+  "categories": [ "lombiq" ],
+  "tags": [],
+
+  "steps": [
+    {
+      "name": "feature",
+      "enable": [
+        "OrchardCore.Themes",
+        "TheAdmin",
+        "Lombiq.Tests.UI.AdminTheme"
+      ]
+    },
+    {
+      "name": "themes",
+      "admin": "Lombiq.Tests.UI.AdminTheme"
+    }
+  ]
+}

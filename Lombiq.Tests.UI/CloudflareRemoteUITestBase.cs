@@ -1,3 +1,5 @@
+using Lombiq.Tests.UI.Exceptions;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System;
@@ -12,6 +14,11 @@ namespace Lombiq.Tests.UI;
 /// </summary>
 public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
 {
+    private const string CloudflareErrorPageDetectionCss =
+        "#cf-error-details .code-label, #cf-browser-status, #cf-cloudflare-status, #cf-host-status";
+    private const string CloudflareErrorPageDetectionJavaScript =
+        $"""return document.querySelectorAll("{CloudflareErrorPageDetectionCss}").length == 4""";
+
     /// <summary>
     /// Gets the Cloudflare account's ID, necessary for Cloudflare API calls. Note that due to how the IP Access Rule
     /// management works, you may only have tests for apps behind a single Cloudflare account in a given test project.
@@ -60,6 +67,11 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             // Cloudflare's e-mail address obfuscating feature creates invalid iframes.
             configuration.HtmlValidationConfiguration.WithRelativeConfigPath("PermitNoTitleIframes.htmlvalidate.json");
 
+            // Insert this handler at the very start, to detect of the Cloudflare site is inaccessible. Otherwise, we
+            // get misleading errors, such as an Axe error because Cloudflare's third party error page doesn't satisfy
+            // our accessibility configuration.
+            configuration.Events.AfterPageChange = OnAssertCloudflareErrorPageAsync + configuration.Events.AfterPageChange;
+
             return changeConfigurationAsync.InvokeFuncAsync(configuration);
         }
 
@@ -78,5 +90,19 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             CloudflareApiToken,
             _testOutputHelper,
             TestContext.Current.CancellationToken);
+    }
+
+    private Task OnAssertCloudflareErrorPageAsync(UITestContext context)
+    {
+        // Using JavaScript is much faster
+        var isCloudflareErrorPage = context.ExecuteScript(CloudflareErrorPageDetectionJavaScript);
+        if (isCloudflareErrorPage is true)
+        {
+            throw new PageChangeAssertionException(
+                $"Cloudflare error page \"{context.Driver.Title}\" encountered. Check the \"PageSource.mhtml\" file " +
+                "in the test dump for more details.");
+        }
+
+        return Task.CompletedTask;
     }
 }
