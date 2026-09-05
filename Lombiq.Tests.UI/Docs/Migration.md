@@ -1,5 +1,13 @@
 # Migration guide
 
+## Migrating to Microsoft Testing Platform
+
+Upgrade `xunit.v3` to 4.0.0 or later in all test projects, remove `Microsoft.NET.Test.Sdk` and `xunit.runner.visualstudio`, and enable `<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>`. The updated Lombiq test SDK handles these project settings and adds the reporting and hang dump extensions.
+
+Add the _global.json_ runner setting from [Executing tests](ExecutingTests.md) and use .NET SDK 10 or later. Change positional `dotnet test` project and solution arguments to `--project` and `--solution`. Replace `--logger trx` with `--report-trx`, `--diag` with `--diagnostic`, and `--blame-hang-timeout` with `--hangdump --hangdump-timeout`. Existing xUnit `--filter` expressions and _xunit.runner.json_ files remain supported.
+
+Use the matching major release of Lombiq GitHub Actions for CI. Its modern .NET workflows default to MTP and produce annotations and summaries through the native GitHub Actions reporting extension.
+
 ## Migrating from v3.*
 
 ### Preparing the web application project
