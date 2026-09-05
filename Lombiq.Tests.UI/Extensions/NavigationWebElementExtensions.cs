@@ -45,20 +45,24 @@ public static class NavigationWebElementExtensions
                     }
                     catch (WebDriverException ex) when (i < maxTries)
                     {
-                        switch (ex.Message)
+                        switch (ex)
                         {
-                            case string message when message.Contains("move target out of bounds"):
+                            case MoveTargetOutOfBoundsException:
+                                context.ScrollTo(element.Location.X, element.Location.Y);
+                                break;
+
+                            case { Message: { } message } when message.Contains("move target out of bounds"):
                                 context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                     "\"move target out of bounds\" exception, retrying the click.");
                                 break;
 
-                            case string message when ex.IsStateElementLikeException():
+                            case { Message: { } message } when ex.IsStateElementLikeException():
                                 context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                     "Stale element exception with the message \"{0}\", retrying the click.",
                                     message);
                                 break;
 
-                            case string message when message.ContainsOrdinalIgnoreCase(
+                            case { Message: { } message } when message.ContainsOrdinalIgnoreCase(
                                 "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
                                 throw new NotSupportedException(
                                     "For this element use the standard Click() method.");
