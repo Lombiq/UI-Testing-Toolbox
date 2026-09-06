@@ -30,4 +30,4 @@ Use .NET SDK 10 or later and select Microsoft Testing Platform in the solution's
 
 Also see [what to configure](Configuration.md), especially for multi-agent build machines and tuning parallelization.
 
-Use `--report-trx` to write TRX results and `--report-gh` for GitHub Actions annotations and job summaries. These switches require the corresponding reporting packages, which the Lombiq test SDK includes. The `test-dotnet` action in Lombiq GitHub Actions enables both. xUnit 4 supports existing `--filter` expressions, and _xunit.runner.json_ continues to configure parallelism.
+Use `--report-trx` to write TRX results and `--report-gh` for GitHub Actions annotations and job summaries. These switches require the corresponding reporting packages, which the Lombiq test SDK includes. The `test-dotnet` action in Lombiq GitHub Actions enables both. xUnit supports existing `--filter` expressions, and _xunit.runner.json_ continues to configure parallelism.
