@@ -1,11 +1,17 @@
+using System;
+
 namespace OpenQA.Selenium;
 
 public static class WebDriverExceptionExtensions
 {
+    [Obsolete($"Typo in method name, use {nameof(IsStaleElementLikeException)} instead.")]
+    public static bool IsStateElementLikeException(this WebDriverException exception) =>
+        exception.IsStaleElementLikeException();
+
     /// <summary>
     /// Checks if the exception is one that's thrown when trying to access an element that's stale.
     /// </summary>
-    public static bool IsStateElementLikeException(this WebDriverException exception) =>
+    public static bool IsStaleElementLikeException(this WebDriverException exception) =>
         exception is StaleElementReferenceException ||
         // This is the same as StaleElementReferenceException but for some reason ChromeDriver randomly throws this
         // instead. Also see:

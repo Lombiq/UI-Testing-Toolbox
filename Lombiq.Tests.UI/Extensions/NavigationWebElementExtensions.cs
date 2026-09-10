@@ -43,25 +43,35 @@ public static class NavigationWebElementExtensions
                         context.Driver.Perform(actions => actions.MoveToElement(element).Click());
                         notFound = false;
                     }
-                    catch (WebDriverException ex) when (i < maxTries)
+                    catch (Exception ex) when (i < maxTries)
                     {
-                        switch (ex.Message)
+                        switch (ex)
                         {
-                            case string message when message.Contains("move target out of bounds"):
+                            case MoveTargetOutOfBoundsException:
+                                context.ScrollTo(element.Location.X, element.Location.Y);
+                                break;
+
+                            case { } when ex.Message.Contains("move target out of bounds"):
                                 context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                     "\"move target out of bounds\" exception, retrying the click.");
                                 break;
 
-                            case string message when ex.IsStateElementLikeException():
+                            case WebDriverException webDriverException when webDriverException.IsStaleElementLikeException():
                                 context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                                     "Stale element exception with the message \"{0}\", retrying the click.",
-                                    message);
+                                    ex.Message);
                                 break;
 
-                            case string message when message.ContainsOrdinalIgnoreCase(
+                            case { } when ex.Message.ContainsOrdinalIgnoreCase(
                                 "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
                                 throw new NotSupportedException(
                                     "For this element use the standard Click() method.");
+
+                            case UnknownErrorException when ex.Message.ContainsOrdinalIgnoreCase(
+                                "MarionetteCommands:MarionetteCommandsParent:_dispatchEvent: message reply cannot be cloned."):
+                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                                    "Problem with Marionette communication, retrying the click.");
+                                break;
 
                             default:
                                 throw;

@@ -536,6 +536,28 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
 
     /// <summary>
+    /// Clicks on <paramref name="by"/> using <see cref="ClickReliablyOnAsync"/> and then waits until the <see
+    /// cref="WebDriver.Url"/> becomes different from the value before the click. This is different from <see
+    /// cref="ClickReliablyOnUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
+    /// concluded, which can fail on regular links.
+    /// </summary>
+    public static async Task ClickReliablyOnAndWaitUntilUrlChangeAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var currentUrl = context.Driver.Url;
+        await context.ClickReliablyOnAsync(by);
+        ReliabilityHelper.DoWithRetriesOrFail(
+            () => context.Driver.Url != currentUrl,
+            timeout,
+            interval,
+            context.Configuration.TestCancellationToken);
+        context.WaitForPageLoad();
+    }
+
+    /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
     /// cref="NavigationWebElementExtensions.ClickWithScriptAsync(IWebElement, UITestContext)"/> so the <paramref
     /// name="context"/> doesn't have to be passed twice.
