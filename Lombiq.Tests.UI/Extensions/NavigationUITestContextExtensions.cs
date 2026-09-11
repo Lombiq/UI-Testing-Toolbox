@@ -503,7 +503,7 @@ public static class NavigationUITestContextExtensions
         context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
-    [Obsolete("Use ClickReliablyOnUntilNavigationHasOccurredAsync instead.")]
+    [Obsolete($"Use {nameof(ClickReliablyOnUntilNavigationHasOccurredAsync)} instead.")]
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
@@ -516,6 +516,8 @@ public static class NavigationUITestContextExtensions
     /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync"/> so the <paramref
     /// name="context"/> doesn't have to be passed twice.
     /// </summary>
+    [Obsolete("This method clicks continuously, which may send several requests. Use " +
+        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
     public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
         this UITestContext context,
         By by,
@@ -528,6 +530,8 @@ public static class NavigationUITestContextExtensions
     /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync"/> so the <paramref name="context"/>
     /// doesn't have to be passed twice.
     /// </summary>
+    [Obsolete("This method clicks continuously, which may send several requests. Use " +
+        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
     public static Task ClickReliablyOnUntilUrlChangeAsync(
         this UITestContext context,
         By by,

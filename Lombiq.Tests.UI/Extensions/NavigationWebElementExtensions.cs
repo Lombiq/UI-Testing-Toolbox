@@ -114,9 +114,8 @@ public static class NavigationWebElementExtensions
     /// <summary>
     /// Repeatedly clicks an element until the browser URL changes. Note that unlike <see
     /// cref="ClickReliablyUntilNavigationHasOccurredAsync"/> this doesn't necessitate a navigation, but can include it.
-    /// If you're doing a Get() before then use <see
-    /// cref="NavigationUITestContextExtensions.ClickReliablyOnUntilUrlChangeAsync(UITestContext, By, TimeSpan?,
-    /// TimeSpan?)"/> instead.
+    /// If the <paramref name="element"/> is a link or a UI element without debounce, consider using <see
+    /// cref="NavigationUITestContextExtensions.ClickReliablyOnAndWaitUntilUrlChangeAsync"/> instead.
     /// </summary>
     public static Task ClickReliablyUntilUrlChangeAsync(
         this IWebElement element,
