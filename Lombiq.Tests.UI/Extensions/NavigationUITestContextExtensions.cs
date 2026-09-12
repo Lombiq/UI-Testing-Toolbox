@@ -552,7 +552,20 @@ public static class NavigationUITestContextExtensions
         TimeSpan? interval = null)
     {
         var currentUrl = context.Driver.Url;
-        await context.ClickReliablyOnAsync(by);
+
+        // If selected HTML element is <a> and it points to the current page, then this method will time out. To get
+        // around this problem, we modify the current URL using JavaScript.
+        var element = context.Get(by);
+        if (element.TagName == TagNames.A)
+        {
+            context.ExecuteScript(
+                "if (arguments[0].href === location.href) window.history.replaceState(null, '', `${location.href}#ts=${Date.now()}`);",
+                element);
+            currentUrl = context.Driver.Url;
+        }
+
+        await element.ClickReliablyAsync(context, by);
+
         ReliabilityHelper.DoWithRetriesOrFail(
             () => context.Driver.Url != currentUrl,
             timeout,
