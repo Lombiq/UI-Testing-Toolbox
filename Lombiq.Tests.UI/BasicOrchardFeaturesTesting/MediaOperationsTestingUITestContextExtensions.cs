@@ -35,9 +35,9 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.Missing(By.CssSelector("#mediaContainerMain .upload-list .text-danger"));
                 context.Exists(By.XPath($"//span[contains(text(), '{imageName}')]"));
 
-                await context
-                    .Get(By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{imageName}\"]").OfAnyVisibility())
-                    .ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(
+                    By.CssSelector($"a[href^=\"{context.UrlPrefix}/media/{imageName}\"]").OfAnyVisibility());
+
                 // Closing the newly opened tab with the image, so the browser doesn't continue to switch the UI back
                 // and forth.
                 context.DoWithRetriesOrFail(
@@ -60,16 +60,13 @@ public static class MediaOperationsTestingUITestContextExtensions
                 // out). Thus not doing opening and closing it as with the image above.
                 context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
-                await context
-                    .Get(By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility())
-                    .ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(
+                    By.XPath($"//span[contains(text(), '{documentName}')]/ancestor::tr").OfAnyVisibility());
 
                 context.WaitForPageLoad();
                 await context.GoToAdminRelativeUrlAsync(mediaPath);
 
-                await context
-                    .Get(By.CssSelector("#folder-tree .treeroot .folder-actions"))
-                    .ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(By.CssSelector("#folder-tree .treeroot .folder-actions"));
 
                 context.Get(By.Id("create-folder-name")).SendKeys("Example Folder");
 
@@ -86,16 +83,15 @@ public static class MediaOperationsTestingUITestContextExtensions
                 context.UploadSamplePdfByIdOfAnyVisibility("fileupload");
                 context.WaitForPageLoad();
 
-                var image = context.Get(By.XPath($"//span[contains(text(), '{imageName}')]"));
+                var byImage = ByHelper.TextContains(imageName, "span");
+                var image = context.Get(byImage);
 
                 context.Exists(By.XPath($"//span[contains(text(), '{documentName}')]"));
 
-                await image.ClickReliablyAsync(context);
+                await image.ClickReliablyAsync(context, byImage);
 
-                await context
-                    .Get(By.XPath($"//span[contains(text(), '{imageName}')]/ancestor::tr"))
-                    .Get(By.CssSelector("a.btn.btn-link.btn-sm.delete-button"))
-                    .ClickReliablyAsync(context);
+                await context.ClickReliablyOnAsync(
+                    By.XPath($"//span[contains(text(), '{imageName}')]/ancestor::tr//a[contains(@class, 'delete-button')]"));
 
                 await context.ClickModalOkAsync();
                 context.WaitForPageLoad();

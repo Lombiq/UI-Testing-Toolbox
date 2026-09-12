@@ -492,7 +492,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnAsync(this UITestContext context, By by, int maxTries = 3) =>
-        context.Get(by).ClickReliablyAsync(context, maxTries);
+        context.Get(by).ClickReliablyAsync(context, by, maxTries);
 
     /// <summary>
     /// Reliably clicks on the link identified by the given text with <see
@@ -500,7 +500,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
-        context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
+        context.ClickReliablyOnAsync(By.LinkText(linkText));
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
     [Obsolete($"Use {nameof(ClickReliablyOnUntilNavigationHasOccurredAsync)} instead.")]
