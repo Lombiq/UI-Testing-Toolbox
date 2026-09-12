@@ -1,4 +1,5 @@
 using Atata;
+using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using System;
@@ -9,6 +10,9 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class NavigationWebElementExtensions
 {
+    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, int maxTries = 3) =>
+        element.ClickReliablyAsync(context, originalSelector: null, maxTries);
+
     /// <summary>
     /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click() but
     /// still not perfect. If you're doing a Get() before then use <see
@@ -23,7 +27,7 @@ public static class NavigationWebElementExtensions
     /// </para>
     /// </remarks>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
-    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, int maxTries = 3) =>
+    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, By originalSelector, int maxTries = 3) =>
         context.ExecuteLoggedAsync(
             nameof(ClickReliablyAsync),
             element,
@@ -43,39 +47,13 @@ public static class NavigationWebElementExtensions
                         context.Driver.Perform(actions => actions.MoveToElement(element).Click());
                         notFound = false;
                     }
-                    catch (Exception ex) when (i < maxTries)
+                    catch (Exception exception) when (i < maxTries)
                     {
-                        switch (ex)
-                        {
-                            case MoveTargetOutOfBoundsException:
-                                context.ScrollTo(element.Location.X, element.Location.Y);
-                                break;
+                        var errorContext = HandleFailedClick(
+                            new ClickReliablyErrorContext(context, element, originalSelector, exception));
 
-                            case { } when ex.Message.Contains("move target out of bounds"):
-                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                    "\"move target out of bounds\" exception, retrying the click.");
-                                break;
-
-                            case WebDriverException webDriverException when webDriverException.IsStaleElementLikeException():
-                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Stale element exception with the message \"{0}\", retrying the click.",
-                                    ex.Message);
-                                break;
-
-                            case { } when ex.Message.ContainsOrdinalIgnoreCase(
-                                "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
-                                throw new NotSupportedException(
-                                    "For this element use the standard Click() method.");
-
-                            case UnknownErrorException when ex.Message.ContainsOrdinalIgnoreCase(
-                                "MarionetteCommands:MarionetteCommandsParent:_dispatchEvent: message reply cannot be cloned."):
-                                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
-                                    "Problem with Marionette communication, retrying the click.");
-                                break;
-
-                            default:
-                                throw;
-                        }
+                        element = errorContext.Element;
+                        if (errorContext.ShouldThrow) throw;
 
                         await Task.Delay(RetrySettings.Interval, context.Configuration.TestCancellationToken);
                     }
@@ -84,6 +62,50 @@ public static class NavigationWebElementExtensions
                 await context.Configuration.Events.AfterClick
                     .InvokeAsync<ClickEventHandler>(eventHandler => eventHandler(context, element));
             });
+
+    /// <summary>
+    /// Handles exceptions in <see cref="ClickReliablyAsync(IWebElement, UITestContext, By, int)"/>.
+    /// </summary>
+    private static ClickReliablyErrorContext HandleFailedClick(ClickReliablyErrorContext errorContext)
+    {
+        var context = errorContext.Context;
+        var exception = errorContext.Exception;
+
+        switch (exception)
+        {
+            case MoveTargetOutOfBoundsException:
+                context.ScrollTo(errorContext.Element.Location.X, errorContext.Element.Location.Y);
+                return errorContext;
+
+            case { } when exception.Message.Contains("move target out of bounds"):
+                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                    "\"move target out of bounds\" exception, retrying the click.");
+                return errorContext;
+
+            case WebDriverException webDriverException when webDriverException.IsStaleElementLikeException():
+                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                    "Stale element exception with the message \"{0}\", retrying the click.",
+                    exception.Message);
+
+                return errorContext.OriginalSelector is { } by && context.Get(by.Safely()) is { } element
+                        ? errorContext with { Element = element }
+                        : errorContext;
+
+            case { } when exception.Message.ContainsOrdinalIgnoreCase(
+                "javascript error: Failed to execute 'elementsFromPoint' on 'Document': The provided double value is non-finite."):
+                throw new NotSupportedException(
+                    "For this element use the standard Click() method.");
+
+            case UnknownErrorException when exception.Message.ContainsOrdinalIgnoreCase(
+                "MarionetteCommands:MarionetteCommandsParent:_dispatchEvent: message reply cannot be cloned."):
+                context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
+                    "Problem with Marionette communication, retrying the click.");
+                return errorContext;
+
+            default:
+                return errorContext with { ShouldThrow = true };
+        }
+    }
 
     /// <inheritdoc cref="ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext, TimeSpan?, TimeSpan?)"/>
     [Obsolete("Use ClickReliablyUntilNavigationHasOccurredAsync instead.")]
