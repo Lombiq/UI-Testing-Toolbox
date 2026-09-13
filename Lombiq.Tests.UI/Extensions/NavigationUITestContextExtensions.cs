@@ -551,26 +551,32 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        var currentUrl = context.Driver.Url;
-
-        // If selected HTML element is <a> and it points to the current page, then this method will time out. To get
-        // around this problem, we modify the current URL using JavaScript.
+        var first = true;
         var element = context.Get(by);
-        if (element.TagName == TagNames.A)
+
+        // If selected HTML element is <a> and it points to the current page, then waiting for URL change will time out.
+        // In this special case we want to look for the page's navigation state instead.
+        var isElementLinkToCurrentPage =
+            element.TagName == TagNames.A &&
+            element.GetAttribute("href") == context.Driver.Url;
+
+        // We only want to click once in either case.
+        Task ProcessAsync()
         {
-            context.ExecuteScript(
-                "if (arguments[0].href === location.href) window.history.replaceState(null, '', `${location.href}#ts=${Date.now()}`);",
-                element);
-            currentUrl = context.Driver.Url;
+            if (!first) return Task.CompletedTask;
+            first = false;
+            return element.ClickReliablyAsync(context, by);
         }
 
-        await element.ClickReliablyAsync(context, by);
+        if (isElementLinkToCurrentPage)
+        {
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ProcessAsync, timeout, interval);
+        }
+        else
+        {
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ProcessAsync, timeout, interval);
+        }
 
-        ReliabilityHelper.DoWithRetriesOrFail(
-            () => context.Driver.Url != currentUrl,
-            timeout,
-            interval,
-            context.Configuration.TestCancellationToken);
         context.WaitForPageLoad();
     }
 
