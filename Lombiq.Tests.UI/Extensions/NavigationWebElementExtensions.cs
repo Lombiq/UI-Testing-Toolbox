@@ -10,12 +10,10 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class NavigationWebElementExtensions
 {
-    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, int maxTries = 3) =>
-        element.ClickReliablyAsync(context, originalSelector: null, maxTries);
-
     /// <summary>
-    /// Clicks an element even if the default Click() will sometimes fail to do so. It's more reliable than Click() but
-    /// still not perfect. If you're doing a Get() before then use <see
+    /// Clicks an element even if the default <see cref="IWebElement.Click"/> will sometimes fail to do so. It's more
+    /// reliable than <see cref="IWebElement.Click"/>, but still not perfect. If you're doing a <see
+    /// cref="ElementRetrievalUITestContextExtensions.Get"/> before, then use <see
     /// cref="NavigationUITestContextExtensions.ClickReliablyOnAsync(UITestContext, By, int)"/> instead.
     /// </summary>
     /// <remarks>
@@ -27,6 +25,15 @@ public static class NavigationWebElementExtensions
     /// </para>
     /// </remarks>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
+    public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, int maxTries = 3) =>
+        element.ClickReliablyAsync(context, originalSelector: null, maxTries);
+
+    /// <inheritdoc cref="ClickReliablyAsync(IWebElement, UITestContext, int)" />
+    /// <param name="originalSelector">
+    /// If not <see langword="null"/>, it is used for additional error handling. In case of an exception that fits <see
+    /// cref="WebDriverExceptionExtensions.IsStaleElementLikeException"/>, it is used to re-query the page and get a
+    /// fresh <paramref name="element"/>.
+    /// </param>
     public static Task ClickReliablyAsync(this IWebElement element, UITestContext context, By originalSelector, int maxTries = 3) =>
         context.ExecuteLoggedAsync(
             nameof(ClickReliablyAsync),
