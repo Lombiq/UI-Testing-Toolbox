@@ -560,8 +560,9 @@ public static class NavigationUITestContextExtensions
             element.TagName == TagNames.A &&
             element.GetAttribute("href") == context.Driver.Url;
 
-        // We only want to click once in either case.
-        Task ProcessAsync()
+        // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
+        // so it's only invoked the first time when the initial URL or navigation state is already stored.
+        Task ClickOnlyOnce()
         {
             if (!first) return Task.CompletedTask;
             first = false;
@@ -570,11 +571,11 @@ public static class NavigationUITestContextExtensions
 
         if (isElementLinkToCurrentPage)
         {
-            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ProcessAsync, timeout, interval);
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ClickOnlyOnce, timeout, interval);
         }
         else
         {
-            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ProcessAsync, timeout, interval);
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ClickOnlyOnce, timeout, interval);
         }
 
         context.WaitForPageLoad();
