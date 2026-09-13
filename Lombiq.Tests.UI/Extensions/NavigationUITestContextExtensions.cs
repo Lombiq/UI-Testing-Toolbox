@@ -492,7 +492,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnAsync(this UITestContext context, By by, int maxTries = 3) =>
-        context.Get(by).ClickReliablyAsync(context, maxTries);
+        context.Get(by).ClickReliablyAsync(context, by, maxTries);
 
     /// <summary>
     /// Reliably clicks on the link identified by the given text with <see
@@ -500,7 +500,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
-        context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
+        context.ClickReliablyOnAsync(By.LinkText(linkText));
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
     [Obsolete($"Use {nameof(ClickReliablyOnUntilNavigationHasOccurredAsync)} instead.")]
@@ -551,13 +551,33 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        var currentUrl = context.Driver.Url;
-        await context.ClickReliablyOnAsync(by);
-        ReliabilityHelper.DoWithRetriesOrFail(
-            () => context.Driver.Url != currentUrl,
-            timeout,
-            interval,
-            context.Configuration.TestCancellationToken);
+        var first = true;
+        var element = context.Get(by);
+
+        // If selected HTML element is <a> and it points to the current page, then waiting for URL change will time out.
+        // In this special case we want to look for the page's navigation state instead.
+        var isElementLinkToCurrentPage =
+            element.TagName == TagNames.A &&
+            element.GetAttribute("href") == context.Driver.Url;
+
+        // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
+        // so it's only invoked the first time when the initial URL or navigation state is already stored.
+        Task ClickOnlyOnceAsync()
+        {
+            if (!first) return Task.CompletedTask;
+            first = false;
+            return element.ClickReliablyAsync(context, by);
+        }
+
+        if (isElementLinkToCurrentPage)
+        {
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+        }
+        else
+        {
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+        }
+
         context.WaitForPageLoad();
     }
 

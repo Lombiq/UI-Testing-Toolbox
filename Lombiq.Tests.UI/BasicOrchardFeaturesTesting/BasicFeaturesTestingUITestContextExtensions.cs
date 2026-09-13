@@ -576,11 +576,13 @@ public static class BasicFeaturesTestingUITestContextExtensions
             "Test turning feature on and off",
             async () =>
             {
+                var byFeatureIds = By.Name("featureIds");
+
                 async Task<IWebElement> SearchForFeatureAsync(UITestContext context)
                 {
                     await context.GoToFeaturesAsync();
                     await context.ClickAndFillInWithRetriesAsync(By.Id("search-box"), featureName);
-                    return context.Get(By.Name("featureIds"));
+                    return context.Get(byFeatureIds);
                 }
 
                 var feature = await SearchForFeatureAsync(context);
@@ -590,7 +592,7 @@ public static class BasicFeaturesTestingUITestContextExtensions
                 for (var i = 0; i < 2; i++)
                 {
                     feature = await SearchForFeatureAsync(context);
-                    await feature.ClickReliablyAsync(context);
+                    await feature.ClickReliablyAsync(context, byFeatureIds);
                     await context.BulkActionsToggleAsync();
 
                     targetState = !targetState;
