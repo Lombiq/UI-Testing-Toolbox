@@ -6,7 +6,7 @@ using System;
 
 namespace Lombiq.Tests.UI.Models;
 
-public record ClickReliablyErrorContext(
+internal record ClickReliablyErrorContext(
     UITestContext Context,
     IWebElement Element,
     By? OriginalSelector,
