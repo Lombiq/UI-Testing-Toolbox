@@ -46,7 +46,7 @@ public record UserLoginParameters(
 
         try
         {
-            await context.ClickReliablyOnUntilNavigationHasOccurredAsync(buttonBy);
+            await context.ClickReliablyOnAndWaitUntilUrlChangeAsync(buttonBy);
         }
         catch (TimeoutException)
         {

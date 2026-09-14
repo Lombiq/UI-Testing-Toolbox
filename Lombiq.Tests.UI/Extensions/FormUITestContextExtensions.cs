@@ -262,9 +262,10 @@ public static class FormUITestContextExtensions
 
     public static async Task SetCheckboxValueAsync(this UITestContext context, By by, bool isChecked = true)
     {
-        var element = context.Get(by.OfAnyVisibility());
+        by = by.OfAnyVisibility();
+        var element = context.Get(by);
         var currentValue = element.GetDomProperty("checked") == bool.TrueString;
-        if (currentValue != isChecked) await element.ClickReliablyAsync(context);
+        if (currentValue != isChecked) await element.ClickReliablyAsync(context, by);
     }
 
     public static int GetIntValue(this UITestContext context, By by) =>

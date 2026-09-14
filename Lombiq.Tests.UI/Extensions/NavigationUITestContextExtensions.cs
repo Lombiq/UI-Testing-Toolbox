@@ -492,7 +492,7 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnAsync(this UITestContext context, By by, int maxTries = 3) =>
-        context.Get(by).ClickReliablyAsync(context, maxTries);
+        context.Get(by).ClickReliablyAsync(context, by, maxTries);
 
     /// <summary>
     /// Reliably clicks on the link identified by the given text with <see
@@ -500,10 +500,10 @@ public static class NavigationUITestContextExtensions
     /// </summary>
     /// <param name="maxTries">The maximum number of clicks attempted altogether, if retries are needed.</param>
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
-        context.Get(By.LinkText(linkText)).ClickReliablyAsync(context, maxTries);
+        context.ClickReliablyOnAsync(By.LinkText(linkText));
 
     /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
-    [Obsolete("Use ClickReliablyOnUntilNavigationHasOccurredAsync instead.")]
+    [Obsolete($"Use {nameof(ClickReliablyOnUntilNavigationHasOccurredAsync)} instead.")]
     public static Task ClickReliablyOnUntilPageLeaveAsync(
         this UITestContext context,
         By by,
@@ -516,6 +516,8 @@ public static class NavigationUITestContextExtensions
     /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync"/> so the <paramref
     /// name="context"/> doesn't have to be passed twice.
     /// </summary>
+    [Obsolete("This method clicks continuously, which may send several requests. Use " +
+        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
     public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
         this UITestContext context,
         By by,
@@ -528,12 +530,56 @@ public static class NavigationUITestContextExtensions
     /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync"/> so the <paramref name="context"/>
     /// doesn't have to be passed twice.
     /// </summary>
+    [Obsolete("This method clicks continuously, which may send several requests. Use " +
+        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
     public static Task ClickReliablyOnUntilUrlChangeAsync(
         this UITestContext context,
         By by,
         TimeSpan? timeout = null,
         TimeSpan? interval = null) =>
         context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
+
+    /// <summary>
+    /// Clicks on <paramref name="by"/> using <see cref="ClickReliablyOnAsync"/> and then waits until the <see
+    /// cref="WebDriver.Url"/> becomes different from the value before the click. This is different from <see
+    /// cref="ClickReliablyOnUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
+    /// concluded, which can fail on regular links.
+    /// </summary>
+    public static async Task ClickReliablyOnAndWaitUntilUrlChangeAsync(
+        this UITestContext context,
+        By by,
+        TimeSpan? timeout = null,
+        TimeSpan? interval = null)
+    {
+        var first = true;
+        var element = context.Get(by);
+
+        // If selected HTML element is <a> and it points to the current page, then waiting for URL change will time out.
+        // In this special case we want to look for the page's navigation state instead.
+        var isElementLinkToCurrentPage =
+            element.TagName == TagNames.A &&
+            element.GetAttribute("href") == context.Driver.Url;
+
+        // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
+        // so it's only invoked the first time when the initial URL or navigation state is already stored.
+        Task ClickOnlyOnceAsync()
+        {
+            if (!first) return Task.CompletedTask;
+            first = false;
+            return element.ClickReliablyAsync(context, by);
+        }
+
+        if (isElementLinkToCurrentPage)
+        {
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+        }
+        else
+        {
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+        }
+
+        context.WaitForPageLoad();
+    }
 
     /// <summary>
     /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see

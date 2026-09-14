@@ -79,7 +79,7 @@ public static class ReliabilityUITestContextExtensions
                 {
                     await processAsync();
                 }
-                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+                catch (WebDriverException ex) when (ex.IsStaleElementLikeException())
                 {
                     context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                         "Stale element exception with the message \"{0}\". This is normal if the process navigated away.",
@@ -125,7 +125,7 @@ public static class ReliabilityUITestContextExtensions
                 {
                     await processAsync();
                 }
-                catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+                catch (WebDriverException ex) when (ex.IsStaleElementLikeException())
                 {
                     context.Configuration.TestOutputHelper.WriteLineTimestampedAndDebug(
                         "Stale element exception with the message \"{0}\". This is normal if the process navigated away to a different URL.",
@@ -272,7 +272,7 @@ public static class ReliabilityUITestContextExtensions
             {
                 result = process();
             }
-            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+            catch (WebDriverException ex) when (ex.IsStaleElementLikeException())
             {
                 return false;
             }
@@ -314,7 +314,7 @@ public static class ReliabilityUITestContextExtensions
             {
                 process();
             }
-            catch (WebDriverException ex) when (ex.IsStateElementLikeException())
+            catch (WebDriverException ex) when (ex.IsStaleElementLikeException())
             {
                 return false;
             }
