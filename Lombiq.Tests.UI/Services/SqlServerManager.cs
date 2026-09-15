@@ -244,7 +244,8 @@ public sealed class SqlServerManager : IAsyncDisposable
             restore.RelocateFiles.Add(dataFile);
             restore.RelocateFiles.Add(logFile);
 
-            // Killing connections alone leaves a window for pooled connections to reconnect before the restore.
+            // Killing connections alone leaves a window for pooled connections to reconnect before the restore, causing
+            // random "Exclusive access could not be obtained" errors.
             // Keep this test database offline until the restore recovers it, preventing new connections as well.
             var databaseIdentifier = "[" + _databaseName.ReplaceOrdinal("]", "]]") + "]";
             await server.ConnectionContext.ExecuteNonQueryAsync(
