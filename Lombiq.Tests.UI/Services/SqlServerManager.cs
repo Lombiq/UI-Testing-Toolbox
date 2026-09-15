@@ -246,7 +246,7 @@ public sealed class SqlServerManager : IAsyncDisposable
 
             // Killing connections alone leaves a window for pooled connections to reconnect before the restore.
             // Keep this test database offline until the restore recovers it, preventing new connections as well.
-            var databaseIdentifier = "[" + _databaseName.Replace("]", "]]", StringComparison.Ordinal) + "]";
+            var databaseIdentifier = "[" + _databaseName.ReplaceOrdinal("]", "]]") + "]";
             await server.ConnectionContext.ExecuteNonQueryAsync(
                 $"ALTER DATABASE {databaseIdentifier} SET OFFLINE WITH ROLLBACK IMMEDIATE",
                 _cancellationTokenSource.Token);
