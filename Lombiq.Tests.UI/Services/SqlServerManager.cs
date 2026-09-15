@@ -247,8 +247,9 @@ public sealed class SqlServerManager : IAsyncDisposable
             // Killing connections alone leaves a window for pooled connections to reconnect before the restore.
             // Keep this test database offline until the restore recovers it, preventing new connections as well.
             var databaseIdentifier = "[" + _databaseName.Replace("]", "]]", StringComparison.Ordinal) + "]";
-            server.ConnectionContext.ExecuteNonQuery(
-                $"ALTER DATABASE {databaseIdentifier} SET OFFLINE WITH ROLLBACK IMMEDIATE");
+            await server.ConnectionContext.ExecuteNonQueryAsync(
+                $"ALTER DATABASE {databaseIdentifier} SET OFFLINE WITH ROLLBACK IMMEDIATE",
+                _cancellationTokenSource.Token);
 
             try
             {
@@ -259,7 +260,7 @@ public sealed class SqlServerManager : IAsyncDisposable
             {
                 // A failure before the restore starts must not leave the database offline.
                 var database = server.Databases[_databaseName];
-                database.Refresh();
+                await database.RefreshAsync(_cancellationTokenSource.Token);
                 if (database.Status.HasFlag(DatabaseStatus.Offline)) database.SetOnline();
             }
         }
