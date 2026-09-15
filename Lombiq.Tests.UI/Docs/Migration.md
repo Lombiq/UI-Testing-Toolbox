@@ -2,7 +2,7 @@
 
 ## Migrating to Microsoft Testing Platform
 
-Use `Lombiq.MSBuild.OrchardCore.Tests.UI.Sdk` for executable UI test projects. Move reusable UI test libraries to `Lombiq.MSBuild.OrchardCore.Tests.UI.Library.Sdk`, which preserves library output without a test runner. Update both local imports and NuGet SDK references.
+Use [`Lombiq.MSBuild.OrchardCore.Tests.UI.Sdk`](https://github.com/Lombiq/MSBuild-Targets/blob/dev/Lombiq.MSBuild.OrchardCore.Tests.UI.Sdk/Readme.md) for executable UI test projects. Move reusable UI test libraries to [`Lombiq.MSBuild.OrchardCore.Tests.UI.Library.Sdk`](https://github.com/Lombiq/MSBuild-Targets/blob/dev/Lombiq.MSBuild.OrchardCore.Tests.UI.Library.Sdk/Readme.md), which preserves library output without a test runner. Update both local imports and NuGet SDK references.
 
 Upgrade `xunit.v3` to 4.0.0 or later in all test projects, remove `Microsoft.NET.Test.Sdk` and `xunit.runner.visualstudio`, and enable `<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>`. The updated Lombiq test SDK handles these project settings and adds the reporting and hang dump extensions.
 
