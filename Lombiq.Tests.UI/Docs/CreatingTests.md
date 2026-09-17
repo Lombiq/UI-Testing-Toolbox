@@ -5,7 +5,8 @@
 Prepare the test project:
 
 - Reference the web app project under test.
-- Reference `Lombiq.Tests.UI` (either from NuGet or as a Git submodule) from your test project, and add a reference to the `Microsoft.NET.Test.Sdk` package.
+- Use [`Lombiq.MSBuild.OrchardCore.Tests.UI.Sdk`](https://github.com/Lombiq/MSBuild-Targets/blob/dev/Lombiq.MSBuild.OrchardCore.Tests.UI.Sdk/Readme.md) to configure the executable xUnit runner and Microsoft Testing Platform. It supplies the `Lombiq.Tests.UI` dependency too. For reusable libraries containing UI test methods, use [`Lombiq.MSBuild.OrchardCore.Tests.UI.Library.Sdk`](https://github.com/Lombiq/MSBuild-Targets/blob/dev/Lombiq.MSBuild.OrchardCore.Tests.UI.Library.Sdk/Readme.md) instead.
+- Configure the test runner as described in [Executing tests](ExecutingTests.md). The test SDK includes the reporting and hang dump extensions used by Lombiq GitHub Actions. For manual setup, reference `Lombiq.Tests.UI`. Also reference `xunit.v3`, `Microsoft.Testing.Extensions.GitHubActionsReport`, `Microsoft.Testing.Extensions.TrxReport`, and `Microsoft.Testing.Extensions.HangDump`. Set `<OutputType>Exe</OutputType>` and `<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>` too.
 - Set `<IsPackable>false</IsPackable>` in the project too unless you want NuGet packages to be generated (if the solution is packaged up).
 
 For a sample test project see [`Lombiq.Tests.UI.Samples`](../../Lombiq.Tests.UI.Samples/Readme.md).
