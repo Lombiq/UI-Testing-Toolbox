@@ -562,20 +562,15 @@ public static class NavigationUITestContextExtensions
 
         // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
         // so it's only invoked the first time when the initial URL or navigation state is already stored.
-        Task ClickOnlyOnceAsync()
-        {
-            if (!first) return Task.CompletedTask;
-            first = false;
-            return element.ClickReliablyAsync(context, by);
-        }
+        var clickOnlyOnceAsync = ReliabilityHelper.CreateSingleRunProcess(() => element.ClickReliablyAsync(context, by));
 
         if (isElementLinkToCurrentPage)
         {
-            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(clickOnlyOnceAsync, timeout, interval);
         }
         else
         {
-            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(clickOnlyOnceAsync, timeout, interval);
         }
 
         context.WaitForPageLoad();
