@@ -47,6 +47,8 @@ public record UserLoginParameters(
         try
         {
             await context.ClickReliablyOnAndWaitUntilUrlChangeAsync(buttonBy);
+            context.Missing(By.XPath(
+                "//*[contains(@class, 'validation-summary-errors') and contains(., 'Invalid login attempt')]"));
         }
         catch (TimeoutException)
         {
