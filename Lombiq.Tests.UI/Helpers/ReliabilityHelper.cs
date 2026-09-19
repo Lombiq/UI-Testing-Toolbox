@@ -293,6 +293,22 @@ public static class ReliabilityHelper
         CancellationToken cancellationToken = default) =>
             DoWithRetriesAsync(_retryIfNotStaleProcess(processAsync), timeout, interval, cancellationToken);
 
+    /// <summary>
+    /// Converts the provided callback into one that's only executed on the first call. This is usedful if you want to
+    /// use the reliability helper to do something once and then wait for a state change.
+    /// </summary>
+    public static Func<Task> CreateSingleRunProcess(Func<Task> processAsync)
+    {
+        var first = true;
+
+        return () =>
+        {
+            if (!first) return Task.CompletedTask;
+            first = false;
+            return processAsync();
+        };
+    }
+
     private static (bool IsSuccess, SafeWait<object> Wait) DoWithRetriesInternal(
         Func<bool> process,
         TimeSpan? timeout = null,

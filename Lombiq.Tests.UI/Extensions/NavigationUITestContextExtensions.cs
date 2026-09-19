@@ -495,6 +495,15 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickReliablyAsync(context, by, maxTries);
 
     /// <summary>
+    /// Uses <see cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/> only if
+    /// the element queried by <paramref name="by"/> exists.
+    /// </summary>
+    public static Task ClickReliablyOnIfExistsAsync(this UITestContext context, By by, int maxTries = 3) =>
+        context.Get(by.Safely()) is { } element
+        ? element.ClickReliablyAsync(context, by, maxTries)
+        : Task.CompletedTask;
+
+    /// <summary>
     /// Reliably clicks on the link identified by the given text with <see
     /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/>.
     /// </summary>
@@ -551,7 +560,6 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        var first = true;
         var element = context.Get(by);
 
         // If selected HTML element is <a> and it points to the current page, then waiting for URL change will time out.
@@ -560,22 +568,22 @@ public static class NavigationUITestContextExtensions
             element.TagName == TagNames.A &&
             element.GetAttribute("href") == context.Driver.Url;
 
+        // Forms can implicitly direct to their own page, so waiting for navigation is more reliable.
+        var isElementFormSubmitButton =
+            (element.TagName == TagNames.Button || element.TagName == TagNames.Input) &&
+            element.GetAttribute("type") == "submit";
+
         // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
         // so it's only invoked the first time when the initial URL or navigation state is already stored.
-        Task ClickOnlyOnceAsync()
-        {
-            if (!first) return Task.CompletedTask;
-            first = false;
-            return element.ClickReliablyAsync(context, by);
-        }
+        var clickOnlyOnceAsync = ReliabilityHelper.CreateSingleRunProcess(() => element.ClickReliablyAsync(context, by));
 
-        if (isElementLinkToCurrentPage)
+        if (isElementLinkToCurrentPage || isElementFormSubmitButton)
         {
-            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+            await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(clickOnlyOnceAsync, timeout, interval);
         }
         else
         {
-            await context.DoWithRetriesUntilUrlChangeOrFailAsync(ClickOnlyOnceAsync, timeout, interval);
+            await context.DoWithRetriesUntilUrlChangeOrFailAsync(clickOnlyOnceAsync, timeout, interval);
         }
 
         context.WaitForPageLoad();

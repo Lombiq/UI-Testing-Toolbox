@@ -338,7 +338,10 @@ public static class BasicFeaturesTestingUITestContextExtensions
             {
                 if (signOut) await context.SignOutDirectlyAsync();
 
-                await context.LogInAsync(new(userName, password, loginButtonText));
+                await context.LogInAsync(
+                    new(userName, password, loginButtonText),
+                    navigate: true,
+                    shouldBeSuccess);
 
                 var currentUser = await context.GetCurrentUserNameAsync();
                 if (shouldBeSuccess)
