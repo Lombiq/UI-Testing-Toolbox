@@ -551,7 +551,6 @@ public static class NavigationUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        var first = true;
         var element = context.Get(by);
 
         // If selected HTML element is <a> and it points to the current page, then waiting for URL change will time out.
@@ -560,11 +559,16 @@ public static class NavigationUITestContextExtensions
             element.TagName == TagNames.A &&
             element.GetAttribute("href") == context.Driver.Url;
 
+        // Forms can implicitly direct to their own page, so waiting for navigation is more reliable.
+        var isElementFormSubmitButton =
+            (element.TagName == TagNames.Button || element.TagName == TagNames.Input) &&
+            element.GetAttribute("type") == "submit";
+
         // We only want to click once in either case. The click has to happen inside the DoWithRetries call's callback,
         // so it's only invoked the first time when the initial URL or navigation state is already stored.
         var clickOnlyOnceAsync = ReliabilityHelper.CreateSingleRunProcess(() => element.ClickReliablyAsync(context, by));
 
-        if (isElementLinkToCurrentPage)
+        if (isElementLinkToCurrentPage || isElementFormSubmitButton)
         {
             await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(clickOnlyOnceAsync, timeout, interval);
         }
