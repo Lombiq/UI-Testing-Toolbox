@@ -495,6 +495,15 @@ public static class NavigationUITestContextExtensions
         context.Get(by).ClickReliablyAsync(context, by, maxTries);
 
     /// <summary>
+    /// Uses <see cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/> only if
+    /// the element queried by <paramref name="by"/> exists.
+    /// </summary>
+    public static Task ClickReliablyOnIfExistsAsync(this UITestContext context, By by, int maxTries = 3) =>
+        context.Get(by.Safely()) is { } element
+        ? element.ClickReliablyAsync(context, by, maxTries)
+        : Task.CompletedTask;
+
+    /// <summary>
     /// Reliably clicks on the link identified by the given text with <see
     /// cref="NavigationWebElementExtensions.ClickReliablyAsync(IWebElement, UITestContext, int)"/>.
     /// </summary>
