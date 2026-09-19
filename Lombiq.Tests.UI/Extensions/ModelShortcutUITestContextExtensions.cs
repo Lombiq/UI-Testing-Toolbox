@@ -12,6 +12,13 @@ public static class ModelShortcutUITestContextExtensions
     public static Task LogInAsync(this UITestContext context, UserLoginParameters parameters, bool navigate = true) =>
         parameters.LogInAsync(context, navigate);
 
+    public static Task LogInAsync(
+        this UITestContext context,
+        UserLoginParameters parameters,
+        bool navigate,
+        bool shouldBeSuccess) =>
+        parameters.LogInAsync(context, navigate, shouldBeSuccess);
+
     public static Task RegisterAsync(
         this UITestContext context,
         UserRegistrationParameters parameters,

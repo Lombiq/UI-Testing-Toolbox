@@ -20,7 +20,10 @@ public record UserLoginParameters(
     {
     }
 
-    public async Task LogInAsync(UITestContext context, bool navigate = true)
+    public Task LogInAsync(UITestContext context, bool navigate = true) =>
+        LogInAsync(context, navigate, shouldBeSuccess: true);
+
+    public async Task LogInAsync(UITestContext context, bool navigate, bool shouldBeSuccess)
     {
         if (navigate) await context.GoToLoginAsync();
 
@@ -47,12 +50,16 @@ public record UserLoginParameters(
         try
         {
             await context.ClickReliablyOnAndWaitUntilUrlChangeAsync(buttonBy);
-            context.Missing(By.XPath(
-                "//*[contains(@class, 'validation-summary-errors') and contains(., 'Invalid login attempt')]"));
         }
         catch (TimeoutException)
         {
             await context.ClickOnWithScriptAsync(buttonBy);
+        }
+
+        if (shouldBeSuccess)
+        {
+            context.Missing(By.XPath(
+                "//*[contains(@class, 'validation-summary-errors') and contains(., 'Invalid login attempt')]"));
         }
     }
 
