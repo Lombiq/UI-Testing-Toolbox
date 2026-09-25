@@ -27,6 +27,16 @@ public sealed class Startup : StartupBase
         app.UseMiddleware<ExceptionContextLoggingMiddleware>();
 }
 
+[RequireFeatures("OrchardCore.HealthChecks")]
+public sealed class HealthChecksStartup : StartupBase
+{
+    public override void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<TestHealthCheckStatusAccessor>();
+        services.AddHealthChecks().AddCheck<TestHealthCheck>(nameof(TestHealthCheck));
+    }
+}
+
 [Feature(ShortcutsFeatureIds.OpenApi)]
 public sealed class OpenApiSetup : StartupBase
 {
