@@ -48,8 +48,8 @@ public class RemoteTests : RemoteUITestBase
             {
                 // Assertions work as usual. Implicit assertions like HTML validation and accessibility checks work too,
                 // and upon a failing assertion a failure dump is generated as you'd expect it.
-                context.Get(By.CssSelector("h1")).Text.ShouldBe("Example Domain");
-                context.Exists(By.LinkText("Learn more"));
+                context.Driver.Title.ShouldBe("Example Domain");
+                context.Get(By.CssSelector("p")).Text.ShouldStartWith("This domain is for use in documentation");
 
                 // Note that due to a remote app not being under our control, some things are not supported. E.g., you
                 // can't access the Orchard Core logs, or use shortcuts (the *Directly methods).
