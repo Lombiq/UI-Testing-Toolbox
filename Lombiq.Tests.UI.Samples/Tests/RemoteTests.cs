@@ -41,15 +41,15 @@ public class RemoteTests : RemoteUITestBase
 
     // The test itself is largely the same as all the local ones, but you need to provide a base URI.
     [Fact]
-    public Task ExampleDotComShouldWork() =>
+    public Task SeleniumWebFormShouldWork() =>
         ExecuteTestAsync(
-            new Uri("https://example.com/"),
+            new Uri("https://www.selenium.dev/selenium/web/web-form.html"),
             context =>
             {
                 // Assertions work as usual. Implicit assertions like HTML validation and accessibility checks work too,
                 // and upon a failing assertion a failure dump is generated as you'd expect it.
-                context.Driver.Title.ShouldBe("Example Domain");
-                context.Get(By.CssSelector("p")).Text.ShouldStartWith("This domain is for use in documentation");
+                context.Get(By.CssSelector("h1")).Text.ShouldBe("Web form");
+                context.Exists(By.LinkText("Return to index"));
 
                 // Note that due to a remote app not being under our control, some things are not supported. E.g., you
                 // can't access the Orchard Core logs, or use shortcuts (the *Directly methods).
