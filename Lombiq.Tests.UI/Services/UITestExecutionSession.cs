@@ -373,11 +373,11 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     {
         try
         {
-            using var dumpStream = await item.GetStreamAsync();
-            string filePath = Path.Combine(debugInformationPath, dumpRelativePath);
+            await using var dumpStream = await item.GetStreamAsync();
+            var filePath = Path.Combine(debugInformationPath, dumpRelativePath);
             FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
 
-            using var dumpFile = File.Open(
+            await using var dumpFile = File.Open(
                 filePath,
                 FileMode.Create,
                 FileAccess.Write);

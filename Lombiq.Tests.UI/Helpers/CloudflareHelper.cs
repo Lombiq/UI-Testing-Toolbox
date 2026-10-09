@@ -148,7 +148,7 @@ internal static class CloudflareHelper
                 _referenceCounts[currentIpRange]);
 
             // Clean up the IP access rule.
-            if (_ipAccessRuleIds.TryGetValue(currentIpRange, out string oldIpAccessRuleId) &&
+            if (_ipAccessRuleIds.TryGetValue(currentIpRange, out var oldIpAccessRuleId) &&
                 _referenceCounts.AddOrUpdate(currentIpRange, 0, (_, count) => count - 1) == 0)
             {
                 testOutputHelper.WriteLineTimestampedAndDebug(
@@ -180,7 +180,7 @@ internal static class CloudflareHelper
     private static async Task<string> GetPublicIpAsync(CancellationToken cancellationToken)
     {
         using var client = new HttpClient();
-        string ip = string.Empty;
+        var ip = string.Empty;
 
         var ipRequestResult = await ReliabilityHelper.DoWithRetriesAndCatchesAsync(
             async () =>
@@ -239,7 +239,7 @@ internal static class CloudflareHelper
             // Keep the first 4 hextets (64 bits) and zero out the rest.
 
             // Zero out the last 8 bytes (64 bits).
-            for (int i = 8; i < 16; i++)
+            for (var i = 8; i < 16; i++)
             {
                 bytes[i] = 0;
             }

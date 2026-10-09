@@ -10,8 +10,8 @@ public sealed class RemovesBaseUrlMonkeyTestingUrlSanitizer : IMonkeyTestingUrlS
 {
     public Uri Sanitize(UITestContext context, Uri url)
     {
-        string baseUrl = context.Scope.BaseUri.AbsoluteUri;
-        string urlAsString = url.OriginalString;
+        var baseUrl = context.Scope.BaseUri.AbsoluteUri;
+        var urlAsString = url.OriginalString;
 
         if (!string.IsNullOrEmpty(baseUrl) && urlAsString.StartsWith(baseUrl, StringComparison.Ordinal))
         {

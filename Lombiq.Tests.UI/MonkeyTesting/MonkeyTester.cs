@@ -81,7 +81,7 @@ internal sealed class MonkeyTester
 
     private bool CanTestPage(PageMonkeyTestInfo pageTestInfo)
     {
-        bool canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(pageTestInfo.Url);
+        var canTest = pageTestInfo.HasTimeToTest && ShouldTestPageUrl(pageTestInfo.Url);
 
         if (!canTest)
         {
@@ -104,7 +104,7 @@ internal sealed class MonkeyTester
 
     private PageMonkeyTestInfo GetCurrentPageTestInfo()
     {
-        string urlAsString = _context.Driver.Url;
+        var urlAsString = _context.Driver.Url;
         var url = new Uri(urlAsString);
 
         var sanitizedUrl = SanitizeUrl(url);
@@ -126,7 +126,7 @@ internal sealed class MonkeyTester
 
     private Task TestCurrentPageAsync(PageMonkeyTestInfo pageTestInfo)
     {
-        int randomSeed = GetRandomSeed();
+        var randomSeed = GetRandomSeed();
 
         return TestCurrentPageWithRandomSeedAsync(pageTestInfo, randomSeed);
     }
@@ -160,7 +160,7 @@ internal sealed class MonkeyTester
 
         _context.ExecuteScript(GremlinsScripts.GremlinsScript);
 
-        string gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
+        var gremlinsRunScript = BuildGremlinsRunScript(testTime, randomSeed);
         _context.ExecuteScript(gremlinsRunScript);
 
         var testTimeLeft = MeasureTimeLeftOfMeetingPredicate(

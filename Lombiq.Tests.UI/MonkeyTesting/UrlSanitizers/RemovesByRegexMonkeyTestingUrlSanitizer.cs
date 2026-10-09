@@ -23,14 +23,10 @@ public class RemovesByRegexMonkeyTestingUrlSanitizer : IMonkeyTestingUrlSanitize
 
     public Uri Sanitize(UITestContext context, Uri url)
     {
-        string urlAsString = url.OriginalString;
+        var urlAsString = url.OriginalString;
 
-        if (_regex.IsMatch(urlAsString))
-        {
-            string processedUrl = _regex.Replace(urlAsString, string.Empty);
-            return new(processedUrl, UriKind.RelativeOrAbsolute);
-        }
-
-        return url;
+        return _regex.IsMatch(urlAsString)
+            ? new(_regex.Replace(urlAsString, string.Empty), UriKind.RelativeOrAbsolute)
+            : url;
     }
 }
