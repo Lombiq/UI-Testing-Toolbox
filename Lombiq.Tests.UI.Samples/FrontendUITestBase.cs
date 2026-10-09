@@ -26,8 +26,10 @@ public abstract class FrontendUITestBase : UITestBase
     /// <summary>
     /// Executes a UI test where the frontend is served by a separate process.
     /// </summary>
-    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for more readable comments.")]
-    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1114:Parameter list should follow declaration", Justification = "Same.")]
+    [SuppressMessage(
+        "StyleCop.CSharp.ReadabilityRules",
+        "SA1114:Parameter list should follow declaration",
+        Justification = "Needed for more readable comments.")]
     protected Task ExecuteFrontendTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
