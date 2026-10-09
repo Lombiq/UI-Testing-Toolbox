@@ -247,15 +247,13 @@ internal static class CloudflareHelper
             var subnetAddress = new IPAddress(bytes);
             return FormatExpandedIpv6(subnetAddress) + "/64";
         }
-        else
-        {
-            // For IPv4, use /24 subnet (X.Y.Z.*).
-            // Keep the first 3 octets and zero out the last one.
-            bytes[3] = 0;
 
-            var subnetAddress = new IPAddress(bytes);
-            return string.Create(CultureInfo.InvariantCulture, $"{subnetAddress}/24");
-        }
+        // For IPv4, use /24 subnet (X.Y.Z.*).
+        // Keep the first 3 octets and zero out the last one.
+        bytes[3] = 0;
+
+        var ipv4SubnetAddress = new IPAddress(bytes);
+        return string.Create(CultureInfo.InvariantCulture, $"{ipv4SubnetAddress}/24");
     }
 
     // Formats an IPv6 address using fully expanded hextets to match Cloudflare's representation (that the CF API
