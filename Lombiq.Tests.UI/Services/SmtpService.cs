@@ -210,7 +210,8 @@ public sealed class SmtpService : IAsyncDisposable
                 if (attempt == maxAttempts - 1)
                 {
                     throw new TimeoutException(
-                        $"The smtp4dev SMTP port {port.ToTechnicalString()} did not become available within the expected time.");
+                        $"The smtp4dev SMTP port {port.ToTechnicalString()} did not become available within the expected time.",
+                        ex);
                 }
 
                 await Task.Delay(delayMilliseconds, cancellationToken);
@@ -237,7 +238,8 @@ public sealed class SmtpService : IAsyncDisposable
                 if (attempt == maxAttempts - 1)
                 {
                     throw new TimeoutException(
-                        $"The smtp4dev IMAP port {port.ToTechnicalString()} did not become available within the expected time.");
+                        $"The smtp4dev IMAP port {port.ToTechnicalString()} did not become available within the expected time.",
+                        ex);
                 }
 
                 await Task.Delay(delayMilliseconds, cancellationToken);
