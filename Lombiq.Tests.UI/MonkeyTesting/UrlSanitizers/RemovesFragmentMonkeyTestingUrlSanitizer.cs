@@ -12,7 +12,7 @@ public sealed class RemovesFragmentMonkeyTestingUrlSanitizer : IMonkeyTestingUrl
     {
         if (!string.IsNullOrEmpty(url.Fragment))
         {
-            string processedUrl = url.GetComponents(UriComponents.HttpRequestUrl, UriFormat.Unescaped);
+            var processedUrl = url.GetComponents(UriComponents.HttpRequestUrl, UriFormat.Unescaped);
 
             return new(processedUrl, UriKind.RelativeOrAbsolute);
         }

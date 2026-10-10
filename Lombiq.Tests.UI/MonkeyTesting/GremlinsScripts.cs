@@ -36,8 +36,8 @@ if (horde) horde.stop();";
 
         internal string Build()
         {
-            string speciesPart = Species != null ? string.Join(", ", Species) : null;
-            string mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
+            var speciesPart = Species != null ? string.Join(", ", Species) : null;
+            var mogwaisPart = Mogwais != null ? string.Join(", ", Mogwais) : null;
 
             return
 

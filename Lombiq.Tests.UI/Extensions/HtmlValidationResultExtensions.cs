@@ -47,7 +47,7 @@ public static class HtmlValidationResultExtensions
         {
             // In some cases the output is too large and is not a valid JSON anymore. In this case we need to fix it.
             // tracking issue: https://github.com/atata-framework/atata-htmlvalidation/issues/9
-            int index = output.IndexOf(",\"source\":", StringComparison.Ordinal);
+            var index = output.IndexOf(",\"source\":", StringComparison.Ordinal);
             if (index != -1)
             {
                 output = output[..index];

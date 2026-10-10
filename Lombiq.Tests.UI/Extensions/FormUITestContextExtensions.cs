@@ -281,7 +281,7 @@ public static class FormUITestContextExtensions
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        string title = defaultTitle;
+        var title = defaultTitle;
 
         await context.DoWithRetriesOrFailAsync(
             () =>

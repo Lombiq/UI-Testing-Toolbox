@@ -87,7 +87,7 @@ public static class YamlDocumentExtensions
             .LoadDocument(AutomationFrameworkPlanFragmentsPaths.DisplayActiveScanRuleRuntimesScriptPath).RootNode)
             .Children;
 
-        for (int i = scriptJobs.Count - 1; i >= 0; i--)
+        for (var i = scriptJobs.Count - 1; i >= 0; i--)
         {
             jobs.Children.Insert(activeScanIndex + 1, scriptJobs[i]);
         }
