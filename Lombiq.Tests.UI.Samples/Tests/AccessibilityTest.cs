@@ -15,13 +15,14 @@ public class AccessibilityTest : UITestBase
     {
     }
 
+    /// <summary>
+    /// This is just a simple test that visits two pages: The homepage, where the test will start by default, and
+    /// another one specified below.
+    /// </summary>
     [Fact]
     public Task FrontendPagesShouldBeAccessible() =>
         ExecuteTestAfterSetupAsync(
-            context =>
-                // This is just a simple test that visits two pages: The homepage, where the test will start by default,
-                // and another one.
-                context.GoToRelativeUrlAsync("/categories/travel"),
+            context => context.GoToRelativeUrlAsync("/categories/travel"),
             configuration =>
             {
                 // We adjust the configuration just for this test but you could do the same globally in UITestBase.

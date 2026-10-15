@@ -5,6 +5,7 @@ using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 using YamlDotNet.RepresentationModel;
@@ -46,6 +47,7 @@ public class SecurityScanningTests : UITestBase
     // If you're new to security scanning, starting with exactly this is probably a good idea. Most possibly your app
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
+    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
     public Task BasicSecurityScanShouldPass() =>
         // Note how we use a method that doesn't launch a browser. Security scanning happens fully in ZAP, and doesn't
         // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
@@ -80,6 +82,7 @@ public class SecurityScanningTests : UITestBase
     // - The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
+    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
             context => context.RunAndAssertBaselineSecurityScanAsync(

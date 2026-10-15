@@ -71,9 +71,15 @@ public sealed class OrchardApplicationFactory<TStartup> : WebApplicationFactory<
     {
         builder
             .ConfigureTestServices(ConfigureTestServices)
-            // NLog, if used, will put log files into configDir. Not setting this would use the default, which would be
-            // App_Data/App_Data/logs.
-            .ConfigureLogging((context, _) => LogManager.Configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath);
+            .ConfigureLogging((context, _) =>
+            {
+                // NLog, if used, will put log files into configDir. Not setting this would use the default, which would
+                // be App_Data/App_Data/logs.
+                if (LogManager.Configuration is { } configuration)
+                {
+                    configuration.Variables["configDir"] = context.HostingEnvironment.ContentRootPath;
+                }
+            });
 
         _configuration?.Invoke(builder);
     }

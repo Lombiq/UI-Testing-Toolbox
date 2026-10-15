@@ -443,9 +443,9 @@ public static class ReliabilityUITestContextExtensions
             interval);
     }
 
+    // The timeout for this existence check needs to be significantly smaller than the timeout of the whole retry logic,
+    // so actually multiple tries can happen.
     private static TimeSpan GetExistsTimeout(UITestContext context, TimeSpan? timeout) =>
-        // The timeout for this existence check needs to be significantly smaller than the timeout of the whole retry
-        // logic so actually multiple tries can happen.
         (timeout ?? context.Configuration.TimeoutConfiguration.RetryTimeout) / 5;
 
     private static bool ExistsWithin(

@@ -12,5 +12,11 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "Assertions are made implicitly in UI tests.",
     Scope = "module")]
 
+[assembly: SuppressMessage(
+    "Style",
+    "IDE0053:Use expression body for lambda expression",
+    Justification = "Disabling this helps with inline comments in the samples.",
+    Scope = "module")]
+
 // NEXT STATION: Let's start doing something with testing, actually, and configure how tests should work. Head over to
 // UITestBase.cs.

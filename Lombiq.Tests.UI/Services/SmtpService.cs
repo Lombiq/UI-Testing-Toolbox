@@ -148,9 +148,8 @@ public sealed class SmtpService : IAsyncDisposable
                 _smtpPort,
                 "--imapport",
                 _imapPort,
-                // We don't need POP3 but it can't be disabled: https://github.com/rnwood/smtp4dev/issues/1997.
                 "--pop3port",
-                _pop3Port,
+                _pop3Port, // We don't need POP3, but it can't be disabled: https://github.com/rnwood/smtp4dev/issues/1997.
                 "--urls",
                 webUIUri)
             .WithEnvironmentVariables(new Dictionary<string, string>
