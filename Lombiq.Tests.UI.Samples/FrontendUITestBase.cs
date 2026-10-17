@@ -30,6 +30,7 @@ public abstract class FrontendUITestBase : UITestBase
         "StyleCop.CSharp.ReadabilityRules",
         "SA1114:Parameter list should follow declaration",
         Justification = "Needed for more readable comments.")]
+    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
     protected Task ExecuteFrontendTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,

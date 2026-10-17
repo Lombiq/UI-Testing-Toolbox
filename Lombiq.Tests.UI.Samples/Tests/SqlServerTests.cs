@@ -23,8 +23,7 @@ public class SqlServerTests : UITestBase
     public Task AnonymousHomePageShouldExistWithSqlServer() =>
         ExecuteTestAfterSetupAsync(
             context => context.CheckIfAnonymousHomePageExistsAsync(),
-            // Note the configuration! We could also set this globally in UITestBase.
-            configuration => configuration.UseSqlServer = true);
+            configuration => configuration.UseSqlServer = true); // We could also set this globally in UITestBase.
 
     [Fact]
     public Task TogglingFeaturesShouldWorkWithSqlServer() =>

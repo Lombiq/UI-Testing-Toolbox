@@ -79,11 +79,13 @@ public class BasicVisualVerificationTests : UITestBase
                     navbarElementSelector,
                     5,
                     configurator: configuration =>
+                    {
+                        // This configuration indicates, that different baseline images should be used for each platform
+                        // and browser combination of this test.
                         configuration
-                            // These configurations below are to generate/use different baseline images on each
-                            // platform/browser.
                             .WithUsePlatformAsSuffix()
-                            .WithUseBrowserNameAsSuffix());
+                            .WithUseBrowserNameAsSuffix();
+                    });
             },
             browser);
 }

@@ -178,8 +178,7 @@ public sealed class ZapManager : IAsyncDisposable
             .GetCommand(cliParameters)
             .WithStandardOutputPipe(PipeTarget.ToDelegate(line => _testOutputHelper.WriteLineTimestampedAndDebug(line)))
             .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-            // This is so no exception is thrown by CliWrap if the exit code is not 0.
-            .WithValidation(CommandResultValidation.None)
+            .WithValidation(CommandResultValidation.None) // Don't raise an exception if the process exit code is not 0.
             .ExecuteAsync(_cancellationTokenSource.Token);
 
         // Under the Ubuntu GitHub Actions runners, at this point, the report's folder (like

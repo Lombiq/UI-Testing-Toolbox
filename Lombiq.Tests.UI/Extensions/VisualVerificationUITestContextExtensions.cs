@@ -20,6 +20,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+using ConfigureVisualVerification = System.Action<Lombiq.Tests.UI.Models.VisualVerificationMatchApprovedConfiguration>;
+
 namespace Lombiq.Tests.UI.Extensions;
 
 public static class VisualVerificationUITestContextExtensions
@@ -53,7 +55,7 @@ to customize the name of the dump item.";
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null,
+        ConfigureVisualVerification configurator = null,
         TimeSpan? resolutionChangeDelay = null)
     {
         var exceptions = new List<Exception>();
@@ -124,7 +126,7 @@ to customize the name of the dump item.";
         IEnumerable<Size> sizes,
         Func<Size, By> getSelector,
         double pixelErrorPercentageThreshold = 0,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null,
+        ConfigureVisualVerification configurator = null,
         TimeSpan? resolutionChangeDelay = null) =>
         context.AssertVisualVerificationOnAllResolutionsAsync(
             sizes,
@@ -135,7 +137,7 @@ to customize the name of the dump item.";
 
     /// <summary>
     /// Compares the baseline image and screenshot of the whole page.
-    /// <see cref="AssertVisualVerificationApproved(UITestContext, By, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
+    /// <see cref="AssertVisualVerificationApproved(UITestContext, By, double, Rectangle?, ConfigureVisualVerification)"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="pixelErrorPercentageThreshold">Maximum acceptable pixel error in percentage.</param>
@@ -149,18 +151,12 @@ to customize the name of the dump item.";
         this UITestContext context,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
-        context.AssertVisualVerificationApproved(
-            By.TagName("body"),
-            pixelErrorPercentageThreshold,
-            regionOfInterest,
-            configurator);
+        ConfigureVisualVerification configurator = null) =>
+        context.AssertVisualVerificationApproved(By.TagName("body"), pixelErrorPercentageThreshold, regionOfInterest, configurator);
 
-    // This is because of the long method signature.
-#pragma warning disable S103 // Lines should not be too long
     /// <summary>
     /// Compares the baseline image and screenshot of the element given by <paramref name="elementSelector"/>.
-    /// <see cref="AssertVisualVerificationApproved(UITestContext, IWebElement, double, Rectangle?, Action{VisualVerificationMatchApprovedConfiguration})"/>.
+    /// <see cref="AssertVisualVerificationApproved(UITestContext, IWebElement, double, Rectangle?, ConfigureVisualVerification)"/>.
     /// </summary>
     /// <param name="context">The <see cref="UITestContext"/> in which the extension is executed on.</param>
     /// <param name="elementSelector">
@@ -173,14 +169,13 @@ to customize the name of the dump item.";
     /// <exception cref="VisualVerificationBaselineImageNotFoundException">
     /// If no baseline image found under project path.
     /// </exception>
-#pragma warning restore S103 // Lines should not be too long
     [VisualVerificationApprovedMethod]
     public static void AssertVisualVerificationApproved(
         this UITestContext context,
         By elementSelector,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+        ConfigureVisualVerification configurator = null) =>
         context.AssertVisualVerificationApproved(
             elementSelector,
             (approvedContext, diff) =>
@@ -228,7 +223,7 @@ to customize the name of the dump item.";
         IWebElement element,
         double pixelErrorPercentageThreshold,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null) =>
+        ConfigureVisualVerification configurator = null) =>
         context.AssertVisualVerificationApproved(
             element,
             (approvedContext, diff) =>
@@ -348,7 +343,7 @@ to customize the name of the dump item.";
         By elementSelector,
         Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
+        ConfigureVisualVerification configurator = null)
     {
         context.ScrollTo(elementSelector);
         context.HideScrollbar();
@@ -377,7 +372,7 @@ to customize the name of the dump item.";
         IWebElement element,
         Action<VisualVerificationMatchApprovedContext, ICompareResult> comparator,
         Rectangle? regionOfInterest = null,
-        Action<VisualVerificationMatchApprovedConfiguration> configurator = null)
+        ConfigureVisualVerification configurator = null)
     {
         var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);

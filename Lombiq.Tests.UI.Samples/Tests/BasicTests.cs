@@ -69,15 +69,16 @@ public class BasicTests : UITestBase
     public Task TogglingFeaturesShouldWork() =>
         ExecuteTestAfterSetupAsync(
             context => context.ExecuteAndAssertTestFeatureToggleAsync(),
-            // You can change the configuration even for each test.
-            configuration =>
+            configuration => // You can change the configuration even for each test.
+            {
                 // By default, apart from some commonly known false positives, the response log should be empty.
                 // However, ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on
                 // that.
                 // Note that similarly, you can filter out log entries from the browser log with BrowserLogFilter. You
                 // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
                 // filter out entries in the first place.
-                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl));
+                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
+            });
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]

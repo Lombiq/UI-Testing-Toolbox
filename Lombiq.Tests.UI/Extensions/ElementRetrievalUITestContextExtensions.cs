@@ -148,8 +148,7 @@ public static class ElementRetrievalUITestContextExtensions
             .Where(index => index >= 0)
             .ToList();
         var target = toMatch
-            // MA0185 doesn't apply: item is an arbitrary object that can hold culture-sensitive data at runtime.
-#pragma warning disable MA0185
+#pragma warning disable MA0185 // doesn't apply: item is an arbitrary object that can hold culture-sensitive data at runtime.
             .Select(item => item == null ? null : string.Create(CultureInfo.InvariantCulture, $"{item}"))
 #pragma warning restore MA0185
             .Select(item => item?.Trim())

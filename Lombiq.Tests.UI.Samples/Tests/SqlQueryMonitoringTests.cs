@@ -52,8 +52,10 @@ public class SqlQueryMonitoringTests : UITestBase
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
             },
             changeConfiguration: configuration =>
+            {
                 // SQL monitoring is off by default, so you need to turn it on for the test.
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
+            });
 
     [Fact]
     public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithFilter()

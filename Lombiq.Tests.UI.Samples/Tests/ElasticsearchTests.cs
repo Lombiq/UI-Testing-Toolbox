@@ -38,10 +38,13 @@ public class ElasticsearchTests : UITestBase
                 // Hopefully, we found it!
                 context.Exists(By.XPath("//h2[contains(., 'Man must explore, and this is exploration at its greatest')]"));
             },
-            // Since indexing needs to happen before we can start the test, we use a custom setup recipe that configures
-            // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
-            // we recommend for recipes that you only need for testing.
-            context => SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch"),
+            context =>
+            {
+                // Since indexing needs to happen before we can start the test, we use a custom setup recipe that configures
+                // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
+                // we recommend for recipes that you only need for testing.
+                return SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch");
+            },
             configuration =>
             {
                 // This is important. Here we tell the UI Testing Toolbox that we want to use Elasticsearch. You can set
