@@ -44,7 +44,7 @@ public class HtmlValidationConfiguration
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".htmlvalidate.json") is { } rootConfiguration && File.Exists(rootConfiguration)
             ? rootConfiguration
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "default.htmlvalidate.json"),
-        HtmlValidatePackageVersion = "11.16.2",
+        HtmlValidatePackageVersion = "11.16.4",
     };
 
     /// <summary>

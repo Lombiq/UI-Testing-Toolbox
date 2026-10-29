@@ -37,7 +37,7 @@ public static class WebDriverFactory
             // is updated automatically by Renovate.
             // If anything on this line is changed, be sure to adjust the regex in the renovate.json5 config file in the
             // root too.
-            chromeConfig.Options.BrowserVersion = "156.0.8078.47";
+            chromeConfig.Options.BrowserVersion = "156.0.8078.73";
 
             configuration.BrowserOptionsConfigurator?.Invoke(chromeConfig.Options);
 
