@@ -114,15 +114,6 @@ public static class NavigationWebElementExtensions
         }
     }
 
-    /// <inheritdoc cref="ClickReliablyUntilNavigationHasOccurredAsync(IWebElement, UITestContext, TimeSpan?, TimeSpan?)"/>
-    [Obsolete("Use ClickReliablyUntilNavigationHasOccurredAsync instead.")]
-    public static Task ClickReliablyUntilPageLeaveAsync(
-        this IWebElement element,
-        UITestContext context,
-        TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        element.ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
-
     /// <summary>
     /// Repeatedly clicks an element until the browser leaves the page. Note that unlike <see
     /// cref="ClickReliablyUntilUrlChangeAsync"/> this doesn't just necessitate a URL change but also a page leave. If

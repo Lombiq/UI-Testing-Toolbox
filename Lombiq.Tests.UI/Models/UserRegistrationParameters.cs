@@ -19,10 +19,6 @@ public record UserRegistrationParameters(
 {
     public const string DefaultUrl = "Register";
 
-    [Obsolete("Use CreateTest() instead.")]
-    public static UserRegistrationParameters CreateDefault() =>
-        new("TestUser", "testuser@example.org");
-
     public static UserRegistrationParameters CreateTest(string loginButtonText = UserLoginParameters.DefaultLoginButtonText) =>
         new(TestUser.UserName, TestUser.Email, LoginButtonText: loginButtonText);
 
