@@ -14,11 +14,14 @@ public sealed class AtataScope : IDisposable
 
     public AtataContext AtataContext { get; }
 
+    public WebDriverSession DriverSession =>
+        AtataContext?.Sessions?.GetOrNull<WebDriverSession>();
+
     public IWebDriver Driver
     {
         get
         {
-            var driver = AtataContext.Driver;
+            var driver = DriverSession?.Driver;
             IsBrowserRunning = driver != null;
             return driver;
         }
@@ -32,8 +35,17 @@ public sealed class AtataScope : IDisposable
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            if (!value.IsAbsoluteUri)
+            {
+                throw new InvalidOperationException($"The {nameof(BaseUri)} value should be an absolute URI.");
+            }
+
             _baseUri = value;
-            AtataContext.BaseUrl = value.ToString();
+
+            if (DriverSession is { } session)
+            {
+                session.BaseUrl = value.AbsoluteUri;
+            }
         }
     }
 
