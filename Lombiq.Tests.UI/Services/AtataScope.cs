@@ -52,7 +52,7 @@ public sealed class AtataScope : IDisposable
     public AtataScope(AtataContext atataContext, Uri baseUri)
     {
         AtataContext = atataContext;
-        _baseUri = baseUri;
+        BaseUri = baseUri;
     }
 
     /// <summary>
