@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
@@ -45,10 +44,6 @@ public class OrchardCoreUITestExecutorConfiguration
                 entry.Level >= LogLevel.Warning &&
                 entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
             TestContext.Current.CancellationToken);
-
-    [Obsolete("This is no longer necessary after https://github.com/OrchardCMS/OrchardCore/pull/18341.")]
-    public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainCacheFolderErrorsAsync =
-        app => app.LogsShouldNotContainAsync(AppLogAssertionHelper.NotMediaCacheEntriesPredicate, TestContext.Current.CancellationToken);
 
     public static readonly Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
@@ -160,18 +155,6 @@ public class OrchardCoreUITestExecutorConfiguration
             [nameof(IsNonSuccessResponse)] = IsNonSuccessResponse,
             ["Ignore missing favicon."] = eventArgs => !eventArgs.Response.Url.ContainsOrdinalIgnoreCase("favicon.ico"),
         };
-
-    /// <summary>
-    /// Gets or sets the default delegate that selects which response data get saved to <see
-    /// cref="UITestContext.CumulativeResponseLog"/>. It's a shortcut to the <see cref="ResponseLogFilters"/> entry
-    /// where the key is <see cref="ResponseLogFilter"/>.
-    /// </summary>
-    [Obsolete($"Use {nameof(ResponseLogFilters)} directly.")]
-    public Func<ResponseCompletedEventArgs, bool> ResponseLogFilter
-    {
-        get => ResponseLogFilters.GetMaybe(nameof(ResponseLogFilter)) ?? (_ => true);
-        set => ResponseLogFilters[nameof(ResponseLogFilter)] = value;
-    }
 
     public Action<IReadOnlyList<ResponseData>> AssertResponseLog { get; set; } = AssertResponseLogIsEmpty;
 

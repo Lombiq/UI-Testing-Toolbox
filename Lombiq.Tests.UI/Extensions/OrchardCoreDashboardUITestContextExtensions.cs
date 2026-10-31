@@ -37,15 +37,6 @@ public static class OrchardCoreDashboardUITestContextExtensions
     public static Task ClickModalOkAsync(this UITestContext context) =>
         context.ClickOnWithScriptAsync(By.Id("modalOkButton"));
 
-    /// <inheritdoc cref="ClickPublishUntilNavigationHasOccurredAsync(UITestContext, bool, TimeSpan?, TimeSpan?)"/>/>
-    [Obsolete("Use ClickPublishUntilNavigationHasOccurredAsync instead.")]
-    public static Task ClickPublishUntilNavigationAsync(
-        this UITestContext context,
-        bool withJavaScript = false,
-        TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        context.ClickPublishUntilNavigationHasOccurredAsync(withJavaScript, timeout, interval);
-
     /// <summary>
     /// Sometimes the Publish button doesn't get clicked. This method retries pressing it up to 4 times with a 30 second
     /// interval between attempts. This should grant enough time to execute the publish action if the button actually

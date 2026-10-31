@@ -1,3 +1,4 @@
+using Atata;
 using Atata.HtmlValidation;
 using Cysharp.Text;
 using Lombiq.HelpfulLibraries.Common.Utilities;
@@ -947,7 +948,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_dumpConfiguration.CaptureHtmlSource)
         {
             _context.RefreshCurrentAtataContext();
-            _context.Scope.AtataContext.TakePageSnapshot("TestDumpPageSnapshot");
+            _context.Scope.AtataContext.Sessions.GetOrNull<WebDriverSession>()?.TakePageSnapshot("TestDumpPageSnapshot");
 
             var file = _context.Scope.AtataContext.Artifacts.Files.Value
                 .Single(file => file.Name.Value.Contains("TestDumpPageSnapshot"));

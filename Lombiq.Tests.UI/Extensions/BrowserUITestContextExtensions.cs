@@ -1,5 +1,3 @@
-using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -34,23 +32,6 @@ public static class BrowserUITestContextExtensions
         }
 
         return cookieContainer;
-    }
-
-    [Obsolete("Use the methods in HttpClientUITestContextExtensions instead.")]
-    public static async Task<T> FetchWithBrowserContextAsync<T>(
-        this UITestContext context,
-        HttpMethod method,
-        string address,
-        Func<HttpResponseMessage, Task<T>> processResponseAsync)
-    {
-        using var handler = HttpClientHelper.CreateCertificateIgnoringHttpClientHandler();
-        handler.CookieContainer = context.GetCookieContainer();
-
-        using var client = new HttpClient(handler);
-        using var request = new HttpRequestMessage(method, new Uri(context.GetCurrentUri(), address));
-        using var response = await client.SendAsync(request, context.Configuration.TestCancellationToken);
-
-        return await processResponseAsync(response);
     }
 
     /// <summary>
