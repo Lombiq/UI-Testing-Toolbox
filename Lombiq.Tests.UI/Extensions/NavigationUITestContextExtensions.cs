@@ -381,7 +381,7 @@ public static class NavigationUITestContextExtensions
     /// <summary>
     /// Clicks on <paramref name="by"/> using <see cref="ClickReliablyOnAsync"/> and then waits until the <see
     /// cref="WebDriver.Url"/> becomes different from the value before the click. This is different from <see
-    /// cref="ClickReliablyOnUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
+    /// cref="ClickReliablyOnAndWaitUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
     /// concluded, which can fail on regular links.
     /// </summary>
     public static async Task ClickReliablyOnAndWaitUntilUrlChangeAsync(

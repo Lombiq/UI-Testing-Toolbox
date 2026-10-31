@@ -127,7 +127,7 @@ public sealed class UITestContext : IAsyncDisposable
 
     /// <summary>
     /// Gets a cumulative log of browser HTTP responses filtered by <see
-    /// cref="OrchardCoreUITestExecutorConfiguration.ResponseLogFilter"/>, containing all items since the start of the
+    /// cref="OrchardCoreUITestExecutorConfiguration.ResponseLogFilters"/>, containing all items since the start of the
     /// test. This can be used to assert on response details. Note that
     /// since the log is updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
