@@ -1,4 +1,3 @@
-using Atata;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Exceptions;
@@ -24,7 +23,7 @@ public sealed class UITestContext : IAsyncDisposable
 {
     // Multiple browser tabs being open can log at the same time, so we need thread-safe collections. Using a queue to
     // preserve the insertion order.
-    private readonly ConcurrentQueue<Models.BrowserLogEntry> _cumulativeBrowserLog = [];
+    private readonly ConcurrentQueue<BrowserLogEntry> _cumulativeBrowserLog = [];
     private readonly ConcurrentQueue<ResponseData> _cumulativeResponseLog = [];
 
     private IBiDi _biDirectionalDriver;
@@ -124,7 +123,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// be used to assert on the browser log like failing the test on JavaScript exceptions. Note that since the log is
     /// updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<Models.BrowserLogEntry> CumulativeBrowserLog => _cumulativeBrowserLog.ToReadOnly();
+    public IReadOnlyList<BrowserLogEntry> CumulativeBrowserLog => _cumulativeBrowserLog.AsReadOnlyList();
 
     /// <summary>
     /// Gets a cumulative log of browser HTTP responses filtered by <see
@@ -132,7 +131,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// test. This can be used to assert on response details. Note that
     /// since the log is updated asynchronously by the browser, entries might appear with some delay.
     /// </summary>
-    public IReadOnlyList<ResponseData> CumulativeResponseLog => _cumulativeResponseLog.ToReadOnly();
+    public IReadOnlyList<ResponseData> CumulativeResponseLog => _cumulativeResponseLog.AsReadOnlyList();
 
     /// <summary>
     /// Gets a dictionary storing some custom contextual data.
@@ -347,7 +346,7 @@ public sealed class UITestContext : IAsyncDisposable
             // originated from a different URL and shouldn't be ignored.
             var browserLogHandler = CreateLoggingHandler(configuration.BrowserLogFilters, context._cumulativeBrowserLog);
             await context._biDirectionalDriver.Log.EntryAdded.SubscribeAsync(
-                entry => browserLogHandler(new Models.BrowserLogEntry(entry)),
+                entry => browserLogHandler(new BrowserLogEntry(entry)),
                 cancellationToken: token);
 
             if (configuration.TestDumpConfiguration.CaptureResponseLog)

@@ -117,7 +117,7 @@ public class SafeWaitAsync<T> : IWait<T>
             if (timeUntilTimeout <= TimeSpan.Zero)
             {
                 if (typeof(TResult) == typeof(ReadOnlyCollection<IWebElement>))
-                    return (TResult)(object)Array.Empty<IWebElement>().ToReadOnly();
+                    return (TResult)(object)Array.Empty<IWebElement>().AsReadOnlyList();
 
                 return typeof(TResult) == typeof(IWebElement[]) ? (TResult)(object)Array.Empty<IWebElement>() : default;
             }
