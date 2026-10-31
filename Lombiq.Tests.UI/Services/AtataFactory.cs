@@ -25,39 +25,43 @@ public static class AtataFactory
         AtataContext.GlobalProperties.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
         AtataContext.GlobalProperties.UseUtcTimeZone();
 
-        // Since Atata 2.0 the default visibility option is Visibility.Any, these lines restore it to the 1.x behavior.
-        AtataContext.GlobalConfiguration.UseDefaultControlVisibility(Visibility.Visible);
         SearchOptions.DefaultVisibility = Visibility.Visible;
 
         var timeoutConfiguration = configuration.TimeoutConfiguration;
         var browserConfiguration = configuration.BrowserConfiguration;
 
-        var builder = AtataContext.Configure()
-            .UseBaseUrl(baseUri.ToString())
-            .UseCulture(browserConfiguration.AcceptLanguage.ToString())
-            .UseTestName(configuration.AtataConfiguration.TestName)
-            .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
-            .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .PageSnapshots.UseCdpOrPageSourceStrategy()
-            .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
+        var builder = AtataContext.CreateDefaultBuilder(AtataContextScope.Test);
 
         if (configuration.BrowserConfiguration.Browser != Browser.None)
         {
-            builder
-                .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
-                .UseDriver(await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper));
+            var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper);
+            builder.Sessions.AddWebDriver(driverBuilder =>
+            {
+                driverBuilder.UseDriver(factory);
+                driverBuilder.UseBaseUrl(baseUri);
+                driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
+
+                // Since Atata 2.0, the default visibility option is Visibility.Any. This restores it to the 1.x behavior.
+                driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
+            });
         }
-        else
-        {
-            builder.UseDriverInitializationStage(AtataContextDriverInitializationStage.None);
-        }
+
+        builder.UseCulture(browserConfiguration.AcceptLanguage.ToString());
+        builder.UseTestName(configuration.AtataConfiguration.TestName);
+        builder.UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout);
+        builder.UseBaseRetryInterval(timeoutConfiguration.RetryInterval);
+
+        // Necessary to prevent long paths, an issue under Windows.
+        TestContext.Current.KeyValueStorage[nameof(ContextIdArtifactsPathFactory)] = contextId;
+        AtataContext.GlobalProperties.ArtifactsPathFactory = ContextIdArtifactsPathFactory.Instance;
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
 
         configuration.AtataConfiguration.ContextBuilder?.Invoke(builder);
 
-        return new AtataScope(builder.Build(), baseUri);
+        var context = await builder.BuildAsync(TestContext.Current.CancellationToken);
+        return new AtataScope(context, baseUri);
     }
 
     public static void SetupShellCliCommandFactory() =>
