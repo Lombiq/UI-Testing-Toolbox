@@ -1,5 +1,3 @@
-using Lombiq.Tests.UI.Extensions;
-using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System.Net.Http;
 using System.Threading.Tasks;
