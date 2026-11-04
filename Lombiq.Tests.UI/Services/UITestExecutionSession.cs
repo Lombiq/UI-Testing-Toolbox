@@ -948,7 +948,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         if (_dumpConfiguration.CaptureHtmlSource)
         {
             _context.RefreshCurrentAtataContext();
-            _context.Scope.AtataContext.Sessions.GetOrNull<WebDriverSession>()?.TakePageSnapshot("TestDumpPageSnapshot");
+            _context.Scope.DriverSession?.TakePageSnapshot("TestDumpPageSnapshot");
 
             var file = _context.Scope.AtataContext.Artifacts.Files.Value
                 .Single(file => file.Name.Value.Contains("TestDumpPageSnapshot"));
