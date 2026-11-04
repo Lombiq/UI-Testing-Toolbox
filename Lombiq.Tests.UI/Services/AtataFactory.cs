@@ -3,6 +3,7 @@ using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
 using OpenQA.Selenium;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -53,6 +54,7 @@ public static class AtataFactory
 
         // Necessary to prevent long paths, an issue under Windows.
         TestContext.Current.KeyValueStorage[nameof(ContextIdArtifactsPathFactory)] = contextId;
+        AtataContext.GlobalProperties.ArtifactsRootPathTemplate = configuration.GetTempDirectoryPathWithFallback();
         AtataContext.GlobalProperties.ArtifactsPathFactory = ContextIdArtifactsPathFactory.Instance;
 
         builder.LogConsumers.AddDebug();
