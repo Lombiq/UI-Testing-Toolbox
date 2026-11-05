@@ -38,6 +38,7 @@ public static class AtataFactory
             var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper);
             builder.Sessions.AddWebDriver(driverBuilder =>
             {
+                driverBuilder.UseAsPool();
                 driverBuilder.UseDriver(factory);
                 driverBuilder.UseBaseUrl(baseUri);
                 driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
@@ -45,6 +46,9 @@ public static class AtataFactory
                 // Since Atata 2.0, the default visibility option is Visibility.Any. This restores it to the 1.x behavior.
                 driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
             });
+
+            builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
+                requestBuilder.UseStartScopes(AtataContextScopes.Test));
         }
 
         builder.UseCulture(browserConfiguration.AcceptLanguage.ToString());
