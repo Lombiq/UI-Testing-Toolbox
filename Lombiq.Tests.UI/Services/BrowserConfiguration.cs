@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using SixLabors.ImageSharp;
@@ -61,4 +62,10 @@ public class BrowserConfiguration
     /// driver creation when the <see cref="UITestContext"/> does not exist yet.
     /// </summary>
     internal string TempDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether <see cref="AtataSessionMode.Pool"/> should be used when <see
+    /// cref="Browser"/> is not <see cref="Browser.None"/>.
+    /// </summary>
+    public bool UsePool { get; set; } = true;
 }

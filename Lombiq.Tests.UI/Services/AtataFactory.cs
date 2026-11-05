@@ -37,7 +37,11 @@ public static class AtataFactory
             var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper);
             builder.Sessions.AddWebDriver(driverBuilder =>
             {
-                driverBuilder.UseAsPool();
+                if (configuration.BrowserConfiguration.UsePool)
+                {
+                    driverBuilder.UseAsPool();
+                }
+
                 driverBuilder.UseDriver(factory);
                 driverBuilder.UseBaseUrl(baseUri);
                 driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
@@ -46,8 +50,11 @@ public static class AtataFactory
                 driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
             });
 
-            builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
-                requestBuilder.UseStartScopes(AtataContextScopes.Test));
+            if (configuration.BrowserConfiguration.UsePool)
+            {
+                builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
+                    requestBuilder.UseStartScopes(AtataContextScopes.Test));
+            }
         }
 
         builder.UseCulture(browserConfiguration.AcceptLanguage.ToString());
