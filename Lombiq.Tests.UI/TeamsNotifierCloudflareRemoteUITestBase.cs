@@ -14,7 +14,6 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
     protected static bool TeamsMessageWasSent { get; set; }
 
     protected abstract string SiteName { get; }
-    protected abstract Uri BaseUri { get; }
     protected abstract override string CloudflareAccountId { get; }
 
     protected virtual bool RunIsForProduction => RemoteTestHelper.RunIsForProduction;
@@ -60,7 +59,7 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
     }
 
     /// <summary>
-    /// Execute asynchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
+    /// Execute asynchronous test using <see cref="RemoteUITestBase.BaseUri"/>.
     /// </summary>
     protected Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
@@ -69,7 +68,7 @@ public abstract class TeamsNotifierCloudflareRemoteUITestBase : CloudflareRemote
         ExecuteTestAsync(BaseUri, testAsync, browser, changeConfigurationAsync ?? (_ => Task.CompletedTask));
 
     /// <summary>
-    /// Execute synchronous test using <see cref="TeamsNotifierCloudflareRemoteUITestBase"/>.<see cref="BaseUri"/>.
+    /// Execute synchronous test using <see cref="RemoteUITestBase.BaseUri"/>.
     /// </summary>
     protected Task ExecuteSyncTestAsync(
         Action<UITestContext> test,
