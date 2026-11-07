@@ -20,15 +20,18 @@ public class UITestManifest
     public ITest? XunitTest => TestContext.Current.Test;
     public string? Name => XunitTest?.TestDisplayName;
 
-    [Obsolete($"Access the first item of {nameof(Tests)} directly.")]
+    public UITestBase Fixture { get; }
+
+    [Obsolete($"Access the {nameof(Tests)} property directly.")]
     public Func<UITestContext, Task> TestAsync => Tests.Single();
-    public IList<Func<UITestContext, Task>> Tests { get; } = [];
+    public IReadOnlyList<Func<UITestContext, Task>> Tests { get; }
 
     public EnhancedStackFrame? StackFrame { get; }
 
-    public UITestManifest(params IEnumerable<Func<UITestContext, Task>> tests)
+    public UITestManifest(UITestBase fixture, params IReadOnlyList<Func<UITestContext, Task>> tests)
     {
-        Tests.AddRange(tests);
+        Fixture = fixture;
+        Tests = tests;
         StackFrame = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
             .First(frame => frame
                 .MethodInfo

@@ -82,10 +82,7 @@ public abstract class UITestBase : AtataTestSuite
         // Intentionally empty. Override in descendant class to customize.
     }
 
-    protected Task CallConfigurationAsync(OrchardCoreUITestExecutorConfiguration configuration) =>
-        _configurationChain.AwaitEachAsync(function => function(configuration));
-
-    protected async Task<Uri> CallSetupAsync(UITestContext configuration)
+    protected async Task<Uri> RunFirstApplicableSetupAsync(UITestContext configuration)
     {
         foreach (var setupAsync in _setupChain)
         {
@@ -97,9 +94,6 @@ public abstract class UITestBase : AtataTestSuite
 
         throw new InvalidOperationException("No applicable setup operation ran to conclusion.");
     }
-
-    protected Task CallTestAsync(UITestContext context) =>
-        _testChain.AwaitEachAsync(function => function(context));
 
     public UITestBase AddConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task> configureAsync)
     {
@@ -125,9 +119,11 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
+    public Task RunAsync(Func<UITestContext, Task> finalTest) => AddTest(finalTest).RunAsync();
+
     public virtual Task RunAsync()
     {
-        var testManifest = new UITestManifest(_testChain);
+        var testManifest = new UITestManifest(this, _testChain);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {

@@ -431,7 +431,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
 
     public override Task RunAsync()
     {
-        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = CallSetupAsync);
+        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = RunFirstApplicableSetupAsync);
         return base.RunAsync();
     }
 }

@@ -137,7 +137,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
             var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
-            var testTask = _testManifest.Tests.AwaitEachAsync(test => test(_context));
+            var testTask = Task.Run(
+                async () =>
+                {
+                    foreach (var test in _testManifest.Tests)
+                    {
+                        _configuration.TestCancellationToken.ThrowIfCancellationRequested();
+                        await test(_context);
+                    }
+                },
+                _configuration.TestCancellationToken);
 
             await Task.WhenAny(testTask, timeoutTask);
 
