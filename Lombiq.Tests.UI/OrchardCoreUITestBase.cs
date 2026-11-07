@@ -41,6 +41,7 @@ public delegate Task ExecuteTestAfterSetupAsync(
 /// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate parameters.
 /// </summary>
 // If you change this, then also change the corresponding method below.
+[Obsolete("This is no longer necessary.")]
 public delegate Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
