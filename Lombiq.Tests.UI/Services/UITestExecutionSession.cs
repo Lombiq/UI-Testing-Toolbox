@@ -1,3 +1,5 @@
+#nullable enable
+
 using Atata.HtmlValidation;
 using Cysharp.Text;
 using Lombiq.HelpfulLibraries.Common.Utilities;
@@ -39,17 +41,17 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private readonly ITestOutputHelper _testOutputHelper;
 
     private int _screenshotCount;
-    private SynchronizingWebApplicationSnapshotManager _currentSetupSnapshotManager;
-    private string _snapshotDirectoryPath;
+    private SynchronizingWebApplicationSnapshotManager? _currentSetupSnapshotManager;
+    private string? _snapshotDirectoryPath;
     private bool _hasSetupOperation;
     private bool _setupSnapshotDirectoryContainsApp;
-    private SqlServerManager _sqlServerManager;
-    private SmtpService _smtpService;
-    private AzureBlobStorageManager _azureBlobStorageManager;
-    private ZapManager _zapManager;
-    private IWebApplicationInstance _applicationInstance;
-    private UITestContext _context;
-    private DockerConfiguration _dockerConfiguration;
+    private SqlServerManager? _sqlServerManager;
+    private SmtpService? _smtpService;
+    private AzureBlobStorageManager? _azureBlobStorageManager;
+    private ZapManager? _zapManager;
+    private IWebApplicationInstance? _applicationInstance;
+    private UITestContext? _context;
+    private DockerConfiguration? _dockerConfiguration;
 
     public UITestExecutionSession(
         WebApplicationInstanceFactory webApplicationInstanceFactory,
@@ -71,7 +73,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             // This is to distinguish Selenium logs created by different test assemblies (important when merging their
             // TestDump folders in CI).
-            var entryAssemblyName = Assembly.GetEntryAssembly().ManifestModule.Name;
+            var entryAssemblyName = Assembly.GetEntryAssembly()!.ManifestModule.Name;
 
             // There's no way to tell when the whole test suite ends. This needs to be disposed by the GC when ending
             // the process.
@@ -94,7 +96,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         });
 
         var startTime = DateTime.UtcNow;
-        IDictionary<string, ITestDumpItem> testDumpContainer = null;
+        IDictionary<string, ITestDumpItem>? testDumpContainer = null;
         // At this point _context may not exist yet.
         if (_context != null) _context.RetryCount = retryCount;
 
@@ -279,21 +281,21 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                     "More than one exceptions in the AggregateException. This shouldn't really happen.");
             }
 
-            ex = aggregateException.InnerException;
+            ex = aggregateException.InnerExceptions[0];
         }
 
-        if (ex is PageChangeAssertionException pageChangeAssertionException)
+        if (ex is PageChangeAssertionException { InnerException: { } pageChangeAssertionInnerException })
         {
-            _testOutputHelper.WriteLineTimestampedAndDebug(pageChangeAssertionException.Message);
-            ex = pageChangeAssertionException.InnerException;
+            _testOutputHelper.WriteLineTimestampedAndDebug(ex.Message);
+            ex = pageChangeAssertionInnerException;
         }
-        else if (_context?.Driver is not null)
+        else if (_context?.Driver is { } driver)
         {
             try
             {
                 // This will throw a WebDriverException if the browser session was closed. This can happen even if
                 // _context.Driver is not null. There's no better way to check this.
-                var handle = _context.Driver.CurrentWindowHandle;
+                var handle = driver.CurrentWindowHandle;
 
                 _testOutputHelper.WriteLineTimestampedAndDebug(
                     $"An exception has occurred while interacting with the page {_context.GetPageTitleAndAddress()}. Window handle: {handle}");
@@ -323,8 +325,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
     private async Task CreateTestDumpAsync(
         string dumpRootPath,
         int retryCount,
-        IDictionary<string, ITestDumpItem> testDumpContainer,
-        Func<string, Task> additionalDumpProcess = null)
+        IDictionary<string, ITestDumpItem>? testDumpContainer,
+        Func<string, Task>? additionalDumpProcess = null)
     {
         if (!_dumpConfiguration.CreateTestDump ||
             (testDumpContainer?.Any() != true && additionalDumpProcess == null))
@@ -375,7 +377,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             await using var dumpStream = await item.GetStreamAsync();
             var filePath = Path.Combine(debugInformationPath, dumpRelativePath);
-            FileSystemHelper.EnsureDirectoryExists(Path.GetDirectoryName(filePath));
+            FileSystemHelper.EnsureDirectoryExists(
+                Path.GetDirectoryName(filePath) ??
+                throw new DirectoryNotFoundException($"Invalid path \"{filePath}\"."));
 
             await using var dumpFile = File.Open(
                 filePath,
@@ -420,6 +424,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task CaptureAppSnapshotAsync(string dumpContainerPath)
     {
+        if (_context == null) return;
+
         var appDumpPath = Path.Combine(dumpContainerPath, "AppDump");
         await _context.Application.TakeSnapshotAsync(appDumpPath);
 
@@ -427,15 +433,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         {
             try
             {
-                var containerName = _dockerConfiguration?.ContainerName;
-                var remotePath = string.IsNullOrEmpty(containerName)
+                var remotePath = string.IsNullOrEmpty(_dockerConfiguration?.ContainerName)
                     ? appDumpPath
                     : _dockerConfiguration.ContainerSnapshotPath;
 
                 await _sqlServerManager.TakeSnapshotAsync(
                     remotePath,
                     appDumpPath,
-                    containerName,
+                    _dockerConfiguration?.ContainerName,
                     useCompressionIfAvailable: true);
             }
             catch (Exception failureException)
@@ -468,7 +473,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             && _configuration.AccessibilityCheckingConfiguration.CreateReportOnFailure)
         {
             var accessibilityReportPath = Path.Combine(debugInformationPath, AccessibilityCheckingConstants.AccessibilityReportFileName);
-            _context.Driver.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
+            _context?.Driver?.CreateAxeHtmlReport(accessibilityAssertionException.AxeResult, accessibilityReportPath);
 
             if (_configuration.ReportTeamCityMetadata)
             {
@@ -644,10 +649,9 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= SqlServerManagerBeforeTakeSnapshotHandlerAsync;
 
-            var containerName = _dockerConfiguration?.ContainerName;
             var remotePath = snapshotDirectoryPath;
 
-            if (!string.IsNullOrEmpty(containerName))
+            if (!string.IsNullOrEmpty(_dockerConfiguration?.ContainerName))
             {
                 remotePath = _dockerConfiguration.ContainerSnapshotPath;
 
@@ -663,7 +667,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 }
             }
 
-            return _sqlServerManager.TakeSnapshotAsync(remotePath, snapshotDirectoryPath, containerName);
+            return _sqlServerManager!.TakeSnapshotAsync(remotePath, snapshotDirectoryPath, _dockerConfiguration?.ContainerName);
         }
 
         // This is necessary because a simple subtraction wouldn't remove previous instances of the local function.
@@ -682,7 +686,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         Task AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync(OrchardCoreAppStartContext context, string snapshotDirectoryPath)
         {
             _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot -= AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
-            return _azureBlobStorageManager.TakeSnapshotAsync(snapshotDirectoryPath);
+            return _azureBlobStorageManager!.TakeSnapshotAsync(snapshotDirectoryPath);
         }
 
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot =
@@ -690,7 +694,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.OrchardCoreConfiguration.BeforeTakeSnapshot += AzureBlobStorageManagerBeforeTakeSnapshotHandlerAsync;
     }
 
-    private async Task<UITestContext> CreateContextAsync(Uri testStartRelativeUri)
+    private async Task<UITestContext> CreateContextAsync(Uri? testStartRelativeUri)
     {
         var contextId = Guid.NewGuid().ToString();
         _configuration.BrowserConfiguration.UITestContextId = contextId;
@@ -805,12 +809,14 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                 return;
             }
 
-            var containerName = _dockerConfiguration?.ContainerName;
-            var containerPath = string.IsNullOrEmpty(containerName)
+            var containerPath = string.IsNullOrEmpty(_dockerConfiguration?.ContainerName)
                 ? _snapshotDirectoryPath
                 : _dockerConfiguration.ContainerSnapshotPath;
 
-            await _sqlServerManager.RestoreSnapshotAsync(containerPath, _snapshotDirectoryPath, containerName);
+            await _sqlServerManager.RestoreSnapshotAsync(
+                containerPath,
+                _snapshotDirectoryPath,
+                _dockerConfiguration?.ContainerName);
 
             var sitesDirectoryPath = Path.Combine(context.ContentRootPath, "App_Data", "Sites");
             var tenantDirectoryPaths = Directory.GetDirectories(sitesDirectoryPath);
@@ -827,7 +833,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
                         " wasn't found. This most possibly means that the tenant's setup failed.");
                 }
 
-                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken));
+                var appSettings = JsonNode.Parse(await File.ReadAllTextAsync(appSettingsPath, _configuration.TestCancellationToken))!;
                 appSettings[nameof(sqlServerContext.ConnectionString)] = sqlServerContext.ConnectionString;
                 await File.WriteAllTextAsync(appSettingsPath, appSettings.ToString(), _configuration.TestCancellationToken);
             }
@@ -930,6 +936,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task CaptureBrowserUsingDumpsAsync(string debugInformationPath)
     {
+        if (_context == null) return;
+
         // Saving the failure screenshot and HTML output should be as early after the test fail as possible so they show
         // an accurate state. Otherwise, e.g. the UI can change, resources can load in the meantime.
         if (_dumpConfiguration.CaptureScreenshots)
@@ -937,7 +945,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             await CreateScreenshotsDumpAsync(debugInformationPath);
         }
 
-        if (_dumpConfiguration.CaptureDownloads && Directory.Exists(_context.DownloadsDirectoryPath))
+        if (_dumpConfiguration.CaptureDownloads && Directory.Exists(_context!.DownloadsDirectoryPath))
         {
             FileSystem.CopyDirectory(
                 _context.DownloadsDirectoryPath,
@@ -1028,6 +1036,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     private async Task CreateScreenshotsDumpAsync(string debugInformationPath)
     {
+        if (_context == null) return;
+
         await TakeScreenshotIfEnabledAsync(_context);
 
         var screenshotsSourcePath = _context.ScreenshotsDirectoryPath;
