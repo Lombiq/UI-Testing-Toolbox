@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lombiq.Tests.UI.Services;
@@ -230,10 +229,9 @@ public sealed class UITestContext : IAsyncDisposable
     /// <summary>
     /// Clears the application and cumulative browser logs.
     /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token for reading the application logs.</param>
-    public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
+    public async Task ClearLogsAsync()
     {
-        foreach (var log in await Application.GetLogsAsync(cancellationToken)) await log.RemoveAsync();
+        foreach (var log in await Application.GetLogsAsync(Configuration.TestCancellationToken)) await log.RemoveAsync();
         ClearCumulativeBrowserLog();
         ClearCumulativeResponseLog();
     }

@@ -14,8 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -164,12 +164,12 @@ public static class NavigationUITestContextExtensions
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)
     {
-        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query)
+        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query, CancellationToken token)
         {
             using (response)
             {
-                await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-                var document = await new HtmlParser().ParseDocumentAsync(stream, TestContext.Current.CancellationToken);
+                await using var stream = await response.Content.ReadAsStreamAsync(token);
+                var document = await new HtmlParser().ParseDocumentAsync(stream, token);
                 return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
             }
         }
@@ -188,7 +188,8 @@ public static class NavigationUITestContextExtensions
 
         var verificationToken = (await GetElementAsync(
                 await client.GetAsync(uri, cancellationToken),
-                "input[name=__RequestVerificationToken]"))?
+                "input[name=__RequestVerificationToken]",
+                cancellationToken))?
             .GetAttribute("value");
 
         var formData = new Dictionary<string, string>
@@ -211,7 +212,8 @@ public static class NavigationUITestContextExtensions
         using var formContent = new FormUrlEncodedContent(formData);
         var responseSetupScript = await GetElementAsync(
             await client.PostAsync(uri, formContent, cancellationToken),
-            "script[src*='OrchardCore.Setup']");
+            "script[src*='OrchardCore.Setup']",
+            cancellationToken);
 
         if (shouldBeSuccess)
         {
@@ -501,7 +503,7 @@ public static class NavigationUITestContextExtensions
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
-                context.Scope.Driver.Navigate().Refresh();
+                await context.Scope.Driver.Navigate().RefreshAsync();
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));

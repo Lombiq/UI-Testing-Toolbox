@@ -58,7 +58,7 @@ public static class BrowserUITestContextExtensions
         }
         catch
         {
-            await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
+            await context.ClearLogsAsync();
             return true;
         }
 

@@ -153,7 +153,7 @@ public static class ShortcutsUITestContextExtensions
                         IsEnabled = true,
                     },
                     password,
-                    (key, error) => errors.Add(key, error));
+                    errors.Add);
 
                 if (user == null)
                 {
@@ -648,15 +648,13 @@ public static class ShortcutsUITestContextExtensions
     /// If not <see langword="null"/> or empty, an additional information notification is displayed with the provided
     /// HTML content.
     /// </param>
-    /// <param name="cancellationToken">A token to cancel interactive mode programmatically.</param>
-    public static async Task SwitchToInteractiveAsync(
-        this UITestContext context, string notificationHtml = null, CancellationToken cancellationToken = default)
+    public static async Task SwitchToInteractiveAsync(this UITestContext context, string notificationHtml = null)
     {
         context.EnsureValidOrchardCoreTenantScope();
 
         InteractiveModeHasBeenUsed = true;
         await context.EnterInteractiveModeAsync(notificationHtml);
-        await context.WaitInteractiveModeAsync(cancellationToken);
+        await context.WaitInteractiveModeAsync();
 
         if (context.Driver.WindowHandles.Count > 1)
         {
@@ -683,14 +681,12 @@ public static class ShortcutsUITestContextExtensions
     /// Periodically polls the <see cref="IShortcutsApi.IsInteractiveModeEnabledAsync"/> and waits half a second if it's
     /// <see langword="true"/>.
     /// </summary>
-    internal static async Task WaitInteractiveModeAsync(this UITestContext context, CancellationToken cancellationToken = default)
+    internal static async Task WaitInteractiveModeAsync(this UITestContext context)
     {
-        if (cancellationToken == default) cancellationToken = context.Configuration.TestCancellationToken;
-
         var client = context.GetApi();
         while (await client.IsInteractiveModeEnabledAsync() && !context.Configuration.TestCancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(500), context.Configuration.TestCancellationToken);
         }
     }
 

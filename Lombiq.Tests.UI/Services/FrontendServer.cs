@@ -175,7 +175,7 @@ public class FrontendServer
         Task? timeoutTask = null;
         if (timeout.HasValue)
         {
-            timeoutTask = Task.Delay(timeout.Value, default(CancellationToken));
+            timeoutTask = Task.Delay(timeout.Value, CancellationToken.None);
             tasks.Add(timeoutTask);
         }
 
