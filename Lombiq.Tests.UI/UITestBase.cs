@@ -1,15 +1,29 @@
+#nullable enable
+
+using Atata;
+using Atata.Xunit;
+using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Lombiq.Tests.UI;
 
-public abstract class UITestBase
+public abstract class UITestBase : AtataTestSuite
 {
+    private readonly List<Func<OrchardCoreUITestExecutorConfiguration, Task>> _configurationChain = new(capacity: 1);
+    private readonly List<Func<UITestContext, Task<Uri?>>> _setupChain = new(capacity: 1);
+    private readonly List<Func<UITestContext, Task>> _testChain = new(capacity: 1);
+
     protected ITestOutputHelper _testOutputHelper;
+
+    protected abstract WebApplicationInstanceFactory InstanceFactory { get; }
+
+    public Browser Browser { get; set; }
 
     static UITestBase() => AtataFactory.SetupShellCliCommandFactory();
 
@@ -20,9 +34,14 @@ public abstract class UITestBase
         UITestManifest testManifest,
         OrchardCoreUITestExecutorConfiguration configuration)
     {
+        foreach (var configureAsync in _configurationChain)
+        {
+            await configureAsync(configuration);
+        }
+
         var originalTestOutputHelper = _testOutputHelper;
 
-        Action afterTest = null;
+        Action? afterTest = null;
         if (configuration.ExtendGitHubActionsOutput &&
             configuration.GitHubActionsOutputConfiguration.EnablePerTestOutputGrouping &&
             GitHubHelper.IsGitHubEnvironment)
@@ -47,5 +66,72 @@ public abstract class UITestBase
             _testOutputHelper = originalTestOutputHelper;
             afterTest?.Invoke();
         }
+    }
+
+    protected override void ConfigureTestAtataContext(AtataContextBuilder builder) =>
+        _configurationChain.Insert(0, ConfigureAsync);
+
+    protected virtual Task ConfigureAsync(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        Configure(configuration);
+        return Task.CompletedTask;
+    }
+
+    protected virtual void Configure(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        // Intentionally empty. Override in descendant class to customize.
+    }
+
+    protected async Task<Uri> RunFirstApplicableSetupAsync(UITestContext configuration)
+    {
+        foreach (var setupAsync in _setupChain)
+        {
+            if (await setupAsync(configuration) is { } result)
+            {
+                return result;
+            }
+        }
+
+        throw new InvalidOperationException("No applicable setup operation ran to conclusion.");
+    }
+
+    public UITestBase AddConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task> configureAsync)
+    {
+        _configurationChain.Add(configureAsync);
+        return this;
+    }
+
+    public UITestBase AddSyncConfiguration(Action<OrchardCoreUITestExecutorConfiguration> configureSync)
+    {
+        _configurationChain.Add(configureSync.AsCompletedTask());
+        return this;
+    }
+
+    public UITestBase AddSetup(Func<UITestContext, Task<Uri?>> setupAsync)
+    {
+        _setupChain.Add(setupAsync);
+        return this;
+    }
+
+    public UITestBase AddTest(Func<UITestContext, Task> testAsync)
+    {
+        _testChain.Add(testAsync);
+        return this;
+    }
+
+    public Task RunAsync(Func<UITestContext, Task> finalTest) => AddTest(finalTest).RunAsync();
+
+    public virtual Task RunAsync()
+    {
+        var testManifest = new UITestManifest(this, _testChain);
+
+        var configuration = new OrchardCoreUITestExecutorConfiguration
+        {
+            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
+            TestOutputHelper = _testOutputHelper,
+            BrowserConfiguration = { Browser = Browser },
+        };
+
+        return ExecuteOrchardCoreTestAsync(InstanceFactory, testManifest, configuration);
     }
 }

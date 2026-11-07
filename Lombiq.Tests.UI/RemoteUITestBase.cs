@@ -1,6 +1,5 @@
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using System;
 using System.Threading.Tasks;
@@ -14,9 +13,15 @@ namespace Lombiq.Tests.UI;
 /// </summary>
 public abstract class RemoteUITestBase : UITestBase
 {
+    public Uri BaseUri { get; set; }
+
+    protected override WebApplicationInstanceFactory InstanceFactory { get; }
+
     protected RemoteUITestBase(ITestOutputHelper testOutputHelper)
-    : base(testOutputHelper)
+        : base(testOutputHelper)
     {
+        InstanceFactory = (_, _) => new RemoteInstance(BaseUri);
+        AddTest(context => context.GoToAbsoluteUrlAsync(BaseUri));
     }
 
     /// <summary>
@@ -49,32 +54,29 @@ public abstract class RemoteUITestBase : UITestBase
     /// <summary>
     /// Executes the given UI test on a remote (i.e. not locally running) app.
     /// </summary>
-    protected virtual async Task ExecuteTestAsync(
+    protected virtual Task ExecuteTestAsync(
         Uri baseUri,
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        async Task BaseUriVisitingTest(UITestContext context)
+        BaseUri = baseUri;
+        Browser = browser;
+
+        AddConfiguration(changeConfigurationAsync);
+        AddTest(testAsync);
+
+        return RunAsync();
+    }
+
+    public override Task RunAsync()
+    {
+        AddSyncConfiguration(configuration =>
         {
-            await context.GoToAbsoluteUrlAsync(baseUri);
-            await testAsync(context);
-        }
-
-        var testManifest = new UITestManifest(BaseUriVisitingTest);
-
-        var configuration = new OrchardCoreUITestExecutorConfiguration
-        {
-            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
-            TestOutputHelper = _testOutputHelper,
-            BrowserConfiguration = { Browser = browser },
-        };
-
-        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
-        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
-        configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
-        await changeConfigurationAsync.InvokeFuncAsync(configuration);
-
-        await ExecuteOrchardCoreTestAsync((_, _) => new RemoteInstance(baseUri), testManifest, configuration);
+            configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+            configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+            configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
+        });
+        return base.RunAsync();
     }
 }

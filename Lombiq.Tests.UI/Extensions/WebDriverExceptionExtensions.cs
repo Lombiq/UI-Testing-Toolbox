@@ -1,14 +1,9 @@
 using OpenQA.Selenium.Chrome;
-using System;
 
 namespace OpenQA.Selenium;
 
 public static class WebDriverExceptionExtensions
 {
-    [Obsolete($"Typo in method name, use {nameof(IsStaleElementLikeException)} instead.")]
-    public static bool IsStateElementLikeException(this WebDriverException exception) =>
-        exception.IsStaleElementLikeException();
-
     /// <summary>
     /// Checks if the exception is one that's thrown when trying to access an element that's stale.
     /// </summary>

@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Delegates;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
-using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.Services;
 using Lombiq.Tests.UI.Services.GitHub;
 using SixLabors.ImageSharp;
@@ -21,10 +20,11 @@ internal static class OrchardCoreUITestBaseCounter
     public static bool AppFolderCreated { get; set; }
 }
 
+#pragma warning disable S103 // Lines should not be too long, but the cref can't be broken up into multiple lines.
 /// <summary>
 /// Delegate with the signature of <see
-/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupAsync(Func{UITestContext, Task}, Browser,
-/// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>CustomAdminPrefixTestCase</c> in
+/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupAsync(Func{UITestContext, Task}, Browser, Func{OrchardCoreUITestExecutorConfiguration, Task})"/>
+/// so test case classes like <c>CustomAdminPrefixTestCase</c> in
 /// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate
 /// parameters.
 /// </summary>
@@ -36,14 +36,15 @@ public delegate Task ExecuteTestAfterSetupAsync(
 
 /// <summary>
 /// Delegate with the signature of <see
-/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupWithoutBrowserAsync(Func{UITestContext, Task},
-/// Func{OrchardCoreUITestExecutorConfiguration, Task})"/> so test case classes like <c>TimeoutTests</c> in
+/// cref="OrchardCoreUITestBase{TEntryPoint}.ExecuteTestAfterSetupWithoutBrowserAsync(Func{UITestContext, Task}, Func{OrchardCoreUITestExecutorConfiguration, Task})"/>
+/// so test case classes like <c>TimeoutTests</c> in
 /// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate parameters.
 /// </summary>
 // If you change this, then also change the corresponding method below.
 public delegate Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+#pragma warning restore S103 // Lines should not be too long
 
 public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
@@ -53,10 +54,11 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     protected virtual Size StandardBrowserSize => CommonDisplayResolutions.Standard;
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
+    protected override WebApplicationInstanceFactory InstanceFactory { get; }
+
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
+        : base(testOutputHelper) =>
+        InstanceFactory = (configuration, contextId) => new OrchardCoreInstance<TEntryPoint>(configuration, contextId);
 
     // If you change this, then also change the corresponding delegate above.
     protected abstract Task ExecuteTestAfterSetupAsync(
@@ -385,28 +387,19 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    protected virtual async Task ExecuteTestAsync(
+    protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<UITestContext, Task<Uri>> setupOperation,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
-        var testManifest = new UITestManifest(testAsync);
+        Browser = browser;
 
-        var configuration = new OrchardCoreUITestExecutorConfiguration
-        {
-            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
-            TestOutputHelper = _testOutputHelper,
-            BrowserConfiguration = { Browser = browser },
-            SetupConfiguration = { SetupOperation = setupOperation },
-        };
+        AddConfiguration(changeConfigurationAsync);
+        AddTest(testAsync);
+        AddSetup(setupOperation);
 
-        await changeConfigurationAsync.InvokeFuncAsync(configuration);
-
-        await ExecuteOrchardCoreTestAsync(
-            (configuration, contextId) => new OrchardCoreInstance<TEntryPoint>(configuration, contextId),
-            testManifest,
-            configuration);
+        return RunAsync();
     }
 
     /// <summary>
@@ -434,5 +427,11 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
 
                 return changeConfigurationAsync == null ? Task.CompletedTask : changeConfigurationAsync(configuration);
             });
+    }
+
+    public override Task RunAsync()
+    {
+        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = RunFirstApplicableSetupAsync);
+        return base.RunAsync();
     }
 }

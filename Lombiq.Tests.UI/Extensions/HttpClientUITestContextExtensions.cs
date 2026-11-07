@@ -24,15 +24,8 @@ public static class HttpClientUITestContextExtensions
 {
     public static JsonSerializerOptions JsonSerializerOptions { get; } = new(JsonSerializerDefaults.Web);
 
-    [Obsolete("Use CreateHttpClient instead.")]
-    public static HttpClient CreateClient(this UITestContext context) => context.CreateHttpClient();
-
     public static HttpClient CreateHttpClient(this UITestContext context) =>
         HttpClientHelper.CreateCertificateIgnoringHttpClient(context.Scope.BaseUri);
-
-    [Obsolete("Use CreateHttpClientWithBrowserContext instead.")]
-    public static HttpClient CreateClientWithBrowserContext(this UITestContext context) =>
-        context.CreateHttpClientWithBrowserContext();
 
     public static HttpClient CreateHttpClientWithBrowserContext(this UITestContext context)
     {
