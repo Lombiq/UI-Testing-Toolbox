@@ -77,13 +77,14 @@ public class SecurityScanningTests : UITestBase
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync(
-                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()),
+        AddTest(context =>
+            context.RunAndAssertBaselineSecurityScanAsync(
+                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()))
             // You should configure the assertion that checks the app logs to accept some common cases that only should
             // appear during security scanning. If you launch a full scan, this is automatically configured by the
             // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -108,8 +109,8 @@ public class SecurityScanningTests : UITestBase
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync(
+        AddTest(context =>
+            context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
@@ -122,8 +123,9 @@ public class SecurityScanningTests : UITestBase
                         "The search form doesn't alter the state of the application so anti-CSRF tokens are not needed.",
                         ".*my-search-form.*")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)),
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)))
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -145,8 +147,8 @@ public class SecurityScanningTests : UITestBase
     // customize them if something you need is not surfaced as configuration.
     [Fact]
     public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertSecurityScanAsync(
+        AddTest(context =>
+            context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
                     .DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()
@@ -166,8 +168,9 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)))
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: Security scanning.

@@ -107,6 +107,12 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
+    public UITestBase WithoutBrowser()
+    {
+        Browser = Browser.None;
+        return this;
+    }
+
     public Task RunAsync(Func<UITestContext, Task> finalTest) => AddTest(finalTest).RunAsync();
 
     public virtual Task RunAsync()

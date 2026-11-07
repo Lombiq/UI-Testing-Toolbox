@@ -21,8 +21,7 @@ public class AccessibilityTest : UITestBase
     /// </summary>
     [Fact]
     public Task FrontendPagesShouldBeAccessible() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.GoToRelativeUrlAsync("/categories/travel"),
+        AddSyncConfiguration(
             configuration =>
             {
                 // We adjust the configuration just for this test but you could do the same globally in UITestBase.
@@ -39,7 +38,8 @@ public class AccessibilityTest : UITestBase
                 configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator += axeBuilder =>
                     AccessibilityCheckingConfiguration.ConfigureWcag22aa(axeBuilder)
                         .DisableRules("color-contrast", "link-name");
-            });
+            })
+            .RunAsync(context => context.GoToRelativeUrlAsync("/categories/travel"));
 }
 
 // END OF TRAINING SECTION: Accessibility tests.

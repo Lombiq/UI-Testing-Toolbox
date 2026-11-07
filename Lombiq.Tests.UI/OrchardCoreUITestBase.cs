@@ -160,22 +160,26 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfiguration);
 
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfigurationAsync);
 
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -197,12 +201,14 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             await changeConfigurationAsync.InvokeFuncAsync(configuration);
         });
 
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
     // If you change this, then also change the corresponding delegate above.
+    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
     protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>

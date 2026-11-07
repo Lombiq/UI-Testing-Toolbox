@@ -53,6 +53,19 @@ public static class SecurityShortcutsTestCases
             browser,
             ConfigurationHelper.DisableHtmlValidation);
 
+    public static Task AddUserToFakeRoleShouldThrowAsync(UITestBase fixture) => fixture
+        .WithoutBrowser()
+        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .RunAsync(async context =>
+        {
+            await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<UserNotFoundException>();
+
+            await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
+            await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<RoleNotFoundException>();
+
+            await context.ClearLogsAsync();
+        });
+
     public static Task AllowFakePermissionToRoleShouldThrowAsync(
         ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
         executeTestAfterSetupAsync(
@@ -65,6 +78,17 @@ public static class SecurityShortcutsTestCases
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);
+
+    public static Task AllowFakePermissionToRoleShouldThrowAsync(UITestBase fixture) => fixture
+        .WithoutBrowser()
+        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .RunAsync(async context =>
+        {
+            await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)
+                .ShouldThrowAsync<PermissionNotFoundException>();
+
+            await context.ClearLogsAsync();
+        });
 
     private static async Task CreateUserAndSignInAsync(UITestContext context)
     {
