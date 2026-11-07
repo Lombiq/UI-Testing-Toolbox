@@ -48,7 +48,7 @@ public static class SecurityShortcutsTestCases
                 await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
                 await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<RoleNotFoundException>();
 
-                await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
+                await context.ClearLogsAsync();
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);
@@ -61,7 +61,7 @@ public static class SecurityShortcutsTestCases
                 await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)
                     .ShouldThrowAsync<PermissionNotFoundException>();
 
-                await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
+                await context.ClearLogsAsync();
             },
             browser,
             ConfigurationHelper.DisableHtmlValidation);

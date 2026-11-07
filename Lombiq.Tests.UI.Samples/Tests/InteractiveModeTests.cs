@@ -31,10 +31,10 @@ public class InteractiveModeTests : UITestBase
                 // One use-case of interactive mode is to look around in the admin dashboard and troubleshoot the
                 // current settings without programmatically navigating there.
                 await context.SignInDirectlyAndGoToDashboardAsync();
-                await context.SwitchToInteractiveAsync(cancellationToken: context.Configuration.TestCancellationToken);
+                await context.SwitchToInteractiveAsync();
 
                 // Afterwards if you can still evaluate code as normal so `SignInDirectlyAndGoToDashboardAsync()` can be
-                // inserted anywhere. Bare in mind, that it's safest to use it before code that's already going to
+                // inserted anywhere. Keep in mind, that it's safest to use it before code that's already going to
                 // navigate away, like `GetCurrentUserNameAsync()` here. This ensures any manual navigation you did
                 // won't affect the test. If that's not practical, you can also do your thing in a new tab and close it
                 // before continuing the test.
