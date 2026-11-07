@@ -203,6 +203,12 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
     // If you change this, then also change the corresponding delegate above.
+    protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
+
+    // If you change this, then also change the corresponding delegate above.
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -212,12 +218,6 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         AddConfiguration(changeConfigurationAsync);
         return RunAsync(testAsync);
     }
-
-    // If you change this, then also change the corresponding delegate above.
-    protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
-        Func<UITestContext, Task> testAsync,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
 
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,

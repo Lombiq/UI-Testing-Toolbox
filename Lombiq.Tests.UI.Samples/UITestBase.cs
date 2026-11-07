@@ -3,7 +3,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,6 +11,7 @@ namespace Lombiq.Tests.UI.Samples;
 
 // This will be the base class for our UI test classes. Here we'll set up some common configuration. Inheriting test
 // classes is not mandatory but the approach is simple and effective.
+[SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
 public abstract class UITestBase : OrchardCoreUITestBase<Program>
 {
     // You can use this constructor to declare the setup operation and configuration that will apply to all test
