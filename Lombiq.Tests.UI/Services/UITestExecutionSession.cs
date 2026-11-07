@@ -1,4 +1,3 @@
-using Atata;
 using Atata.HtmlValidation;
 using Cysharp.Text;
 using Lombiq.HelpfulLibraries.Common.Utilities;
@@ -88,7 +87,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
 
     public async Task<bool> ExecuteAsync(int retryCount, string dumpRootPath)
     {
-        using var cancellationTokenRegistration = _configuration.TestCancellationToken.Register(() =>
+        await using var cancellationTokenRegistration = _configuration.TestCancellationToken.Register(() =>
         {
             _testOutputHelper.WriteLine("Test execution was canceled. Shutting down the test execution session.");
             ShutdownAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -137,16 +136,7 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
             var timeout = _configuration.TimeoutConfiguration.TestRunTimeout;
 
             var timeoutTask = Task.Delay(timeout, _configuration.TestCancellationToken);
-            var testTask = Task.Run(
-                async () =>
-                {
-                    foreach (var test in _testManifest.Tests)
-                    {
-                        _configuration.TestCancellationToken.ThrowIfCancellationRequested();
-                        await test(_context);
-                    }
-                },
-                _configuration.TestCancellationToken);
+            var testTask = _testManifest.RunTestsAsync(_context);
 
             await Task.WhenAny(testTask, timeoutTask);
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Sdk;
@@ -38,5 +39,14 @@ public class UITestManifest
                 .MethodBase?
                 .GetCustomAttributes(inherit: true)
                 .Any(attribute => attribute is IFactAttribute or ITheoryAttribute) == true);
+    }
+
+    public async Task RunTestsAsync(UITestContext context)
+    {
+        foreach (var test in Tests)
+        {
+            context.Configuration.TestCancellationToken.ThrowIfCancellationRequested();
+            await test(context);
+        }
     }
 }
