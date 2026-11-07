@@ -62,10 +62,15 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         InstanceFactory = (configuration, contextId) => new OrchardCoreInstance<TEntryPoint>(configuration, contextId);
 
     // If you change this, then also change the corresponding delegate above.
-    protected abstract Task ExecuteTestAfterSetupAsync(
+    protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
+    {
+        Browser = browser;
+        AddConfiguration(changeConfigurationAsync);
+        return RunAsync(testAsync);
+    }
 
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
@@ -398,7 +403,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
 
         AddConfiguration(changeConfigurationAsync);
         AddTest(testAsync);
-        AddSetup(setupOperation);
+        UseSetup(setupOperation);
 
         return RunAsync();
     }
@@ -432,7 +437,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
 
     public override Task RunAsync()
     {
-        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = RunFirstApplicableSetupAsync);
+        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = Setup);
         return base.RunAsync();
     }
 }

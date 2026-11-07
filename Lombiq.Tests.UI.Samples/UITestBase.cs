@@ -13,34 +13,15 @@ namespace Lombiq.Tests.UI.Samples;
 // classes is not mandatory but the approach is simple and effective.
 public abstract class UITestBase : OrchardCoreUITestBase<Program>
 {
+    // You can use this constructor to declare the setup operation and configuration that will apply to all test
+    // classes. You can do the same in the descending test classes and the individual test methods too, so there is a
+    // level of granularity if you want to group configurations together.
     protected UITestBase(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
-    // Two usual overloads. Note that we reference SetupHelpers.RunSetup as the setup operation: That's what will be run
-    // when the first test executes. Until the setup is done, all other tests wait; then, they'll use the snapshot
-    // created from the setup.
-    // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
-    // NEXT STATION: Check out SetupHelpers, then come back here!
-    protected override Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
-
-    // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync() and
-    // do something before or after they're executed but this is not always necessary.
-    protected override Task ExecuteTestAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<UITestContext, Task<Uri>> setupOperation,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        base.ExecuteTestAsync(
-            testAsync,
-            browser,
-            setupOperation,
-            async configuration =>
+        : base(testOutputHelper) =>
+        // You can call the "AddConfiguration" and "AddSyncConfiguration" methods as many times as you want, the
+        // provided configuration functions are chained together and called in sequence. Feel free to use multiple
+        // calls as a way to group related configurations together.
+        AddConfiguration(async configuration =>
             {
                 // You should always set the window size of the browser, otherwise the size will be random based on the
                 // settings of the given machine. However this is already handled as long as the
@@ -131,10 +112,12 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                     setupOperation == SetupHelpers.RunSetupAsync
                         ? "Sample Setup"
                         : OrchardCoreSetupConfiguration.DefaultSetupOperationIdentifierCalculator(setupOperation);
-
-                if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
-            });
+            })
+            // This method declares the setup operation. You can overwrite it later in the descendant class or the test
+            // method, so it's a good idea to always use it here as a fallback.
+            // Until the setup is done, all other tests wait; then, they'll use the snapshot
+            // created from the setup. Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
+            .UseSetup(SetupHelpers.RunSetupAsync);
 }
 
-// NEXT STATION: Phew, that was a lot of configuration (and we have just scratched the surface!). Let's see some actual
-// tests: Go to Tests/BasicTests.cs.
+// NEXT STATION: Helpers/SetupHelpers.cs

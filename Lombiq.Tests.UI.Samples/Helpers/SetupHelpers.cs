@@ -97,3 +97,6 @@ public static class SetupHelpers
         }
     }
 }
+
+// Phew, that was a lot of configuration! (And we have just scratched the surface!) Let's see some actual tests.
+// NEXT STATION: Tests/BasicTests.cs

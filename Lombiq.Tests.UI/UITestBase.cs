@@ -16,12 +16,13 @@ namespace Lombiq.Tests.UI;
 public abstract class UITestBase : AtataTestSuite
 {
     private readonly List<Func<OrchardCoreUITestExecutorConfiguration, Task>> _configurationChain = new(capacity: 1);
-    private readonly List<Func<UITestContext, Task<Uri?>>> _setupChain = new(capacity: 1);
     private readonly List<Func<UITestContext, Task>> _testChain = new(capacity: 1);
 
     protected ITestOutputHelper _testOutputHelper;
 
     protected abstract WebApplicationInstanceFactory InstanceFactory { get; }
+
+    public Func<UITestContext, Task<Uri>>? Setup { get; set; }
 
     public Browser Browser { get; set; }
 
@@ -82,22 +83,9 @@ public abstract class UITestBase : AtataTestSuite
         // Intentionally empty. Override in descendant class to customize.
     }
 
-    protected async Task<Uri> RunFirstApplicableSetupAsync(UITestContext configuration)
+    public UITestBase AddConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task>? configureAsync)
     {
-        foreach (var setupAsync in _setupChain)
-        {
-            if (await setupAsync(configuration) is { } result)
-            {
-                return result;
-            }
-        }
-
-        throw new InvalidOperationException("No applicable setup operation ran to conclusion.");
-    }
-
-    public UITestBase AddConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task> configureAsync)
-    {
-        _configurationChain.Add(configureAsync);
+        if (configureAsync != null) _configurationChain.Add(configureAsync);
         return this;
     }
 
@@ -107,9 +95,9 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
-    public UITestBase AddSetup(Func<UITestContext, Task<Uri?>> setupAsync)
+    public UITestBase UseSetup(Func<UITestContext, Task<Uri>> setupAsync)
     {
-        _setupChain.Add(setupAsync);
+        Setup = setupAsync;
         return this;
     }
 
