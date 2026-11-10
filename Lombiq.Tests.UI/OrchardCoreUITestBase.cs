@@ -29,6 +29,7 @@ internal static class OrchardCoreUITestBaseCounter
 /// parameters.
 /// </summary>
 // If you change this, then also change the corresponding method below.
+[Obsolete($"Pass {nameof(UITestBase)} instead.")]
 public delegate Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -41,7 +42,7 @@ public delegate Task ExecuteTestAfterSetupAsync(
 /// <c>Lombiq.Tests.UI.Tests.UI</c> can easily depend on the method without having to define custom delegate parameters.
 /// </summary>
 // If you change this, then also change the corresponding method below.
-[Obsolete("This is no longer necessary.")]
+[Obsolete($"Pass {nameof(UITestBase)} instead.")]
 public delegate Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync);
