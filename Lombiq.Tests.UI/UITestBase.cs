@@ -95,9 +95,15 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
-    public UITestBase UseSetup(Func<UITestContext, Task<Uri>>? setupAsync)
+    public UITestBase UseSetup(Func<UITestContext, Task<Uri>> setupAsync)
     {
         Setup = setupAsync;
+        return this;
+    }
+
+    public UITestBase WithoutSetup()
+    {
+        Setup = null;
         return this;
     }
 
