@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Delegates;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using Lombiq.Tests.UI.Services.GitHub;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -349,5 +350,76 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
         UseSetup(setupOperation);
 
         return RunAsync(testAsync);
+    }
+
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
+    {
+        Browser = browser;
+        AddConfiguration(changeConfigurationAsync);
+        return RunAsync(testAsync);
+    }
+
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Action<UITestContext> test,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(test, default, changeConfiguration);
+
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Action<UITestContext> test,
+        Browser browser,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
+
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration);
+
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Browser browser,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
+
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected Task ExecuteTestAfterSetupAsync(
+        Func<UITestContext, Task> testAsync,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, default, changeConfigurationAsync);
+
+    /// <summary>
+    /// Starts a "test" with configuration adjustments to make it more suitable for interactive exploration of the UI
+    /// testing setup. In a GitHub Actions environment this method does nothing.
+    /// </summary>
+    [Obsolete("This method is no longer used.")]
+    protected Task OpenSandboxAfterSetupAsync(
+        Func<UITestContext, Task> testAsync = null,
+        Browser browser = default,
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
+    {
+        // This "test" will wait indefinitely, so it's important to skip it in CI.
+        if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
+
+        testAsync ??= context => context.SwitchToInteractiveAsync();
+
+        return ExecuteTestAfterSetupAsync(
+            testAsync,
+            browser,
+            configuration =>
+            {
+                // Since this made for human interaction, make sure the browser is always displayed and disable retries.
+                configuration.BrowserConfiguration.Headless = false;
+                configuration.MaxRetryCount = 0;
+
+                return changeConfigurationAsync == null ? Task.CompletedTask : changeConfigurationAsync(configuration);
+            });
     }
 }
