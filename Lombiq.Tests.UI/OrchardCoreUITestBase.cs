@@ -62,11 +62,49 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         : base(testOutputHelper) =>
         InstanceFactory = (configuration, contextId) => new OrchardCoreInstance<TEntryPoint>(configuration, contextId);
 
+    /// <summary>
+    /// Adds the provided two test methods, to be executed with the browser size of <see cref="StandardBrowserSize"/>
+    /// and then <see cref="MobileBrowserSize"/>.
+    /// </summary>
+    /// <param name="standardBrowserSizeTestAsync">
+    /// When ran, the browser size is changed to <see cref="StandardBrowserSize"/>, and then this method is executed.
+    /// </param>
+    /// <param name="mobileBrowserSizeTestAsync">
+    /// When ran, the browser size is changed to <see cref="MobileBrowserSize"/>, and then this method is executed. If
+    /// this parameter is <see langword="null"/>, <paramref name="standardBrowserSizeTestAsync"/> is used for the mobile
+    /// size as well.
+    /// </param>
+    protected OrchardCoreUITestBase<TEntryPoint> AddMultiSizeTest(
+        MultiSizeTestAsync standardBrowserSizeTestAsync,
+        MultiSizeTestAsync mobileBrowserSizeTestAsync = null)
+    {
+        ArgumentNullException.ThrowIfNull(standardBrowserSizeTestAsync);
+        mobileBrowserSizeTestAsync ??= standardBrowserSizeTestAsync;
+
+        AddTest(context =>
+        {
+            context.SetBrowserSize(StandardBrowserSize);
+            return standardBrowserSizeTestAsync(context, isStandardSize: true);
+        });
+
+        AddTest(context =>
+        {
+            context.SetBrowserSize(MobileBrowserSize);
+            return mobileBrowserSizeTestAsync(context, isStandardSize: false);
+        });
+
+        return this;
+    }
+
+    #region Obsolete ExecuteMultiSizeTestAfterSetupAsync
+
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(standardAndMobileBrowserSizeTest, default(Browser), changeConfiguration);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
         Browser browser,
@@ -74,6 +112,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         ExecuteMultiSizeTestAfterSetupAsync(
             standardAndMobileBrowserSizeTest, browser, changeConfiguration.AsCompletedTask());
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardAndMobileBrowserSizeTest,
         Browser browser,
@@ -81,11 +120,13 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         ExecuteMultiSizeTestAfterSetupAsync(
             standardAndMobileBrowserSizeTest.AsCompletedTask(), browser, changeConfigurationAsync);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(standardAndMobileBrowserSizeTestAsync, default(Browser), changeConfiguration);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
         Browser browser,
@@ -93,6 +134,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         ExecuteMultiSizeTestAfterSetupAsync(
             standardAndMobileBrowserSizeTestAsync, browser, changeConfiguration.AsCompletedTask());
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardAndMobileBrowserSizeTestAsync,
         Browser browser,
@@ -103,12 +145,14 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardBrowserSizeTest,
         MultiSizeTest mobileBrowserSizeTest,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(standardBrowserSizeTest, mobileBrowserSizeTest, default, changeConfiguration);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardBrowserSizeTest,
         MultiSizeTest mobileBrowserSizeTest,
@@ -117,6 +161,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         ExecuteMultiSizeTestAfterSetupAsync(
             standardBrowserSizeTest, mobileBrowserSizeTest, browser, changeConfiguration.AsCompletedTask());
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTest standardBrowserSizeTest,
         MultiSizeTest mobileBrowserSizeTest,
@@ -128,12 +173,14 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardBrowserSizeTestAsync,
         MultiSizeTestAsync mobileBrowserSizeTestAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteMultiSizeTestAfterSetupAsync(standardBrowserSizeTestAsync, mobileBrowserSizeTestAsync, default, changeConfiguration);
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardBrowserSizeTestAsync,
         MultiSizeTestAsync mobileBrowserSizeTestAsync,
@@ -145,6 +192,7 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfiguration.AsCompletedTask());
 
+    [Obsolete($"Use {nameof(AddMultiSizeTest)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteMultiSizeTestAfterSetupAsync(
         MultiSizeTestAsync standardBrowserSizeTestAsync,
         MultiSizeTestAsync mobileBrowserSizeTestAsync,
@@ -161,26 +209,29 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             browser,
             changeConfigurationAsync);
 
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    #endregion
+
+    #region Obsolete ExecuteTestAfterBrowserSetupWithoutBrowserAsync
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfiguration);
 
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, default, changeConfigurationAsync);
 
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected virtual Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterBrowserSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected Task ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -202,18 +253,20 @@ public abstract class OrchardCoreUITestBase<TEntryPoint> : UITestBase
             await changeConfigurationAsync.InvokeFuncAsync(configuration);
         });
 
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected virtual Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupWithoutBrowserAsync(testAsync, changeConfiguration.AsCompletedTask());
 
     // If you change this, then also change the corresponding delegate above.
-    [Obsolete($"Use {nameof(RunAsync)} and set {nameof(Browser)} to {nameof(Browser.None)}, preferably in the constructor.")]
+    [Obsolete($"Use {nameof(WithoutBrowser)} instead.")]
     protected Task ExecuteTestAfterSetupWithoutBrowserAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
         ExecuteTestAfterSetupAsync(testAsync, Browser.None, changeConfigurationAsync);
+
+    #endregion
 
     // If you change this, then also change the corresponding delegate above.
     protected virtual Task ExecuteTestAfterSetupAsync(
