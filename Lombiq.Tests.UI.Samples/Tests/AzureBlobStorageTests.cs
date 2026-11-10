@@ -23,20 +23,20 @@ public class AzureBlobStorageTests : UITestBase
     // without any further configuration.
     [Fact]
     public Task AnonymousHomePageShouldExistWithAzureBlobStorage() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.CheckIfAnonymousHomePageExistsAsync(),
-            configuration => configuration.UseAzureBlobStorage = true);
+        AddTest(context => context.CheckIfAnonymousHomePageExistsAsync())
+            .AddSyncConfiguration(configuration => configuration.UseAzureBlobStorage = true)
+            .RunAsync();
 
     [Fact]
     public Task TogglingFeaturesShouldWorkWithAzureBlobStorage() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.ExecuteAndAssertTestFeatureToggleAsync(),
-            configuration =>
+        AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
+            .AddSyncConfiguration(configuration =>
             {
                 configuration.UseAzureBlobStorage = true;
 
                 configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            });
+            })
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: Using Azure Blob Storage.

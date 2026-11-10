@@ -20,7 +20,7 @@ public class BasicTests : UITestBase
     // Note that by default, tests are run via Chrome. Check out MultiBrowserTests for samples on using other browsers.
     [Fact]
     public Task AnonymousHomePageShouldExist() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // Is the title correct?
@@ -37,7 +37,7 @@ public class BasicTests : UITestBase
     // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
     [Fact]
     public Task LoginShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate to
@@ -67,8 +67,8 @@ public class BasicTests : UITestBase
     // automatically so if there's an exception or anything, the test will fail.
     [Fact]
     public Task TogglingFeaturesShouldWork() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.ExecuteAndAssertTestFeatureToggleAsync(),
+        AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
+            .AddSyncConfiguration(
             configuration => // You can change the configuration even for each test.
             {
                 // By default, apart from some commonly known false positives, the response log should be empty.
@@ -78,12 +78,13 @@ public class BasicTests : UITestBase
                 // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
                 // filter out entries in the first place.
                 configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            });
+            })
+            .RunAsync();
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]
     public Task ShortcutsShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // If you need an authenticated user but you aren't testing the login specifically then you can use this

@@ -21,20 +21,18 @@ public class SqlServerTests : UITestBase
     // database. If they still work and there are no errors in the log then the app works with SQL Server too.
     [Fact]
     public Task AnonymousHomePageShouldExistWithSqlServer() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.CheckIfAnonymousHomePageExistsAsync(),
-            configuration => configuration.UseSqlServer = true); // We could also set this globally in UITestBase.
+        AddSyncConfiguration(configuration => configuration.UseSqlServer = true) // We could also set this globally in UITestBase.
+            .RunAsync(context => context.CheckIfAnonymousHomePageExistsAsync());
 
     [Fact]
     public Task TogglingFeaturesShouldWorkWithSqlServer() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.ExecuteAndAssertTestFeatureToggleAsync(),
-            configuration =>
+        AddSyncConfiguration(configuration =>
             {
                 configuration.UseSqlServer = true;
 
                 configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            });
+            })
+            .RunAsync(context => context.ExecuteAndAssertTestFeatureToggleAsync());
 }
 
 // END OF TRAINING SECTION: Using SQL Server.

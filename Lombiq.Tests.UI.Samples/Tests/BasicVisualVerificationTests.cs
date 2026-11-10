@@ -29,7 +29,7 @@ public class BasicVisualVerificationTests : UITestBase
     // and run the test with maxRetryCount set to 0.
     [Fact]
     public Task VerifyBlogImage() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             context =>
             {
                 // Instead of using context.SetBrowserSize(...), which sets the outer size of the browser's window to
@@ -50,6 +50,8 @@ public class BasicVisualVerificationTests : UITestBase
                 // prevent visual verification tests from failing, you should apply a percentage of approximately 5 in
                 // cases of images with a lot of text.
                 context.AssertVisualVerificationApproved(blogImageElementSelector, 0);
+
+                return Task.CompletedTask;
             });
 
     // Checking that everything is OK with the branding of the navbar on the homepage. If you want to visually validate
@@ -58,8 +60,10 @@ public class BasicVisualVerificationTests : UITestBase
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
     // today.
     [Theory, Chrome, Firefox]
-    public Task VerifyNavbar(Browser browser) =>
-        ExecuteTestAfterSetupAsync(
+    public Task VerifyNavbar(Browser browser)
+    {
+        Browser = browser;
+        return RunAsync(
             context =>
             {
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
@@ -86,8 +90,10 @@ public class BasicVisualVerificationTests : UITestBase
                             .WithUsePlatformAsSuffix()
                             .WithUseBrowserNameAsSuffix();
                     });
-            },
-            browser);
+
+                return Task.CompletedTask;
+            });
+    }
 }
 
 // END OF TRAINING SECTION: Basic visual verification tests.

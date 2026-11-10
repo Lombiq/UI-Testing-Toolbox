@@ -68,44 +68,6 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         return this;
     }
 
-    // If you change this, then also change the corresponding delegate above.
-    protected virtual Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
-    {
-        Browser = browser;
-        AddConfiguration(changeConfigurationAsync);
-        return RunAsync(testAsync);
-    }
-
-    protected virtual Task ExecuteTestAfterSetupAsync(
-        Action<UITestContext> test,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(test, default, changeConfiguration);
-
-    protected virtual Task ExecuteTestAfterSetupAsync(
-        Action<UITestContext> test,
-        Browser browser,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
-
-    protected virtual Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration);
-
-    protected virtual Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
-
-    protected Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAfterSetupAsync(testAsync, default, changeConfigurationAsync);
-
     /// <summary>
     /// Executes test by starting the app from an existing SQLite database.
     /// </summary>
@@ -137,33 +99,6 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         WithoutSetup();
         AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder);
         await RunAsync();
-    }
-
-    /// <summary>
-    /// Starts a "test" with configuration adjustments to make it more suitable for interactive exploration of the UI
-    /// testing setup. In a GitHub Actions environment this method does nothing.
-    /// </summary>
-    protected Task OpenSandboxAfterSetupAsync(
-        Func<UITestContext, Task> testAsync = null,
-        Browser browser = default,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync = null)
-    {
-        // This "test" will wait indefinitely, so it's important to skip it in CI.
-        if (GitHubHelper.IsGitHubEnvironment) return Task.CompletedTask;
-
-        testAsync ??= context => context.SwitchToInteractiveAsync();
-
-        return ExecuteTestAfterSetupAsync(
-            testAsync,
-            browser,
-            configuration =>
-            {
-                // Since this made for human interaction, make sure the browser is always displayed and disable retries.
-                configuration.BrowserConfiguration.Headless = false;
-                configuration.MaxRetryCount = 0;
-
-                return changeConfigurationAsync == null ? Task.CompletedTask : changeConfigurationAsync(configuration);
-            });
     }
 
     public override Task RunAsync()

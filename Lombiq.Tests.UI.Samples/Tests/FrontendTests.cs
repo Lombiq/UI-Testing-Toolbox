@@ -18,8 +18,7 @@ public class FrontendTests : FrontendUITestBase
     // backend, we would be able to do something more interesting but that's outside the scope of this demo.
     [Fact]
     public Task FrontendServerShouldStartWithTest() =>
-        ExecuteFrontendTestAfterSetupAsync(
-            async context =>
+        AddTest(async context =>
             {
                 // Don't forget that if you want to interact with the frontend manually, you can use the interactive
                 // mode extension method.
@@ -30,14 +29,14 @@ public class FrontendTests : FrontendUITestBase
                 await context.ClickReliablyOnAsync(By.LinkText("Default/"));
                 await context.ClickReliablyOnAsync(By.LinkText("DataProtection-Keys/"));
                 await context.ClickReliablyOnAsync(By.XPath("//td/a[contains(@href, '.xml')]"));
-            },
-            browser: default,
-            configuration =>
+            })
+            .AddConfiguration(configuration =>
             {
                 // Since this server is not our code, we should disable HTML validation.
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
                 return Task.CompletedTask;
-            });
+            })
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: Test headless Orchard Core with a frontend subprocess.

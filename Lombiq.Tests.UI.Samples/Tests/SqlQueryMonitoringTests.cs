@@ -34,7 +34,7 @@ public class SqlQueryMonitoringTests : UITestBase
 
     [Fact]
     public Task SqlQueryMonitoringExplicitAssertions() =>
-        ExecuteTestAfterSetupAsync(
+        AddTest(
             async context =>
             {
                 // SQL monitoring is already enabled for this test, so even the request that opened the home page has a
@@ -50,12 +50,13 @@ public class SqlQueryMonitoringTests : UITestBase
                 // summary.
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
-            },
-            changeConfiguration: configuration =>
+            })
+            .AddSyncConfiguration(configuration =>
             {
                 // SQL monitoring is off by default, so you need to turn it on for the test.
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
-            });
+            })
+            .RunAsync();
 
     [Fact]
     public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithFilter()
@@ -64,7 +65,7 @@ public class SqlQueryMonitoringTests : UITestBase
         // assertions in one test.
         var automaticallyAssertedSummaries = new List<SqlQueryMonitoringSummary>();
 
-        return ExecuteTestAfterSetupAsync(
+        return AddTest(
             async context =>
             {
                 // The automatic page-change assertion below only runs on /about. This shows that mode without getting
@@ -100,8 +101,8 @@ public class SqlQueryMonitoringTests : UITestBase
                             "The request-specific assertion should locate the SQL summary for this exact request.");
                         return Task.CompletedTask;
                     });
-            },
-            changeConfiguration: configuration =>
+            })
+            .AddSyncConfiguration(configuration =>
             {
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
@@ -148,12 +149,13 @@ public class SqlQueryMonitoringTests : UITestBase
 
                     return Task.CompletedTask;
                 };
-            });
+            })
+            .RunAsync();
     }
 
     [Fact]
     public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithRegexThresholdSettings() =>
-        ExecuteTestAfterSetupAsync(
+        AddTest(
             async context =>
             {
                 await context.GoToRelativeUrlAsync("/categories/travel");
@@ -164,8 +166,8 @@ public class SqlQueryMonitoringTests : UITestBase
                         "The current-page assertion still works after changing thresholds with the regex helper.");
                     return Task.CompletedTask;
                 });
-            },
-            changeConfiguration: configuration =>
+            })
+            .AddSyncConfiguration(configuration =>
             {
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
@@ -185,11 +187,12 @@ public class SqlQueryMonitoringTests : UITestBase
                         DuplicateCommandThreshold: 25,
                         DuplicateCommandWithParametersThreshold: 12,
                         ResultSetRowCountThreshold: 150)));
-            });
+            })
+            .RunAsync();
 
     [Fact]
     public Task SqlQueryMonitoringPageLoadFollowingAsyncRequests() =>
-        ExecuteTestAfterSetupAsync(
+        AddTest(
             async context =>
             {
                 // This scenario page starts an async request after the initial page load. The async request has its own
@@ -240,8 +243,10 @@ public class SqlQueryMonitoringTests : UITestBase
                         "The combined assertion should contain executions from both the page request and the async API call.");
                     return Task.CompletedTask;
                 });
-            },
-            configuration => configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
+            })
+            .AddSyncConfiguration(configuration =>
+                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true)
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: SQL query monitoring tests.
