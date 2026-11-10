@@ -95,7 +95,7 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
-    public UITestBase UseSetup(Func<UITestContext, Task<Uri>> setupAsync)
+    public UITestBase UseSetup(Func<UITestContext, Task<Uri>>? setupAsync)
     {
         Setup = setupAsync;
         return this;
@@ -105,6 +105,12 @@ public abstract class UITestBase : AtataTestSuite
     {
         _testChain.Add(testAsync);
         return this;
+    }
+
+    public UITestBase SetTest(Func<UITestContext, Task> testAsync)
+    {
+        _testChain.Clear();
+        return AddTest(testAsync);
     }
 
     public UITestBase WithoutBrowser()
