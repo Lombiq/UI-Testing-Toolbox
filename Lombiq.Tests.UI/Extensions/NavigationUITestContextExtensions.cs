@@ -56,6 +56,13 @@ public static class NavigationUITestContextExtensions
             {
                 if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
 
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().GoToUrlAsync(absoluteUri);
+                    return;
+                }
+
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
@@ -182,9 +189,8 @@ public static class NavigationUITestContextExtensions
             ? context.GetCurrentUri()
             : parameters.SetupUri ?? context.TestStartUri;
 
-        using var client = context.Configuration.BrowserConfiguration.Browser == Browser.None
-            ? context.CreateHttpClient()
-            : context.CreateHttpClientWithBrowserContext();
+        var isBrowser = context.Configuration.BrowserConfiguration.Browser != Browser.None;
+        using var client = isBrowser ? context.CreateHttpClientWithBrowserContext() : context.CreateHttpClient();
 
         var verificationToken = (await GetElementAsync(
                 await client.GetAsync(uri, cancellationToken),
@@ -498,6 +504,13 @@ public static class NavigationUITestContextExtensions
             nameof(RefreshAsync),
             async () =>
             {
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().RefreshAsync();
+                    return;
+                }
+
                 var absoluteUri = context.GetCurrentUri();
 
                 await context.Configuration.Events.BeforeNavigation
@@ -517,6 +530,13 @@ public static class NavigationUITestContextExtensions
             nameof(BackAsync),
             async () =>
             {
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().BackAsync();
+                    return;
+                }
+
                 var absoluteUri = context.GetCurrentUri();
 
                 await context.Configuration.Events.BeforeNavigation

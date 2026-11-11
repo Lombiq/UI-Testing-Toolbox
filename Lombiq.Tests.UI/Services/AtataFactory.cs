@@ -32,29 +32,27 @@ public static class AtataFactory
 
         var builder = AtataContext.CreateDefaultBuilder(AtataContextScope.Test);
 
-        if (configuration.BrowserConfiguration.Browser != Browser.None)
+        var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper, baseUri);
+        if (configuration.BrowserConfiguration.Browser == Browser.None) configuration.BrowserConfiguration.UsePool = false;
+        builder.Sessions.AddWebDriver(driverBuilder =>
         {
-            var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper);
-            builder.Sessions.AddWebDriver(driverBuilder =>
-            {
-                if (configuration.BrowserConfiguration.UsePool)
-                {
-                    driverBuilder.UseAsPool();
-                }
-
-                driverBuilder.UseDriver(factory);
-                driverBuilder.UseBaseUrl(baseUri);
-                driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
-
-                // Since Atata 2.0, the default visibility option is Visibility.Any. This restores it to the 1.x behavior.
-                driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
-            });
-
             if (configuration.BrowserConfiguration.UsePool)
             {
-                builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
-                    requestBuilder.UseStartScopes(AtataContextScopes.Test));
+                driverBuilder.UseAsPool();
             }
+
+            driverBuilder.UseDriver(factory);
+            driverBuilder.UseBaseUrl(baseUri);
+            driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
+
+            // Since Atata 2.0, the default visibility option is Visibility.Any. This restores it to the 1.x behavior.
+            driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
+        });
+
+        if (configuration.BrowserConfiguration.UsePool)
+        {
+            builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
+                requestBuilder.UseStartScopes(AtataContextScopes.Test));
         }
 
         builder.UseCulture(browserConfiguration.AcceptLanguage.ToString());
@@ -84,7 +82,8 @@ public static class AtataFactory
     private static async Task<Func<IWebDriver>> CreateDriverFactoryAsync(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
-        ITestOutputHelper testOutputHelper)
+        ITestOutputHelper testOutputHelper,
+        Uri baseUri)
     {
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
@@ -113,6 +112,7 @@ public static class AtataFactory
                     Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, pageLoadTimeout),
+                    Browser.None => await WebDriverFactory.CreateHttpClientDriverAsync(browserConfiguration, pageLoadTimeout, baseUri),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

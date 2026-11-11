@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp.XPath" Version="2.0.10" />
     <PackageReference Include="Atata" Version="4.0.1" />
     <PackageReference Include="Atata.Bootstrap" Version="4.0.0" />
     <PackageReference Include="Atata.HtmlValidation" Version="4.0.0" />
