@@ -67,5 +67,9 @@ public class BrowserConfiguration
     /// Gets or sets a value indicating whether <see cref="AtataSessionMode.Pool"/> should be used when <see
     /// cref="Browser"/> is not <see cref="Browser.None"/>.
     /// </summary>
-    public bool UsePool { get; set; } = true;
+    /// <remarks><para>
+    /// Warning: Only set this configuration to <see langword="true"/> if all your tests utilize the same Orchard Core
+    /// setup and command line arguments, as those can bleed into each other when pooling is enabled.
+    /// </para></remarks>
+    public bool UsePool { get; set; }
 }
