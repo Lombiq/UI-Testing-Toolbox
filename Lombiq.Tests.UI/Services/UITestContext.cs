@@ -75,6 +75,11 @@ public sealed class UITestContext : IAsyncDisposable
     public IWebDriver Driver => Scope.Driver;
 
     /// <summary>
+    /// Gets the <see cref="Uri"/> used to resolve relative URLs during initialization.
+    /// </summary>
+    public Uri AppBaseUri { get; }
+
+    /// <summary>
     /// Gets the <see cref="Uri"/> where the test starts, i.e. the URL provided by the setup operation.
     /// </summary>
     public Uri TestStartUri { get; }
@@ -184,36 +189,26 @@ public sealed class UITestContext : IAsyncDisposable
     /// </summary>
     public string DownloadsDirectoryPath => GetTempSubDirectoryPath(DirectoryPaths.Downloads);
 
-    [SuppressMessage(
-        "Major Code Smell",
-        "S107:Methods should not have too many parameters",
-        Justification = "This is a central context object, we need the data to be passed in the constructor.")]
-    private UITestContext(
-        string id,
-        UITestManifest testManifest,
-        OrchardCoreUITestExecutorConfiguration configuration,
-        IWebApplicationInstance application,
-        AtataScope scope,
-        Uri testStartUri,
-        RunningContextContainer runningContextContainer,
-        ZapManager zapManager)
+    private UITestContext(UITestContextData data, AtataScope newScope)
     {
-        Id = id;
-        TestManifest = testManifest;
-        Configuration = configuration;
-        Application = application;
-        Scope = scope;
-        TestStartUri = testStartUri;
-        ZapManager = zapManager;
-
         (
-            SqlServerRunningContext,
-            SmtpServiceRunningContext,
-            AzureBlobStorageRunningContext,
-            ElasticsearchRunningContext
-        ) = runningContextContainer;
+            Id,
+            TestManifest,
+            Configuration,
+            Application,
+            _,
+            AppBaseUri,
+            TestStartUri,
+            (
+                SqlServerRunningContext,
+                SmtpServiceRunningContext,
+                AzureBlobStorageRunningContext,
+                ElasticsearchRunningContext
+            ),
+            ZapManager) = data;
 
-        TempDirectoryPath = configuration.GetTempDirectoryPathWithFallback();
+        Scope = newScope;
+        TempDirectoryPath = Configuration.GetTempDirectoryPathWithFallback();
     }
 
     /// <summary>
@@ -308,35 +303,17 @@ public sealed class UITestContext : IAsyncDisposable
         Scope.BaseUri = baseUri;
     }
 
-    // This is a central context object, we need the data to be passed in the constructor.
-#pragma warning disable S107 // Methods should not have too many parameters
-    public static async Task<UITestContext> CreateAsync(
-        string id,
-        UITestManifest testManifest,
-        OrchardCoreUITestExecutorConfiguration configuration,
-        IWebApplicationInstance application,
-        AtataScope scope,
-        Uri testStartUri,
-        RunningContextContainer runningContextContainer,
-        ZapManager zapManager)
-#pragma warning restore S107 // Methods should not have too many parameters
+    public static async Task<UITestContext> CreateAsync(UITestContextData data)
     {
+        var context = new UITestContext(data, await AtataFactory.StartAtataScopeAsync(data));
+        var configuration = context.Configuration;
         var token = configuration.TestCancellationToken;
-        var context = new UITestContext(
-            id,
-            testManifest,
-            configuration,
-            application,
-            scope,
-            testStartUri,
-            runningContextContainer,
-            zapManager);
 
         FileSystemHelper.EnsureDirectoryExists(context.TempDirectoryPath);
 
         if (context.IsBrowserConfigured)
         {
-            context._biDirectionalDriver = await scope.Driver.AsBiDiAsync(cancellationToken: token);
+            context._biDirectionalDriver = await context.Scope.Driver.AsBiDiAsync(cancellationToken: token);
 
             // We intentionally don't pass the UITestContext to these callbacks: The callbacks are called asynchronously
             // by the browser (and Selenium), and e.g. the current URL can change between when a JS exception was thrown
@@ -393,7 +370,7 @@ public sealed class UITestContext : IAsyncDisposable
     private bool IsAlert()
     {
         // If there's an alert (which can happen mostly after a click but also after navigating) then all other driver
-        // operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus we need to check if
+        // operations, even retrieving the current URL, will throw an UnhandledAlertException. Thus, we need to check if
         // an alert is present and that's only possible by catching exceptions.
         try
         {

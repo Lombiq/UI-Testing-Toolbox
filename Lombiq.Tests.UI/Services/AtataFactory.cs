@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
@@ -16,6 +17,9 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
+    public static Task<AtataScope> StartAtataScopeAsync(UITestContextData data) =>
+        StartAtataScopeAsync(data.Id, data.TestOutputHelper, data.AppBaseUri, data.Configuration);
+
     public static async Task<AtataScope> StartAtataScopeAsync(
         string contextId,
         ITestOutputHelper testOutputHelper,

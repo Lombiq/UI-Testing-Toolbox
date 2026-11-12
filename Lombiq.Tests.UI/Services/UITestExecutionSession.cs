@@ -733,17 +733,16 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         _configuration.SetUpEvents();
         SetUpPageChangeAssertions();
 
-        var atataScope = await AtataFactory.StartAtataScopeAsync(contextId, _testOutputHelper, appBaseUri, _configuration);
-
-        return await UITestContext.CreateAsync(
+        return await UITestContext.CreateAsync(new(
             contextId,
             _testManifest,
             _configuration,
             _applicationInstance,
-            atataScope,
+            _testOutputHelper,
+            appBaseUri,
             testStartRelativeUri != null ? new Uri(appBaseUri, testStartRelativeUri.PathAndQuery) : appBaseUri,
             new(sqlServerContext, smtpContext, azureBlobStorageContext, elasticsearchContext),
-            _zapManager);
+            _zapManager));
     }
 
     private void SetUpPageChangeAssertions()
