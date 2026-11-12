@@ -144,10 +144,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         _cancellationTokenSource.Dispose();
 
         await StopOrchardAppAsync();
-        if (_reverseProxy != null)
-        {
-            await _reverseProxy.DisposeAsync();
-        }
+        if (_reverseProxy != null) await _reverseProxy.DisposeAsync();
 
         // This is a clean-up method, no need to forward a CancellationToken.
         await DirectoryHelper.SafelyDeleteDirectoryIfExistsAsync(_contentRootPath, CancellationToken.None, 60);

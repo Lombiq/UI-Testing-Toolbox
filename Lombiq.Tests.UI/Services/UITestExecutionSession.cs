@@ -229,14 +229,8 @@ internal sealed class UITestExecutionSession : IAsyncDisposable
         }
 
         if (_applicationInstance != null) await _applicationInstance.DisposeAsync();
-
         if (_context != null) await _context.DisposeAsync();
-
-        if (_sqlServerManager is not null)
-        {
-            await _sqlServerManager.DisposeAsync();
-        }
-
+        if (_sqlServerManager != null) await _sqlServerManager.DisposeAsync();
         if (_smtpService != null) await _smtpService.DisposeAsync();
         if (_azureBlobStorageManager != null) await _azureBlobStorageManager.DisposeAsync();
         if (_zapManager != null) await _zapManager.DisposeAsync();
