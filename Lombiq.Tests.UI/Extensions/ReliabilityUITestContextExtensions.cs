@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -266,7 +267,7 @@ public static class ReliabilityUITestContextExtensions
     {
         T result = default;
 
-        context.DoWithRetriesOrFail(() =>
+        context.DoWithRetriesOrFail([StackTraceHidden] () =>
         {
             try
             {

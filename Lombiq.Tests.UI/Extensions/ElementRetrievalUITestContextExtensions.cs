@@ -5,6 +5,8 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
@@ -21,6 +23,10 @@ namespace Lombiq.Tests.UI.Extensions;
 /// our timeout configurations. Thus using the methods that it uses.
 /// </para>
 /// </remarks>
+[SuppressMessage(
+    "StyleCop.CSharp.ReadabilityRules",
+    "SA1134:Attributes should not share line",
+    Justification = "We use [StackTraceHidden] for lambdas to avoid polluting the stack trace.")]
 public static class ElementRetrievalUITestContextExtensions
 {
     /// <summary>
@@ -28,15 +34,15 @@ public static class ElementRetrievalUITestContextExtensions
     /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static IWebElement Get(this UITestContext context, By by) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() =>
-            context.ExecuteLogged(nameof(Get), by, () => context.CreateSearchContext().FindElement(by)));
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () =>
+            context.ExecuteLogged(nameof(Get), by, [StackTraceHidden] () => context.CreateSearchContext().FindElement(by)));
 
     /// <summary>
     /// Retrieves the matching element's trimmed text content with retries within the configured timeout, also retrying
     /// if it throws <see cref="StaleElementReferenceException" />.
     /// </summary>
     public static string GetText(this UITestContext context, By by) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() => context.Get(by)?.GetTextTrimmed());
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () => context.Get(by)?.GetTextTrimmed());
 
     /// <summary>
     /// Retrieves all the matching elements with retries within the configured timeout, also retrying if it throws <see
@@ -45,8 +51,8 @@ public static class ElementRetrievalUITestContextExtensions
     /// cref="Missing(UITestContext, By)"/> instead.
     /// </summary>
     public static ReadOnlyCollection<IWebElement> GetAll(this UITestContext context, By by) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() =>
-            context.ExecuteLogged(nameof(GetAll), by, () => context.CreateSearchContext().FindElements(by)));
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () =>
+            context.ExecuteLogged(nameof(GetAll), by, [StackTraceHidden] () => context.CreateSearchContext().FindElements(by)));
 
     /// <summary>
     /// Retrieves all the matching elements with retries within the configured timeout. At least 1 item must exist
@@ -54,7 +60,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static ReadOnlyCollection<IWebElement> GetAllWhenOneExists(this UITestContext context, By by) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() =>
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () =>
         {
             context.Exists(by);
             return context.GetAll(by);
@@ -67,7 +73,7 @@ public static class ElementRetrievalUITestContextExtensions
     /// case. For details see <see href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
     /// </summary>
     public static bool CheckExistence(this UITestContext context, By by, bool exists) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() => exists ? context.Exists(by) : context.Missing(by));
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () => exists ? context.Exists(by) : context.Missing(by));
 
     /// <summary>
     /// Checks the existence of the element with retries within the configured timeout, also retrying if it throws <see
@@ -76,8 +82,8 @@ public static class ElementRetrievalUITestContextExtensions
     /// href="https://github.com/atata-framework/atata-webdriverextras#usage"/>.
     /// </summary>
     public static bool Exists(this UITestContext context, By by) =>
-        context.RetrieveWithRetriesIfStaleOrFail(() =>
-        context.ExecuteLogged(nameof(Exists), by, () => context.CreateSearchContext().Exists(by)));
+        context.RetrieveWithRetriesIfStaleOrFail([StackTraceHidden] () =>
+        context.ExecuteLogged(nameof(Exists), by, [StackTraceHidden] () => context.CreateSearchContext().Exists(by)));
 
     /// <summary>
     /// Checks the existence of the element with retries within the configured timeout, also retrying if it throws <see
@@ -87,14 +93,14 @@ public static class ElementRetrievalUITestContextExtensions
     /// </summary>
     public static bool Missing(this UITestContext context, By by) =>
         context.RetrieveWithRetriesIfStaleOrFail(() =>
-            context.ExecuteLogged(nameof(Missing), by, () => context.CreateSearchContext().Missing(by)));
+            context.ExecuteLogged(nameof(Missing), by, [StackTraceHidden] () => context.CreateSearchContext().Missing(by)));
 
     /// <summary>
     /// Verifies that the current page doesn't show any validation error notifications, also retrying if it throws <see
     /// cref="StaleElementReferenceException" />.
     /// </summary>
     public static void ShouldHaveNoValidationErrors(this UITestContext context) =>
-        context.DoWithRetriesIfStaleOrFail(() => context.Missing(By.CssSelector(".validation-summary-errors li")));
+        context.DoWithRetriesIfStaleOrFail([StackTraceHidden] () => context.Missing(By.CssSelector(".validation-summary-errors li")));
 
     /// <summary>
     /// Verifies that publishing a content item has succeeded. No warning or error messages are allowed, also retrying
