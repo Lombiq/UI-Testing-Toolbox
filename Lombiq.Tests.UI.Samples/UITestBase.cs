@@ -113,7 +113,7 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                         : OrchardCoreSetupConfiguration.DefaultSetupOperationIdentifierCalculator(setupOperation);
             })
             // This method declares the setup operation. You can overwrite it later in the descendant class or the test
-            // method (or even disable it by calling WithoutSetup()). So it's a good idea to use it here as a defualt.
+            // method (or even disable it by calling WithoutSetup()). So it's a good idea to use it here as a default.
             // Until the setup is done, all other tests wait; then, they'll use the snapshot
             // created from the setup. Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
             .UseSetup(SetupHelpers.RunSetupAsync);
