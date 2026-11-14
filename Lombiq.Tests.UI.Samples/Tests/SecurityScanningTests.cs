@@ -4,7 +4,6 @@ using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services;
 using OpenQA.Selenium;
 using Shouldly;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
@@ -28,11 +27,41 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 // Note that security scanning has cross-platform support, but due to the limitations of virtualization under Windows in
 // GitHub Actions, these tests won't work there. They'll work on a Windows desktop though.
+[SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
 public class SecurityScanningTests : UITestBase
 {
     public SecurityScanningTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
+        // Note how we use this setting to not launch a browser. Security scanning happens fully in ZAP, and doesn't
+        // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
+        // faster. However, you can opt to launch a browser to prepare the app for security scanning if necessary.
+        Browser = Browser.None;
+
+        // Below this point, we are overriding the default setup so we can have a simpler site; simplifying the security
+        // scan for the purpose of this demo. For a real app's security scan you needn't (shouldn't) do this though.
+        // Always run the scan on the actual app with everything set up how you run it in production!
+
+        // Check out the rest of SecurityScanningConfiguration too!
+        AddSyncConfiguration(configuration => configuration
+            .HtmlValidationConfiguration
+            .RunHtmlValidationAssertionOnAllPageChanges = false);
+
+        UseSetup(async context =>
+        {
+            var homepageUri = await context.GoToSetupAndSetupOrchardCoreAsync(
+                new OrchardCoreSetupParameters(context)
+                {
+                    SiteName = "Lombiq's OSOCE - UI Testing",
+                    RecipeId = "Blog",
+                    TablePrefix = "OSOCE",
+                    SiteTimeZoneValue = "Europe/Budapest",
+                });
+
+            context.Exists(By.ClassName("site-heading"));
+
+            return homepageUri;
+        });
     }
 
     // Let's see simple use case first: Running a built-in ZAP scan.
@@ -47,18 +76,15 @@ public class SecurityScanningTests : UITestBase
     // If you're new to security scanning, starting with exactly this is probably a good idea. Most possibly your app
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
-    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
     public Task BasicSecurityScanShouldPass() =>
-        // Note how we use a method that doesn't launch a browser. Security scanning happens fully in ZAP, and doesn't
-        // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
-        // faster. However, you can opt to launch a browser to prepare the app for security scanning if necessary.
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync(
-                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()),
+        AddTest(context =>
+            context.RunAndAssertBaselineSecurityScanAsync(
+                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()))
             // You should configure the assertion that checks the app logs to accept some common cases that only should
             // appear during security scanning. If you launch a full scan, this is automatically configured by the
             // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -82,10 +108,9 @@ public class SecurityScanningTests : UITestBase
     // - The suppressions are not actually necessary here. The BasicSecurityScanShouldPass works fine without them. They
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
-    [SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertBaselineSecurityScanAsync(
+        AddTest(context =>
+            context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
                     .ExcludeUrlWithRegex(".*blog.*")
@@ -98,8 +123,9 @@ public class SecurityScanningTests : UITestBase
                         "The search form doesn't alter the state of the application so anti-CSRF tokens are not needed.",
                         ".*my-search-form.*")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)),
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)))
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -121,8 +147,8 @@ public class SecurityScanningTests : UITestBase
     // customize them if something you need is not surfaced as configuration.
     [Fact]
     public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
-        ExecuteTestAfterBrowserSetupWithoutBrowserAsync(
-            context => context.RunAndAssertSecurityScanAsync(
+        AddTest(context =>
+            context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
                     .DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()
@@ -142,42 +168,9 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)),
-            changeConfiguration: configuration => configuration.UseAssertAppLogsForSecurityScan());
-
-    // Overriding the default setup so we can have a simpler site, simplifying the security scan for the purpose of this
-    // demo. For a real app's security scan you needn't (shouldn't) do this though; always run the scan on the actual
-    // app with everything set up how you run it in production.
-    protected override Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(
-            testAsync,
-            browser,
-            async context =>
-            {
-                var homepageUri = await context.GoToSetupAndSetupOrchardCoreAsync(
-                    new OrchardCoreSetupParameters(context)
-                    {
-                        SiteName = "Lombiq's OSOCE - UI Testing",
-                        RecipeId = "Blog",
-                        TablePrefix = "OSOCE",
-                        SiteTimeZoneValue = "Europe/Budapest",
-                    });
-
-                context.Exists(By.ClassName("site-heading"));
-
-                return homepageUri;
-            },
-            async configuration =>
-            {
-                configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
-
-                // Check out the rest of SecurityScanningConfiguration too!
-
-                await changeConfigurationAsync(configuration);
-            });
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)))
+            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: Security scanning.

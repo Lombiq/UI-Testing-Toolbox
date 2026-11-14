@@ -2,6 +2,8 @@ using Atata;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -309,6 +311,11 @@ public static class ReliabilityHelper
         };
     }
 
+    [StackTraceHidden]
+    [SuppressMessage(
+        "StyleCop.CSharp.ReadabilityRules",
+        "SA1134:Attributes should not share line",
+        Justification = "We use [StackTraceHidden] for lambdas to avoid polluting the stack trace.")]
     private static (bool IsSuccess, SafeWait<object> Wait) DoWithRetriesInternal(
         Func<bool> process,
         TimeSpan? timeout = null,
@@ -322,7 +329,7 @@ public static class ReliabilityHelper
         if (interval != null) wait.PollingInterval = interval.Value;
 
         return (wait.Until(
-            _ =>
+            [StackTraceHidden] (_) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return process();

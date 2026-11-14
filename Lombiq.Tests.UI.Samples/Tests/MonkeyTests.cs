@@ -22,7 +22,7 @@ public class MonkeyTests : UITestBase
     // or the content management UI. First, we test a single page.
     [Fact]
     public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // Note how we define the starting point of the test as the homepage.
@@ -36,7 +36,7 @@ public class MonkeyTests : UITestBase
     // pages.
     [Fact]
     public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 await context.GoToHomePageAsync();
@@ -50,7 +50,7 @@ public class MonkeyTests : UITestBase
     // Let's test with an authenticated user too.
     [Fact]
     public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
-        ExecuteTestAfterSetupAsync(
+        AddTest(
             context =>
             {
                 // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
@@ -72,13 +72,14 @@ public class MonkeyTests : UITestBase
                 // With this method, you can test the whole (barring restrictions like above) admin recursively. But you
                 // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too.
                 return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
-            },
-            configuration =>
+            })
+            .AddSyncConfiguration(configuration =>
             {
                 // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
                 // parameters are required.
                 configuration.WithIgnoreExpectedStatusResponseFilter("/api/graphql", HttpStatusCode.BadRequest);
-            });
+            })
+            .RunAsync();
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>

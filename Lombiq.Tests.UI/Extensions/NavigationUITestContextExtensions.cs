@@ -1,7 +1,6 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Atata;
-using Lombiq.HelpfulLibraries.OrchardCore.Mvc;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Models;
@@ -15,17 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-#pragma warning disable CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
-using OrchardCoreContentItemsPage = Lombiq.Tests.UI.Pages.OrchardCoreContentItemsPage;
-using OrchardCoreDashboardPage = Lombiq.Tests.UI.Pages.OrchardCoreDashboardPage;
-using OrchardCoreFeaturesPage = Lombiq.Tests.UI.Pages.OrchardCoreFeaturesPage;
-using OrchardCoreLoginPage = Lombiq.Tests.UI.Pages.OrchardCoreLoginPage;
-using OrchardCoreRegistrationPage = Lombiq.Tests.UI.Pages.OrchardCoreRegistrationPage;
-using OrchardCoreSetupPage = Lombiq.Tests.UI.Pages.OrchardCoreSetupPage;
-using OrchardCoreSetupPageParameters = Lombiq.Tests.UI.Pages.OrchardCoreSetupParameters;
-#pragma warning restore CS0618 // Type or member is obsolete. These are only used in obsolete extension methods.
 
 namespace Lombiq.Tests.UI.Extensions;
 
@@ -65,6 +55,13 @@ public static class NavigationUITestContextExtensions
             async () =>
             {
                 if (onlyIfNotAlreadyThere && context.GetCurrentUri() == absoluteUri) return;
+
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().GoToUrlAsync(absoluteUri);
+                    return;
+                }
 
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
@@ -134,115 +131,8 @@ public static class NavigationUITestContextExtensions
         await context.SignInDirectlyAsync(email);
     }
 
-    // AtataContext is used from UITestContext in GoToPage() methods so they're future-proof in the case Atata won't be
-    // fully static. Also, with async code it's also necessary to re-set AtataContext.Current now, see:
-    // https://github.com/atata-framework/atata/issues/364.
-    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
-              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
-    public static async Task<T> GoToPageAsync<T>(this UITestContext context, bool navigate = true)
-        where T : PageObject<T>
-    {
-        var page = context.ExecuteLogged(
-            nameof(GoToPageAsync),
-            typeof(T).FullName,
-            () => context.Scope.AtataContext.Go.To<T>(navigate: navigate));
-
-        await context.TriggerAfterPageChangeEventAsync();
-
-        context.RefreshCurrentAtataContext();
-
-        return page;
-    }
-
-    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
-              $"{nameof(TypedRouteUITestContextExtensions.GoToAsync)} instead.")]
-    public static async Task<T> GoToPageAsync<T>(this UITestContext context, string relativeUrl)
-        where T : PageObject<T>
-    {
-        var page = await context.ExecuteLoggedAsync(
-            $"{typeof(T).FullName} - {relativeUrl}",
-            typeof(T).FullName,
-            async () =>
-            {
-                T pageInternal = null;
-
-                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
-                    () =>
-                    {
-                        pageInternal = context.Scope.AtataContext.Go.To<T>(
-                            url: context.GetAbsoluteUri(relativeUrl).ToString());
-                        return Task.CompletedTask;
-                    });
-
-                return pageInternal;
-            });
-
-        await context.TriggerAfterPageChangeEventAsync();
-
-        context.RefreshCurrentAtataContext();
-
-        return page;
-    }
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToAdminRelativeUrlAsync)} instead.")]
-    public static async Task<T> GoToAdminPageAsync<T>(this UITestContext context, string relativeUrl = null)
-        where T : PageObject<T>
-    {
-        var uri = context.GetAbsoluteAdminUri(relativeUrl);
-
-        var page = await context.ExecuteLoggedAsync(
-            $"{typeof(T).FullName} - {uri.LocalPath}",
-            typeof(T).FullName,
-            async () =>
-            {
-                T pageInternal = null;
-
-                await context.DoWithRetriesUntilNavigationHasOccurredOrFailAsync(
-                    () =>
-                    {
-                        pageInternal = context.Scope.AtataContext.Go.To<T>(url: uri.ToString());
-                        return Task.CompletedTask;
-                    });
-
-                return pageInternal;
-            });
-
-        await context.TriggerAfterPageChangeEventAsync();
-
-        context.RefreshCurrentAtataContext();
-
-        return page;
-    }
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRelativeUrlAsync)}(\"/\") instead.")]
-    public static Task<OrchardCoreSetupPage> GoToSetupPageAsync(this UITestContext context, bool navigate = true) =>
-        context.GoToPageAsync<OrchardCoreSetupPage>(navigate);
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToLoginAsync)} instead.")]
-    public static Task<OrchardCoreLoginPage> GoToLoginPageAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreLoginPage>();
-
     public static Task GoToLoginAsync(this UITestContext context) =>
         context.GoToRelativeUrlAsync("/Login");
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
-    public static Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(this UITestContext context, string recipeId) =>
-        context.GoToSetupPageAndSetupOrchardCoreAsync(
-            new OrchardCoreSetupPageParameters(context)
-            {
-                RecipeId = recipeId,
-            });
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToSetupAndSetupOrchardCoreAsync)} instead.")]
-    public static async Task<Uri> GoToSetupPageAndSetupOrchardCoreAsync(
-        this UITestContext context,
-        OrchardCoreSetupPageParameters parameters = null)
-    {
-        var setupPage = await context.GoToSetupPageAsync(parameters?.RunSetupOnCurrentPage == false);
-        setupPage = await setupPage.SetupOrchardCoreAsync(context, parameters);
-
-        return setupPage.PageUri.Value;
-    }
 
     public static Task<Uri> GoToSetupAndSetupOrchardCoreAsync(
         this UITestContext context,
@@ -281,12 +171,12 @@ public static class NavigationUITestContextExtensions
         OrchardCoreSetupParameters parameters = null,
         bool shouldBeSuccess = true)
     {
-        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query)
+        static async Task<IElement> GetElementAsync(HttpResponseMessage response, string query, CancellationToken token)
         {
             using (response)
             {
-                await using var stream = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-                var document = await new HtmlParser().ParseDocumentAsync(stream, TestContext.Current.CancellationToken);
+                await using var stream = await response.Content.ReadAsStreamAsync(token);
+                var document = await new HtmlParser().ParseDocumentAsync(stream, token);
                 return string.IsNullOrEmpty(query) ? document.DocumentElement : document.QuerySelector(query);
             }
         }
@@ -299,13 +189,13 @@ public static class NavigationUITestContextExtensions
             ? context.GetCurrentUri()
             : parameters.SetupUri ?? context.TestStartUri;
 
-        using var client = context.Configuration.BrowserConfiguration.Browser == Browser.None
-            ? context.CreateHttpClient()
-            : context.CreateHttpClientWithBrowserContext();
+        var isBrowser = context.Configuration.BrowserConfiguration.Browser != Browser.None;
+        using var client = isBrowser ? context.CreateHttpClientWithBrowserContext() : context.CreateHttpClient();
 
         var verificationToken = (await GetElementAsync(
                 await client.GetAsync(uri, cancellationToken),
-                "input[name=__RequestVerificationToken]"))?
+                "input[name=__RequestVerificationToken]",
+                cancellationToken))?
             .GetAttribute("value");
 
         var formData = new Dictionary<string, string>
@@ -328,7 +218,8 @@ public static class NavigationUITestContextExtensions
         using var formContent = new FormUrlEncodedContent(formData);
         var responseSetupScript = await GetElementAsync(
             await client.PostAsync(uri, formContent, cancellationToken),
-            "script[src*='OrchardCore.Setup']");
+            "script[src*='OrchardCore.Setup']",
+            cancellationToken);
 
         if (shouldBeSuccess)
         {
@@ -350,28 +241,11 @@ public static class NavigationUITestContextExtensions
         return uri;
     }
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToRegistrationAsync)} instead.")]
-    public static Task<OrchardCoreRegistrationPage> GoToRegistrationPageAsync(this UITestContext context) =>
-        context.GoToPageAsync<OrchardCoreRegistrationPage>();
-
     public static Task GoToRegistrationAsync(this UITestContext context) =>
         context.GoToRelativeUrlAsync('/' + UserRegistrationParameters.DefaultUrl);
 
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToDashboardAsync)} method instead.")]
-    public static Task<OrchardCoreDashboardPage> GoToDashboardPageAsync(this UITestContext context) =>
-        context.GoToAdminPageAsync<OrchardCoreDashboardPage>();
-
     public static Task GoToDashboardAsync(this UITestContext context) =>
         context.GoToAdminRelativeUrlAsync(urlWithoutAdminPrefix: string.Empty, onlyIfNotAlreadyThere: false);
-
-    [Obsolete("Methods using Page<> classes will be removed in the next version. Use " +
-              $"{nameof(OrchardCoreDashboardUITestContextExtensions.GoToContentItemListAsync)} instead")]
-    public static Task<OrchardCoreContentItemsPage> GoToContentItemsPageAsync(this UITestContext context) =>
-        context.GoToAdminPageAsync<OrchardCoreContentItemsPage>("/Contents/ContentItems");
-
-    [Obsolete($"Methods using Page<> classes will be removed in the next version. Use {nameof(GoToFeaturesAsync)} instead.")]
-    public static Task<OrchardCoreFeaturesPage> GoToFeaturesPageAsync(this UITestContext context) =>
-        context.GoToAdminPageAsync<OrchardCoreFeaturesPage>("/Features");
 
     /// <summary>
     /// Navigate to the Features admin configuration page.
@@ -511,47 +385,10 @@ public static class NavigationUITestContextExtensions
     public static Task ClickReliablyOnByLinkTextAsync(this UITestContext context, string linkText, int maxTries = 3) =>
         context.ClickReliablyOnAsync(By.LinkText(linkText));
 
-    /// <inheritdoc cref="ClickReliablyOnUntilNavigationHasOccurredAsync(UITestContext, By, TimeSpan?, TimeSpan?)"/>
-    [Obsolete($"Use {nameof(ClickReliablyOnUntilNavigationHasOccurredAsync)} instead.")]
-    public static Task ClickReliablyOnUntilPageLeaveAsync(
-        this UITestContext context,
-        By by,
-        TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        context.ClickReliablyOnUntilNavigationHasOccurredAsync(by, timeout, interval);
-
-    /// <summary>
-    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilNavigationHasOccurredAsync"/> so the <paramref
-    /// name="context"/> doesn't have to be passed twice.
-    /// </summary>
-    [Obsolete("This method clicks continuously, which may send several requests. Use " +
-        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
-    public static Task ClickReliablyOnUntilNavigationHasOccurredAsync(
-        this UITestContext context,
-        By by,
-        TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilNavigationHasOccurredAsync(context, timeout, interval);
-
-    /// <summary>
-    /// A convenience method that merges <see cref="ElementRetrievalUITestContextExtensions.Get"/> and <see
-    /// cref="NavigationWebElementExtensions.ClickReliablyUntilUrlChangeAsync"/> so the <paramref name="context"/>
-    /// doesn't have to be passed twice.
-    /// </summary>
-    [Obsolete("This method clicks continuously, which may send several requests. Use " +
-        $"{nameof(ClickReliablyOnAndWaitUntilUrlChangeAsync)} instead.")]
-    public static Task ClickReliablyOnUntilUrlChangeAsync(
-        this UITestContext context,
-        By by,
-        TimeSpan? timeout = null,
-        TimeSpan? interval = null) =>
-        context.Get(by).ClickReliablyUntilUrlChangeAsync(context, timeout, interval);
-
     /// <summary>
     /// Clicks on <paramref name="by"/> using <see cref="ClickReliablyOnAsync"/> and then waits until the <see
     /// cref="WebDriver.Url"/> becomes different from the value before the click. This is different from <see
-    /// cref="ClickReliablyOnUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
+    /// cref="ClickReliablyOnAndWaitUntilUrlChangeAsync"/> in that it doesn't continuously click until the navigation is
     /// concluded, which can fail on regular links.
     /// </summary>
     public static async Task ClickReliablyOnAndWaitUntilUrlChangeAsync(
@@ -662,23 +499,24 @@ public static class NavigationUITestContextExtensions
     /// <summary>
     /// Refreshes (reloads) the current page.
     /// </summary>
-    [Obsolete("Use RefreshAsync instead. That also runs NavigationEventHandlers, including checking the browser logs.")]
-    public static void Refresh(this UITestContext context) => context.Scope.Driver.Navigate().Refresh();
-
-    /// <summary>
-    /// Refreshes (reloads) the current page.
-    /// </summary>
     public static Task RefreshAsync(this UITestContext context) =>
         context.ExecuteLoggedAsync(
             nameof(RefreshAsync),
             async () =>
             {
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().RefreshAsync();
+                    return;
+                }
+
                 var absoluteUri = context.GetCurrentUri();
 
                 await context.Configuration.Events.BeforeNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
 
-                context.Scope.Driver.Navigate().Refresh();
+                await context.Scope.Driver.Navigate().RefreshAsync();
 
                 await context.Configuration.Events.AfterNavigation
                     .InvokeAsync<NavigationEventHandler>(eventHandler => eventHandler(context, absoluteUri));
@@ -692,6 +530,13 @@ public static class NavigationUITestContextExtensions
             nameof(BackAsync),
             async () =>
             {
+                if (context.Configuration.BrowserConfiguration.Browser == Browser.None)
+                {
+                    // Simplified navigation for HTTP client.
+                    await context.Driver.Navigate().BackAsync();
+                    return;
+                }
+
                 var absoluteUri = context.GetCurrentUri();
 
                 await context.Configuration.Events.BeforeNavigation

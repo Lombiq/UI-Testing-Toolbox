@@ -25,7 +25,7 @@ public class ErrorHandlingTests : UITestBase
     // exception.
     [Fact]
     public Task ServerSideErrorOnLoadedPageShouldHaltTest() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 try
@@ -39,7 +39,7 @@ public class ErrorHandlingTests : UITestBase
                 catch (PageChangeAssertionException)
                 {
                     // Remove all logs to have a clean slate.
-                    await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
+                    await context.ClearLogsAsync();
                 }
             });
 
@@ -47,7 +47,7 @@ public class ErrorHandlingTests : UITestBase
     // log.
     [Fact]
     public Task ClientSideErrorOnLoadedPageShouldHaltTest() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 try
@@ -69,8 +69,17 @@ public class ErrorHandlingTests : UITestBase
     // all get collected into the historic browser log.
     [Fact]
     public Task BrowserLogsShouldPersist() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
+        AddSyncConfiguration(configuration =>
+            {
+                // By default, anything below warning is not logged to the browser log. So, to allow the info messages
+                // of the test, we change the filter.
+                configuration.BrowserLogFilter = logEntry =>
+                    OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(logEntry) || logEntry.Level == Level.Info;
+
+                // By default, the test will fail if the browser log is not empty. We allow info entries here.
+                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(entry => entry.Level > Level.Info);
+            })
+            .RunAsync(async context =>
             {
                 const string testLog = "--test log--";
                 void WriteConsoleLog() => context.ExecuteScript($"console.info('{testLog}');");
@@ -91,28 +100,30 @@ public class ErrorHandlingTests : UITestBase
                 WriteConsoleLog();
 
                 // Since the browser log is updated asynchronously, we have to wait for most recent entries to appear.
-                context.DoWithRetriesOrFail(() =>
-                    context
+                context.DoWithRetriesOrFail(() => context
                     .CumulativeBrowserLog
                     .Count(entry => entry.Text.Contains(testLog)) == 6);
-            },
-            configuration =>
-            {
-                // By default, anything below warning is not logged to the browser log. So, to allow the info messages
-                // of the test, we change the filter.
-                configuration.BrowserLogFilter = logEntry =>
-                    OrchardCoreUITestExecutorConfiguration.IsNonSuccessBrowserLogEntry(logEntry) || logEntry.Level == Level.Info;
-
-                // By default, the test will fail if the browser log is not empty. We allow info entries here.
-                configuration.AssertBrowserLog = logEntries => logEntries.ShouldNotContain(entry => entry.Level > Level.Info);
             });
 
     [Fact]
     public Task ErrorDuringSetupShouldHaltTest() =>
         Should.ThrowAsync<PageChangeAssertionException>(() =>
-            ExecuteTestAfterSetupAsync(
-                _ => throw new InvalidOperationException("This point shouldn't be reachable because setup fails."),
-                configuration =>
+            UseSetup(async context =>
+            {
+                // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
+                await context.GoToSetupAndSetupOrchardCoreAsync(
+                    new OrchardCoreSetupParameters(context)
+                    {
+                        SiteName = "Setup Error Test",
+                        RecipeId = SetupHelpers.RecipeId,
+                        DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlConnection,
+                        ConnectionString = "An invalid connection string which causes an error during setup.",
+                    });
+
+                throw new InvalidOperationException(
+                    "This point shouldn't be reachable if the logs are properly kept.");
+            })
+            .AddSyncConfiguration(configuration =>
                 {
                     // The test is guaranteed to fail so we don't want to retry it needlessly.
                     configuration.MaxRetryCount = 0;
@@ -121,26 +132,14 @@ public class ErrorHandlingTests : UITestBase
                     // a problem, despite them being expected.
                     configuration.GitHubActionsOutputConfiguration.EnableErrorAnnotations = false;
 
-                    // We introduce a custom setup operation that has an intentionally invalid SQL Server configuration.
+                    // We want to test the setup screen, so let's turn off the web request based setup.
                     configuration.SetupConfiguration.SetupWithHttpClient = false;
-                    configuration.SetupConfiguration.SetupOperation = async context =>
-                    {
-                        await context.GoToSetupAndSetupOrchardCoreAsync(
-                            new OrchardCoreSetupParameters(context)
-                            {
-                                SiteName = "Setup Error Test",
-                                RecipeId = SetupHelpers.RecipeId,
-                                DatabaseProvider = OrchardCoreSetupParameters.DatabaseType.SqlConnection,
-                                ConnectionString = "An invalid connection string which causes an error during setup.",
-                            });
-
-                        throw new InvalidOperationException(
-                            "This point shouldn't be reachable if the logs are properly kept.");
-                    };
 
                     // No need to create a failure dump folder for this test, since it'll always fail.
                     configuration.TestDumpConfiguration.CreateTestDump = false;
-                }));
+                })
+                .RunAsync(_ =>
+                    throw new InvalidOperationException("This point shouldn't be reachable because setup fails.")));
 }
 
 // END OF TRAINING SECTION: Error handling.

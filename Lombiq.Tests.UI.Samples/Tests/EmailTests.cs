@@ -16,7 +16,7 @@ public class EmailTests : UITestBase
 
     [Fact]
     public Task SendingTestEmailShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        AddTest(
             async context =>
             {
                 // A shortcut to sign in without going through (and thus testing) the login screen.
@@ -37,12 +37,13 @@ public class EmailTests : UITestBase
 
                 // If we see the message that we've sent then it's all good.
                 context.Exists(By.XPath("//pre[contains(.,'Hi, this is a test.')]"));
-            },
-            configuration =>
+            })
+            .AddSyncConfiguration(configuration =>
             {
                 // Automatically enables and configures the Email module so you don't have to enable it in a recipe.
                 configuration.UseSmtpService = true;
-            });
+            })
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: E-mail tests.

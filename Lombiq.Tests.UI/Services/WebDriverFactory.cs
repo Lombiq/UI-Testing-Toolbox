@@ -135,6 +135,10 @@ public static class WebDriverFactory
             return new FirefoxDriver(firefoxOptions).SetCommonTimeouts(pageLoadTimeout);
         }));
 
+    public static Task<Func<HttpClientDriver>> CreateHttpClientDriverAsync(
+        BrowserConfiguration configuration, TimeSpan pageLoadTimeout, Uri baseUri) =>
+        CreateDriverAsync(() => Task.FromResult(() => new HttpClientDriver(configuration, pageLoadTimeout, baseUri)));
+
     private static TDriverOptions SetCommonOptions<TDriverOptions>(this TDriverOptions driverOptions)
         where TDriverOptions : DriverOptions
     {

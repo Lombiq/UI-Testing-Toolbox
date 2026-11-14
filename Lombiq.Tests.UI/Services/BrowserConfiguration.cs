@@ -1,3 +1,4 @@
+using Atata;
 using Lombiq.Tests.UI.Constants;
 using Lombiq.Tests.UI.Models;
 using SixLabors.ImageSharp;
@@ -61,4 +62,14 @@ public class BrowserConfiguration
     /// driver creation when the <see cref="UITestContext"/> does not exist yet.
     /// </summary>
     internal string TempDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether <see cref="AtataSessionMode.Pool"/> should be used when <see
+    /// cref="Browser"/> is not <see cref="Browser.None"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Warning: Only set this configuration to <see langword="true"/> if all your tests utilize the same Orchard Core
+    /// setup and command line arguments, as those can bleed into each other when pooling is enabled.
+    /// </para></remarks>
+    public bool UsePool { get; set; }
 }

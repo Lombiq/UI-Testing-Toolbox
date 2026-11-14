@@ -24,7 +24,7 @@ public class ElasticsearchTests : UITestBase
 
     [Fact]
     public Task ElasticsearchShouldWork() =>
-        ExecuteTestAsync(
+        AddTest(
             async context =>
             {
                 // Going to the built-in search feature. By default, it's not accessible for anonymous users, so we need
@@ -37,15 +37,13 @@ public class ElasticsearchTests : UITestBase
 
                 // Hopefully, we found it!
                 context.Exists(By.XPath("//h2[contains(., 'Man must explore, and this is exploration at its greatest')]"));
-            },
-            context =>
-            {
+            })
+            .UseSetup(context =>
                 // Since indexing needs to happen before we can start the test, we use a custom setup recipe that configures
                 // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
                 // we recommend for recipes that you only need for testing.
-                return SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch");
-            },
-            configuration =>
+                SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch"))
+            .AddSyncConfiguration(configuration =>
             {
                 // This is important. Here we tell the UI Testing Toolbox that we want to use Elasticsearch. You can set
                 // this for just a given test, as we do it here, or for all tests from a base class like UITestBase that
@@ -54,7 +52,8 @@ public class ElasticsearchTests : UITestBase
 
                 // The search page has some HTML validation issues, but we don't care about those here.
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
-            });
+            })
+            .RunAsync();
 }
 
 // END OF TRAINING SECTION: Testing Elasticsearch-using functionality.

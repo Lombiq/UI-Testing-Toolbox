@@ -35,7 +35,9 @@ public static class SetupHelpers
 
     public static async Task<Uri> RunSetupAsync(UITestContext context, string recipeId)
     {
-        // Running the setup. OrchardCoreSetupParameters will initialize some basic settings from the context.
+        // Running the setup. OrchardCoreSetupParameters will initialize some basic settings from the context. Note: if
+        // your setup is very simple, you can skip the SetupHelpers and put context.GoToSetupAndSetupOrchardCoreAsync()
+        // directly into the UseSetup() call in the constructor of your test base class.
         var homepageUri = await context.GoToSetupAndSetupOrchardCoreAsync(
             new OrchardCoreSetupParameters(context)
             {
@@ -97,3 +99,6 @@ public static class SetupHelpers
         }
     }
 }
+
+// Phew, that was a lot of configuration! (And we have just scratched the surface!) Let's see some actual tests.
+// NEXT STATION: Tests/BasicTests.cs

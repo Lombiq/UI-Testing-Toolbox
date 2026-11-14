@@ -1,6 +1,7 @@
 using Atata;
 using Atata.Cli;
 using Lombiq.HelpfulLibraries.Common.Utilities;
+using Lombiq.Tests.UI.Models;
 using OpenQA.Selenium;
 using System;
 using System.Threading.Tasks;
@@ -16,6 +17,9 @@ public class AtataConfiguration
 
 public static class AtataFactory
 {
+    public static Task<AtataScope> StartAtataScopeAsync(UITestContextData data) =>
+        StartAtataScopeAsync(data.Id, data.TestOutputHelper, data.AppBaseUri, data.Configuration);
+
     public static async Task<AtataScope> StartAtataScopeAsync(
         string contextId,
         ITestOutputHelper testOutputHelper,
@@ -25,39 +29,53 @@ public static class AtataFactory
         AtataContext.GlobalProperties.ModeOfCurrent = AtataContextModeOfCurrent.AsyncLocal;
         AtataContext.GlobalProperties.UseUtcTimeZone();
 
-        // Since Atata 2.0 the default visibility option is Visibility.Any, these lines restore it to the 1.x behavior.
-        AtataContext.GlobalConfiguration.UseDefaultControlVisibility(Visibility.Visible);
         SearchOptions.DefaultVisibility = Visibility.Visible;
 
         var timeoutConfiguration = configuration.TimeoutConfiguration;
         var browserConfiguration = configuration.BrowserConfiguration;
 
-        var builder = AtataContext.Configure()
-            .UseBaseUrl(baseUri.ToString())
-            .UseCulture(browserConfiguration.AcceptLanguage.ToString())
-            .UseTestName(configuration.AtataConfiguration.TestName)
-            .UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout)
-            .UseBaseRetryInterval(timeoutConfiguration.RetryInterval)
-            .PageSnapshots.UseCdpOrPageSourceStrategy()
-            .UseArtifactsPathTemplate(contextId); // Necessary to prevent long paths, an issue under Windows.
+        var builder = AtataContext.CreateDefaultBuilder(AtataContextScope.Test);
 
-        if (configuration.BrowserConfiguration.Browser != Browser.None)
+        var factory = await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper, baseUri);
+        if (configuration.BrowserConfiguration.Browser == Browser.None) configuration.BrowserConfiguration.UsePool = false;
+        builder.Sessions.AddWebDriver(driverBuilder =>
         {
-            builder
-                .UseDriverInitializationStage(AtataContextDriverInitializationStage.OnDemand)
-                .UseDriver(await CreateDriverFactoryAsync(browserConfiguration, timeoutConfiguration, testOutputHelper));
-        }
-        else
+            if (configuration.BrowserConfiguration.UsePool)
+            {
+                driverBuilder.UseAsPool();
+            }
+
+            driverBuilder.UseDriver(factory);
+            driverBuilder.UseBaseUrl(baseUri);
+            driverBuilder.PageSnapshots.UseCdpOrPageSourceStrategy();
+
+            // Since Atata 2.0, the default visibility option is Visibility.Any. This restores it to the 1.x behavior.
+            driverBuilder.UseDefaultControlVisibility(Visibility.Visible);
+        });
+
+        if (configuration.BrowserConfiguration.UsePool)
         {
-            builder.UseDriverInitializationStage(AtataContextDriverInitializationStage.None);
+            builder.Sessions.TakeFromPool<WebDriverSession>(requestBuilder =>
+                requestBuilder.UseStartScopes(AtataContextScopes.Test));
         }
+
+        builder.UseCulture(browserConfiguration.AcceptLanguage.ToString());
+        builder.UseTestName(configuration.AtataConfiguration.TestName);
+        builder.UseBaseRetryTimeout(timeoutConfiguration.RetryTimeout);
+        builder.UseBaseRetryInterval(timeoutConfiguration.RetryInterval);
+
+        // Necessary to prevent long paths, an issue under Windows.
+        TestContext.Current.KeyValueStorage[nameof(ContextIdArtifactsPathFactory)] = contextId;
+        AtataContext.GlobalProperties.ArtifactsRootPathTemplate = configuration.GetTempDirectoryPathWithFallback();
+        AtataContext.GlobalProperties.ArtifactsPathFactory = ContextIdArtifactsPathFactory.Instance;
 
         builder.LogConsumers.AddDebug();
         builder.LogConsumers.Add(new TestOutputLogConsumer(testOutputHelper));
 
         configuration.AtataConfiguration.ContextBuilder?.Invoke(builder);
 
-        return new AtataScope(builder.Build(), baseUri);
+        var context = await builder.BuildAsync(TestContext.Current.CancellationToken);
+        return new AtataScope(context, baseUri);
     }
 
     public static void SetupShellCliCommandFactory() =>
@@ -68,7 +86,8 @@ public static class AtataFactory
     private static async Task<Func<IWebDriver>> CreateDriverFactoryAsync(
         BrowserConfiguration browserConfiguration,
         TimeoutConfiguration timeoutConfiguration,
-        ITestOutputHelper testOutputHelper)
+        ITestOutputHelper testOutputHelper,
+        Uri baseUri)
     {
         // Driver creation can fail with "Cannot start the driver service on http://localhost:56686/" exceptions if the
         // machine is under load. Retrying it here so not the whole test needs to be re-run.
@@ -97,6 +116,7 @@ public static class AtataFactory
                     Browser.Chrome => await WebDriverFactory.CreateChromeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Edge => await WebDriverFactory.CreateEdgeDriverAsync(browserConfiguration, pageLoadTimeout),
                     Browser.Firefox => await WebDriverFactory.CreateFirefoxDriverAsync(browserConfiguration, pageLoadTimeout),
+                    Browser.None => await WebDriverFactory.CreateHttpClientDriverAsync(browserConfiguration, pageLoadTimeout, baseUri),
                     _ => throw new InvalidOperationException($"Unknown browser: {browserConfiguration.Browser}."),
                 };
             }

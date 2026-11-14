@@ -23,7 +23,7 @@ public class ShiftTimeTests : UITestBase
 
     [Fact]
     public Task TimeShouldUpdate() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // You can enable the feature from recipe too, but if you only need it for specific tests, then you can

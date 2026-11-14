@@ -3,62 +3,42 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Samples.Helpers;
 using Lombiq.Tests.UI.Services;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Lombiq.Tests.UI.Samples;
 
 // This will be the base class for our UI test classes. Here we'll set up some common configuration. Inheriting test
-// classes is not mandatory but the approach is simple and effective.
+// classes is not mandatory but the approach is simple and effective. You can also use it for application-wide
+// configuration.
+[SuppressMessage("Style", "IDE0055:Fix formatting", Justification = "Needed for inline comments.")]
 public abstract class UITestBase : OrchardCoreUITestBase<Program>
 {
+    // You can use this constructor to declare the setup operation and configuration that will apply to all test
+    // classes. You can do the same in the descendant test classes and in the individual test methods too, so there is a
+    // level of granularity if you want to organize configuration methods and make future maintenance easier.
     protected UITestBase(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
-    // Two usual overloads. Note that we reference SetupHelpers.RunSetup as the setup operation: That's what will be run
-    // when the first test executes. Until the setup is done, all other tests wait; then, they'll use the snapshot
-    // created from the setup.
-    // Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
-    // NEXT STATION: Check out SetupHelpers, then come back here!
-    protected override Task ExecuteTestAfterSetupAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(testAsync, browser, SetupHelpers.RunSetupAsync, changeConfigurationAsync);
-
-    // You could wrap all your tests by providing a different delegate as the first parameter of ExecuteTestAsync() and
-    // do something before or after they're executed but this is not always necessary.
-    protected override Task ExecuteTestAsync(
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<UITestContext, Task<Uri>> setupOperation,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        base.ExecuteTestAsync(
-            testAsync,
-            browser,
-            setupOperation,
-            async configuration =>
+        : base(testOutputHelper) =>
+        // You can call the "AddConfiguration" and "AddSyncConfiguration" methods as many times as you want, the
+        // provided configuration functions are chained together and called in sequence before the test. Feel free to
+        // use multiple calls as a way to group related configurations together.
+        AddSyncConfiguration(configuration =>
             {
-                // You should always set the window size of the browser, otherwise the size will be random based on the
-                // settings of the given machine. However this is already handled as long as the
-                // context.Configuration.BrowserConfiguration.DefaultBrowserSize option is properly set. You can change
-                // it here but usually the default full HD is suitable.
+                // If the window's size isn't set explicitly, it will be decided by the operating system with
+                // unpredictable results. So we set the window size to the value of the configuration below. You can
+                // change it here, but usually the default full HD is suitable.
                 configuration.BrowserConfiguration.DefaultBrowserSize = CommonDisplayResolutions.HdPlus;
 
                 // In headless mode, the browser's UI is not showing, it just runs in the background. This is what you
                 // want to use when running all tests, especially in a CI environment. During local troubleshooting you
-                // may want to turn this off so you can see in the browser what's happening. Hence the override of the
-                // default here. Apart from changing the code here, you can use a configuration file or environment
-                // variables, see the docs.
+                // may want to turn this off so you can see in the browser what's happening. It is best to configure
+                // this option from a configuration file or environment variable, but you can also adjust it from code.
                 configuration.BrowserConfiguration.Headless =
                     TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
-                // There are event handlers that you can hook into, like
-                // configuration.OrchardCoreConfiguration.BeforeAppStart. But it is just one of many. Check out the
-                // others in OrchardCoreConfiguration if you're interested.
+                // There are event handlers that you can hook into, you can see one of many below. Check out the others
+                // in OrchardCoreConfiguration, if you're interested.
 
                 // This is quite handy! We can, for example, add a configuration parameter when launching the app. This
                 // can be used to set configuration for configuration providers, see the docs:
@@ -131,10 +111,12 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                     setupOperation == SetupHelpers.RunSetupAsync
                         ? "Sample Setup"
                         : OrchardCoreSetupConfiguration.DefaultSetupOperationIdentifierCalculator(setupOperation);
-
-                if (changeConfigurationAsync != null) await changeConfigurationAsync(configuration);
-            });
+            })
+            // This method declares the setup operation. You can overwrite it later in the descendant class or the test
+            // method (or even disable it by calling WithoutSetup()). So it's a good idea to use it here as a default.
+            // Until the setup is done, all other tests wait; then, they'll use the snapshot
+            // created from the setup. Do you use Auto Setup? No problem: Check out SetupHelpers.RunAutoSetup().
+            .UseSetup(SetupHelpers.RunSetupAsync);
 }
 
-// NEXT STATION: Phew, that was a lot of configuration (and we have just scratched the surface!). Let's see some actual
-// tests: Go to Tests/BasicTests.cs.
+// NEXT STATION: Helpers/SetupHelpers.cs

@@ -16,11 +16,10 @@ public class BasicTests : UITestBase
     }
 
     // Checking that everything is OK with the homepage as an anonymous user. Note the [Fact] attribute: it's necessary
-    // for xUnit.
-    // Note that by default, tests are run via Chrome. Check out MultiBrowserTests for samples on using other browsers.
+    // for xUnit. By default, tests are run via Chrome. Check out MultiBrowserTests for samples on using other browsers.
     [Fact]
     public Task AnonymousHomePageShouldExist() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // Is the title correct?
@@ -37,7 +36,7 @@ public class BasicTests : UITestBase
     // feature, and thus not necessarily something we want to test, our custom code can break it in various ways.
     [Fact]
     public Task LoginShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // The UI Testing Toolbox has an immense amount of helpers and shortcuts. This one lets you navigate to
@@ -67,8 +66,11 @@ public class BasicTests : UITestBase
     // automatically so if there's an exception or anything, the test will fail.
     [Fact]
     public Task TogglingFeaturesShouldWork() =>
-        ExecuteTestAfterSetupAsync(
-            context => context.ExecuteAndAssertTestFeatureToggleAsync(),
+        // Here we use AddTest to declare the test first. You can also chain multiple AddTest calls to break your test
+        // into multiple parts for organization. This can produce really clean calls, if parts of your test is already
+        // extracted into reusable helper methods. (We also use this technique, when testing multiple screen sizes.)
+        AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
+            .AddSyncConfiguration(
             configuration => // You can change the configuration even for each test.
             {
                 // By default, apart from some commonly known false positives, the response log should be empty.
@@ -78,12 +80,13 @@ public class BasicTests : UITestBase
                 // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
                 // filter out entries in the first place.
                 configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            });
+            })
+            .RunAsync();
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]
     public Task ShortcutsShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // If you need an authenticated user but you aren't testing the login specifically then you can use this

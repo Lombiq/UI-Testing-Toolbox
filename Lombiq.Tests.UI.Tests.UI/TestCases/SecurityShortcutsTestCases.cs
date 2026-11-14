@@ -16,9 +16,8 @@ public static class SecurityShortcutsTestCases
     private const string ViewContentTypesPermission = "ViewContentTypes";
     private const string FakePermission = "Fake";
 
-    public static Task AddUserToRoleShouldWorkAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
-        executeTestAfterSetupAsync(
+    public static Task AddUserToRoleShouldWorkAsync(UITestBase fixture) => fixture
+        .AddTest(
             async context =>
             {
                 await CreateUserAndSignInAsync(context);
@@ -34,37 +33,33 @@ public static class SecurityShortcutsTestCases
                 await context.GoToContentTypesListAsync();
 
                 context.GetCurrentUri().AbsolutePath.ShouldBe("/Admin/ContentTypes/List");
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            })
+        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .RunAsync();
 
-    public static Task AddUserToFakeRoleShouldThrowAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
-        executeTestAfterSetupAsync(
-            async context =>
-            {
-                await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<UserNotFoundException>();
+    public static Task AddUserToFakeRoleShouldThrowAsync(UITestBase fixture) => fixture
+        .WithoutBrowser()
+        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .RunAsync(async context =>
+        {
+            await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<UserNotFoundException>();
 
-                await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
-                await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<RoleNotFoundException>();
+            await context.CreateUserAsync(UserUserName, DefaultUser.Password, UserEmail);
+            await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<RoleNotFoundException>();
 
-                await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            await context.ClearLogsAsync();
+        });
 
-    public static Task AllowFakePermissionToRoleShouldThrowAsync(
-        ExecuteTestAfterSetupAsync executeTestAfterSetupAsync, Browser browser = default) =>
-        executeTestAfterSetupAsync(
-            async context =>
-            {
-                await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)
-                    .ShouldThrowAsync<PermissionNotFoundException>();
+    public static Task AllowFakePermissionToRoleShouldThrowAsync(UITestBase fixture) => fixture
+        .WithoutBrowser()
+        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .RunAsync(async context =>
+        {
+            await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)
+                .ShouldThrowAsync<PermissionNotFoundException>();
 
-                await context.ClearLogsAsync(context.Configuration.TestCancellationToken);
-            },
-            browser,
-            ConfigurationHelper.DisableHtmlValidation);
+            await context.ClearLogsAsync();
+        });
 
     private static async Task CreateUserAndSignInAsync(UITestContext context)
     {

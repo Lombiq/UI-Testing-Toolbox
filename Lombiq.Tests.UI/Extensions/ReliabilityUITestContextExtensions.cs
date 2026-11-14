@@ -5,6 +5,8 @@ using OpenQA.Selenium;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -258,6 +260,10 @@ public static class ReliabilityUITestContextExtensions
     /// <exception cref="TimeoutException">
     /// Thrown if the operation didn't succeed even after retries within the allotted time.
     /// </exception>
+    [SuppressMessage(
+        "StyleCop.CSharp.ReadabilityRules",
+        "SA1134:Attributes should not share line",
+        Justification = "We use [StackTraceHidden] for lambdas to avoid polluting the stack trace.")]
     public static T RetrieveWithRetriesIfStaleOrFail<T>(
         this UITestContext context,
         Func<T> process,
@@ -266,7 +272,7 @@ public static class ReliabilityUITestContextExtensions
     {
         T result = default;
 
-        context.DoWithRetriesOrFail(() =>
+        context.DoWithRetriesOrFail([StackTraceHidden] () =>
         {
             try
             {
