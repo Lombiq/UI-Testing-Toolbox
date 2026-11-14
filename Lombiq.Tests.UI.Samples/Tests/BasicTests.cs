@@ -68,7 +68,7 @@ public class BasicTests : UITestBase
     public Task TogglingFeaturesShouldWork() =>
         // Here we use AddTest to declare the test first. You can also chain multiple AddTest calls to break your test
         // into multiple parts for organization. This can produce really clean calls, if parts of your test is already
-        // extracted into reusable helper methods. (We also use this technique, when testing multiple screen sizes.) 
+        // extracted into reusable helper methods. (We also use this technique, when testing multiple screen sizes.)
         AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
             .AddSyncConfiguration(
             configuration => // You can change the configuration even for each test.
