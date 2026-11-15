@@ -20,7 +20,7 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
     // level of granularity if you want to organize configuration methods and make future maintenance easier.
     protected UITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper) =>
-        // You can call the "AddConfiguration" and "AddSyncConfiguration" methods as many times as you want, the
+        // You can call the "AddAsyncConfiguration" and "AddConfiguration" methods as many times as you want, the
         // provided configuration functions are chained together and called in sequence before the test. Feel free to
         // use multiple calls as a way to group related configurations together.
         AddConfiguration(configuration =>
