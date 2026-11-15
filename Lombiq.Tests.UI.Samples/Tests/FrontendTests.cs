@@ -7,9 +7,9 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 
 public class FrontendTests : FrontendUITestBase
 {
+    // Since this server is not our code, we should disable HTML validation.
     public FrontendTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper) =>
-        // Since this server is not our code, we should disable HTML validation.
         AddConfiguration(configuration => configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false);
 
     // The interesting details are in FrontendUITestBase, here we just show that you can freely interact with the pages
