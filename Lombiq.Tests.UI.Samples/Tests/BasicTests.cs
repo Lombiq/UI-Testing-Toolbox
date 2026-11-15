@@ -65,49 +65,48 @@ public class BasicTests : UITestBase
     // Let's see if turning features on and off breaks something. Keep in mind that the Orchard logs are checked
     // automatically so if there's an exception or anything, the test will fail.
     [Fact]
-    public Task TogglingFeaturesShouldWork() =>
+    public Task TogglingFeaturesShouldWork() => TestBuilder
         // Here we use AddTest to declare the test first. You can also chain multiple AddTest calls to break your test
         // into multiple parts for organization. This can produce really clean calls, if parts of your test is already
         // extracted into reusable helper methods. (We also use this technique, when testing multiple screen sizes.)
-        AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
-            .AddConfiguration(
-            configuration => // You can change the configuration even for each test.
-            {
-                // By default, apart from some commonly known false positives, the response log should be empty.
-                // However, ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on
-                // that.
-                // Note that similarly, you can filter out log entries from the browser log with BrowserLogFilter. You
-                // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
-                // filter out entries in the first place.
-                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            })
-            .RunAsync();
+        .AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
+        .AddConfiguration(
+        configuration => // You can change the configuration even for each test.
+        {
+            // By default, apart from some commonly known false positives, the response log should be empty.
+            // However, ExecuteAndAssertTestFeatureToggle() causes a 404 so we need to make sure not to fail on
+            // that.
+            // Note that similarly, you can filter out log entries from the browser log with BrowserLogFilter. You
+            // can also adjust the assertion logic with AssertResponseLog and AssertBrowserLog, but it's best to
+            // filter out entries in the first place.
+            configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
+        })
+        .RunAsync();
 
     // Let's see a couple more useful shortcuts in action.
     [Fact]
     public Task ShortcutsShouldWork() =>
-        RunAsync(
-            async context =>
-            {
-                // If you need an authenticated user but you aren't testing the login specifically then you can use this
-                // shortcut to authenticate (note that you can specify a different user in an argument too):
-                await context.SignInDirectlyAsync();
+        RunAsync(async context =>
+        {
+            // If you need an authenticated user but you aren't testing the login specifically then you can use this
+            // shortcut to authenticate (note that you can specify a different user in an argument too):
+            await context.SignInDirectlyAsync();
 
-                // You know this shortcut already:
-                (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
+            // You know this shortcut already:
+            (await context.GetCurrentUserNameAsync()).ShouldBe(DefaultUser.UserName);
 
-                // If you want to add some sample content in just one test, or change some Orchard configuration
-                // quickly, then defining those in a recipe and executing it will come handy:
-                await context.ExecuteRecipeDirectlyAsync("Lombiq.JsonEditor.Sample");
+            // If you want to add some sample content in just one test, or change some Orchard configuration
+            // quickly, then defining those in a recipe and executing it will come handy:
+            await context.ExecuteRecipeDirectlyAsync("Lombiq.JsonEditor.Sample");
 
-                // Retrieving some in-depth details about the app.
-                var info = await context.GetApplicationInfoAsync();
-                // Where is the app's current instance running from?
-                _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
+            // Retrieving some in-depth details about the app.
+            var info = await context.GetApplicationInfoAsync();
+            // Where is the app's current instance running from?
+            _testOutputHelper.WriteLineTimestampedAndDebug("App root: " + info.AppRoot);
 
-                // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
-                await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
-            });
+            // If you want a feature to be enabled or disabled just for one test, you can use shortcuts too:
+            await context.EnableFeatureDirectlyAsync("OrchardCore.HealthChecks");
+        });
 }
 
 // END OF TRAINING SECTION: UI Testing Toolbox basics.

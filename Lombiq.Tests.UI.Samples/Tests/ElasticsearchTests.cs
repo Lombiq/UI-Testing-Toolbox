@@ -18,42 +18,38 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 public class ElasticsearchTests : UITestBase
 {
     public ElasticsearchTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
+        : base(testOutputHelper) =>
+        // Since indexing needs to happen before we can start the test, we use a custom setup recipe that configures
+        // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
+        // we recommend for recipes that you only need for testing.
+        UseSetup(context => SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch"));
 
     [Fact]
-    public Task ElasticsearchShouldWork() =>
-        AddTest(
-            async context =>
-            {
-                // Going to the built-in search feature. By default, it's not accessible for anonymous users, so we need
-                // to log in.
-                await context.SignInDirectlyAndGoToRelativeUrlAsync("/search");
+    public Task ElasticsearchShouldWork() => TestBuilder
+        .AddTest(async context =>
+        {
+            // Going to the built-in search feature. By default, it's not accessible for anonymous users, so we need
+            // to log in.
+            await context.SignInDirectlyAndGoToRelativeUrlAsync("/search");
 
-                // Filling out the search form, looking for the sample blog post coming from the built-in Blog recipe.
-                await context.ClickAndFillInWithRetriesAsync(By.Name("Terms"), "exploration");
-                await context.ClickReliablyOnAsync(By.XPath("//button[@class='btn btn-primary btn-sm']"));
+            // Filling out the search form, looking for the sample blog post coming from the built-in Blog recipe.
+            await context.ClickAndFillInWithRetriesAsync(By.Name("Terms"), "exploration");
+            await context.ClickReliablyOnAsync(By.XPath("//button[@class='btn btn-primary btn-sm']"));
 
-                // Hopefully, we found it!
-                context.Exists(By.XPath("//h2[contains(., 'Man must explore, and this is exploration at its greatest')]"));
-            })
-            .UseSetup(context =>
-                // Since indexing needs to happen before we can start the test, we use a custom setup recipe that configures
-                // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
-                // we recommend for recipes that you only need for testing.
-                SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch"))
-            .AddConfiguration(configuration =>
-            {
-                // This is important. Here we tell the UI Testing Toolbox that we want to use Elasticsearch. You can set
-                // this for just a given test, as we do it here, or for all tests from a base class like UITestBase that
-                // this class inherits from.
-                configuration.UseElasticsearch = true;
+            // Hopefully, we found it!
+            context.Exists(By.XPath("//h2[contains(., 'Man must explore, and this is exploration at its greatest')]"));
+        })
+        .AddConfiguration(configuration =>
+        {
+            // This is important. Here we tell the UI Testing Toolbox that we want to use Elasticsearch. You can set
+            // this for just a given test, as we do it here, or for all tests from a base class like UITestBase that
+            // this class inherits from.
+            configuration.UseElasticsearch = true;
 
-                // The search page has some HTML validation issues, but we don't care about those here.
-                configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
-            })
-            .RunAsync();
+            // The search page has some HTML validation issues, but we don't care about those here.
+            configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
+        })
+        .RunAsync();
 }
 
 // END OF TRAINING SECTION: Testing Elasticsearch-using functionality.

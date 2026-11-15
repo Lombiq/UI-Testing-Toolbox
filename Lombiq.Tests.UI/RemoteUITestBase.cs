@@ -13,6 +13,8 @@ namespace Lombiq.Tests.UI;
 /// </summary>
 public abstract class RemoteUITestBase : UITestBase
 {
+    protected RemoteUITestBase TestBuilder => this;
+
     public Uri BaseUri { get; set; }
 
     protected override WebApplicationInstanceFactory InstanceFactory { get; }
@@ -69,14 +71,12 @@ public abstract class RemoteUITestBase : UITestBase
         return RunAsync();
     }
 
-    public override Task RunAsync()
+    protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration)
     {
-        AddConfiguration(configuration =>
-        {
-            configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
-            configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
-            configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
-        });
-        return base.RunAsync();
+        base.Configure(configuration);
+
+        configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
+        configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
     }
 }

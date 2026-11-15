@@ -15,8 +15,8 @@ public class EmailTests : UITestBase
     }
 
     [Fact]
-    public Task SendingTestEmailShouldWork() =>
-        AddTest(async context =>
+    public Task SendingTestEmailShouldWork() => TestBuilder
+        .AddTest(async context =>
         {
             // A shortcut to sign in without going through (and thus testing) the login screen.
             await context.SignInDirectlyAsync();

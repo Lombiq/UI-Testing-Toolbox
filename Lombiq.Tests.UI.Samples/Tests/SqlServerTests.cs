@@ -13,26 +13,21 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 public class SqlServerTests : UITestBase
 {
     public SqlServerTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
+        : base(testOutputHelper) =>
+        // We could also set this globally in UITestBase or individually on a single test.
+        AddConfiguration(configuration => configuration.UseSqlServer = true);
 
     // Here we have basically two of the same tests as in BasicTests but now we're using SQL Server as the site's
     // database. If they still work and there are no errors in the log then the app works with SQL Server too.
     [Fact]
     public Task AnonymousHomePageShouldExistWithSqlServer() =>
-        AddConfiguration(configuration => configuration.UseSqlServer = true) // We could also set this globally in UITestBase.
-            .RunAsync(context => context.CheckIfAnonymousHomePageExistsAsync());
+        RunAsync(context => context.CheckIfAnonymousHomePageExistsAsync());
 
     [Fact]
-    public Task TogglingFeaturesShouldWorkWithSqlServer() =>
-        AddConfiguration(configuration =>
-            {
-                configuration.UseSqlServer = true;
-
-                configuration.WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl);
-            })
-            .RunAsync(context => context.ExecuteAndAssertTestFeatureToggleAsync());
+    public Task TogglingFeaturesShouldWorkWithSqlServer() => TestBuilder
+        .AddConfiguration(configuration => configuration
+            .WithIgnoreExpectedNotFoundResponseFilter(ShortcutsUITestContextExtensions.FeatureToggleTestBenchUrl))
+        .RunAsync(context => context.ExecuteAndAssertTestFeatureToggleAsync());
 }
 
 // END OF TRAINING SECTION: Using SQL Server.

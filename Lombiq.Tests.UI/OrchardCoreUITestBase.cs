@@ -18,6 +18,7 @@ internal static class OrchardCoreUITestBaseCounter
     public static SemaphoreSlim SnapshotCopySemaphoreSlim = new(1, 1);
     public static bool AppFolderCreated { get; set; }
 }
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
      where TEntryPoint : class
@@ -28,6 +29,8 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
     protected virtual Size MobileBrowserSize => CommonDisplayResolutions.NhdPortrait;
 
     protected override WebApplicationInstanceFactory InstanceFactory { get; }
+
+    protected OrchardCoreUITestBase<TEntryPoint> TestBuilder => this;
 
     protected OrchardCoreUITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper) =>
@@ -100,9 +103,6 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         await RunAsync();
     }
 
-    public override Task RunAsync()
-    {
-        AddConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = Setup);
-        return base.RunAsync();
-    }
+    protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration) =>
+        configuration.SetupConfiguration.SetupOperation = Setup;
 }

@@ -20,7 +20,7 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 // Most common alerts can be resolved by using the OrchardCoreBuilder.ConfigureSecurityDefaultsWithStaticFiles()
 // extension method from Lombiq.HelpfulLibraries.OrchardCore. We use it in this in our
 // https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions repo that these samples are configured for, and thus
-// there are almost no alerts. It's worth enabling in in your Program and then verifying that everything still works on
+// there are almost no alerts. It's worth enabling in your Program and then verifying that everything still works on
 // the site before really getting into security scanning. If you experience any problems related to
 // Content-Security-Policy, take a look at the documentation of IContentSecurityPolicyProvider and
 // ContentSecurityPolicyAttribute to adjust the permissions, because these defaults are rather strict out of the box.
@@ -62,6 +62,11 @@ public class SecurityScanningTests : UITestBase
 
             return homepageUri;
         });
+
+        // You should configure the assertion that checks the app logs to accept some common cases that only should
+        // appear during security scanning. If you launch a full scan, this is automatically configured by the
+        // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
+        AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan());
     }
 
     // Let's see simple use case first: Running a built-in ZAP scan.
@@ -77,14 +82,8 @@ public class SecurityScanningTests : UITestBase
     // will fail the scan, but don't worry! You'll get a nice report about the findings in the failure dump.
     [Fact]
     public Task BasicSecurityScanShouldPass() =>
-        AddTest(context =>
-            context.RunAndAssertBaselineSecurityScanAsync(
-                configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()))
-            // You should configure the assertion that checks the app logs to accept some common cases that only should
-            // appear during security scanning. If you launch a full scan, this is automatically configured by the
-            // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
-            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
-            .RunAsync();
+        RunAsync(context => context.RunAndAssertBaselineSecurityScanAsync(
+            configuration => configuration.DisableSubresourceIntegrityAttributeMissingRuleForGoogleFonts()));
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
     // adjustments:
@@ -109,7 +108,7 @@ public class SecurityScanningTests : UITestBase
     //   are only present to illustrate the type of adjustments you may want for your own site.
     [Fact]
     public Task SecurityScanWithCustomConfigurationShouldPass() =>
-        AddTest(context =>
+        RunAsync(context =>
             context.RunAndAssertBaselineSecurityScanAsync(
                 configuration => configuration
                     ////.UseAjaxSpider() // This is quite slow so just showing you here but not running it.
@@ -123,9 +122,7 @@ public class SecurityScanningTests : UITestBase
                         "The search form doesn't alter the state of the application so anti-CSRF tokens are not needed.",
                         ".*my-search-form.*")
                     .SignIn(),
-                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)))
-            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
-            .RunAsync();
+                sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)));
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
     // Toolbox covers the most important ways to configure ZAP, sometimes you need more. For this, you have complete
@@ -147,7 +144,7 @@ public class SecurityScanningTests : UITestBase
     // customize them if something you need is not surfaced as configuration.
     [Fact]
     public Task SecurityScanWithCustomAutomationFrameworkPlanShouldPass() =>
-        AddTest(context =>
+        RunAsync(context =>
             context.RunAndAssertSecurityScanAsync(
                 "Tests/CustomZapAutomationFrameworkPlan.yml",
                 configuration => configuration
@@ -168,9 +165,7 @@ public class SecurityScanningTests : UITestBase
                         // more pages to be scanned.
                         spiderParameters.Add("maxDepth", "8");
                     }),
-                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)))
-            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
-            .RunAsync();
+                sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)));
 }
 
 // END OF TRAINING SECTION: Security scanning.

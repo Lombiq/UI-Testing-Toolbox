@@ -20,26 +20,25 @@ public class AccessibilityTest : UITestBase
     /// another one specified below.
     /// </summary>
     [Fact]
-    public Task FrontendPagesShouldBeAccessible() =>
-        AddConfiguration(
-            configuration =>
-            {
-                // We adjust the configuration just for this test but you could do the same globally in UITestBase.
-                // That's what we actually recommend: instead of treating accessibility checking as a separate test
-                // case, make your whole app accessible by default. Then, accessibility failures are like any other test
-                // failures.
+    public Task FrontendPagesShouldBeAccessible() => TestBuilder
+        .AddConfiguration(configuration =>
+        {
+            // We adjust the configuration just for this test but you could do the same globally in UITestBase.
+            // That's what we actually recommend: instead of treating accessibility checking as a separate test
+            // case, make your whole app accessible by default. Then, accessibility failures are like any other test
+            // failures.
 
-                // With this config, accessibility rules will be checked for each page automatically.
-                configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;
+            // With this config, accessibility rules will be checked for each page automatically.
+            configuration.AccessibilityCheckingConfiguration.RunAccessibilityCheckingAssertionOnAllPageChanges = true;
 
-                // We'll check for the WCAG 2.2 AA level. This is the middle level of the latest accessibility
-                // guidelines. The footer widget created by the Blog recipe actually has a couple of issues. For the
-                // sake of this sample we won't try to fix them but rather disable the corresponding rules.
-                configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator += axeBuilder =>
-                    AccessibilityCheckingConfiguration.ConfigureWcag22aa(axeBuilder)
-                        .DisableRules("color-contrast", "link-name");
-            })
-            .RunAsync(context => context.GoToRelativeUrlAsync("/categories/travel"));
+            // We'll check for the WCAG 2.2 AA level. This is the middle level of the latest accessibility
+            // guidelines. The footer widget created by the Blog recipe actually has a couple of issues. For the
+            // sake of this sample we won't try to fix them but rather disable the corresponding rules.
+            configuration.AccessibilityCheckingConfiguration.AxeBuilderConfigurator += axeBuilder =>
+                AccessibilityCheckingConfiguration.ConfigureWcag22aa(axeBuilder)
+                    .DisableRules("color-contrast", "link-name");
+        })
+        .RunAsync(context => context.GoToRelativeUrlAsync("/categories/travel"));
 }
 
 // END OF TRAINING SECTION: Accessibility tests.
