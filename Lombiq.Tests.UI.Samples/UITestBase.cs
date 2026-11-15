@@ -23,7 +23,7 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
         // You can call the "AddConfiguration" and "AddSyncConfiguration" methods as many times as you want, the
         // provided configuration functions are chained together and called in sequence before the test. Feel free to
         // use multiple calls as a way to group related configurations together.
-        AddSyncConfiguration(configuration =>
+        AddConfiguration(configuration =>
             {
                 // If the window's size isn't set explicitly, it will be decided by the operating system with
                 // unpredictable results. So we set the window size to the value of the configuration below. You can

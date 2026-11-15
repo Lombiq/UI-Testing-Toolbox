@@ -16,7 +16,7 @@ public static class CustomAdminPrefixTestCases
                 await context.GoToContentItemListAsync("Blog");
                 await context.GoToContentItemListAsync();
             })
-        .AddConfiguration(
+        .AddAsyncConfiguration(
             configuration =>
             {
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;

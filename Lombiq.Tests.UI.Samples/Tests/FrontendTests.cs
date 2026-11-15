@@ -30,7 +30,7 @@ public class FrontendTests : FrontendUITestBase
                 await context.ClickReliablyOnAsync(By.LinkText("DataProtection-Keys/"));
                 await context.ClickReliablyOnAsync(By.XPath("//td/a[contains(@href, '.xml')]"));
             })
-            .AddConfiguration(configuration =>
+            .AddAsyncConfiguration(configuration =>
             {
                 // Since this server is not our code, we should disable HTML validation.
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;

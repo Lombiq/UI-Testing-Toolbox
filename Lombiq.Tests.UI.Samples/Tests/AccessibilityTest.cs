@@ -21,7 +21,7 @@ public class AccessibilityTest : UITestBase
     /// </summary>
     [Fact]
     public Task FrontendPagesShouldBeAccessible() =>
-        AddSyncConfiguration(
+        AddConfiguration(
             configuration =>
             {
                 // We adjust the configuration just for this test but you could do the same globally in UITestBase.

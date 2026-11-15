@@ -69,7 +69,7 @@ public class ErrorHandlingTests : UITestBase
     // all get collected into the historic browser log.
     [Fact]
     public Task BrowserLogsShouldPersist() =>
-        AddSyncConfiguration(configuration =>
+        AddConfiguration(configuration =>
             {
                 // By default, anything below warning is not logged to the browser log. So, to allow the info messages
                 // of the test, we change the filter.
@@ -123,7 +123,7 @@ public class ErrorHandlingTests : UITestBase
                 throw new InvalidOperationException(
                     "This point shouldn't be reachable if the logs are properly kept.");
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
                 {
                     // The test is guaranteed to fail so we don't want to retry it needlessly.
                     configuration.MaxRetryCount = 0;

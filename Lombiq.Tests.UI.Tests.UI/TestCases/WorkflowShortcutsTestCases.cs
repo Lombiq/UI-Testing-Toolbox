@@ -15,6 +15,6 @@ public static class WorkflowShortcutsTestCases
             (await context.GenerateHttpEventUrlAsync("testworkflow000000", "testhttpevent00000"))
                 .ShouldStartWith("/workflows/Invoke?token=");
         })
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync();
 }

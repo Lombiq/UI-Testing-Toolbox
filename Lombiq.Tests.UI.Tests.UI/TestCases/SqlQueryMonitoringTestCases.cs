@@ -31,7 +31,7 @@ public static class SqlQueryMonitoringTestCases
             await context.SqlQueryMonitoringShouldCaptureCustomSessionQueryAsync();
             await context.SqlQueryMonitoringShouldCaptureDirectConnectionQueryAsync();
         })
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync();
 
     public static Task SqlQueryMonitoringAsyncRequestScenariosShouldWorkAsync(UITestBase fixture) => fixture
@@ -75,7 +75,7 @@ public static class SqlQueryMonitoringTestCases
             await context.SqlQueryMonitoringShouldFailWhenSpecificRequestSummaryIsMissingAsync();
             await context.SqlQueryMonitoringShouldNotMatchDifferentQueryStringForSpecificRequestAsync();
         })
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync();
 
     public static async Task SqlQueryMonitoringShouldCapturePageLoadAndAsyncApiQueryAsync(this UITestContext context)
@@ -146,7 +146,7 @@ public static class SqlQueryMonitoringTestCases
                     },
                     ExpectedAssertionFailureMessage);
             })
-        .AddSyncConfiguration(configuration =>
+        .AddConfiguration(configuration =>
             configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = false)
         .RunAsync();
 
@@ -403,7 +403,7 @@ public static class SqlQueryMonitoringTestCases
                     return Task.CompletedTask;
                 });
             })
-            .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+            .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
             .RunAsync();
 
     public static Task SqlQueryMonitoringShouldCaptureRawQueryAsync(this UITestContext context) =>
@@ -465,7 +465,7 @@ public static class SqlQueryMonitoringTestCases
     }
 
     private static UITestBase ConfigureSqlMonitoring(this UITestBase fixture) =>
-        fixture.AddSyncConfiguration(configuration =>
+        fixture.AddConfiguration(configuration =>
             configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 
     private static async Task ExecuteSqlMonitoringScenarioAsync(

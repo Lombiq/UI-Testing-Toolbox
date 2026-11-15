@@ -70,7 +70,7 @@ public class BasicTests : UITestBase
         // into multiple parts for organization. This can produce really clean calls, if parts of your test is already
         // extracted into reusable helper methods. (We also use this technique, when testing multiple screen sizes.)
         AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
-            .AddSyncConfiguration(
+            .AddConfiguration(
             configuration => // You can change the configuration even for each test.
             {
                 // By default, apart from some commonly known false positives, the response log should be empty.

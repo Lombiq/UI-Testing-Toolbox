@@ -83,13 +83,13 @@ public abstract class UITestBase : AtataTestSuite
         // Intentionally empty. Override in descendant class to customize.
     }
 
-    public UITestBase AddConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task>? configureAsync)
+    public UITestBase AddAsyncConfiguration(Func<OrchardCoreUITestExecutorConfiguration, Task>? configureAsync)
     {
         if (configureAsync != null) _configurationChain.Add(configureAsync);
         return this;
     }
 
-    public UITestBase AddSyncConfiguration(Action<OrchardCoreUITestExecutorConfiguration> configureSync)
+    public UITestBase AddConfiguration(Action<OrchardCoreUITestExecutorConfiguration> configureSync)
     {
         _configurationChain.Add(configureSync.AsCompletedTask());
         return this;

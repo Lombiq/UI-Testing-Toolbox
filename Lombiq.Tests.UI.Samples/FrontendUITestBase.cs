@@ -35,7 +35,7 @@ public abstract class FrontendUITestBase : UITestBase
             return context.GoToHomePageAsync();
         });
 
-        AddSyncConfiguration(configuration =>
+        AddConfiguration(configuration =>
         {
             // The FrontendServer instance manages the test configuration by registering event handlers for the
             // application startup and stop. It also initializes the default frontend and backend URLs. Below the

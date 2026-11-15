@@ -63,7 +63,7 @@ public abstract class RemoteUITestBase : UITestBase
         BaseUri = baseUri;
         Browser = browser;
 
-        AddConfiguration(changeConfigurationAsync);
+        AddAsyncConfiguration(changeConfigurationAsync);
         AddTest(testAsync);
 
         return RunAsync();
@@ -71,7 +71,7 @@ public abstract class RemoteUITestBase : UITestBase
 
     public override Task RunAsync()
     {
-        AddSyncConfiguration(configuration =>
+        AddConfiguration(configuration =>
         {
             configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
             configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;

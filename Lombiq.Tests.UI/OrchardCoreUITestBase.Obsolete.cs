@@ -255,7 +255,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Action<UITestContext> test,
         Func<UITestContext, Task<Uri>> setupOperation = null,
@@ -265,7 +265,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Action<UITestContext> test,
         Browser browser,
@@ -276,7 +276,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Action<UITestContext> test,
         Browser browser,
@@ -287,7 +287,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Func<UITestContext, Task<Uri>> setupOperation = null,
@@ -297,7 +297,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -308,7 +308,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test.
     /// </summary>
-    [Obsolete($"Use {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
@@ -317,7 +317,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test.
     /// </summary>
-    [Obsolete($"Use {nameof(Browser)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -327,7 +327,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Func<UITestContext, Task<Uri>> setupOperation,
@@ -337,7 +337,7 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
@@ -346,50 +346,50 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
     {
         Browser = browser;
 
-        AddConfiguration(changeConfigurationAsync);
+        AddAsyncConfiguration(changeConfigurationAsync);
         UseSetup(setupOperation);
 
         return RunAsync(testAsync);
     }
 
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
     {
         Browser = browser;
-        AddConfiguration(changeConfigurationAsync);
+        AddAsyncConfiguration(changeConfigurationAsync);
         return RunAsync(testAsync);
     }
 
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(test, default, changeConfiguration);
 
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Action<UITestContext> test,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration);
 
-    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddSyncConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Browser browser,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAfterSetupAsync(testAsync, browser, changeConfiguration.AsCompletedTask());
 
-    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddAsyncConfiguration)} and {nameof(RunAsync)} instead.")]
     protected Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
         Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>

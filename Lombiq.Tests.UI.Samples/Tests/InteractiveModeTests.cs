@@ -16,7 +16,7 @@ public class InteractiveModeTests : UITestBase
 {
     public InteractiveModeTests(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper) =>
-        AddSyncConfiguration(configuration => configuration.BrowserConfiguration.Headless = false);
+        AddConfiguration(configuration => configuration.BrowserConfiguration.Headless = false);
 
     // If you want to try it out yourself, just remove the "Skip" parameter and run this test.
     [SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Only a demo.")]

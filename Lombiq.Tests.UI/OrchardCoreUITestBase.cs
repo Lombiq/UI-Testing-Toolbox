@@ -96,13 +96,13 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         }
 
         WithoutSetup();
-        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder);
+        AddConfiguration(configuration => configuration.SetupConfiguration.SetupSnapshotDirectoryPath = AppFolder);
         await RunAsync();
     }
 
     public override Task RunAsync()
     {
-        AddSyncConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = Setup);
+        AddConfiguration(configuration => configuration.SetupConfiguration.SetupOperation = Setup);
         return base.RunAsync();
     }
 }

@@ -16,34 +16,33 @@ public class EmailTests : UITestBase
 
     [Fact]
     public Task SendingTestEmailShouldWork() =>
-        AddTest(
-            async context =>
-            {
-                // A shortcut to sign in without going through (and thus testing) the login screen.
-                await context.SignInDirectlyAsync();
+        AddTest(async context =>
+        {
+            // A shortcut to sign in without going through (and thus testing) the login screen.
+            await context.SignInDirectlyAsync();
 
-                // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
-                // sender is configured in the test recipe so we can use the test feature.
-                await context.GoToEmailTestAsync();
-                await context.FillEmailTestFormAsync("Test message");
-                context.ShouldBeSuccess();
+            // Let's go to the "Test settings" option of the e-mail admin page and send a basic e-mail. The default
+            // sender is configured in the test recipe so we can use the test feature.
+            await context.GoToEmailTestAsync();
+            await context.FillEmailTestFormAsync("Test message");
+            context.ShouldBeSuccess();
 
-                // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
-                // e-mails and check if everything's alright.
-                await context.GoToSmtpWebUIAsync();
+            // The SMTP service running behind the scenes also has a web UI that we can access to see all outgoing
+            // e-mails and check if everything's alright.
+            await context.GoToSmtpWebUIAsync();
 
-                // We are clicking on the e-mail we've sent and switching to frame 0, to see its content.
-                await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
+            // We are clicking on the e-mail we've sent and switching to frame 0, to see its content.
+            await context.ClickReliablyOnSmtpInboxRowAndSwitchToFrame0WithRetriesAsync("Test message");
 
-                // If we see the message that we've sent then it's all good.
-                context.Exists(By.XPath("//pre[contains(.,'Hi, this is a test.')]"));
-            })
-            .AddSyncConfiguration(configuration =>
-            {
-                // Automatically enables and configures the Email module so you don't have to enable it in a recipe.
-                configuration.UseSmtpService = true;
-            })
-            .RunAsync();
+            // If we see the message that we've sent then it's all good.
+            context.Exists(By.XPath("//pre[contains(.,'Hi, this is a test.')]"));
+        })
+        .AddConfiguration(configuration =>
+        {
+            // Automatically enables and configures the Email module so you don't have to enable it in a recipe.
+            configuration.UseSmtpService = true;
+        })
+        .RunAsync();
 }
 
 // END OF TRAINING SECTION: E-mail tests.

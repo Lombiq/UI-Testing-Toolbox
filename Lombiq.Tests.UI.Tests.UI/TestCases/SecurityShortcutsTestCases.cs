@@ -34,12 +34,12 @@ public static class SecurityShortcutsTestCases
 
                 context.GetCurrentUri().AbsolutePath.ShouldBe("/Admin/ContentTypes/List");
             })
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync();
 
     public static Task AddUserToFakeRoleShouldThrowAsync(UITestBase fixture) => fixture
         .WithoutBrowser()
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync(async context =>
         {
             await context.AddUserToRoleAsync(UserUserName, FakeRole).ShouldThrowAsync<UserNotFoundException>();
@@ -52,7 +52,7 @@ public static class SecurityShortcutsTestCases
 
     public static Task AllowFakePermissionToRoleShouldThrowAsync(UITestBase fixture) => fixture
         .WithoutBrowser()
-        .AddConfiguration(ConfigurationHelper.DisableHtmlValidation)
+        .AddAsyncConfiguration(ConfigurationHelper.DisableHtmlValidation)
         .RunAsync(async context =>
         {
             await context.AddPermissionToRoleAsync(FakePermission, AuthorRole)

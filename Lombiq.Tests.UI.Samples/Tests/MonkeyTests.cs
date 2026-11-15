@@ -73,7 +73,7 @@ public class MonkeyTests : UITestBase
                 // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too.
                 return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
                 // parameters are required.

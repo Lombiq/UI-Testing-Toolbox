@@ -43,7 +43,7 @@ public class ElasticsearchTests : UITestBase
                 // Elasticsearch. The recipe is here in the test project, not the web app; this is also possible, and what
                 // we recommend for recipes that you only need for testing.
                 SetupHelpers.RunSetupAsync(context, "Lombiq.Tests.UI.Samples.Elasticsearch"))
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 // This is important. Here we tell the UI Testing Toolbox that we want to use Elasticsearch. You can set
                 // this for just a given test, as we do it here, or for all tests from a base class like UITestBase that

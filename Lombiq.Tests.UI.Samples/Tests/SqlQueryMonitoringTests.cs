@@ -51,7 +51,7 @@ public class SqlQueryMonitoringTests : UITestBase
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 // SQL monitoring is off by default, so you need to turn it on for the test.
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
@@ -102,7 +102,7 @@ public class SqlQueryMonitoringTests : UITestBase
                         return Task.CompletedTask;
                     });
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
@@ -167,7 +167,7 @@ public class SqlQueryMonitoringTests : UITestBase
                     return Task.CompletedTask;
                 });
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
 
@@ -244,7 +244,7 @@ public class SqlQueryMonitoringTests : UITestBase
                     return Task.CompletedTask;
                 });
             })
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
                 configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true)
             .RunAsync();
 }

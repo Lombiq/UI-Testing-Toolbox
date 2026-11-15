@@ -24,13 +24,13 @@ public class AzureBlobStorageTests : UITestBase
     [Fact]
     public Task AnonymousHomePageShouldExistWithAzureBlobStorage() =>
         AddTest(context => context.CheckIfAnonymousHomePageExistsAsync())
-            .AddSyncConfiguration(configuration => configuration.UseAzureBlobStorage = true)
+            .AddConfiguration(configuration => configuration.UseAzureBlobStorage = true)
             .RunAsync();
 
     [Fact]
     public Task TogglingFeaturesShouldWorkWithAzureBlobStorage() =>
         AddTest(context => context.ExecuteAndAssertTestFeatureToggleAsync())
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 configuration.UseAzureBlobStorage = true;
 

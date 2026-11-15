@@ -43,7 +43,7 @@ public class SecurityScanningTests : UITestBase
         // Always run the scan on the actual app with everything set up how you run it in production!
 
         // Check out the rest of SecurityScanningConfiguration too!
-        AddSyncConfiguration(configuration => configuration
+        AddConfiguration(configuration => configuration
             .HtmlValidationConfiguration
             .RunHtmlValidationAssertionOnAllPageChanges = false);
 
@@ -83,7 +83,7 @@ public class SecurityScanningTests : UITestBase
             // You should configure the assertion that checks the app logs to accept some common cases that only should
             // appear during security scanning. If you launch a full scan, this is automatically configured by the
             // RunAndConfigureAndAssertFullSecurityScanForContinuousIntegrationAsync extension method.
-            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
             .RunAsync();
 
     // Time for some custom configuration! While this scan also runs the Baseline scan, it does this with several
@@ -124,7 +124,7 @@ public class SecurityScanningTests : UITestBase
                         ".*my-search-form.*")
                     .SignIn(),
                 sarifLog => sarifLog.Runs[0].Results.Count.ShouldBe(0)))
-            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
             .RunAsync();
 
     // Let's get low-level into ZAP's configuration now. While the .NET configuration API of the Lombiq UI Testing
@@ -169,7 +169,7 @@ public class SecurityScanningTests : UITestBase
                         spiderParameters.Add("maxDepth", "8");
                     }),
                 sarifLog => SecurityScanningConfiguration.AssertSecurityScanHasNoAlerts(context, sarifLog)))
-            .AddSyncConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
+            .AddConfiguration(configuration => configuration.UseAssertAppLogsForSecurityScan())
             .RunAsync();
 }
 

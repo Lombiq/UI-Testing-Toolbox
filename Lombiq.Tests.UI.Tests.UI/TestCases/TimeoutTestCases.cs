@@ -27,7 +27,7 @@ public static class TimeoutTestCases
 
     public static Task TestRunTimeoutShouldThrowAsync(UITestBase fixture) =>
         Should.ThrowAsync<TimeoutException>(async () => await fixture
-            .AddSyncConfiguration(configuration =>
+            .AddConfiguration(configuration =>
             {
                 configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
                 configuration.MaxRetryCount = 0;
