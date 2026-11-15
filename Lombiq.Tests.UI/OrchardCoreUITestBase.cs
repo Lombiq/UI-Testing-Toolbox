@@ -103,6 +103,9 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint> : UITestBase
         await RunAsync();
     }
 
-    protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration) =>
+    protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        base.Configure(configuration);
         configuration.SetupConfiguration.SetupOperation = Setup;
+    }
 }
