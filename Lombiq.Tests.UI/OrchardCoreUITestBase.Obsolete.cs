@@ -377,9 +377,13 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
         ExecuteTestAfterSetupAsync(test.AsCompletedTask(), browser, changeConfiguration);
 
     [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAfterSetupAsync(Func<UITestContext, Task> testAsync) =>
+        ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration: null);
+
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAfterSetupAsync(
         Func<UITestContext, Task> testAsync,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration) =>
         ExecuteTestAfterSetupAsync(testAsync, default, changeConfiguration);
 
     [Obsolete($"Use {nameof(Browser)}, {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
