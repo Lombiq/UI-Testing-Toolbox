@@ -15,7 +15,7 @@ public abstract class RemoteUITestBase : UITestBase
 {
     protected RemoteUITestBase TestBuilder => this;
 
-    public Uri BaseUri { get; set; }
+    public virtual Uri BaseUri { get; set; }
 
     protected override WebApplicationInstanceFactory InstanceFactory { get; }
 
