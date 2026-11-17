@@ -129,6 +129,12 @@ public abstract class UITestBase : AtataTestSuite
 
     public virtual Task RunAsync()
     {
+        var (manifest, configuration) = GetTestExecutionData();
+        return ExecuteOrchardCoreTestAsync(InstanceFactory, manifest, configuration);
+    }
+
+    protected (UITestManifest Manifest, OrchardCoreUITestExecutorConfiguration Configuration) GetTestExecutionData()
+    {
         var testManifest = new UITestManifest(this, _testChain);
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
@@ -138,6 +144,6 @@ public abstract class UITestBase : AtataTestSuite
             BrowserConfiguration = { Browser = Browser },
         };
 
-        return ExecuteOrchardCoreTestAsync(InstanceFactory, testManifest, configuration);
+        return (testManifest, configuration);
     }
 }
