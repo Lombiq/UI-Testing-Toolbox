@@ -1,3 +1,4 @@
+using Elastic.Clients.Elasticsearch.Xpack;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
@@ -23,6 +24,12 @@ public abstract partial class RemoteUITestBase : UITestBase
     {
         InstanceFactory = (_, _) => new RemoteInstance(BaseUri);
         AddTest(context => context.GoToAbsoluteUrlAsync(BaseUri));
+    }
+
+    public RemoteUITestBase UseBaseUri(Uri baseUri)
+    {
+        BaseUri = baseUri;
+        return this;
     }
 
     protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration)
