@@ -285,12 +285,28 @@ public abstract partial class OrchardCoreUITestBase<TEntryPoint>
         ExecuteTestAsync(test.AsCompletedTask(), browser, setupOperation, changeConfigurationAsync);
 
     /// <summary>
+    /// Executes the given UI test.
+    /// </summary>
+    [Obsolete($"Use {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAsync(Func<UITestContext, Task> testAsync) =>
+        ExecuteTestAsync(testAsync, default, setupOperation: null, changeConfigurationAsync: null);
+
+    /// <summary>
+    /// Executes the given UI test with configuration.
+    /// </summary>
+    [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
+    protected virtual Task ExecuteTestAsync(
+        Func<UITestContext, Task> testAsync,
+        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration) =>
+        ExecuteTestAsync(testAsync, default, setupOperation: null, changeConfiguration);
+
+    /// <summary>
     /// Executes the given UI test, optionally after setting up the site.
     /// </summary>
     [Obsolete($"Use {nameof(UseSetup)}, {nameof(AddConfiguration)} and {nameof(RunAsync)} instead.")]
     protected virtual Task ExecuteTestAsync(
         Func<UITestContext, Task> testAsync,
-        Func<UITestContext, Task<Uri>> setupOperation = null,
+        Func<UITestContext, Task<Uri>> setupOperation,
         Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
         ExecuteTestAsync(testAsync, default, setupOperation, changeConfiguration);
 
