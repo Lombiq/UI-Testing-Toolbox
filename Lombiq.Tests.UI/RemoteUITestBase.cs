@@ -1,4 +1,3 @@
-using Elastic.Clients.Elasticsearch.Xpack;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
