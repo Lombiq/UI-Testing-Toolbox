@@ -41,7 +41,11 @@ public abstract partial class RemoteUITestBase : UITestBase
         configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
     }
 
-    public Task RunAsync(Action<UITestContext> test, Browser? browser = null)
+    /// <summary>
+    /// Adds a synchronous <paramref name="test"/>. If <paramref name="browser"/> is not <see langword="null"/>, sets
+    /// <see cref="Browser"/> to its value. Then executes the test.
+    /// </summary>
+    public Task RunAsync(Action<UITestContext> test, Browser? browser)
     {
         Browser = browser ?? Browser;
         return RunAsync(test.AsCompletedTask());
