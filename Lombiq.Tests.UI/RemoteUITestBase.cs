@@ -1,8 +1,8 @@
+using Elastic.Clients.Elasticsearch.Xpack;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Lombiq.Tests.UI;
@@ -11,7 +11,7 @@ namespace Lombiq.Tests.UI;
 /// Base class for UI tests that run on a remote (i.e. not locally running) app. If you're testing an app running behind
 /// Cloudflare, then consider using <see cref="CloudflareRemoteUITestBase"/> instead.
 /// </summary>
-public abstract class RemoteUITestBase : UITestBase
+public abstract partial class RemoteUITestBase : UITestBase
 {
     protected RemoteUITestBase TestBuilder => this;
 
@@ -26,49 +26,10 @@ public abstract class RemoteUITestBase : UITestBase
         AddTest(context => context.GoToAbsoluteUrlAsync(BaseUri));
     }
 
-    /// <summary>
-    /// Executes the given UI test on a remote (i.e. not locally running) app.
-    /// </summary>
-    protected virtual Task ExecuteTestAsync(
-        Uri baseUri,
-        Action<UITestContext> testAsync,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAsync(baseUri, testAsync.AsCompletedTask(), changeConfiguration.AsCompletedTask());
-
-    /// <summary>
-    /// Executes the given UI test on a remote (i.e. not locally running) app.
-    /// </summary>
-    protected virtual Task ExecuteTestAsync(
-        Uri baseUri,
-        Func<UITestContext, Task> testAsync,
-        Action<OrchardCoreUITestExecutorConfiguration> changeConfiguration = null) =>
-        ExecuteTestAsync(baseUri, testAsync, changeConfiguration.AsCompletedTask());
-
-    /// <summary>
-    /// Executes the given UI test on a remote (i.e. not locally running) app.
-    /// </summary>
-    protected virtual Task ExecuteTestAsync(
-        Uri baseUri,
-        Func<UITestContext, Task> testAsync,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) =>
-        ExecuteTestAsync(baseUri, testAsync, default, changeConfigurationAsync);
-
-    /// <summary>
-    /// Executes the given UI test on a remote (i.e. not locally running) app.
-    /// </summary>
-    protected virtual Task ExecuteTestAsync(
-        Uri baseUri,
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
+    public RemoteUITestBase UseBaseUri(Uri baseUri)
     {
         BaseUri = baseUri;
-        Browser = browser;
-
-        AddAsyncConfiguration(changeConfigurationAsync);
-        AddTest(testAsync);
-
-        return RunAsync();
+        return this;
     }
 
     protected override void Configure(OrchardCoreUITestExecutorConfiguration configuration)
