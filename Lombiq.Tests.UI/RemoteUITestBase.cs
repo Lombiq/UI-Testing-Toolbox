@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Lombiq.Tests.UI;
@@ -38,5 +39,11 @@ public abstract partial class RemoteUITestBase : UITestBase
         configuration.HtmlValidationConfiguration.HtmlValidationAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.AccessibilityCheckingConfiguration.AccessibilityCheckingAndAssertionOnPageChangeRule = UrlCheckHelper.IsNotOrchardPage;
         configuration.TestDumpConfiguration.CaptureAppSnapshot = false;
+    }
+
+    public Task RunAsync(Action<UITestContext> test, Browser? browser = null)
+    {
+        Browser = browser ?? Browser;
+        return RunAsync(test.AsCompletedTask());
     }
 }

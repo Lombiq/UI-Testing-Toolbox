@@ -119,9 +119,11 @@ public abstract class UITestBase : AtataTestSuite
         return AddTest(testAsync);
     }
 
-    public UITestBase WithoutBrowser()
+    public UITestBase WithoutBrowser() => UseBrowser(Browser.None);
+
+    public UITestBase UseBrowser(Browser browser)
     {
-        Browser = Browser.None;
+        Browser = browser;
         return this;
     }
 
