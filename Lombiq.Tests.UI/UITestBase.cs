@@ -129,11 +129,11 @@ public abstract class UITestBase : AtataTestSuite
 
     public virtual Task RunAsync()
     {
-        var (manifest, configuration) = GetTestExecutionData();
+        var (manifest, configuration) = CreateTestExecutionData();
         return ExecuteOrchardCoreTestAsync(InstanceFactory, manifest, configuration);
     }
 
-    protected (UITestManifest Manifest, OrchardCoreUITestExecutorConfiguration Configuration) GetTestExecutionData()
+    protected (UITestManifest Manifest, OrchardCoreUITestExecutorConfiguration Configuration) CreateTestExecutionData()
     {
         var testManifest = new UITestManifest(this, _testChain);
 
