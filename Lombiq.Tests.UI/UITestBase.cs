@@ -89,9 +89,9 @@ public abstract class UITestBase : AtataTestSuite
         return this;
     }
 
-    public UITestBase AddConfiguration(Action<OrchardCoreUITestExecutorConfiguration> configureSync)
+    public UITestBase AddConfiguration(Action<OrchardCoreUITestExecutorConfiguration>? configureSync)
     {
-        _configurationChain.Add(configureSync.AsCompletedTask());
+        if (configureSync != null) _configurationChain.Add(configureSync.AsCompletedTask());
         return this;
     }
 
