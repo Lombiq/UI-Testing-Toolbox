@@ -28,9 +28,9 @@ public abstract class FrontendUITestBase : UITestBase
     {
         AddTest(context =>
         {
-            // Before executing provided test, we switch to the frontend URL, as if we switched to a different
-            // tenant, then actually navigate to the frontend so the tests won't start in the backend home page
-            // that's probably not used anyway.
+            // Before executing the provided test, we switch to the frontend URL, as if we switched to a different
+            // tenant, then actually navigate to the frontend so the tests won't start in the backend home page that's
+            // probably not used anyway.
             context.SwitchToFrontend();
             return context.GoToHomePageAsync();
         });
