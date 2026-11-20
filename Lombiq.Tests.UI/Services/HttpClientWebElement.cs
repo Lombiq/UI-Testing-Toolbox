@@ -99,7 +99,7 @@ public class HttpClientWebElement : IWebElement, IExtendedSearchContext
 
         if (element?.GetAttribute("href") is { } href)
         {
-            _driver.Url = href;
+            _driver.Navigate().GoToUrl(href);
         }
     }
 

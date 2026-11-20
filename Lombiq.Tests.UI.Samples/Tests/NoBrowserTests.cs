@@ -29,7 +29,7 @@ public class NoBrowserTests : UITestBase
             // browserless tests, you can call "AddTest(context => context.GoToHomePageAsync())" in the constructor.
             await context.GoToHomePageAsync();
 
-            // Clicks work only on <a href> elements by setting the "IWebDriver.Url" to the "href" attribute's value.
+            // Clicks work only on <a href> elements by navigating to the URL indicated by the "href" attribute.
             await context.ClickReliablyOnAsync(By.LinkText("Man must explore, and this is exploration at its greatest"));
 
             // You can use all the "Get" methods that use "IWebDriver.FindElements" under the hood.
