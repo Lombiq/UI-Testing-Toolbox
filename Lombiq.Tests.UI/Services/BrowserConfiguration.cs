@@ -69,7 +69,7 @@ public class BrowserConfiguration
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Enabling pools lets you re-use Atata sessions, including web driver browser processes started by the session.
+    /// Enabling pools lets you reuse Atata sessions, including web driver browser processes started by the session.
     /// This can reduce test startup times and make resource use more efficient. See <see
     /// href="https://atata.io/getting-started/#atatasession"/> for details.
     /// </para>
