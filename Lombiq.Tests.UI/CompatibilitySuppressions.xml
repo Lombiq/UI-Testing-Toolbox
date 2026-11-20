@@ -444,6 +444,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Lombiq.Tests.UI.TeamsNotifierCloudflareRemoteUITestBase.ExecuteSyncTestAsync(System.Action{Lombiq.Tests.UI.Services.UITestContext},Lombiq.Tests.UI.Services.Browser,System.Action{Lombiq.Tests.UI.Services.OrchardCoreUITestExecutorConfiguration})</Target>
+    <Left>lib/net10.0/Lombiq.Tests.UI.dll</Left>
+    <Right>lib/net10.0/Lombiq.Tests.UI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:OpenQA.Selenium.WebDriverExceptionExtensions.IsStateElementLikeException(OpenQA.Selenium.WebDriverException)</Target>
     <Left>lib/net10.0/Lombiq.Tests.UI.dll</Left>
     <Right>lib/net10.0/Lombiq.Tests.UI.dll</Right>
