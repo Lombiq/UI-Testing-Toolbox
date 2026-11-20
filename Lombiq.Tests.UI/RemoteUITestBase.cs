@@ -47,7 +47,8 @@ public abstract partial class RemoteUITestBase : UITestBase
     /// </summary>
     public Task RunAsync(Action<UITestContext> test, Browser? browser)
     {
-        Browser = browser ?? Browser;
+        if (browser.HasValue) Browser = browser.Value;
+
         return RunAsync(test.AsCompletedTask());
     }
 }

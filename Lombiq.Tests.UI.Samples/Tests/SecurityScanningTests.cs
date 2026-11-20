@@ -36,7 +36,7 @@ public class SecurityScanningTests : UITestBase
         // Note how we use this setting to not launch a browser. Security scanning happens fully in ZAP, and doesn't
         // use the browser launched by the UI Testing Toolbox. Not starting a browser for the test makes it a bit
         // faster. However, you can opt to launch a browser to prepare the app for security scanning if necessary.
-        Browser = Browser.None;
+        WithoutBrowser();
 
         // Below this point, we are overriding the default setup so we can have a simpler site; simplifying the security
         // scan for the purpose of this demo. For a real app's security scan you needn't (shouldn't) do this though.

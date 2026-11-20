@@ -23,11 +23,9 @@ public class MultiBrowserTests : UITestBase
     // First, let's see a test using Firefox. While the default browser is Chrome if you don't set anything, all
     // ExecuteTest* methods can also accept a browser, if you want to use a different one.
     [Fact]
-    public Task AnonymousHomePageShouldExistWithFirefox()
-    {
-        Browser = Browser.Firefox;
-        return RunAsync(NavbarIsCorrectAsync);
-    }
+    public Task AnonymousHomePageShouldExistWithFirefox() => TestBuilder
+        .UseBrowser(Browser.Firefox)
+        .RunAsync(NavbarIsCorrectAsync);
 
     // This test is now marked not with the [Fact] attribute but [Theory]. With it, you can create so-called data-driven
     // tests. [Chrome], [Firefox] are input parameters of the test, and thus in effect, you have now two tests:
@@ -42,11 +40,9 @@ public class MultiBrowserTests : UITestBase
     // thus the automatic installation, routinely breaking (as of writing this, most recently:
     // https://github.com/SeleniumHQ/selenium/issues/16055), we don't use it, nor do we recommend using it frequently.
     [Theory, Chrome, Firefox]
-    public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser)
-    {
-        Browser = browser;
-        return RunAsync(NavbarIsCorrectAsync);
-    }
+    public Task AnonymousHomePageShouldExistMultiBrowser(Browser browser) => TestBuilder
+        .UseBrowser(browser)
+        .RunAsync(NavbarIsCorrectAsync);
 
     // You can also set the browser for all tests at once in UITestBase. Check it out: Where there's some default config
     // now, you could also have the following code, for example:

@@ -45,12 +45,9 @@ public partial class RemoteUITestBase
         Uri baseUri,
         Func<UITestContext, Task> testAsync,
         Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
-    {
-        BaseUri = baseUri;
-        Browser = browser;
-
-        AddAsyncConfiguration(changeConfigurationAsync);
-        return RunAsync(testAsync);
-    }
+        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync) => TestBuilder
+        .UseBaseUri(baseUri)
+        .UseBrowser(browser)
+        .AddAsyncConfiguration(changeConfigurationAsync)
+        .RunAsync(testAsync);
 }

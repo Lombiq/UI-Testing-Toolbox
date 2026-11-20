@@ -60,10 +60,9 @@ public class BasicVisualVerificationTests : UITestBase
     // Here: https://pandasauce.org/post/linux-fonts/ you can find a good summary about this from 2019, but still valid
     // today.
     [Theory, Chrome, Firefox]
-    public Task VerifyNavbar(Browser browser)
-    {
-        Browser = browser;
-        return RunAsync(
+    public Task VerifyNavbar(Browser browser) => TestBuilder
+        .UseBrowser(browser)
+        .RunAsync(
             context =>
             {
                 context.SetViewportSize(CommonDisplayResolutions.HdPlus);
@@ -93,7 +92,6 @@ public class BasicVisualVerificationTests : UITestBase
 
                 return Task.CompletedTask;
             });
-    }
 }
 
 // END OF TRAINING SECTION: Basic visual verification tests.
