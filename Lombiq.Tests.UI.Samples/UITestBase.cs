@@ -26,28 +26,27 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
         // use multiple calls as a way to group related configurations together.
         AddConfiguration(configuration =>
         {
-            // If the window's size isn't set explicitly, it will be decided by the operating system with
-            // unpredictable results. So we set the window size to the value of the configuration below. You can
-            // change it here, but usually the default full HD is suitable.
+            // If the window's size isn't set explicitly, it will be decided by the operating system with unpredictable
+            // results. So we set the window size to the value of the configuration below. You can change it here, but
+            // usually the default full HD is suitable.
             configuration.BrowserConfiguration.DefaultBrowserSize = CommonDisplayResolutions.HdPlus;
 
-            // In headless mode, the browser's UI is not showing, it just runs in the background. This is what you
-            // want to use when running all tests, especially in a CI environment. During local troubleshooting you
-            // may want to turn this off so you can see in the browser what's happening. It is best to configure
-            // this option from a configuration file or environment variable, but you can also adjust it from code.
+            // In headless mode, the browser's UI is not showing, it just runs in the background. This is what you want
+            // to use when running all tests, especially in a CI environment. During local troubleshooting you may want
+            // to turn this off so you can see in the browser what's happening. It is best to configure this option from
+            // a configuration file or environment variable, but you can also adjust it from code.
             configuration.BrowserConfiguration.Headless =
                 TestConfigurationManager.GetBoolConfiguration("BrowserConfiguration:Headless", defaultValue: false);
 
-            // There are event handlers that you can hook into, you can see one of many below. Check out the others
-            // in OrchardCoreConfiguration, if you're interested.
+            // There are event handlers that you can hook into, you can see one of many below. Check out the others in
+            // OrchardCoreConfiguration, if you're interested.
 
-            // This is quite handy! We can, for example, add a configuration parameter when launching the app. This
-            // can be used to set configuration for configuration providers, see the docs:
+            // This is quite handy! We can, for example, add a configuration parameter when launching the app. This can
+            // be used to set configuration for configuration providers, see the docs:
             // https://docs.orchardcore.net/en/latest/docs/reference/core/Configuration/. We can set e.g. Orchard's
-            // AdminUrlPrefix like below, but this is just setting the default, so it's only an example. A more
-            // useful example is enabling offline operation of the Lombiq Hosting - Azure Application Insights for
-            // Orchard Core module (see the UI test project in
-            // https://github.com/Lombiq/Orchard-Azure-Application-Insights).
+            // AdminUrlPrefix like below, but this is just setting the default, so it's only an example. A more useful
+            // example is enabling offline operation of the Lombiq Hosting - Azure Application Insights for Orchard Core
+            // module (see the UI test project in https://github.com/Lombiq/Orchard-Azure-Application-Insights).
             configuration.OrchardCoreConfiguration.BeforeAppStart +=
                 (_, argumentsBuilder) =>
                 {
@@ -57,19 +56,18 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
                     return Task.CompletedTask;
                 };
 
-            // Note that automatic HTML markup validation is enabled on every page change by default (you can
-            // disable it with the below config). With this, you can make sure that the HTML markup the app
-            // generates (also from content items) is valid. While the default settings for HTML validation are most
-            // possibly suitable for your projects, check out the HtmlValidationConfiguration class for what else
-            // you can configure. We've also added a custom .htmlvalidate.json file (note the Content Build
-            // Action) to further configure it.
+            // Note that automatic HTML markup validation is enabled on every page change by default (you can disable it
+            // with the below config). With this, you can make sure that the HTML markup the app generates (also from
+            // content items) is valid. While the default settings for HTML validation are most possibly suitable for
+            // your projects, check out the HtmlValidationConfiguration class for what else you can configure. We've
+            // also added a custom .htmlvalidate.json file (note the Content Build Action) to further configure it.
             ////configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false;
 
             // For locally running apps, the UI Testing Toolbox configures Fake Logging (see
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.testing). This provides an
-            // in-memory log for assertions, regardless of the logging framework your app uses otherwise. By
-            // default, it'll only collect log entries with the Error level and up. However, you can change this,
-            // and the usual Logging app settings still work.
+            // in-memory log for assertions, regardless of the logging framework your app uses otherwise. By default,
+            // it'll only collect log entries with the Error level and up. However, you can change this, and the usual
+            // Logging app settings still work.
             configuration.OrchardCoreConfiguration.BeforeAppStart +=
                 (_, argumentsBuilder) =>
                 {
