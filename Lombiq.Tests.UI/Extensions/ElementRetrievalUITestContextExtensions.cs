@@ -171,9 +171,17 @@ public static class ElementRetrievalUITestContextExtensions
     public static void VerifyElementTexts(this UITestContext context, By by, IEnumerable<object> toMatch) =>
         VerifyElementTexts(context, by, toMatch is object[] array ? array : toMatch.ToArray());
 
-    private static ExtendedSearchContext<IWebDriver> CreateSearchContext(this UITestContext context) =>
-        new(
-            context.Driver,
-            context.Configuration.TimeoutConfiguration.RetryTimeout,
-            context.Configuration.TimeoutConfiguration.RetryInterval);
+    private static IExtendedSearchContext CreateSearchContext(this UITestContext context)
+    {
+        // Http client doesn't need retries.
+        if (context.Driver is HttpClientDriver driver)
+        {
+            return driver;
+        }
+
+        return new ExtendedSearchContext<IWebDriver>(
+                context.Driver,
+                context.Configuration.TimeoutConfiguration.RetryTimeout,
+                context.Configuration.TimeoutConfiguration.RetryInterval);
+    }
 }

@@ -51,7 +51,15 @@ public static class NavigationWebElementExtensions
                 {
                     try
                     {
-                        context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                        if (context.Driver is IActionExecutor)
+                        {
+                            context.Driver.Perform(actions => actions.MoveToElement(element).Click());
+                        }
+                        else
+                        {
+                            element.Click();
+                        }
+
                         notFound = false;
                     }
                     catch (Exception exception) when (i < maxTries)
