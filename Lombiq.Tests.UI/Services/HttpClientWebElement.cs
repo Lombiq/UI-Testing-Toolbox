@@ -55,6 +55,21 @@ public class HttpClientWebElement : IWebElement, IExtendedSearchContext
             by = realBy;
         }
 
+        // Evaluate ByChain step-by-step.
+        if (by is ByChain byChain)
+        {
+            var collection = new List<IWebElement> { this };
+
+            foreach (var byItem in byChain.Items)
+            {
+                collection = collection
+                    .SelectMany(oldElement => oldElement.FindElements(byItem))
+                    .ToList();
+            }
+
+            return new(collection);
+        }
+
         return Cast(_driver, by.Mechanism switch
         {
             "css selector" => _element.QuerySelectorAll(by.Criteria),
@@ -62,7 +77,7 @@ public class HttpClientWebElement : IWebElement, IExtendedSearchContext
             "tag name" => _element.GetElementsByTagName(by.Criteria),
             "link text" => _element.GetElementsByTagName(TagNames.A).Where(a => a.TextContent.Trim() == by.Criteria),
             "partial link text" => _element.GetElementsByTagName(TagNames.A).Where(a => a.TextContent.Contains(by.Criteria)),
-            _ => throw new InvalidOperationException($"Unknown mechanism \"{by.Mechanism}\"."),
+            _ => throw new InvalidOperationException($"{by.GetType().FullName} has an unknown mechanism: \"{by.Mechanism}\""),
         });
     }
 
