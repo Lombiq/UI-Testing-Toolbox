@@ -6,21 +6,21 @@ namespace Lombiq.Tests.UI.Services;
 
 public class HttpClientDriverTargetLocator : ITargetLocator
 {
-    public HttpClientDriver Driver { get; }
+    private readonly HttpClientDriver _driver;
 
     public HttpClientDriverTargetLocator(HttpClientDriver driver) =>
-        Driver = driver;
+        _driver = driver;
 
-    public IWebDriver Frame(int frameIndex) => Driver;
-    public IWebDriver Frame(string frameName) => Driver;
-    public IWebDriver Frame(IWebElement frameElement) => Driver;
-    public IWebDriver ParentFrame() => Driver;
-    public IWebDriver Window(string windowName) => Driver;
+    public IWebDriver Frame(int frameIndex) => _driver;
+    public IWebDriver Frame(string frameName) => _driver;
+    public IWebDriver Frame(IWebElement frameElement) => _driver;
+    public IWebDriver ParentFrame() => _driver;
+    public IWebDriver Window(string windowName) => _driver;
     public IWebDriver NewWindow(WindowType typeHint) => throw new NotSupportedException("This driver is single-window only.");
-    public IWebDriver DefaultContent() => Driver;
+    public IWebDriver DefaultContent() => _driver;
     public IWebElement ActiveElement() =>
-        Driver.Document is { } document
-            ? new HttpClientWebElement(Driver, document.DocumentElement)
+        _driver.Document is { } document
+            ? new HttpClientWebElement(_driver, document.DocumentElement)
             : null!;
     public IAlert Alert() => throw new NoAlertPresentException("This driver cannot show alerts.");
 }
