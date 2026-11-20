@@ -474,6 +474,8 @@ public static class ReliabilityUITestContextExtensions
 
     private static string ComputeElementImageHash(this UITestContext context, IWebElement element)
     {
+        if (context.Driver is not ITakesScreenshot) return string.Empty;
+
         using var elementImage = context.TakeElementScreenshot(element);
         using var elementImageStream = new MemoryStream();
 
