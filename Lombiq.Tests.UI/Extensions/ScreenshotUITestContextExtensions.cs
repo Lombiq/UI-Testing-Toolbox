@@ -103,6 +103,7 @@ public static class ScreenshotUITestContextExtensions
     /// </summary>
     public static Image TakeElementScreenshot(this UITestContext context, IWebElement element)
     {
+        context.ThrowIfCantTakeScreenshots();
         using var screenshot = context.TakeFullPageScreenshot();
 
         var elementLocation = element?.Location ?? default;

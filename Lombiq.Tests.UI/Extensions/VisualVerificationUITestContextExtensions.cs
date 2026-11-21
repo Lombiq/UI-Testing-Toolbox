@@ -32,6 +32,18 @@ Hint: You can use the configurator callback of {nameof(AssertVisualVerificationA
 to customize the name of the dump item.";
 
     /// <summary>
+    /// Throws an exception if the <see cref="UITestContext.Driver"/> does not implement <see cref="ITakesScreenshot"/>.
+    /// </summary>
+    public static void ThrowIfCantTakeScreenshots(this UITestContext context)
+    {
+        if (context.Driver is not ITakesScreenshot)
+        {
+            throw new InvalidOperationException(
+                $"The current driver ({context.Driver.GetType().FullName}) does not support taking screenshots.");
+        }
+    }
+
+    /// <summary>
     /// Compares the baseline image and screenshot of the selected element on multiple different resolutions.
     /// </summary>
     /// <param name="sizes">The comparison is performed on each of these resolutions.</param>
@@ -374,6 +386,8 @@ to customize the name of the dump item.";
         Rectangle? regionOfInterest = null,
         ConfigureVisualVerification configurator = null)
     {
+        context.ThrowIfCantTakeScreenshots();
+
         var configuration = new VisualVerificationMatchApprovedConfiguration();
         configurator?.Invoke(configuration);
 
@@ -507,6 +521,8 @@ to customize the name of the dump item.";
         Rectangle? regionOfInterest = null,
         Action<VisualMatchConfiguration> configurator = null)
     {
+        context.ThrowIfCantTakeScreenshots();
+
         var configuration = new VisualMatchConfiguration();
         configurator?.Invoke(configuration);
 

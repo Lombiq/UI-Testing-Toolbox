@@ -23,7 +23,7 @@ public class TenantTests : UITestBase
 
     [Fact]
     public Task CreatingTenantShouldWork() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 const string tenantAdminName = "tenantAdmin";

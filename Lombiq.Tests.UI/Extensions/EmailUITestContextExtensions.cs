@@ -116,10 +116,6 @@ public static class EmailUITestContextExtensions
     public static Task FillEmailTestFormAsync(this UITestContext context, string subject) =>
         context.FillEmailTestFormAsync("recipient@example.com", subject, "Hi, this is a test.");
 
-    [Obsolete("Use ConfigureSmtpSettingsAsync() instead.")]
-    public static Task ConfigureSmtpPortAsync(this UITestContext context, int? port = null, bool publish = true) =>
-        throw new NotSupportedException("Use ConfigureSmtpSettingsAsync() instead.");
-
     /// <summary>
     /// Goes to the SMTP settings page and configures the provided settings. The <c>OrchardCore.Email.Smtp</c> feature
     /// must be enabled, but if the SMTP provider is not turned on, this will automatically do it as well.

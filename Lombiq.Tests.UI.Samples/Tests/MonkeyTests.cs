@@ -22,63 +22,58 @@ public class MonkeyTests : UITestBase
     // or the content management UI. First, we test a single page.
     [Fact]
     public Task TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                // Note how we define the starting point of the test as the homepage.
-                await context.GoToHomePageAsync();
-                // The specified random see gives you the option to reproduce the random interactions. Otherwise it
-                // would be calculated from MonkeyTestingOptions.BaseRandomSeed.
-                await context.TestCurrentPageAsMonkeyAsync(CreateMonkeyTestingOptions(), 12345);
-            });
+        RunAsync(async context =>
+        {
+            // Note how we define the starting point of the test as the homepage.
+            await context.GoToHomePageAsync();
+            // The specified random see gives you the option to reproduce the random interactions. Otherwise it
+            // would be calculated from MonkeyTestingOptions.BaseRandomSeed.
+            await context.TestCurrentPageAsMonkeyAsync(CreateMonkeyTestingOptions(), 12345);
+        });
 
     // Recursive testing will just continue testing following the configured rules until it runs out of time or new
     // pages.
     [Fact]
     public Task TestCurrentPageAsMonkeyRecursivelyShouldWorkWithAnonymousUser() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                await context.GoToHomePageAsync();
-                await context.TestCurrentPageAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions());
+        RunAsync(async context =>
+        {
+            await context.GoToHomePageAsync();
+            await context.TestCurrentPageAsMonkeyRecursivelyAsync(CreateMonkeyTestingOptions());
 
-                // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions) does
-                // the same thing but we wanted to demonstrate the contrast with
-                // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
-            });
+            // The shortcut context.TestFrontendAuthenticatedAsMonkeyRecursivelyAsync(_monkeyTestingOptions) does
+            // the same thing but we wanted to demonstrate the contrast with
+            // TestCurrentPageAsMonkeyShouldWorkWithConfiguredRandomSeed().
+        });
 
     // Let's test with an authenticated user too.
     [Fact]
-    public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser() =>
-        ExecuteTestAfterSetupAsync(
-            context =>
-            {
-                // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
+    public Task TestAdminPagesAsMonkeyRecursivelyShouldWorkWithAdminUser() => TestBuilder
+        // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
+        // parameters are required.
+        .AddConfiguration(configuration => configuration
+            .WithIgnoreExpectedStatusResponseFilter("/api/graphql", HttpStatusCode.BadRequest))
+        .RunAsync(context =>
+        {
+            // Monkey tests needn't all start from the homepage. This one starts from the Orchard admin dashboard.
 
-                var monkeyTestingOptions = CreateMonkeyTestingOptions();
+            var monkeyTestingOptions = CreateMonkeyTestingOptions();
 
-                // So we don't take too much time testing the whole Orchard admin, this sample restricts requests to
-                // "/Admin". But this is just this sample, you can unleash monkeys on the whole admin too!
-                monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter("/Admin$"));
+            // So we don't take too much time testing the whole Orchard admin, this sample restricts requests to
+            // "/Admin". But this is just this sample, you can unleash monkeys on the whole admin too!
+            monkeyTestingOptions.UrlFilters.Add(new MatchesRegexMonkeyTestingUrlFilter("/Admin$"));
 
-                // You can fence monkey testing with URL filters: Monkey testing will only be executed if the current
-                // URL matches. This way, you can restrict monkey testing to just sections of the site. You can also use
-                // such fencing to have multiple monkey testing methods in multiple test classes, thus running them in
-                // parallel. Another option apart from regex is e.g. StartsWithMonkeyTestingUrlFilter, with which you
-                // can do things like this:
-                ////monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
-                // Explore all the options in the Lombiq.Tests.UI.MonkeyTesting.UrlFilters namespace.
+            // You can fence monkey testing with URL filters: Monkey testing will only be executed if the current
+            // URL matches. This way, you can restrict monkey testing to just sections of the site. You can also use
+            // such fencing to have multiple monkey testing methods in multiple test classes, thus running them in
+            // parallel. Another option apart from regex is e.g. StartsWithMonkeyTestingUrlFilter, with which you
+            // can do things like this:
+            ////monkeyTestingOptions.UrlFilters.Add(new StartsWithMonkeyTestingUrlFilter("/Admin/BackgroundTasks"));
+            // Explore all the options in the Lombiq.Tests.UI.MonkeyTesting.UrlFilters namespace.
 
-                // With this method, you can test the whole (barring restrictions like above) admin recursively. But you
-                // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too.
-                return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
-            },
-            configuration =>
-            {
-                // Requests to /api/graphql without further parameters will fail with HTTP 400, but that's OK, since some
-                // parameters are required.
-                configuration.WithIgnoreExpectedStatusResponseFilter("/api/graphql", HttpStatusCode.BadRequest);
-            });
+            // With this method, you can test the whole (barring restrictions like above) admin recursively. But you
+            // can use TestCurrentPageAsMonkeyRecursivelyAsync() on the admin too.
+            return context.TestAdminAsMonkeyRecursivelyAsync(monkeyTestingOptions);
+        });
 
     // Monkey testing has its own configuration too. Check out the docs of the options too.
     private static MonkeyTestingOptions CreateMonkeyTestingOptions() =>

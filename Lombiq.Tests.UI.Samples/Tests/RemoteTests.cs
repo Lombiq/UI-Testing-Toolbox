@@ -41,20 +41,20 @@ public class RemoteTests : RemoteUITestBase
 
     // The test itself is largely the same as all the local ones, but you need to provide a base URI.
     [Fact]
-    public Task SeleniumWebFormShouldWork() =>
-        ExecuteTestAsync(
-            new Uri("https://www.selenium.dev/selenium/web/web-form.html"),
-            context =>
-            {
-                // Assertions work as usual. Implicit assertions like HTML validation and accessibility checks work too,
-                // and upon a failing assertion a failure dump is generated as you'd expect it.
-                context.Get(By.CssSelector("h1")).Text.ShouldBe("Web form");
-                context.Exists(By.LinkText("Return to index"));
+    public Task SeleniumWebFormShouldWork() => TestBuilder
+        .UseBaseUri(new Uri("https://www.selenium.dev/selenium/web/web-form.html"))
+        .AddConfiguration(configuration => configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false)
+        .RunAsync(context =>
+        {
+            // Assertions work as usual. Implicit assertions like HTML validation and accessibility checks work too,
+            // and upon a failing assertion a failure dump is generated as you'd expect it.
+            context.Get(By.CssSelector("h1")).Text.ShouldBe("Web form");
+            context.Exists(By.LinkText("Return to index"));
 
-                // Note that due to a remote app not being under our control, some things are not supported. E.g., you
-                // can't access the Orchard Core logs, or use shortcuts (the *Directly methods).
-            },
-            configuration => configuration.HtmlValidationConfiguration.RunHtmlValidationAssertionOnAllPageChanges = false);
+            // Note that due to a remote app not being under our control, some things are not supported. E.g., you
+            // can't access the Orchard Core logs, or use shortcuts (the *Directly methods).
+            return Task.CompletedTask;
+        });
 }
 
 // END OF TRAINING SECTION: Remote tests.

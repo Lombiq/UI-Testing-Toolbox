@@ -5,10 +5,6 @@ namespace Lombiq.Tests.UI.Extensions;
 
 public static class TestContextExtensions
 {
-    [Obsolete("Use GetElasticsearchSafeIndexName instead. This method will be removed in a future version.")]
-    public static string GetElasticserachSafeIndexName(this ITestContext context, Guid id) =>
-        context.GetElasticsearchSafeIndexName();
-
     /// <summary>
     /// Generates a safe Elasticsearch index name from the test identifiers in <paramref name="context"/>.
     /// </summary>

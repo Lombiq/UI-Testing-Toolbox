@@ -28,13 +28,13 @@ namespace Lombiq.Tests.UI.Samples.Tests;
 public class SqlQueryMonitoringTests : UITestBase
 {
     public SqlQueryMonitoringTests(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
+        : base(testOutputHelper) =>
+        // SQL monitoring is off by default, so you need to turn it on for the test.
+        AddConfiguration(configuration => configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
 
     [Fact]
     public Task SqlQueryMonitoringExplicitAssertions() =>
-        ExecuteTestAfterSetupAsync(
+        RunAsync(
             async context =>
             {
                 // SQL monitoring is already enabled for this test, so even the request that opened the home page has a
@@ -50,11 +50,6 @@ public class SqlQueryMonitoringTests : UITestBase
                 // summary.
                 await context.GoToHomePageAsync(onlyIfNotAlreadyThere: false);
                 await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync();
-            },
-            changeConfiguration: configuration =>
-            {
-                // SQL monitoring is off by default, so you need to turn it on for the test.
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
             });
 
     [Fact]
@@ -64,8 +59,8 @@ public class SqlQueryMonitoringTests : UITestBase
         // assertions in one test.
         var automaticallyAssertedSummaries = new List<SqlQueryMonitoringSummary>();
 
-        return ExecuteTestAfterSetupAsync(
-            async context =>
+        return TestBuilder
+            .AddTest(async context =>
             {
                 // The automatic page-change assertion below only runs on /about. This shows that mode without getting
                 // in the way of the later explicit assertions.
@@ -100,11 +95,9 @@ public class SqlQueryMonitoringTests : UITestBase
                             "The request-specific assertion should locate the SQL summary for this exact request.");
                         return Task.CompletedTask;
                     });
-            },
-            changeConfiguration: configuration =>
+            })
+            .AddConfiguration(configuration =>
             {
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
-
                 // This enables automatic page-change assertions, but only on /about. That way the later explicit
                 // assertions can still use their own summaries.
                 configuration.SqlQueryMonitoringConfiguration.RunSqlQueryMonitoringAssertionOnAllPageChanges = true;
@@ -148,100 +141,97 @@ public class SqlQueryMonitoringTests : UITestBase
 
                     return Task.CompletedTask;
                 };
-            });
+            })
+            .RunAsync();
     }
 
     [Fact]
-    public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithRegexThresholdSettings() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
+    public Task SqlQueryMonitoringAutomaticAssertsOnPageChangeWithRegexThresholdSettings() => TestBuilder
+        .AddTest(async context =>
+        {
+            await context.GoToRelativeUrlAsync("/categories/travel");
+            await context.AssertSqlQueryMonitoringAsync(summary =>
             {
-                await context.GoToRelativeUrlAsync("/categories/travel");
-                await context.AssertSqlQueryMonitoringAsync(summary =>
-                {
-                    summary.RequestPath.ShouldContain("/categories/travel");
-                    summary.Executions.ShouldNotBeEmpty(
-                        "The current-page assertion still works after changing thresholds with the regex helper.");
-                    return Task.CompletedTask;
-                });
-            },
-            changeConfiguration: configuration =>
-            {
-                configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true;
-
-                // If your threshold rules are only based on the URL, then the regex helper is a bit more compact for
-                // multiple URL patterns. The default threshold can also be set with it, so the not matched URLs will
-                // use that.
-                configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
-                    new SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 30,
-                        DuplicateCommandWithParametersThreshold: 15,
-                        ResultSetRowCountThreshold: 200),
-                    (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 20,
-                        DuplicateCommandWithParametersThreshold: 10,
-                        ResultSetRowCountThreshold: 100)),
-                    (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringThresholds(
-                        DuplicateCommandThreshold: 25,
-                        DuplicateCommandWithParametersThreshold: 12,
-                        ResultSetRowCountThreshold: 150)));
+                summary.RequestPath.ShouldContain("/categories/travel");
+                summary.Executions.ShouldNotBeEmpty(
+                    "The current-page assertion still works after changing thresholds with the regex helper.");
+                return Task.CompletedTask;
             });
+        })
+        .AddConfiguration(configuration =>
+        {
+            // If your threshold rules are only based on the URL, then the regex helper is a bit more compact for
+            // multiple URL patterns. The default threshold can also be set with it, so the not matched URLs will
+            // use that.
+            configuration.ConfigureSqlQueryMonitoringThresholdsForPages(
+                new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 30,
+                    DuplicateCommandWithParametersThreshold: 15,
+                    ResultSetRowCountThreshold: 200),
+                (Pattern: @"^/categories/.*", Thresholds: new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 20,
+                    DuplicateCommandWithParametersThreshold: 10,
+                    ResultSetRowCountThreshold: 100)),
+                (Pattern: @"^/about$", Thresholds: new SqlQueryMonitoringThresholds(
+                    DuplicateCommandThreshold: 25,
+                    DuplicateCommandWithParametersThreshold: 12,
+                    ResultSetRowCountThreshold: 150)));
+        })
+        .RunAsync();
 
     [Fact]
     public Task SqlQueryMonitoringPageLoadFollowingAsyncRequests() =>
-        ExecuteTestAfterSetupAsync(
-            async context =>
-            {
-                // This scenario page starts an async request after the initial page load. The async request has its own
-                // SQL summary, but it can be asserted together with the page request too.
-                var asyncApiPath =
-                    context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
+        RunAsync(async context =>
+        {
+            // This scenario page starts an async request after the initial page load. The async request has its own
+            // SQL summary, but it can be asserted together with the page request too.
+            var asyncApiPath =
+                context.GetRelativeUrlOfAction<SqlQueryMonitoringScenarioController>(controller => controller.AsyncQuery());
 
-                // Go to the page that starts the async API call, then assert against both the page request and the
-                // async API request.
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-                var pagePath = context.GetCurrentUri().AbsolutePath;
+            // Go to the page that starts the async API call, then assert against both the page request and the
+            // async API request.
+            await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+            var pagePath = context.GetCurrentUri().AbsolutePath;
 
-                // The async API call finishes in the background, so wait until the page shows that it's done.
-                context.DoWithRetriesOrFail(() => context.GetText(By.Id("async-query-status")).EqualsOrdinalIgnoreCase("Completed"));
+            // The async API call finishes in the background, so wait until the page shows that it's done.
+            context.DoWithRetriesOrFail(() => context.GetText(By.Id("async-query-status")).EqualsOrdinalIgnoreCase("Completed"));
 
-                await context.AssertSqlQueryMonitoringForRequestAsync(
-                    pagePath,
-                    HttpMethod.Get.Method,
-                    summary =>
-                    {
-                        summary.RequestPath.ShouldBe(pagePath);
-                        summary.Executions.ShouldNotBeEmpty(
-                            "The initial page request should have its own SQL monitoring summary.");
-                        return Task.CompletedTask;
-                    });
-
-                await context.AssertSqlQueryMonitoringForRequestAsync(
-                    asyncApiPath,
-                    HttpMethod.Get.Method,
-                    summary =>
-                    {
-                        summary.RequestPath.ShouldBe(asyncApiPath);
-                        summary.Executions.ShouldNotBeEmpty(
-                            "The async API request should also have its own SQL monitoring summary.");
-                        return Task.CompletedTask;
-                    });
-
-                // Or if you don't care which follow-up request caused the problem, only that the page and its async
-                // requests together did, then the follow-up-inclusive assertion combines those summaries.
-                await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
-
-                await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
+            await context.AssertSqlQueryMonitoringForRequestAsync(
+                pagePath,
+                HttpMethod.Get.Method,
+                summary =>
                 {
-                    summary.RequestMethod.ShouldBe("MULTI");
-                    summary.RequestPath.ShouldContain("combined");
-                    summary.Executions.Count.ShouldBeGreaterThanOrEqualTo(
-                        2,
-                        "The combined assertion should contain executions from both the page request and the async API call.");
+                    summary.RequestPath.ShouldBe(pagePath);
+                    summary.Executions.ShouldNotBeEmpty(
+                        "The initial page request should have its own SQL monitoring summary.");
                     return Task.CompletedTask;
                 });
-            },
-            configuration => configuration.SqlQueryMonitoringConfiguration.EnableSqlQueryMonitoringCollection = true);
+
+            await context.AssertSqlQueryMonitoringForRequestAsync(
+                asyncApiPath,
+                HttpMethod.Get.Method,
+                summary =>
+                {
+                    summary.RequestPath.ShouldBe(asyncApiPath);
+                    summary.Executions.ShouldNotBeEmpty(
+                        "The async API request should also have its own SQL monitoring summary.");
+                    return Task.CompletedTask;
+                });
+
+            // Or if you don't care which follow-up request caused the problem, only that the page and its async
+            // requests together did, then the follow-up-inclusive assertion combines those summaries.
+            await context.GoToAsync<SqlQueryMonitoringScenarioController>(controller => controller.Index());
+
+            await context.AssertSqlQueryMonitoringIncludingFollowUpRequestsAsync(summary =>
+            {
+                summary.RequestMethod.ShouldBe("MULTI");
+                summary.RequestPath.ShouldContain("combined");
+                summary.Executions.Count.ShouldBeGreaterThanOrEqualTo(
+                    2,
+                    "The combined assertion should contain executions from both the page request and the async API call.");
+                return Task.CompletedTask;
+            });
+        });
 }
 
 // END OF TRAINING SECTION: SQL query monitoring tests.

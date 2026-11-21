@@ -2,7 +2,6 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -52,17 +51,8 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
     protected virtual string CloudflareApiToken => TestConfigurationManager.GetConfiguration("CloudflareApiToken");
 
     protected CloudflareRemoteUITestBase(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
-    {
-    }
-
-    protected override Task ExecuteTestAsync(
-        Uri baseUri,
-        Func<UITestContext, Task> testAsync,
-        Browser browser,
-        Func<OrchardCoreUITestExecutorConfiguration, Task> changeConfigurationAsync)
-    {
-        Task ChangeConfigurationForCloudflareAsync(OrchardCoreUITestExecutorConfiguration configuration)
+        : base(testOutputHelper) =>
+        AddConfiguration(configuration =>
         {
             // Cloudflare's e-mail address obfuscating feature creates invalid iframes.
             configuration.HtmlValidationConfiguration.WithRelativeConfigPath("PermitNoTitleIframes.htmlvalidate.json");
@@ -71,21 +61,21 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             // get misleading errors, such as an Axe error because Cloudflare's third party error page doesn't satisfy
             // our accessibility configuration.
             configuration.Events.AfterPageChange = OnAssertCloudflareErrorPageAsync + configuration.Events.AfterPageChange;
+        });
 
-            return changeConfigurationAsync.InvokeFuncAsync(configuration);
-        }
-
+    public override Task RunAsync()
+    {
         if (string.IsNullOrEmpty(CloudflareApiToken))
         {
             _testOutputHelper.WriteLineTimestampedAndDebug(
                 "No Cloudflare API token is set, thus skipping the IP Access Rule setup. Note that Cloudflare might " +
                 "reject automated requests with HTTP 403s.");
 
-            return base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync);
+            return base.RunAsync();
         }
 
         return CloudflareHelper.ExecuteWrappedInIpAccessRuleManagementAsync(
-            () => base.ExecuteTestAsync(baseUri, testAsync, browser, ChangeConfigurationForCloudflareAsync),
+            base.RunAsync,
             CloudflareAccountId,
             CloudflareApiToken,
             _testOutputHelper,

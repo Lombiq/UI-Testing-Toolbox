@@ -37,10 +37,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atata" Version="3.13.0" />
-    <PackageReference Include="Atata.Bootstrap" Version="3.1.0" />
-    <PackageReference Include="Atata.HtmlValidation" Version="3.5.0" />
-    <PackageReference Include="Atata.WebDriverExtras" Version="3.9.0" />
+    <PackageReference Include="AngleSharp.XPath" Version="2.0.10" />
+    <PackageReference Include="Atata" Version="4.0.1" />
+    <PackageReference Include="Atata.Bootstrap" Version="4.0.0" />
+    <PackageReference Include="Atata.HtmlValidation" Version="4.0.0" />
+    <PackageReference Include="Atata.WebDriverExtras" Version="4.0.0" />
+    <PackageReference Include="Atata.Xunit.v3" Version="4.0.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.30.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.1.390" />
@@ -105,6 +107,11 @@
     <None Remove="SecurityScanning\AutomationFrameworkPlans\FullScan.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\GraphQL.yml" />
     <None Remove="SecurityScanning\AutomationFrameworkPlans\OpenAPI.yml" />
+  </ItemGroup>
+
+  <!-- Security Updates for Orchard Core - make sure to check if these are still necessary -->
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' != 'true'">
+    <PackageReference Include="HtmlSanitizer" Version="9.2.1039" NoWarn="NU1510" />
   </ItemGroup>
 
   <Import Condition="'$(NuGetBuild)' != 'true'" Project="../../../src/Utilities/Lombiq.MSBuild.Targets/Lombiq.MSBuild.Library.Sdk/Sdk/Import.targets" />

@@ -27,9 +27,8 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
     }
 
     /// <summary>
-    /// Similar to <see cref="OrchardCoreUITestExecutorConfiguration.AssertAppLogsCanContainCacheFolderErrorsAsync"/>,
-    /// but also permits certain <see cref="LogLevel.Error"/> log messages which represent correct reactions to
-    /// incorrect or malicious user behavior during a security scan.
+    /// Permits certain <see cref="LogLevel.Error"/> log messages which represent correct reactions to incorrect or
+    /// malicious user behavior during a security scan.
     /// </summary>
     public static Func<IWebApplicationInstance, Task> CreateAppLogAssertionForSecurityScan(params string[] additionalPermittedErrorLinePatterns)
     {
