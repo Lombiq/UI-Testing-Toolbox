@@ -235,3 +235,4 @@ public class SqlQueryMonitoringTests : UITestBase
 }
 
 // END OF TRAINING SECTION: SQL query monitoring tests.
+// NEXT STATION: Head over to Tests/NoBrowserTests.cs.
