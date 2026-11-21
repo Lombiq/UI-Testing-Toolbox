@@ -50,3 +50,5 @@ public class NoBrowserTests : UITestBase
             context.Get(By.TagName("h4")).GetTextTrimmed().ShouldBe("Welcome to Orchard Core");
         });
 }
+
+// END OF TRAINING SECTION: Testing without a browser.

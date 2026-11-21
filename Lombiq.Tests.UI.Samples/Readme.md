@@ -33,6 +33,8 @@ For general details about and on using the Toolbox see the [root Readme](../Read
 - [Testing time-dependent functionality](Tests/ShiftTimeTests.cs)
 - [Testing Elasticsearch-using functionality](Tests/ElasticsearchTests.cs)
 - [Test headless Orchard Core with a frontend subprocess](FrontendUITestBase.cs)
+- [Monitor SQL queries to find performance issues](Tests/SqlQueryMonitoringTests.cs)
+- [Testing without a browser](Tests/NoBrowserTests.cs)
 
 ## Adding new tutorials
 

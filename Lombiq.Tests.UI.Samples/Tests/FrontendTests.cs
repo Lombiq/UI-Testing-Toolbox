@@ -33,4 +33,4 @@ public class FrontendTests : FrontendUITestBase
 }
 
 // END OF TRAINING SECTION: Test headless Orchard Core with a frontend subprocess.
-// NEXT STATION: Head over to Tests/JavaScriptTests.mjs.
+// NEXT STATION: Head over to Tests/SqlQueryMonitoringTests.cs.
