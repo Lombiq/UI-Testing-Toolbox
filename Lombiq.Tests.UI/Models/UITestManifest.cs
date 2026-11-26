@@ -30,14 +30,26 @@ public class UITestManifest
 
     public UITestManifest(UITestBase fixture, params IReadOnlyList<Func<UITestContext, Task>> tests)
     {
+        var stackTrace = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true));
         Fixture = fixture;
         Tests = tests;
-        StackFrame = new EnhancedStackTrace(new StackTrace(fNeedFileInfo: true))
-            .First(frame => frame
-                .MethodInfo
-                .MethodBase?
-                .GetCustomAttributes(inherit: true)
-                .Any(attribute => attribute is IFactAttribute or ITheoryAttribute) == true);
+        StackFrame = stackTrace.FirstOrDefault(frame => frame
+            .MethodInfo
+            .MethodBase?
+            .GetCustomAttributes(inherit: true)
+            .Any(attribute => attribute is IFactAttribute or ITheoryAttribute) == true);
+
+        if (StackFrame == null)
+        {
+            var testAsync = tests[^1];
+            var typeName = testAsync.Method.DeclaringType?.FullName?.Split('+')[0];
+            var methodName = testAsync.Method.Name.StartsWith('<')
+                ? testAsync.Method.Name[1..].Split('>')[0]
+                : testAsync.Method.Name;
+
+            StackFrame = stackTrace.FirstOrDefault(frame =>
+                frame.MethodInfo.DeclaringType?.FullName == typeName && frame.MethodInfo.Name == methodName);
+        }
     }
 
     public async Task RunTestsAsync(UITestContext context)

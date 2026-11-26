@@ -2,6 +2,7 @@ using Lombiq.Tests.UI.Exceptions;
 using Lombiq.Tests.UI.Extensions;
 using Lombiq.Tests.UI.Helpers;
 using Lombiq.Tests.UI.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -63,7 +64,12 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
             configuration.Events.AfterPageChange = OnAssertCloudflareErrorPageAsync + configuration.Events.AfterPageChange;
         });
 
-    public override Task RunAsync()
+    [SuppressMessage(
+        "AsyncUsage",
+        "AsyncFixer01:Unnecessary async/await usage",
+        Justification = "Explicit awaits are necessary here, to reliably access the stack trace, as needed by the UITestManifest.")]
+    [SuppressMessage("Style", "IDE0200:Remove unnecessary lambda expression", Justification = "Same.")]
+    public override async Task RunAsync()
     {
         if (string.IsNullOrEmpty(CloudflareApiToken))
         {
@@ -71,15 +77,17 @@ public abstract class CloudflareRemoteUITestBase : RemoteUITestBase
                 "No Cloudflare API token is set, thus skipping the IP Access Rule setup. Note that Cloudflare might " +
                 "reject automated requests with HTTP 403s.");
 
-            return base.RunAsync();
+            await base.RunAsync();
         }
-
-        return CloudflareHelper.ExecuteWrappedInIpAccessRuleManagementAsync(
-            base.RunAsync,
-            CloudflareAccountId,
-            CloudflareApiToken,
-            _testOutputHelper,
-            TestContext.Current.CancellationToken);
+        else
+        {
+            await CloudflareHelper.ExecuteWrappedInIpAccessRuleManagementAsync(
+                async () => await base.RunAsync(),
+                CloudflareAccountId,
+                CloudflareApiToken,
+                _testOutputHelper,
+                TestContext.Current.CancellationToken);
+        }
     }
 
     private Task OnAssertCloudflareErrorPageAsync(UITestContext context)
