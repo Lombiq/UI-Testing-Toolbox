@@ -36,14 +36,16 @@ public enum Browser
 public class OrchardCoreUITestExecutorConfiguration
 {
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
-        app => app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken);
+        app => app.SupportsLogs ? app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken) : Task.CompletedTask;
 
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
-        app => app.LogsShouldNotContainAsync(
-            entry =>
-                entry.Level >= LogLevel.Warning &&
-                entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
-            TestContext.Current.CancellationToken);
+        app => app.SupportsLogs
+            ? app.LogsShouldNotContainAsync(
+                entry =>
+                    entry.Level >= LogLevel.Warning &&
+                    entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+                TestContext.Current.CancellationToken) :
+            Task.CompletedTask;
 
     public static readonly Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
@@ -121,6 +123,10 @@ public class OrchardCoreUITestExecutorConfiguration
             $"{nameof(OrchardCoreUITestExecutorConfiguration)}:RetryIntervalSeconds",
             0));
 
+    /// <summary>
+    /// Gets or sets the async function used to assert app log validity (i.e., no error logs). The default value is <see
+    /// cref="AssertAppLogsCanContainFeatureSkipAsync"/>.
+    /// </summary>
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainFeatureSkipAsync;
 
     /// <summary>

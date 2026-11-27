@@ -67,12 +67,13 @@ public static class OrchardCoreUITestExecutorConfigurationExtensions
 
         permittedErrorLinePatterns.AddRange(additionalPermittedErrorLinePatterns);
 
-        return app =>
-            app.LogsShouldNotContainAsync(
+        return app => app.SupportsLogs
+            ? app.LogsShouldNotContainAsync(
                 logEntry =>
                     logEntry.Level >= LogLevel.Error &&
                     !permittedErrorLinePatterns.Any(pattern =>
                         Regex.IsMatch(logEntry.ToString(), pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-                TestContext.Current.CancellationToken);
+                TestContext.Current.CancellationToken)
+            : Task.CompletedTask;
     }
 }
