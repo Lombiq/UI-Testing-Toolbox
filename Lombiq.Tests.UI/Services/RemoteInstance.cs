@@ -8,6 +8,9 @@ namespace Lombiq.Tests.UI.Services;
 
 public sealed class RemoteInstance : IWebApplicationInstance
 {
+    public bool SupportsServices => false;
+    public bool SupportsPausing => false;
+    public bool SupportsLogs => false;
     public IServiceProvider Services => throw new NotSupportedException();
 
     private readonly Uri _baseUri;
@@ -18,6 +21,7 @@ public sealed class RemoteInstance : IWebApplicationInstance
 
     public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(Enumerable.Empty<IApplicationLog>());
+    [Obsolete($"Use {nameof(IWebApplicationInstance.Services)} instead.")]
     public TService GetRequiredService<TService>() => throw new NotSupportedException();
     public Task PauseAsync() => throw new NotSupportedException();
     public Task ResumeAsync() => throw new NotSupportedException();

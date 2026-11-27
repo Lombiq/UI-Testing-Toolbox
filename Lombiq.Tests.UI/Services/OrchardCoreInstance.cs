@@ -65,6 +65,10 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private Uri _url;
     private TestReverseProxy _reverseProxy;
 
+    public bool SupportsServices => true;
+    public bool SupportsPausing => true;
+    public bool SupportsLogs => true;
+
     public IServiceProvider Services => _orchardApplication?.Services;
     public OrchardCoreConfiguration OrchardCoreConfiguration => _configuration.OrchardCoreConfiguration;
     public ITestOutputHelper TestOutputHelper => _configuration.TestOutputHelper;
