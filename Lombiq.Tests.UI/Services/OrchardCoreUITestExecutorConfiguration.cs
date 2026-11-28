@@ -4,7 +4,7 @@ using Lombiq.Tests.UI.Models;
 using Lombiq.Tests.UI.SecurityScanning;
 using Lombiq.Tests.UI.Services.GitHub;
 using Lombiq.Tests.UI.SqlQueryMonitoring.Services;
-using Microsoft.Extensions.Logging;
+using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi.Log;
 using OpenQA.Selenium.BiDi.Network;
 using Shouldly;
@@ -16,6 +16,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Lombiq.Tests.UI.Services;
 
@@ -35,20 +36,27 @@ public enum Browser
 
 public class OrchardCoreUITestExecutorConfiguration
 {
+    /// <summary>
+    /// Gets or sets the minimum log level which is included in the application logs. The default value is <see
+    /// cref="LogLevel.Warning"/>, meaning that the presence of both warnings and errors can fail the test. Set this to
+    /// <see cref="LogLevel.Error"/> if you only want to fail when errors are logged.
+    /// </summary>
+    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Warning;
+
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
         app => app.SupportsLogs ? app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken) : Task.CompletedTask;
 
     [Obsolete(
-        $"Use {nameof(AssertAppLogsAreEmptyAsync)} instead. The \"Skipping feature\" warning is skipped by a default " +
-        $"application log filter in {nameof(AppLogFilters)}.")]
+        $"Use {nameof(CreateAssertAppLogsAsyncFromConfiguration)} instead. The \"Skipping feature\" warning is " +
+        $"skipped by a default application log filter in {nameof(AppLogFilters)}.")]
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
         app => app.SupportsLogs
             ? app.LogsShouldNotContainAsync(
                 entry =>
                     entry.Level >= LogLevel.Warning &&
                     entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
-                TestContext.Current.CancellationToken) :
-            Task.CompletedTask;
+                TestContext.Current.CancellationToken)
+            : Task.CompletedTask;
 
     public static readonly Action<IReadOnlyList<BrowserLogEntry>> AssertBrowserLogIsEmpty =
         logEntries => logEntries.ShouldBeEmpty(logEntries.ToFormattedString());
@@ -130,19 +138,20 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets the async function used to assert app log validity (i.e., no error logs). The default value is <see
     /// cref="AssertAppLogsCanContainFeatureSkipAsync"/> and you should avoid changing this, when possible.
     /// </summary>
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsAreEmptyAsync;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; }
 
     public IDictionary<string, Func<IApplicationLogEntry, bool>> AppLogFilters { get; } = new Dictionary<string, Func<IApplicationLogEntry, bool>>
     {
+        // OC simply skips "default tenant only" features when they are enabled via recipe in another tenant. This is
+        // not a problem and working around it would make the recipes unnecessarily complicated.
         ["Skipping feature 'OrchardCore.Tenants'"] = entry =>
             entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+        // This is a warning about the environment, so the test shouldn't fail because of it.
+        ["DevTools version"] = entry => !(
+            entry.Level == LogLevel.Warning &&
+            entry.Exception is WebDriverException &&
+            entry.Exception.Message.Contains("DevTools version is not in the supported range.")),
     };
-
-    /// <summary>
-    /// Applies <see cref="AppLogFilters"/> to the <paramref name="logs"/>.
-    /// </summary>
-    public async Task<IEnumerable<IApplicationLog>> FilterAppLogsAsync(IEnumerable<IApplicationLog> logs) =>
-        await logs.AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, AppLogFilters.Values));
 
     /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
@@ -281,6 +290,18 @@ public class OrchardCoreUITestExecutorConfiguration
     /// </summary>
     public string TempDirectoryPath { get; set; }
 
+    public OrchardCoreUITestExecutorConfiguration()
+    {
+        AssertAppLogsAsync = CreateAssertAppLogsAsyncFromConfiguration(this);
+        OrchardCoreConfiguration = new();
+    }
+
+    /// <summary>
+    /// Applies <see cref="AppLogFilters"/> to the <paramref name="logs"/>.
+    /// </summary>
+    public async Task<IEnumerable<IApplicationLog>> FilterAppLogsAsync(IEnumerable<IApplicationLog> logs) =>
+        await logs.AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, AppLogFilters.Values));
+
     /// <summary>
     /// Gets <see cref="TempDirectoryPath"/> if it's not <see langword="null"/>, otherwise gets the path of the <see
     /// cref="DirectoryPaths.Temp"/> in the current directory.
@@ -302,4 +323,12 @@ public class OrchardCoreUITestExecutorConfiguration
 
         return path;
     }
+
+    public static Func<IWebApplicationInstance, Task> CreateAssertAppLogsAsyncFromConfiguration(
+        OrchardCoreUITestExecutorConfiguration configuration) =>
+        app => app.SupportsLogs
+            ? app.LogsShouldNotContainAsync(
+                entry => entry.Level >= configuration.MinimumLogLevel,
+                TestContext.Current.CancellationToken)
+            : Task.CompletedTask;
 }
