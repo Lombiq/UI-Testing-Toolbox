@@ -141,7 +141,6 @@ public abstract class UITestBase : AtataTestSuite
 
         var configuration = new OrchardCoreUITestExecutorConfiguration
         {
-            OrchardCoreConfiguration = new OrchardCoreConfiguration(),
             TestOutputHelper = _testOutputHelper,
             BrowserConfiguration = { Browser = Browser },
         };

@@ -55,7 +55,6 @@ internal static class OrchardCoreInstanceCounter
 public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     where TEntryPoint : class
 {
-    private readonly OrchardCoreUITestExecutorConfiguration _configuration;
     private readonly string _contextId;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -65,13 +64,19 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
     private Uri _url;
     private TestReverseProxy _reverseProxy;
 
+    public bool SupportsServices => true;
+    public bool SupportsPausing => true;
+    public bool SupportsLogs => true;
+
+    public OrchardCoreUITestExecutorConfiguration Configuration { get; }
+
     public IServiceProvider Services => _orchardApplication?.Services;
-    public OrchardCoreConfiguration OrchardCoreConfiguration => _configuration.OrchardCoreConfiguration;
-    public ITestOutputHelper TestOutputHelper => _configuration.TestOutputHelper;
+    public OrchardCoreConfiguration OrchardCoreConfiguration => Configuration.OrchardCoreConfiguration;
+    public ITestOutputHelper TestOutputHelper => Configuration.TestOutputHelper;
 
     public OrchardCoreInstance(OrchardCoreUITestExecutorConfiguration configuration, string contextId)
     {
-        _configuration = configuration;
+        Configuration = configuration;
         _contextId = contextId;
     }
 
@@ -118,21 +123,30 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
-    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
-    {
-        if (Services.GetService<FakeLogCollector>() is { } logCollector)
-        {
-            return Task.FromResult(
-                new IApplicationLog[]
-                {
-                    new FakeLoggerLogApplicationLog
-                    {
-                        LogCollector = logCollector,
-                    },
-                }.AsEnumerable());
-        }
+    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default) =>
+        GetLogsAsync(ignoreFilters: false);
 
-        return Task.FromResult(Enumerable.Empty<IApplicationLog>());
+    public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var log in await GetLogsAsync(ignoreFilters: true))
+        {
+            await log.RemoveAsync();
+        }
+    }
+
+    private async Task<IEnumerable<IApplicationLog>> GetLogsAsync(bool ignoreFilters)
+    {
+        if (Services.GetService<FakeLogCollector>() is not { } logCollector) return [];
+
+        var logs = new IApplicationLog[]
+        {
+            new FakeLoggerLogApplicationLog
+            {
+                LogCollector = logCollector,
+            },
+        };
+
+        return ignoreFilters ? logs : await Configuration.FilterAppLogsAsync(logs);
     }
 
     public async ValueTask DisposeAsync()
@@ -152,7 +166,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
 
     private void CreateContentRootFolder()
     {
-        _contentRootPath = _configuration.GetTempDirectoryPathWithFallback(_contextId, "App");
+        _contentRootPath = Configuration.GetTempDirectoryPathWithFallback(_contextId, "App");
         Directory.CreateDirectory(_contentRootPath);
         TestOutputHelper.WriteLineTimestampedAndDebug("Content root path was created: {0}", _contentRootPath);
     }

@@ -11,6 +11,29 @@ namespace Lombiq.Tests.UI.Services;
 public interface IWebApplicationInstance : IAsyncDisposable
 {
     /// <summary>
+    /// Gets a value indicating whether the application instance supports access to the service provider. If <see
+    /// langword="true"/>, <see cref="Services"/> can be used.
+    /// </summary>
+    bool SupportsServices { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the application instance can be paused and resumed. If <see langword="true"/>,
+    /// <see cref="PauseAsync"/>, <see cref="ResumeAsync"/> and <see cref="TakeSnapshotAsync"/> can be used.
+    /// </summary>
+    bool SupportsPausing { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the application instance supports access to the logs. If <see langword="true"/>,
+    /// <see cref="GetLogsAsync"/> can be used (otherwise it should always return an empty collection).
+    /// </summary>
+    bool SupportsLogs { get; }
+
+    /// <summary>
+    /// Gets the test configuration used to initialize the instance.
+    /// </summary>
+    OrchardCoreUITestExecutorConfiguration Configuration { get; }
+
+    /// <summary>
     /// Gets the <see cref="IServiceProvider"/> created by the server associated with this
     /// <see cref="IWebApplicationInstance"/>.
     /// </summary>
@@ -44,4 +67,9 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// </summary>
     /// <returns>The collection of log names and their contents.</returns>
     Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Empties out the logs, if there are any.
+    /// </summary>
+    Task ClearLogsAsync(CancellationToken cancellationToken = default);
 }

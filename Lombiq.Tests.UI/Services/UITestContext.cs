@@ -226,7 +226,7 @@ public sealed class UITestContext : IAsyncDisposable
     /// </summary>
     public async Task ClearLogsAsync()
     {
-        foreach (var log in await Application.GetLogsAsync(Configuration.TestCancellationToken)) await log.RemoveAsync();
+        await Application.ClearLogsAsync(Configuration.TestCancellationToken);
         ClearCumulativeBrowserLog();
         ClearCumulativeResponseLog();
     }

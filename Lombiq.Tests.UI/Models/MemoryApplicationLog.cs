@@ -24,7 +24,12 @@ public record MemoryApplicationLog(string Name, IList<IApplicationLogEntry> Entr
     /// </summary>
     public static Task<MemoryApplicationLog> FromLogAsync(
         IApplicationLog log,
-        Func<IApplicationLogEntry, bool> predicate = null)
+        Func<IApplicationLogEntry, bool> predicate = null) =>
+        FromLogAsync(log, predicate == null ? [] : [predicate]);
+
+    public static Task<MemoryApplicationLog> FromLogAsync(
+        IApplicationLog log,
+        ICollection<Func<IApplicationLogEntry, bool>> predicates)
     {
         if (log.EntryCount < 1)
         {
@@ -33,19 +38,21 @@ public record MemoryApplicationLog(string Name, IList<IApplicationLogEntry> Entr
 
         if (log is MemoryApplicationLog cached)
         {
-            return Task.FromResult(new MemoryApplicationLog(log.Name, FilterEntries(cached.Entries, predicate)));
+            return Task.FromResult(new MemoryApplicationLog(log.Name, FilterEntries(cached.Entries, predicates)));
         }
 
-        return FromLogInnerAsync(log, predicate);
+        return FromLogInnerAsync(log, predicates);
     }
 
     private static async Task<MemoryApplicationLog> FromLogInnerAsync(
         IApplicationLog log,
-        Func<IApplicationLogEntry, bool> predicate) =>
-        new(log.Name, FilterEntries(await log.GetEntriesAsync(), predicate));
+        ICollection<Func<IApplicationLogEntry, bool>> predicates) =>
+        new(log.Name, FilterEntries(await log.GetEntriesAsync(), predicates));
 
     private static IList<IApplicationLogEntry> FilterEntries(
         IEnumerable<IApplicationLogEntry> entries,
-        Func<IApplicationLogEntry, bool> predicate) =>
-        predicate is null ? entries.AsList() : entries.Where(predicate).ToList();
+        ICollection<Func<IApplicationLogEntry, bool>> predicates) =>
+        predicates.Count == 0
+            ? entries.AsList()
+            : [.. entries.Where(entry => predicates.Aggregate(seed: true, (keep, predicate) => keep && predicate(entry)))];
 }
