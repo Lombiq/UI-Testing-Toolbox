@@ -128,7 +128,7 @@ public class OrchardCoreUITestExecutorConfiguration
 
     /// <summary>
     /// Gets or sets the async function used to assert app log validity (i.e., no error logs). The default value is <see
-    /// cref="AssertAppLogsCanContainFeatureSkipAsync"/> and you should avoid changing this value when possible.
+    /// cref="AssertAppLogsCanContainFeatureSkipAsync"/> and you should avoid changing this, when possible.
     /// </summary>
     public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsAreEmptyAsync;
 
