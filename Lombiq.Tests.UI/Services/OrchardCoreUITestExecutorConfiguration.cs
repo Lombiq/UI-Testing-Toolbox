@@ -38,6 +38,9 @@ public class OrchardCoreUITestExecutorConfiguration
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsAreEmptyAsync =
         app => app.SupportsLogs ? app.LogsShouldBeEmptyAsync(TestContext.Current.CancellationToken) : Task.CompletedTask;
 
+    [Obsolete(
+        $"Use {nameof(AssertAppLogsAreEmptyAsync)} instead. The \"Skipping feature\" warning is skipped by a default " +
+        $"application log filter in {nameof(AppLogFilters)}.")]
     public static readonly Func<IWebApplicationInstance, Task> AssertAppLogsCanContainFeatureSkipAsync =
         app => app.SupportsLogs
             ? app.LogsShouldNotContainAsync(
@@ -127,7 +130,13 @@ public class OrchardCoreUITestExecutorConfiguration
     /// Gets or sets the async function used to assert app log validity (i.e., no error logs). The default value is <see
     /// cref="AssertAppLogsCanContainFeatureSkipAsync"/> and you should avoid changing this value when possible.
     /// </summary>
-    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsCanContainFeatureSkipAsync;
+    public Func<IWebApplicationInstance, Task> AssertAppLogsAsync { get; set; } = AssertAppLogsAreEmptyAsync;
+
+    public IDictionary<string, Func<IApplicationLogEntry, bool>> AppLogFilters { get; } = new Dictionary<string, Func<IApplicationLogEntry, bool>>
+    {
+        ["Skipping feature 'OrchardCore.Tenants'"] = entry =>
+            entry.Message != "Skipping feature 'OrchardCore.Tenants' as it is allowed on the default tenant only.",
+    };
 
     /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
