@@ -29,6 +29,7 @@ public sealed class RemoteInstance : IWebApplicationInstance
 
     public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(Enumerable.Empty<IApplicationLog>());
+    public Task ClearLogsAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     [Obsolete($"Use {nameof(IWebApplicationInstance.Services)} instead.")]
     public TService GetRequiredService<TService>() => throw new NotSupportedException();
     public Task PauseAsync() => Task.CompletedTask;

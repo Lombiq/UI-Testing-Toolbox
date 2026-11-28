@@ -67,4 +67,9 @@ public interface IWebApplicationInstance : IAsyncDisposable
     /// </summary>
     /// <returns>The collection of log names and their contents.</returns>
     Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Empties out the logs, if there are any.
+    /// </summary>
+    Task ClearLogsAsync(CancellationToken cancellationToken = default);
 }

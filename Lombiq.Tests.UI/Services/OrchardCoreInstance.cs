@@ -123,7 +123,18 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
-    public async Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default) =>
+        GetLogsAsync(ignoreFilters: false);
+
+    public async Task ClearLogsAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var log in await GetLogsAsync(ignoreFilters: true))
+        {
+            await log.RemoveAsync();
+        }
+    }
+
+    private async Task<IEnumerable<IApplicationLog>> GetLogsAsync(bool ignoreFilters)
     {
         if (Services.GetService<FakeLogCollector>() is not { } logCollector) return [];
 
@@ -135,7 +146,7 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
             },
         };
 
-        return await Configuration.FilterAppLogsAsync(logs);
+        return ignoreFilters ? logs : await Configuration.FilterAppLogsAsync(logs);
     }
 
     public async ValueTask DisposeAsync()
