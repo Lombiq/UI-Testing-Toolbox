@@ -139,6 +139,12 @@ public class OrchardCoreUITestExecutorConfiguration
     };
 
     /// <summary>
+    /// Applies <see cref="AppLogFilters"/> to the <paramref name="logs"/>.
+    /// </summary>
+    public async Task<IEnumerable<IApplicationLog>> FilterAppLogsAsync(IEnumerable<IApplicationLog> logs) =>
+        await logs.AwaitEachAsync(log => MemoryApplicationLog.FromLogAsync(log, AppLogFilters.Values));
+
+    /// <summary>
     /// Gets a collection of delegate that selects which response data get saved to <see
     /// cref="UITestContext.CumulativeBrowserLog"/>. If there are more than one, all of them must return <see
     /// langword="true"/>.

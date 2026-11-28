@@ -123,21 +123,19 @@ public sealed class OrchardCoreInstance<TEntryPoint> : IWebApplicationInstance
         return TakeSnapshotInnerAsync(snapshotDirectoryPath);
     }
 
-    public Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<IApplicationLog>> GetLogsAsync(CancellationToken cancellationToken = default)
     {
-        if (Services.GetService<FakeLogCollector>() is { } logCollector)
-        {
-            return Task.FromResult(
-                new IApplicationLog[]
-                {
-                    new FakeLoggerLogApplicationLog
-                    {
-                        LogCollector = logCollector,
-                    },
-                }.AsEnumerable());
-        }
+        if (Services.GetService<FakeLogCollector>() is not { } logCollector) return [];
 
-        return Task.FromResult(Enumerable.Empty<IApplicationLog>());
+        var logs = new IApplicationLog[]
+        {
+            new FakeLoggerLogApplicationLog
+            {
+                LogCollector = logCollector,
+            },
+        };
+
+        return await Configuration.FilterAppLogsAsync(logs);
     }
 
     public async ValueTask DisposeAsync()
