@@ -95,9 +95,11 @@ public abstract class UITestBase : OrchardCoreUITestBase<Program>
             // are suitable for you. Then it's simple to override them; here we change which log entries cause the
             // tests to fail, and allow certain log entries: info-level log entries for ShellHost are allowed, see
             // above.
+            configuration.AppLogFilters["My custom app log filter."] =
+                logEntry => logEntry.Message != "My permitted message.";
             configuration.AssertAppLogsAsync = webApplicationInstance =>
                 webApplicationInstance.LogsShouldNotContainAsync(
-                    logEntry => logEntry.Message != "My permitted message." && logEntry.Level != LogLevel.Information,
+                    logEntry => logEntry.Level != LogLevel.Information,
                     configuration.TestCancellationToken);
 
             // Strictly speaking this is not necessary here, because we always use the same static method for setup.
