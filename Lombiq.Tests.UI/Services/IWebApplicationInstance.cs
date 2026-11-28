@@ -29,6 +29,11 @@ public interface IWebApplicationInstance : IAsyncDisposable
     bool SupportsLogs { get; }
 
     /// <summary>
+    /// Gets the test configuration used to initialize the instance.
+    /// </summary>
+    OrchardCoreUITestExecutorConfiguration Configuration { get; }
+
+    /// <summary>
     /// Gets the <see cref="IServiceProvider"/> created by the server associated with this
     /// <see cref="IWebApplicationInstance"/>.
     /// </summary>
