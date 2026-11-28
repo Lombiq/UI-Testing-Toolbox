@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,18 @@ public sealed class RemoteInstance : IWebApplicationInstance
     public bool SupportsServices => false;
     public bool SupportsPausing => false;
     public bool SupportsLogs => false;
-    public IServiceProvider Services => throw new NotSupportedException();
+
+    public OrchardCoreUITestExecutorConfiguration Configuration { get; }
+    public IServiceProvider Services { get; }
 
     private readonly Uri _baseUri;
 
-    public RemoteInstance(Uri baseUri) => _baseUri = baseUri;
+    public RemoteInstance(Uri baseUri, OrchardCoreUITestExecutorConfiguration configuration)
+    {
+        Configuration = configuration;
+        Services = new ServiceCollection().BuildServiceProvider();
+        _baseUri = baseUri;
+    }
 
     public Task<Uri> StartUpAsync() => Task.FromResult(_baseUri);
 
@@ -23,9 +31,9 @@ public sealed class RemoteInstance : IWebApplicationInstance
         Task.FromResult(Enumerable.Empty<IApplicationLog>());
     [Obsolete($"Use {nameof(IWebApplicationInstance.Services)} instead.")]
     public TService GetRequiredService<TService>() => throw new NotSupportedException();
-    public Task PauseAsync() => throw new NotSupportedException();
-    public Task ResumeAsync() => throw new NotSupportedException();
-    public Task TakeSnapshotAsync(string snapshotDirectoryPath) => throw new NotSupportedException();
+    public Task PauseAsync() => Task.CompletedTask;
+    public Task ResumeAsync() => Task.CompletedTask;
+    public Task TakeSnapshotAsync(string snapshotDirectoryPath) => Task.CompletedTask;
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

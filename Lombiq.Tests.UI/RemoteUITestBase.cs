@@ -22,7 +22,7 @@ public abstract partial class RemoteUITestBase : UITestBase
     protected RemoteUITestBase(ITestOutputHelper testOutputHelper)
         : base(testOutputHelper)
     {
-        InstanceFactory = (_, _) => new RemoteInstance(BaseUri);
+        InstanceFactory = (configuration, _) => new RemoteInstance(BaseUri, configuration);
         AddTest(context => context.GoToAbsoluteUrlAsync(BaseUri));
     }
 
